@@ -678,69 +678,135 @@ def mostrar_dashboard_principal():
     if dashboard_seleccionado != "🏠 Dashboard Principal (Actual)":
         st.markdown(f"### {dashboard_seleccionado}")
         
-        # URLs de los dashboards - Funcionando desde red local
-        urls_dashboards = {
-            "🌤️ Sistema Meteorológico Avanzado": "http://192.168.1.7:8503",
-            "🌾 Sistema Agrícola Completo": "http://192.168.1.7:8504",
-            "🏠 Dashboard Unificado": "http://192.168.1.7:8502", 
-            "📊 Dashboard Simple": "http://192.168.1.7:8505",
-            "🤖 Modelos ML Avanzados": "http://192.168.1.7:8506",
-            "📈 Dashboard Global": "http://192.168.1.7:8507",
-            "🔬 Dashboard de Monitoreo": "http://192.168.1.7:8508",
-            "📊 Visualizaciones Integradas": "http://192.168.1.7:8509",
-            "🌾 Dashboard Agrícola Avanzado": "http://192.168.1.7:8510",
-            "📱 Dashboard Móvil": "http://192.168.1.7:8511",
-            "🔧 Dashboard de Configuración": "http://192.168.1.7:8512"
-        }
+        # Detectar si estamos en Streamlit Cloud o local
+        import streamlit as st
+        is_streamlit_cloud = "streamlit.app" in st.get_option("server.headless")
+        
+        if is_streamlit_cloud:
+            # URLs para Streamlit Cloud - Información de desarrollo
+            urls_dashboards = {
+                "🌤️ Sistema Meteorológico Avanzado": "#meteorologico",
+                "🌾 Sistema Agrícola Completo": "#agricola",
+                "🏠 Dashboard Unificado": "#unificado", 
+                "📊 Dashboard Simple": "#simple",
+                "🤖 Modelos ML Avanzados": "#ml",
+                "📈 Dashboard Global": "#global",
+                "🔬 Dashboard de Monitoreo": "#monitoreo",
+                "📊 Visualizaciones Integradas": "#visualizaciones",
+                "🌾 Dashboard Agrícola Avanzado": "#agricola-avanzado",
+                "📱 Dashboard Móvil": "#movil",
+                "🔧 Dashboard de Configuración": "#configuracion"
+            }
+        else:
+            # URLs para acceso local - Funcionando desde red local
+            urls_dashboards = {
+                "🌤️ Sistema Meteorológico Avanzado": "http://192.168.1.7:8503",
+                "🌾 Sistema Agrícola Completo": "http://192.168.1.7:8504",
+                "🏠 Dashboard Unificado": "http://192.168.1.7:8502", 
+                "📊 Dashboard Simple": "http://192.168.1.7:8505",
+                "🤖 Modelos ML Avanzados": "http://192.168.1.7:8506",
+                "📈 Dashboard Global": "http://192.168.1.7:8507",
+                "🔬 Dashboard de Monitoreo": "http://192.168.1.7:8508",
+                "📊 Visualizaciones Integradas": "http://192.168.1.7:8509",
+                "🌾 Dashboard Agrícola Avanzado": "http://192.168.1.7:8510",
+                "📱 Dashboard Móvil": "http://192.168.1.7:8511",
+                "🔧 Dashboard de Configuración": "http://192.168.1.7:8512"
+            }
         
         url_dashboard = urls_dashboards.get(dashboard_seleccionado, "http://localhost:8501")
         
-        st.markdown(f"""
-        <div style="border: 3px solid #FF6B35; border-radius: 15px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-            <h3>🎯 {dashboard_seleccionado}</h3>
-            <p style="font-size: 18px; margin: 20px 0;">Acceso directo al módulo especializado</p>
-            <a href="{url_dashboard}" target="_blank" style="background-color: #FF6B35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 10px; font-size: 18px; font-weight: bold; display: inline-block; margin: 20px 0;">🚀 Abrir Dashboard</a>
-            <div style="background-color: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h4>📋 Información de Acceso</h4>
-                <p><strong>URL:</strong> {url_dashboard}</p>
-                <p><strong>Estado:</strong> Disponible en red local</p>
-                <p><strong>Requisito:</strong> Estar en la misma red WiFi</p>
+        if is_streamlit_cloud:
+            # Mensaje para Streamlit Cloud
+            st.markdown(f"""
+            <div style="border: 3px solid #FF6B35; border-radius: 15px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3>🎯 {dashboard_seleccionado}</h3>
+                <p style="font-size: 18px; margin: 20px 0;">Módulo especializado del sistema METGO</p>
+                <div style="background-color: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>📋 Estado del Módulo</h4>
+                    <p>Este módulo está disponible en el sistema local METGO</p>
+                    <p><strong>Para acceder:</strong> Contacta al administrador del sistema</p>
+                    <p><strong>Desarrollo:</strong> Los módulos especializados están en desarrollo activo</p>
+                </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+        else:
+            # Mensaje para acceso local
+            st.markdown(f"""
+            <div style="border: 3px solid #FF6B35; border-radius: 15px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3>🎯 {dashboard_seleccionado}</h3>
+                <p style="font-size: 18px; margin: 20px 0;">Acceso directo al módulo especializado</p>
+                <a href="{url_dashboard}" target="_blank" style="background-color: #FF6B35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 10px; font-size: 18px; font-weight: bold; display: inline-block; margin: 20px 0;">🚀 Abrir Dashboard</a>
+                <div style="background-color: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>📋 Información de Acceso</h4>
+                    <p><strong>URL:</strong> {url_dashboard}</p>
+                    <p><strong>Estado:</strong> Disponible en red local</p>
+                    <p><strong>Requisito:</strong> Estar en la misma red WiFi</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
     
     # Grid de todos los dashboards disponibles
     st.markdown("### 📋 Todos los Dashboards Disponibles")
     
     col1, col2, col3 = st.columns(3)
     
-    dashboards_info = [
-        ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico avanzado", "8503", "http://192.168.1.7:8503"),
-        ("🌾 Agrícola", "#2196F3", "Gestión agrícola completa", "8504", "http://192.168.1.7:8504"),
-        ("🏠 Unificado", "#FF9800", "Vista integral del sistema", "8502", "http://192.168.1.7:8502"),
-        ("📊 Simple", "#9C27B0", "Interfaz simplificada", "8505", "http://192.168.1.7:8505"),
-        ("🤖 ML/IA", "#E91E63", "Modelos de inteligencia artificial", "8506", "http://192.168.1.7:8506"),
-        ("📈 Global", "#00BCD4", "Dashboard global del sistema", "8507", "http://192.168.1.7:8507"),
-        ("🔬 Monitoreo", "#795548", "Sistema de monitoreo", "8508", "http://192.168.1.7:8508"),
-        ("📊 Visualizaciones", "#607D8B", "Visualizaciones avanzadas", "8509", "http://192.168.1.7:8509"),
-        ("🌾 Agrícola Avanzado", "#4CAF50", "Agricultura de precisión", "8510", "http://192.168.1.7:8510")
-    ]
+    if is_streamlit_cloud:
+        # Información para Streamlit Cloud
+        dashboards_info = [
+            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico avanzado", "8503", "#meteorologico"),
+            ("🌾 Agrícola", "#2196F3", "Gestión agrícola completa", "8504", "#agricola"),
+            ("🏠 Unificado", "#FF9800", "Vista integral del sistema", "8502", "#unificado"),
+            ("📊 Simple", "#9C27B0", "Interfaz simplificada", "8505", "#simple"),
+            ("🤖 ML/IA", "#E91E63", "Modelos de inteligencia artificial", "8506", "#ml"),
+            ("📈 Global", "#00BCD4", "Dashboard global del sistema", "8507", "#global"),
+            ("🔬 Monitoreo", "#795548", "Sistema de monitoreo", "8508", "#monitoreo"),
+            ("📊 Visualizaciones", "#607D8B", "Visualizaciones avanzadas", "8509", "#visualizaciones"),
+            ("🌾 Agrícola Avanzado", "#4CAF50", "Agricultura de precisión", "8510", "#agricola-avanzado")
+        ]
+    else:
+        # Información para acceso local
+        dashboards_info = [
+            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico avanzado", "8503", "http://192.168.1.7:8503"),
+            ("🌾 Agrícola", "#2196F3", "Gestión agrícola completa", "8504", "http://192.168.1.7:8504"),
+            ("🏠 Unificado", "#FF9800", "Vista integral del sistema", "8502", "http://192.168.1.7:8502"),
+            ("📊 Simple", "#9C27B0", "Interfaz simplificada", "8505", "http://192.168.1.7:8505"),
+            ("🤖 ML/IA", "#E91E63", "Modelos de inteligencia artificial", "8506", "http://192.168.1.7:8506"),
+            ("📈 Global", "#00BCD4", "Dashboard global del sistema", "8507", "http://192.168.1.7:8507"),
+            ("🔬 Monitoreo", "#795548", "Sistema de monitoreo", "8508", "http://192.168.1.7:8508"),
+            ("📊 Visualizaciones", "#607D8B", "Visualizaciones avanzadas", "8509", "http://192.168.1.7:8509"),
+            ("🌾 Agrícola Avanzado", "#4CAF50", "Agricultura de precisión", "8510", "http://192.168.1.7:8510")
+        ]
     
     for i, (nombre, color, descripcion, puerto, url) in enumerate(dashboards_info):
         col = [col1, col2, col3][i % 3]
         with col:
-            st.markdown(f"""
-            <div style="border: 2px solid {color}; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: rgba(255,255,255,0.1);">
-                <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
-                <p style="margin: 0 0 10px 0; font-size: 12px;">{descripcion}</p>
-                <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Puerto: {puerto}</p>
-                <a href="{url}" target="_blank" style="background-color: {color}; color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-size: 12px; display: inline-block; margin: 5px 0;">🚀 Acceder</a>
-                <div style="background-color: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 10px 0;">
-                    <p style="margin: 0; font-size: 11px;">💡 Disponible en red local</p>
-                    <p style="margin: 0; font-size: 11px;">📱 Funciona desde celular</p>
+            if is_streamlit_cloud:
+                # Grid para Streamlit Cloud
+                st.markdown(f"""
+                <div style="border: 2px solid {color}; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: rgba(255,255,255,0.1);">
+                    <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
+                    <p style="margin: 0 0 10px 0; font-size: 12px;">{descripcion}</p>
+                    <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Estado: En desarrollo</p>
+                    <div style="background-color: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 10px 0;">
+                        <p style="margin: 0; font-size: 11px;">💡 Módulo disponible en sistema local</p>
+                        <p style="margin: 0; font-size: 11px;">📞 Contactar administrador</p>
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+            else:
+                # Grid para acceso local
+                st.markdown(f"""
+                <div style="border: 2px solid {color}; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: rgba(255,255,255,0.1);">
+                    <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
+                    <p style="margin: 0 0 10px 0; font-size: 12px;">{descripcion}</p>
+                    <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Puerto: {puerto}</p>
+                    <a href="{url}" target="_blank" style="background-color: {color}; color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-size: 12px; display: inline-block; margin: 5px 0;">🚀 Acceder</a>
+                    <div style="background-color: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 10px 0;">
+                        <p style="margin: 0; font-size: 11px;">💡 Disponible en red local</p>
+                        <p style="margin: 0; font-size: 11px;">📱 Funciona desde celular</p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
     
     # Información sobre acceso a módulos
     st.markdown("### 🔧 Información de Acceso a Módulos")
@@ -795,8 +861,8 @@ def mostrar_dashboard_principal():
             <p><strong>Dashboard Simple:</strong> <code>dashboard_simple_metgo.py</code></p>
             <p><strong>Dashboard Avanzado:</strong> <code>01_Sistema_Meteorologico/dashboards/dashboard_meteorologico_avanzado.py</code></p>
             <p><strong>Dashboard Global:</strong> <code>04_Dashboards_Unificados/dashboards/dashboard_global_metgo.py</code></p>
-        </div>
-        """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
     
     st.markdown("---")
     
