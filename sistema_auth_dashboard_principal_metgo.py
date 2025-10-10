@@ -659,17 +659,17 @@ def mostrar_dashboard_principal():
         "🎯 Seleccionar Dashboard Especializado:",
         [
             "🏠 Dashboard Principal (Actual)",
-            "🌤️ Sistema Meteorológico Avanzado",
-            "🌾 Sistema Agrícola Completo", 
-            "🏠 Dashboard Unificado",
-            "📊 Dashboard Simple",
-            "🤖 Modelos ML Avanzados",
-            "📈 Dashboard Global",
-            "🔬 Dashboard de Monitoreo",
-            "📊 Visualizaciones Integradas",
-            "🌾 Dashboard Agrícola Avanzado",
-            "📱 Dashboard Móvil",
-            "🔧 Dashboard de Configuración"
+            "🌤️ Análisis Meteorológico Profesional",
+            "🌾 Gestión Agrícola Inteligente",
+            "📊 Dashboard de Visualizaciones Avanzadas", 
+            "🔍 Dashboard de Monitoreo en Tiempo Real",
+            "🤖 Sistema de Inteligencia Artificial",
+            "📈 Dashboard Global de Métricas",
+            "🌾 Agricultura de Precisión",
+            "📊 Dashboard de Análisis Comparativo",
+            "🔬 Sistema de Alertas Automáticas",
+            "📱 Dashboard Móvil Optimizado",
+            "⚙️ Panel de Configuración del Sistema"
         ],
         key="dashboard_selector"
     )
@@ -685,32 +685,32 @@ def mostrar_dashboard_principal():
         if is_streamlit_cloud:
             # URLs para Streamlit Cloud - Información de desarrollo
             urls_dashboards = {
-                "🌤️ Sistema Meteorológico Avanzado": "#meteorologico",
-                "🌾 Sistema Agrícola Completo": "#agricola",
-                "🏠 Dashboard Unificado": "#unificado", 
-                "📊 Dashboard Simple": "#simple",
-                "🤖 Modelos ML Avanzados": "#ml",
-                "📈 Dashboard Global": "#global",
-                "🔬 Dashboard de Monitoreo": "#monitoreo",
-                "📊 Visualizaciones Integradas": "#visualizaciones",
-                "🌾 Dashboard Agrícola Avanzado": "#agricola-avanzado",
-                "📱 Dashboard Móvil": "#movil",
-                "🔧 Dashboard de Configuración": "#configuracion"
+                "🌤️ Análisis Meteorológico Profesional": "#meteorologico",
+                "🌾 Gestión Agrícola Inteligente": "#agricola",
+                "📊 Dashboard de Visualizaciones Avanzadas": "#visualizaciones", 
+                "🔍 Dashboard de Monitoreo en Tiempo Real": "#monitoreo",
+                "🤖 Sistema de Inteligencia Artificial": "#ml",
+                "📈 Dashboard Global de Métricas": "#global",
+                "🌾 Agricultura de Precisión": "#agricola-precision",
+                "📊 Dashboard de Análisis Comparativo": "#comparativo",
+                "🔬 Sistema de Alertas Automáticas": "#alertas",
+                "📱 Dashboard Móvil Optimizado": "#movil",
+                "⚙️ Panel de Configuración del Sistema": "#configuracion"
             }
         else:
             # URLs para acceso local - Funcionando desde red local
             urls_dashboards = {
-                "🌤️ Sistema Meteorológico Avanzado": "http://192.168.1.7:8503",
-                "🌾 Sistema Agrícola Completo": "http://192.168.1.7:8504",
-                "🏠 Dashboard Unificado": "http://192.168.1.7:8502", 
-                "📊 Dashboard Simple": "http://192.168.1.7:8505",
-                "🤖 Modelos ML Avanzados": "http://192.168.1.7:8506",
-                "📈 Dashboard Global": "http://192.168.1.7:8507",
-                "🔬 Dashboard de Monitoreo": "http://192.168.1.7:8508",
-                "📊 Visualizaciones Integradas": "http://192.168.1.7:8509",
-                "🌾 Dashboard Agrícola Avanzado": "http://192.168.1.7:8510",
-                "📱 Dashboard Móvil": "http://192.168.1.7:8511",
-                "🔧 Dashboard de Configuración": "http://192.168.1.7:8512"
+                "🌤️ Análisis Meteorológico Profesional": "http://192.168.1.7:8503",
+                "🌾 Gestión Agrícola Inteligente": "http://192.168.1.7:8504",
+                "📊 Dashboard de Visualizaciones Avanzadas": "http://192.168.1.7:8505", 
+                "🔍 Dashboard de Monitoreo en Tiempo Real": "http://192.168.1.7:8506",
+                "🤖 Sistema de Inteligencia Artificial": "http://192.168.1.7:8507",
+                "📈 Dashboard Global de Métricas": "http://192.168.1.7:8508",
+                "🌾 Agricultura de Precisión": "http://192.168.1.7:8509",
+                "📊 Dashboard de Análisis Comparativo": "http://192.168.1.7:8510",
+                "🔬 Sistema de Alertas Automáticas": "http://192.168.1.7:8511",
+                "📱 Dashboard Móvil Optimizado": "http://192.168.1.7:8512",
+                "⚙️ Panel de Configuración del Sistema": "http://192.168.1.7:8513"
             }
         
         url_dashboard = urls_dashboards.get(dashboard_seleccionado, "http://localhost:8501")
@@ -753,28 +753,28 @@ def mostrar_dashboard_principal():
     if is_streamlit_cloud:
         # Información para Streamlit Cloud
         dashboards_info = [
-            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico avanzado", "8503", "#meteorologico"),
-            ("🌾 Agrícola", "#2196F3", "Gestión agrícola completa", "8504", "#agricola"),
-            ("🏠 Unificado", "#FF9800", "Vista integral del sistema", "8502", "#unificado"),
-            ("📊 Simple", "#9C27B0", "Interfaz simplificada", "8505", "#simple"),
-            ("🤖 ML/IA", "#E91E63", "Modelos de inteligencia artificial", "8506", "#ml"),
-            ("📈 Global", "#00BCD4", "Dashboard global del sistema", "8507", "#global"),
-            ("🔬 Monitoreo", "#795548", "Sistema de monitoreo", "8508", "#monitoreo"),
-            ("📊 Visualizaciones", "#607D8B", "Visualizaciones avanzadas", "8509", "#visualizaciones"),
-            ("🌾 Agrícola Avanzado", "#4CAF50", "Agricultura de precisión", "8510", "#agricola-avanzado")
+            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico profesional con 5 años de datos", "8503", "#meteorologico"),
+            ("🌾 Agrícola Inteligente", "#2196F3", "Gestión agrícola con IA, plagas, riego y heladas", "8504", "#agricola"),
+            ("📊 Visualizaciones", "#9C27B0", "Visualizaciones avanzadas y análisis comparativo", "8505", "#visualizaciones"),
+            ("🔍 Monitoreo", "#795548", "Monitoreo en tiempo real del sistema", "8506", "#monitoreo"),
+            ("🤖 IA/ML", "#E91E63", "Sistema de inteligencia artificial y machine learning", "8507", "#ml"),
+            ("📈 Global", "#00BCD4", "Métricas globales y análisis integral", "8508", "#global"),
+            ("🌾 Precisión", "#4CAF50", "Agricultura de precisión con datos históricos", "8509", "#agricola-precision"),
+            ("📊 Comparativo", "#607D8B", "Análisis comparativo de 5 años", "8510", "#comparativo"),
+            ("🔬 Alertas", "#FF5722", "Sistema automático de alertas", "8511", "#alertas")
         ]
     else:
         # Información para acceso local
         dashboards_info = [
-            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico avanzado", "8503", "http://192.168.1.7:8503"),
-            ("🌾 Agrícola", "#2196F3", "Gestión agrícola completa", "8504", "http://192.168.1.7:8504"),
-            ("🏠 Unificado", "#FF9800", "Vista integral del sistema", "8502", "http://192.168.1.7:8502"),
-            ("📊 Simple", "#9C27B0", "Interfaz simplificada", "8505", "http://192.168.1.7:8505"),
-            ("🤖 ML/IA", "#E91E63", "Modelos de inteligencia artificial", "8506", "http://192.168.1.7:8506"),
-            ("📈 Global", "#00BCD4", "Dashboard global del sistema", "8507", "http://192.168.1.7:8507"),
-            ("🔬 Monitoreo", "#795548", "Sistema de monitoreo", "8508", "http://192.168.1.7:8508"),
-            ("📊 Visualizaciones", "#607D8B", "Visualizaciones avanzadas", "8509", "http://192.168.1.7:8509"),
-            ("🌾 Agrícola Avanzado", "#4CAF50", "Agricultura de precisión", "8510", "http://192.168.1.7:8510")
+            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico profesional con 5 años de datos", "8503", "http://192.168.1.7:8503"),
+            ("🌾 Agrícola Inteligente", "#2196F3", "Gestión agrícola con IA, plagas, riego y heladas", "8504", "http://192.168.1.7:8504"),
+            ("📊 Visualizaciones", "#9C27B0", "Visualizaciones avanzadas y análisis comparativo", "8505", "http://192.168.1.7:8505"),
+            ("🔍 Monitoreo", "#795548", "Monitoreo en tiempo real del sistema", "8506", "http://192.168.1.7:8506"),
+            ("🤖 IA/ML", "#E91E63", "Sistema de inteligencia artificial y machine learning", "8507", "http://192.168.1.7:8507"),
+            ("📈 Global", "#00BCD4", "Métricas globales y análisis integral", "8508", "http://192.168.1.7:8508"),
+            ("🌾 Precisión", "#4CAF50", "Agricultura de precisión con datos históricos", "8509", "http://192.168.1.7:8509"),
+            ("📊 Comparativo", "#607D8B", "Análisis comparativo de 5 años", "8510", "http://192.168.1.7:8510"),
+            ("🔬 Alertas", "#FF5722", "Sistema automático de alertas", "8511", "http://192.168.1.7:8511")
         ]
     
     for i, (nombre, color, descripcion, puerto, url) in enumerate(dashboards_info):
