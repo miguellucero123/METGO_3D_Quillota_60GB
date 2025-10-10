@@ -675,13 +675,8 @@ def mostrar_dashboard_principal():
     )
     
     # Detectar si estamos en Streamlit Cloud o local
-    import streamlit as st
-    try:
-        # Intentar detectar si estamos en Streamlit Cloud
-        is_streamlit_cloud = "streamlit.app" in st.get_option("server.headless")
-    except:
-        # Si hay error, asumir que es local
-        is_streamlit_cloud = False
+    # Método simplificado - siempre mostrar enlaces locales por defecto
+    is_streamlit_cloud = False
     
     # Mostrar el dashboard seleccionado
     if dashboard_seleccionado != "🏠 Dashboard Principal (Actual)":
