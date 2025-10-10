@@ -66,10 +66,6 @@ streamlit run sistema_auth_dashboard_principal_metgo.py
 | Módulo | Puerto | Descripción |
 |--------|--------|-------------|
 | 🏠 Principal | 8501 | Dashboard principal integrado |
-| 🌤️ Meteorológico | 8503 | Análisis meteorológico avanzado |
-| 🌾 Agrícola | 8504 | Gestión agrícola completa |
-| 🏠 Unificado | 8502 | Vista integral del sistema |
-| 📊 Simple | 8505 | Interfaz simplificada |
 
 ## 🎯 Estaciones Meteorológicas Soportadas
 
@@ -101,13 +97,6 @@ streamlit run sistema_auth_dashboard_principal_metgo.py
 
 ## 🔧 Configuración
 
-### Variables de Entorno
-```bash
-# Configuración del servidor
-STREAMLIT_SERVER_PORT=8501
-STREAMLIT_SERVER_ADDRESS=0.0.0.0
-STREAMLIT_SERVER_HEADLESS=true
-```
 
 ### Archivo de Configuración
 El archivo `.streamlit/config.toml` contiene la configuración personalizada del dashboard.
@@ -128,27 +117,13 @@ dashboard-metgo/
 
 ## 🚀 Despliegue
 
-### Streamlit Cloud (Recomendado)
-1. Subir código a GitHub
-2. Conectar repositorio en https://share.streamlit.io
-3. Seleccionar archivo principal: `sistema_auth_dashboard_principal_metgo.py`
 
 ### Local con Acceso Externo
-```bash
-# Usando ngrok
-python dashboard_web_publico.py
-
 # Configurando router
 configurar_router.bat
 ```
 
 ## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
 
 ## 📄 Licencia
 
@@ -156,8 +131,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👥 Autores
 
-- **Sistema METGO** - *Desarrollo inicial* - [GitHub](https://github.com/metgo)
-- **Equipo Quillota** - *Implementación regional*
+- **Sistema METGO_3D** - *Desarrollo inicial* - [GitHub](https://github.com/metgo)
+- **Equipo Técnico Análisis de Datos AEIP-ONL** - *Implementación regional*
 
 ## 🙏 Agradecimientos
 
@@ -167,9 +142,9 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 ## 📞 Soporte
 
 Para soporte técnico o consultas:
-- **Email:** soporte@metgo.cl
-- **GitHub Issues:** [Crear issue](https://github.com/tu-usuario/dashboard-metgo/issues)
+- **Email:** miguel.lucero@metgo3d.com
+- **GitHub Issues:** [Crear issue](https://github.com/miguellucero123/dashboard-metgo/issues)
 
 ---
 
-**Dashboard METGO - Sistema Integrado de Monitoreo Meteorológico y Agrícola para Quillota** 🌾
+**Dashboard METGO - Sistema Integrado de Monitoreo Meteorológico y Agrícola para Quillota** 
