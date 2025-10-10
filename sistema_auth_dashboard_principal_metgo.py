@@ -678,19 +678,19 @@ def mostrar_dashboard_principal():
     if dashboard_seleccionado != "🏠 Dashboard Principal (Actual)":
         st.markdown(f"### {dashboard_seleccionado}")
         
-        # URLs de los dashboards
+        # URLs de los dashboards - Información de desarrollo
         urls_dashboards = {
-            "🌤️ Sistema Meteorológico Avanzado": "http://localhost:8503",
-            "🌾 Sistema Agrícola Completo": "http://localhost:8504",
-            "🏠 Dashboard Unificado": "http://localhost:8502", 
-            "📊 Dashboard Simple": "http://localhost:8505",
-            "🤖 Modelos ML Avanzados": "http://localhost:8506",
-            "📈 Dashboard Global": "http://localhost:8507",
-            "🔬 Dashboard de Monitoreo": "http://localhost:8508",
-            "📊 Visualizaciones Integradas": "http://localhost:8509",
-            "🌾 Dashboard Agrícola Avanzado": "http://localhost:8510",
-            "📱 Dashboard Móvil": "http://localhost:8511",
-            "🔧 Dashboard de Configuración": "http://localhost:8512"
+            "🌤️ Sistema Meteorológico Avanzado": "#meteorologico",
+            "🌾 Sistema Agrícola Completo": "#agricola",
+            "🏠 Dashboard Unificado": "#unificado", 
+            "📊 Dashboard Simple": "#simple",
+            "🤖 Modelos ML Avanzados": "#ml",
+            "📈 Dashboard Global": "#global",
+            "🔬 Dashboard de Monitoreo": "#monitoreo",
+            "📊 Visualizaciones Integradas": "#visualizaciones",
+            "🌾 Dashboard Agrícola Avanzado": "#agricola-avanzado",
+            "📱 Dashboard Móvil": "#movil",
+            "🔧 Dashboard de Configuración": "#configuracion"
         }
         
         url_dashboard = urls_dashboards.get(dashboard_seleccionado, "http://localhost:8501")
@@ -698,9 +698,13 @@ def mostrar_dashboard_principal():
         st.markdown(f"""
         <div style="border: 3px solid #FF6B35; border-radius: 15px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
             <h3>🎯 {dashboard_seleccionado}</h3>
-            <p style="font-size: 18px; margin: 20px 0;">Acceso directo al módulo especializado</p>
-            <a href="{url_dashboard}" target="_blank" style="background-color: #FF6B35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 10px; font-size: 18px; font-weight: bold;">🚀 Abrir Dashboard</a>
-            <p style="margin-top: 15px; font-size: 14px;">URL: {url_dashboard}</p>
+            <p style="font-size: 18px; margin: 20px 0;">Módulo especializado del sistema METGO</p>
+            <div style="background-color: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4>📋 Estado del Módulo</h4>
+                <p>Este módulo está disponible en el sistema local METGO</p>
+                <p><strong>Para acceder:</strong> Contacta al administrador del sistema</p>
+                <p><strong>Desarrollo:</strong> Los módulos especializados están en desarrollo activo</p>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -728,10 +732,31 @@ def mostrar_dashboard_principal():
             <div style="border: 2px solid {color}; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: rgba(255,255,255,0.1);">
                 <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
                 <p style="margin: 0 0 10px 0; font-size: 12px;">{descripcion}</p>
-                <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Puerto: {puerto}</p>
-                <a href="http://localhost:{puerto}" target="_blank" style="background-color: {color}; color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-size: 12px;">🚀 Acceder</a>
+                <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Estado: En desarrollo</p>
+                <div style="background-color: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 10px 0;">
+                    <p style="margin: 0; font-size: 11px;">💡 Módulo disponible en sistema local</p>
+                    <p style="margin: 0; font-size: 11px;">📞 Contactar administrador</p>
+                </div>
             </div>
             """, unsafe_allow_html=True)
+    
+    # Información sobre acceso a módulos
+    st.markdown("### 🔧 Información de Acceso a Módulos")
+    
+    st.info("""
+    **📋 Estado Actual del Sistema:**
+    
+    **✅ Dashboard Principal:** Disponible en línea (este dashboard)
+    
+    **🔄 Módulos Especializados:** Disponibles en el sistema local METGO
+    
+    **📞 Para Acceder a Módulos Especializados:**
+    - Contacta al administrador del sistema METGO
+    - Los módulos requieren configuración local específica
+    - Cada módulo tiene su propio puerto y configuración
+    
+    **🌐 Dashboard en Línea:** https://metgo-3d-quillota-60gb.streamlit.app
+    """)
     
     # Información sobre dashboards en carpetas del sistema
     st.markdown("### 📁 Dashboards en Carpetas del Sistema")
