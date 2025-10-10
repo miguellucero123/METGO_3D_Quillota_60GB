@@ -161,8 +161,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 🙏 Agradecimientos
 
-- Comunidad agrícola de Quillota
-- Servicio Meteorológico de Chile
+- OpenMeteo
 - Desarrolladores de Streamlit y Plotly
 
 ## 📞 Soporte
