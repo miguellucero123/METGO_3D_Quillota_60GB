@@ -14,13 +14,235 @@ from datetime import datetime, timedelta
 import random
 import os
 
-# Configurar página
+# Configurar página optimizada para móviles
 st.set_page_config(
-    page_title="METGO_3D - Sistema Principal",
-    page_icon="🌾",
+    page_title="🌤️ Sistema METGO - Dashboard Principal",
+    page_icon="🌤️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Colapsado para móviles
 )
+
+# CSS personalizado para diseño móvil profesional
+st.markdown("""
+<style>
+    /* Diseño móvil profesional */
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 1rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    .metric-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin: 0.5rem 0;
+        border-left: 4px solid #667eea;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    
+    .metric-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .metric-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin: 0.5rem 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .metric-change {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+    
+    .metric-positive {
+        background: linear-gradient(135deg, #00b894, #00a085);
+        color: white;
+    }
+    
+    .metric-negative {
+        background: linear-gradient(135deg, #e17055, #d63031);
+        color: white;
+    }
+    
+    .metric-neutral {
+        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        color: white;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin: 1rem 0;
+        border: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #667eea;
+        display: inline-block;
+    }
+    
+    .dashboard-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        margin: 1.5rem 0;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .alert-card {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .success-card {
+        background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .main-header {
+            padding: 1.5rem 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-card {
+            padding: 1rem;
+            margin: 0.25rem 0;
+        }
+        
+        .metric-number {
+            font-size: 1.5rem;
+        }
+        
+        .chart-container {
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        
+        .dashboard-card {
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+        }
+    }
+    
+    /* Animaciones suaves */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .metric-card, .chart-container, .dashboard-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    /* Scroll suave */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Mejorar contraste para accesibilidad */
+    .stSelectbox > div > div {
+        background-color: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+    }
+    
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Funciones para generar datos meteorológicos
 def generar_datos_meteorologicos(estacion="Quillota", fecha_inicio=None, fecha_fin=None, tipo_analisis="Histórico"):
@@ -186,11 +408,19 @@ def verificar_credenciales(usuario, contraseña):
 def main():
     """Función principal del dashboard"""
     
-    # Título principal
-    st.title("🌾 METGO_3D - Sistema Meteorológico Agrícola")
-    st.markdown("### Sistema Integrado de Monitoreo Meteorológico y Agrícola para Quillota")
-    st.markdown("**📍 Ubicación:** Quillota, Región de Valparaíso, Chile")
-    st.markdown("**🗺️ Coordenadas:** -32.8833°S, -71.25°W | **Elevación:** 120m | **Población:** 97,572")
+    # Título principal con diseño profesional
+    st.markdown("""
+    <div class="main-header">
+        <h1>🌤️ Sistema METGO</h1>
+        <h3>🏔️ Región de Quillota - Valle del Aconcagua</h3>
+        <p><strong>Coordenadas:</strong> 32°52'60"S, 71°14'60"W | <strong>Altura:</strong> 120 m.s.n.m.</p>
+        <p><strong>Población:</strong> 201,191 habitantes | <strong>Superficie Agrícola:</strong> 1,220 km²</p>
+        <p><strong>Cultivos Principales:</strong> Palta, Cítricos, Vid, Tomate, Lechuga</p>
+        <div style="margin-top: 1rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 20px; display: inline-block;">
+            📊 Dashboard Principal - Monitoreo Inteligente
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Sidebar para autenticación
     with st.sidebar:
