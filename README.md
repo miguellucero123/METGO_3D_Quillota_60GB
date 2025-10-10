@@ -58,8 +58,9 @@ streamlit run sistema_auth_dashboard_principal_metgo.py
 - **Red Local:** http://192.168.1.7:8501
 
 ### Streamlit Cloud (Público)
-- **URL:** https://tu-usuario-dashboard-metgo.streamlit.app
+- **URL:** https://metgo-3d-quillota-60gb.streamlit.app
 - **Accesible desde cualquier lugar del mundo**
+- **Credenciales:** Contactar administrador
 
 ## 📊 Módulos del Sistema
 
