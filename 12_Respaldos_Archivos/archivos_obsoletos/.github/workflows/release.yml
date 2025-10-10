@@ -1,0 +1,504 @@
+# 🌾 METGO 3D - Release Pipeline
+# Sistema Meteorológico Agrícola Quillota - Automatización de Releases
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión a liberar'
+        required: true
+        default: '2.0.0'
+      release_type:
+        description: 'Tipo de release'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+      pre_release:
+        description: 'Pre-release'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.9'
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Preparación del release
+  prepare-release:
+    name: Preparar Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_notes: ${{ steps.release_notes.outputs.content }}
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install bump2version
+    
+    - name: Determinar versión
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          VERSION=${GITHUB_REF#refs/tags/}
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Versión determinada: $VERSION"
+    
+    - name: Generar notas de release
+      id: release_notes
+      run: |
+        # Generar notas de release basadas en commits
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          VERSION=${GITHUB_REF#refs/tags/}
+        fi
+        
+        # Obtener commits desde el último tag
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [ -z "$LAST_TAG" ]; then
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+        else
+          COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+        fi
+        
+        # Generar notas de release
+        cat > release_notes.md << EOF
+        # 🌾 METGO 3D v$VERSION
+        
+        ## Sistema Meteorológico Agrícola Quillota
+        
+        ### 🚀 Nuevas Características
+        - Sistema integrado avanzado
+        - Módulos de IA, IoT, Análisis y Visualización
+        - Dashboard unificado
+        - Pipeline completo de datos
+        - APIs RESTful
+        - Monitoreo en tiempo real
+        
+        ### 🔧 Mejoras
+        - Optimización de rendimiento
+        - Mejora en la estabilidad
+        - Actualización de dependencias
+        - Mejoras en la documentación
+        
+        ### 🐛 Correcciones
+        - Corrección de bugs menores
+        - Mejoras en el manejo de errores
+        
+        ### 📋 Cambios Técnicos
+        $COMMITS
+        
+        ### 📦 Instalación
+        
+        \`\`\`bash
+        # Clonar repositorio
+        git clone https://github.com/${{ github.repository }}.git
+        cd metgo3d
+        
+        # Instalar dependencias
+        pip install -r requirements.txt
+        
+        # Ejecutar sistema
+        python orquestador_metgo_avanzado.py
+        \`\`\`
+        
+        ### 🐳 Docker
+        
+        \`\`\`bash
+        # Construir imagen
+        docker build -t metgo3d:$VERSION .
+        
+        # Ejecutar con Docker Compose
+        docker-compose up -d
+        \`\`\`
+        
+        ### 📚 Documentación
+        
+        - [Guía de instalación](docs/installation.rst)
+        - [Guía de usuario](docs/user_guide.rst)
+        - [Referencia de API](docs/api_reference.rst)
+        - [Configuración](docs/configuration.rst)
+        
+        ### 🔗 Enlaces
+        
+        - [Repositorio](https://github.com/${{ github.repository }})
+        - [Issues](https://github.com/${{ github.repository }}/issues)
+        - [Discusiones](https://github.com/${{ github.repository }}/discussions)
+        
+        ### 📄 Licencia
+        
+        Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+        
+        ### 👥 Contribuidores
+        
+        - Sistema METGO 3D Team
+        
+        ### 📅 Fecha de Release
+        
+        $(date)
+        EOF
+        
+        # Leer contenido del archivo
+        CONTENT=$(cat release_notes.md)
+        echo "content<<EOF" >> $GITHUB_OUTPUT
+        echo "$CONTENT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Subir notas de release
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-notes
+        path: release_notes.md
+
+  # Tests antes del release
+  pre-release-tests:
+    name: Tests Pre-Release
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Ejecutar tests completos
+      run: |
+        python tests/runner_tests.py --categoria todos --verbosity 2
+    
+    - name: Generar reporte de cobertura
+      run: |
+        pytest --cov=. --cov-report=xml --cov-report=html
+    
+    - name: Subir reporte de cobertura
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: release
+        name: codecov-release
+
+  # Construcción de artefactos
+  build-artifacts:
+    name: Construir Artefactos
+    runs-on: ubuntu-latest
+    needs: [prepare-release, pre-release-tests]
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install build twine
+    
+    - name: Construir paquete Python
+      run: |
+        python -m build
+    
+    - name: Verificar paquete
+      run: |
+        twine check dist/*
+    
+    - name: Subir artefactos Python
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-packages
+        path: dist/*
+
+  # Construcción de imágenes Docker
+  build-docker-images:
+    name: Construir Imágenes Docker
+    runs-on: ubuntu-latest
+    needs: [prepare-release, pre-release-tests]
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Login a GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extraer metadatos
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=${{ needs.prepare-release.outputs.version }}
+          type=raw,value=latest
+          type=raw,value=stable
+    
+    - name: Construir y subir imagen principal
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Construir y subir imagen de monitoreo
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:monitoring-${{ needs.prepare-release.outputs.version }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Construir y subir imagen de respaldos
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:backup-${{ needs.prepare-release.outputs.version }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  # Generación de documentación
+  generate-docs:
+    name: Generar Documentación
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install sphinx sphinx-rtd-theme
+    
+    - name: Generar documentación
+      run: |
+        cd docs
+        make html
+    
+    - name: Subir documentación
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/_build/html
+
+  # Creación del release
+  create-release:
+    name: Crear Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-artifacts, build-docker-images, generate-docs]
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Descargar artefactos
+      uses: actions/download-artifact@v3
+      with:
+        name: python-packages
+        path: ./dist
+    
+    - name: Descargar documentación
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation
+        path: ./docs
+    
+    - name: Crear release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ needs.prepare-release.outputs.version }}
+        name: METGO 3D ${{ needs.prepare-release.outputs.version }}
+        body: ${{ needs.prepare-release.outputs.release_notes }}
+        draft: false
+        prerelease: ${{ github.event.inputs.pre_release == 'true' }}
+        files: |
+          dist/*
+          docs/**/*
+        generate_release_notes: true
+
+  # Deployment automático
+  auto-deploy:
+    name: Deployment Automático
+    runs-on: ubuntu-latest
+    needs: [create-release]
+    if: github.event.inputs.pre_release != 'true'
+    environment: production
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Configurar Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'latest'
+    
+    - name: Login a GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Deployment en producción
+      run: |
+        echo "Desplegando METGO 3D ${{ needs.prepare-release.outputs.version }} en producción..."
+        # Aquí irían los comandos para desplegar en producción
+        # helm upgrade --install metgo3d-prod ./helm/metgo3d \
+        #   --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }} \
+        #   --set image.tag=${{ needs.prepare-release.outputs.version }} \
+        #   --set environment=production \
+        #   --namespace metgo3d-prod
+    
+    - name: Verificar deployment
+      run: |
+        echo "Verificando deployment en producción..."
+        # kubectl get pods -n metgo3d-prod
+        # kubectl get services -n metgo3d-prod
+    
+    - name: Notificar deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#releases'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+
+  # Monitoreo post-release
+  post-release-monitoring:
+    name: Monitoreo Post-Release
+    runs-on: ubuntu-latest
+    needs: [auto-deploy]
+    if: always() && needs.auto-deploy.result == 'success'
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    
+    - name: Verificar endpoints
+      run: |
+        python -c "
+        import requests
+        import time
+        
+        endpoints = [
+            'http://localhost:5000/health',
+            'http://localhost:5001/health',
+            'http://localhost:5002/health',
+            'http://localhost:8050/health'
+        ]
+        
+        for endpoint in endpoints:
+            try:
+                response = requests.get(endpoint, timeout=10)
+                if response.status_code == 200:
+                    print(f'✅ {endpoint} - OK')
+                else:
+                    print(f'❌ {endpoint} - Status: {response.status_code}')
+            except Exception as e:
+                print(f'❌ {endpoint} - Error: {e}')
+        "
+    
+    - name: Generar reporte de monitoreo
+      run: |
+        echo "Generando reporte de monitoreo post-release..."
+        # Aquí irían comandos para generar reportes de monitoreo
+    
+    - name: Subir reporte de monitoreo
+      uses: actions/upload-artifact@v3
+      with:
+        name: post-release-monitoring
+        path: monitoring-report.json
+
+  # Notificación final
+  notify-completion:
+    name: Notificación de Finalización
+    runs-on: ubuntu-latest
+    needs: [create-release, auto-deploy, post-release-monitoring]
+    if: always()
+    
+    steps:
+    - name: Notificar finalización
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#releases'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow

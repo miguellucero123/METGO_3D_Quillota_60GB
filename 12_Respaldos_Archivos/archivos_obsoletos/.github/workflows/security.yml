@@ -1,0 +1,441 @@
+# 🌾 METGO 3D - Security Pipeline
+# Sistema Meteorológico Agrícola Quillota - Análisis de Seguridad
+
+name: Security Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Ejecutar análisis de seguridad semanalmente
+    - cron: '0 3 * * 1'
+
+env:
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # Análisis de vulnerabilidades en dependencias
+  dependency-scan:
+    name: Análisis de Dependencias
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install safety pip-audit
+    
+    - name: Análisis con safety
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check
+    
+    - name: Análisis con pip-audit
+      run: |
+        pip-audit --format=json --output=pip-audit-report.json || true
+        pip-audit
+    
+    - name: Análisis con bandit
+      run: |
+        bandit -r . -f json -o bandit-report.json || true
+        bandit -r . -f txt
+    
+    - name: Subir reportes de seguridad
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          pip-audit-report.json
+          bandit-report.json
+
+  # Análisis de secretos
+  secret-scan:
+    name: Análisis de Secretos
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Análisis con TruffleHog
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+  # Análisis de vulnerabilidades en Docker
+  docker-scan:
+    name: Análisis Docker
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Construir imagen Docker
+      run: |
+        docker build -t metgo3d:security-scan .
+    
+    - name: Análisis con Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'metgo3d:security-scan'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Subir resultados de Trivy
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Análisis de código con CodeQL
+  codeql-analysis:
+    name: Análisis CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Inicializar CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Ejecutar análisis CodeQL
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{matrix.language}}"
+
+  # Análisis de configuración
+  config-scan:
+    name: Análisis de Configuración
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Análisis de Docker Compose
+      run: |
+        echo "Analizando docker-compose.yml..."
+        # Verificar que no hay credenciales hardcodeadas
+        if grep -q "password.*=" docker-compose.yml; then
+          echo "❌ Se encontraron contraseñas en docker-compose.yml"
+          exit 1
+        fi
+        echo "✅ docker-compose.yml sin credenciales hardcodeadas"
+    
+    - name: Análisis de archivos de configuración
+      run: |
+        echo "Analizando archivos de configuración..."
+        # Verificar que no hay secretos en archivos de configuración
+        if find . -name "*.yaml" -o -name "*.yml" -o -name "*.json" | xargs grep -l "password\|secret\|key" | grep -v ".github"; then
+          echo "❌ Se encontraron posibles secretos en archivos de configuración"
+          exit 1
+        fi
+        echo "✅ Archivos de configuración sin secretos"
+    
+    - name: Análisis de permisos
+      run: |
+        echo "Analizando permisos de archivos..."
+        # Verificar que no hay archivos con permisos excesivos
+        if find . -type f -perm 777 | grep -v ".git"; then
+          echo "❌ Se encontraron archivos con permisos excesivos"
+          exit 1
+        fi
+        echo "✅ Permisos de archivos correctos"
+
+  # Análisis de licencias
+  license-scan:
+    name: Análisis de Licencias
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pip-licenses
+    
+    - name: Análisis de licencias
+      run: |
+        pip-licenses --format=json --output-file=licenses.json
+        pip-licenses --format=table
+    
+    - name: Verificar licencias compatibles
+      run: |
+        python -c "
+        import json
+        with open('licenses.json', 'r') as f:
+            licenses = json.load(f)
+        
+        incompatible_licenses = []
+        for pkg in licenses:
+            license_name = pkg.get('License', '').lower()
+            if any(incompatible in license_name for incompatible in ['gpl', 'agpl', 'copyleft']):
+                incompatible_licenses.append(f\"{pkg['Name']}: {pkg['License']}\")
+        
+        if incompatible_licenses:
+            print('❌ Licencias incompatibles encontradas:')
+            for license in incompatible_licenses:
+                print(f'  - {license}')
+            exit(1)
+        else:
+            print('✅ Todas las licencias son compatibles')
+        "
+    
+    - name: Subir reporte de licencias
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-report
+        path: licenses.json
+
+  # Análisis de compliance
+  compliance-scan:
+    name: Análisis de Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Verificar README
+      run: |
+        if [ ! -f "README.md" ]; then
+          echo "❌ README.md no encontrado"
+          exit 1
+        fi
+        echo "✅ README.md presente"
+    
+    - name: Verificar LICENSE
+      run: |
+        if [ ! -f "LICENSE" ]; then
+          echo "❌ LICENSE no encontrado"
+          exit 1
+        fi
+        echo "✅ LICENSE presente"
+    
+    - name: Verificar requirements.txt
+      run: |
+        if [ ! -f "requirements.txt" ]; then
+          echo "❌ requirements.txt no encontrado"
+          exit 1
+        fi
+        echo "✅ requirements.txt presente"
+    
+    - name: Verificar Dockerfile
+      run: |
+        if [ ! -f "Dockerfile" ]; then
+          echo "❌ Dockerfile no encontrado"
+          exit 1
+        fi
+        echo "✅ Dockerfile presente"
+    
+    - name: Verificar docker-compose.yml
+      run: |
+        if [ ! -f "docker-compose.yml" ]; then
+          echo "❌ docker-compose.yml no encontrado"
+          exit 1
+        fi
+        echo "✅ docker-compose.yml presente"
+    
+    - name: Verificar .gitignore
+      run: |
+        if [ ! -f ".gitignore" ]; then
+          echo "❌ .gitignore no encontrado"
+          exit 1
+        fi
+        echo "✅ .gitignore presente"
+
+  # Análisis de rendimiento de seguridad
+  security-performance:
+    name: Análisis de Rendimiento de Seguridad
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-benchmark
+    
+    - name: Tests de rendimiento de seguridad
+      run: |
+        python -c "
+        import time
+        import hashlib
+        import secrets
+        
+        # Test de velocidad de hash
+        start_time = time.time()
+        for i in range(1000):
+            hashlib.sha256(secrets.token_bytes(32)).hexdigest()
+        hash_time = time.time() - start_time
+        
+        print(f'Tiempo de hash (1000 iteraciones): {hash_time:.4f} segundos')
+        
+        # Test de velocidad de generación de tokens
+        start_time = time.time()
+        for i in range(1000):
+            secrets.token_urlsafe(32)
+        token_time = time.time() - start_time
+        
+        print(f'Tiempo de generación de tokens (1000 iteraciones): {token_time:.4f} segundos')
+        
+        # Verificar que los tiempos son razonables
+        if hash_time > 1.0:
+            print('❌ Hash demasiado lento')
+            exit(1)
+        
+        if token_time > 1.0:
+            print('❌ Generación de tokens demasiado lenta')
+            exit(1)
+        
+        print('✅ Rendimiento de seguridad aceptable')
+        "
+
+  # Generación de reporte de seguridad
+  security-report:
+    name: Reporte de Seguridad
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, secret-scan, docker-scan, codeql-analysis, config-scan, license-scan, compliance-scan, security-performance]
+    if: always()
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Descargar reportes de seguridad
+      uses: actions/download-artifact@v3
+      with:
+        name: security-reports
+        path: ./security-reports
+    
+    - name: Generar reporte consolidado
+      run: |
+        echo "Generando reporte consolidado de seguridad..."
+        
+        cat > security-summary.md << EOF
+        # Reporte de Seguridad - METGO 3D
+        
+        ## Resumen de Análisis
+        
+        - **Dependencias**: ${{ needs.dependency-scan.result }}
+        - **Secretos**: ${{ needs.secret-scan.result }}
+        - **Docker**: ${{ needs.docker-scan.result }}
+        - **CodeQL**: ${{ needs.codeql-analysis.result }}
+        - **Configuración**: ${{ needs.config-scan.result }}
+        - **Licencias**: ${{ needs.license-scan.result }}
+        - **Compliance**: ${{ needs.compliance-scan.result }}
+        - **Rendimiento**: ${{ needs.security-performance.result }}
+        
+        ## Detalles
+        
+        ### Análisis de Dependencias
+        - Safety: ${{ needs.dependency-scan.result }}
+        - Bandit: ${{ needs.dependency-scan.result }}
+        
+        ### Análisis de Secretos
+        - TruffleHog: ${{ needs.secret-scan.result }}
+        
+        ### Análisis Docker
+        - Trivy: ${{ needs.docker-scan.result }}
+        
+        ### Análisis de Código
+        - CodeQL: ${{ needs.codeql-analysis.result }}
+        
+        ### Análisis de Configuración
+        - Docker Compose: ${{ needs.config-scan.result }}
+        - Archivos de configuración: ${{ needs.config-scan.result }}
+        - Permisos: ${{ needs.config-scan.result }}
+        
+        ### Análisis de Licencias
+        - Compatibilidad: ${{ needs.license-scan.result }}
+        
+        ### Compliance
+        - Archivos requeridos: ${{ needs.compliance-scan.result }}
+        
+        ### Rendimiento de Seguridad
+        - Hash: ${{ needs.security-performance.result }}
+        - Tokens: ${{ needs.security-performance.result }}
+        
+        ## Recomendaciones
+        
+        1. Revisar regularmente las dependencias
+        2. Mantener actualizadas las herramientas de seguridad
+        3. Implementar monitoreo continuo
+        4. Realizar auditorías periódicas
+        5. Capacitar al equipo en seguridad
+        
+        ## Fecha de Generación
+        $(date)
+        EOF
+        
+        echo "Reporte de seguridad generado"
+    
+    - name: Subir reporte de seguridad
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-summary
+        path: security-summary.md
+    
+    - name: Notificar resultados
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        channel: '#security'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow

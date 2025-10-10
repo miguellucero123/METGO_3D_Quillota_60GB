@@ -1,0 +1,512 @@
+# 🌾 METGO 3D - CI/CD Pipeline
+# Sistema Meteorológico Agrícola Quillota - GitHub Actions
+
+name: METGO 3D CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+  schedule:
+    # Ejecutar tests diariamente a las 2:00 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '16'
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job de calidad de código
+  code-quality:
+    name: Calidad de Código
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache dependencias Python
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 black isort mypy bandit safety
+    
+    - name: Linting con flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Formateo con black
+      run: |
+        black --check --diff .
+    
+    - name: Ordenamiento de imports con isort
+      run: |
+        isort --check-only --diff .
+    
+    - name: Verificación de tipos con mypy
+      run: |
+        mypy . --ignore-missing-imports --no-strict-optional
+    
+    - name: Análisis de seguridad con bandit
+      run: |
+        bandit -r . -f json -o bandit-report.json || true
+        bandit -r . -f txt
+    
+    - name: Verificación de vulnerabilidades con safety
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check
+    
+    - name: Subir reportes de seguridad
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  # Job de tests unitarios
+  unit-tests:
+    name: Tests Unitarios
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache dependencias Python
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-xdist
+    
+    - name: Ejecutar tests unitarios
+      run: |
+        python tests/runner_tests.py --categoria unitarios --verbosity 2
+    
+    - name: Generar reporte de cobertura
+      run: |
+        pytest --cov=. --cov-report=xml --cov-report=html
+    
+    - name: Subir reporte de cobertura
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Job de tests de integración
+  integration-tests:
+    name: Tests de Integración
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: metgo3d_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:6-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache dependencias Python
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Configurar variables de entorno
+      run: |
+        echo "POSTGRES_HOST=localhost" >> $GITHUB_ENV
+        echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
+        echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
+        echo "POSTGRES_PASSWORD=postgres" >> $GITHUB_ENV
+        echo "POSTGRES_DB=metgo3d_test" >> $GITHUB_ENV
+        echo "REDIS_HOST=localhost" >> $GITHUB_ENV
+        echo "REDIS_PORT=6379" >> $GITHUB_ENV
+    
+    - name: Ejecutar tests de integración
+      run: |
+        python tests/runner_tests.py --categoria integracion --verbosity 2
+    
+    - name: Generar reporte de cobertura de integración
+      run: |
+        pytest tests/test_integracion_completa.py --cov=. --cov-report=xml --cov-report=html
+    
+    - name: Subir reporte de cobertura de integración
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: integration
+        name: codecov-integration
+        fail_ci_if_error: false
+
+  # Job de tests de rendimiento
+  performance-tests:
+    name: Tests de Rendimiento
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache dependencias Python
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-benchmark
+    
+    - name: Ejecutar tests de rendimiento
+      run: |
+        python tests/runner_tests.py --categoria rendimiento --verbosity 2
+    
+    - name: Generar reporte de rendimiento
+      run: |
+        pytest tests/test_rendimiento.py --benchmark-json=benchmark.json --benchmark-save=performance
+    
+    - name: Subir reportes de rendimiento
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-reports
+        path: |
+          benchmark.json
+          .benchmarks/
+
+  # Job de construcción de Docker
+  build-docker:
+    name: Construcción Docker
+    runs-on: ubuntu-latest
+    needs: [code-quality, unit-tests, integration-tests]
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Login a GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extraer metadatos
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Construir y subir imagen principal
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Construir y subir imagen de monitoreo
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:monitoring
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Construir y subir imagen de respaldos
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:backup
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Construir y subir imagen de tests
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:tests
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  # Job de deployment en staging
+  deploy-staging:
+    name: Deployment Staging
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Configurar Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'latest'
+    
+    - name: Login a GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Deployment en staging
+      run: |
+        # Aquí irían los comandos para desplegar en staging
+        echo "Desplegando en staging..."
+        # helm upgrade --install metgo3d-staging ./helm/metgo3d \
+        #   --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }} \
+        #   --set image.tag=${{ github.sha }} \
+        #   --set environment=staging \
+        #   --namespace metgo3d-staging
+    
+    - name: Verificar deployment
+      run: |
+        echo "Verificando deployment en staging..."
+        # kubectl get pods -n metgo3d-staging
+        # kubectl get services -n metgo3d-staging
+
+  # Job de deployment en producción
+  deploy-production:
+    name: Deployment Producción
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    if: github.event_name == 'release'
+    environment: production
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Configurar Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'latest'
+    
+    - name: Login a GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Deployment en producción
+      run: |
+        # Aquí irían los comandos para desplegar en producción
+        echo "Desplegando en producción..."
+        # helm upgrade --install metgo3d-prod ./helm/metgo3d \
+        #   --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }} \
+        #   --set image.tag=${{ github.event.release.tag_name }} \
+        #   --set environment=production \
+        #   --namespace metgo3d-prod
+    
+    - name: Verificar deployment
+      run: |
+        echo "Verificando deployment en producción..."
+        # kubectl get pods -n metgo3d-prod
+        # kubectl get services -n metgo3d-prod
+    
+    - name: Notificar deployment
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+
+  # Job de monitoreo post-deployment
+  post-deployment-monitoring:
+    name: Monitoreo Post-Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always() && needs.deploy-production.result == 'success'
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    
+    - name: Verificar endpoints
+      run: |
+        python -c "
+        import requests
+        import time
+        
+        endpoints = [
+            'http://localhost:5000/health',
+            'http://localhost:5001/health',
+            'http://localhost:5002/health',
+            'http://localhost:8050/health'
+        ]
+        
+        for endpoint in endpoints:
+            try:
+                response = requests.get(endpoint, timeout=10)
+                if response.status_code == 200:
+                    print(f'✅ {endpoint} - OK')
+                else:
+                    print(f'❌ {endpoint} - Status: {response.status_code}')
+            except Exception as e:
+                print(f'❌ {endpoint} - Error: {e}')
+        "
+    
+    - name: Generar reporte de monitoreo
+      run: |
+        echo "Generando reporte de monitoreo post-deployment..."
+        # Aquí irían comandos para generar reportes de monitoreo
+    
+    - name: Subir reporte de monitoreo
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-report
+        path: monitoring-report.json
+
+  # Job de limpieza
+  cleanup:
+    name: Limpieza
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, post-deployment-monitoring]
+    if: always()
+    
+    steps:
+    - name: Limpiar recursos temporales
+      run: |
+        echo "Limpiando recursos temporales..."
+        # Aquí irían comandos para limpiar recursos temporales
+    
+    - name: Notificar finalización
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        channel: '#ci-cd'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow

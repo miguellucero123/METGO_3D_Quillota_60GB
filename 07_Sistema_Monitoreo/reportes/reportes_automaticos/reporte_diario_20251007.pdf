@@ -1,0 +1,27 @@
+
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Reporte Diario METGO 3D - 07/10/2025</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .section { margin: 20px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Reporte Diario METGO 3D - 07/10/2025</h1>
+                    <p>Generado: 07/10/2025 10:57:31</p>
+                </div>
+                <div class="section">
+                    <h2>Resumen</h2>
+                    <p>Error generando resumen ejecutivo</p>
+                </div>
+                <div class="section">
+                    <h2>Datos Meteorológicos</h2>
+                    <p>Error generando tabla de datos meteorológicos</p>
+                </div>
+            </body>
+            </html>
+            

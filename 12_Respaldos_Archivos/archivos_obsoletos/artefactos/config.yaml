@@ -1,0 +1,137 @@
+# 🌾 METGO 3D - Configuración Centralizada
+# Sistema Meteorológico Agrícola Quillota - Versión Operativa 2.0
+
+# Configuración de Quillota
+QUILLOTA:
+  nombre: "Quillota"
+  region: "Valparaíso"
+  pais: "Chile"
+  coordenadas:
+    latitud: -32.8833
+    longitud: -71.25
+  elevacion: 120
+  poblacion: 97572
+  superficie_agricola: 15000
+
+# Configuración meteorológica
+METEOROLOGIA:
+  umbrales:
+    temperatura:
+      helada_severa: -2.0
+      helada_moderada: 0.0
+      calor_extremo: 35.0
+      calor_moderado: 30.0
+    precipitacion:
+      lluvia_intensa: 20.0
+      lluvia_moderada: 10.0
+    viento:
+      fuerte: 25.0
+      moderado: 15.0
+    humedad:
+      muy_baja: 30.0
+      muy_alta: 85.0
+
+# Configuración del sistema
+SISTEMA:
+  version: "2.0.0"
+  fecha_actualizacion: "2025-01-02"
+  directorio_datos: "data"
+  directorio_logs: "logs"
+  directorio_reportes: "reportes_revision"
+  directorio_tests: "test_results"
+  directorio_backups: "backups"
+
+# Configuración de APIs
+APIS:
+  openmeteo:
+    url_base: "https://api.open-meteo.com/v1"
+    timeout: 30
+    max_retries: 3
+    rate_limit: 1000
+  fallback:
+    usar_datos_sinteticos: true
+    semilla_reproducibilidad: 42
+
+# Configuración de logging
+LOGGING:
+  nivel: "INFO"
+  formato: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  archivo_log: "logs/metgo_operativo.log"
+  max_tamaño_mb: 10
+  backup_count: 5
+
+# Configuración de visualización
+VISUALIZACION:
+  tema: "quillota"
+  colores:
+    primary: "#2E7D32"
+    secondary: "#8BC34A"
+    accent: "#FFEB3B"
+    temperature_hot: "#FF5722"
+    temperature_cold: "#2196F3"
+    precipitation: "#03A9F4"
+    humidity: "#00BCD4"
+    wind: "#607D8B"
+    pressure: "#9E9E9E"
+    radiation: "#FFC107"
+    cloud_cover: "#B0BEC5"
+    alert: "#FF9800"
+    danger: "#F44336"
+    success: "#4CAF50"
+    warning: "#FFC107"
+    info: "#17A2B8"
+  figura:
+    tamano: [12, 8]
+    dpi: 100
+    estilo: "default"
+
+# Configuración de Machine Learning
+ML:
+  modelos:
+    - "RandomForestRegressor"
+    - "LinearRegression"
+    - "GradientBoostingRegressor"
+    - "SVR"
+    - "KNeighborsRegressor"
+  validacion_cruzada:
+    cv_folds: 5
+    scoring: "neg_mean_squared_error"
+  hiperparametros:
+    RandomForestRegressor:
+      n_estimators: [50, 100, 200]
+      max_depth: [10, 20, None]
+      min_samples_split: [2, 5, 10]
+    LinearRegression:
+      fit_intercept: [true, false]
+    GradientBoostingRegressor:
+      n_estimators: [50, 100, 200]
+      learning_rate: [0.01, 0.1, 0.2]
+      max_depth: [3, 5, 7]
+
+# Configuración de reportes
+REPORTES:
+  formatos:
+    - "html"
+    - "pdf"
+    - "excel"
+  incluir_graficos: true
+  incluir_tablas: true
+  incluir_recomendaciones: true
+  idioma: "es"
+
+# Configuración de testing
+TESTING:
+  ejecutar_tests: true
+  incluir_tests_integracion: true
+  incluir_tests_rendimiento: true
+  umbral_cobertura: 80
+  timeout_segundos: 300
+
+# Configuración de deployment
+DEPLOYMENT:
+  entorno: "produccion"
+  puerto_streamlit: 8501
+  host: "localhost"
+  debug: false
+  auto_reload: false
+  max_upload_size_mb: 200

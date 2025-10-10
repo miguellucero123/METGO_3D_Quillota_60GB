@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  metgo-principal:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_HEADLESS=true
+    command: python -m streamlit run sistema_unificado_con_conectores.py --server.port 8501 --server.headless true
+    restart: unless-stopped
+
+  metgo-agricola:
+    build: .
+    ports:
+      - "8510:8510"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - STREAMLIT_SERVER_PORT=8510
+      - STREAMLIT_SERVER_HEADLESS=true
+    command: python -m streamlit run dashboard_agricola_avanzado.py --server.port 8510 --server.headless true
+    restart: unless-stopped
+
+  metgo-monitoreo:
+    build: .
+    ports:
+      - "8502:8502"
+    volumes:
+      - ./logs:/app/logs
+    command: python monitoreo_tiempo_real.py
+    restart: unless-stopped
+
+volumes:
+  data:
+  logs:
+  backups:

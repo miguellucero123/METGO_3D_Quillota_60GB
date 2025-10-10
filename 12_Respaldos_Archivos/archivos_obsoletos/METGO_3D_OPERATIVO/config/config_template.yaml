@@ -1,0 +1,219 @@
+# Configuración del Sistema METGO 3D Operativo
+# Archivo de configuración centralizada
+
+# =============================================================================
+# CONFIGURACIÓN GENERAL DEL SISTEMA
+# =============================================================================
+
+# Información del proyecto
+PROJECT:
+  name: "METGO 3D Operativo"
+  version: "2.0.0"
+  description: "Sistema Meteorológico Agrícola Quillota - Versión Operativa"
+  author: "AIEP - MIP Quillota"
+
+# =============================================================================
+# CONFIGURACIÓN DE QUILLOTA
+# =============================================================================
+
+QUILLOTA:
+  nombre: "Quillota"
+  region: "Valparaíso"
+  pais: "Chile"
+  coordenadas:
+    latitud: -32.8833
+    longitud: -71.25
+  elevacion: 120  # metros sobre el nivel del mar
+  poblacion: 97572
+  superficie_agricola: 15000  # hectáreas
+
+# =============================================================================
+# CONFIGURACIÓN METEOROLÓGICA
+# =============================================================================
+
+METEOROLOGIA:
+  # Umbrales críticos para alertas
+  umbrales:
+    temperatura:
+      helada_severa: -2.0  # °C
+      helada_moderada: 0.0  # °C
+      calor_extremo: 35.0  # °C
+      calor_moderado: 30.0  # °C
+    precipitacion:
+      lluvia_intensa: 20.0  # mm/día
+      lluvia_moderada: 10.0  # mm/día
+    viento:
+      fuerte: 25.0  # km/h
+      moderado: 15.0  # km/h
+    humedad:
+      muy_baja: 30.0  # %
+      muy_alta: 85.0  # %
+
+  # Variables meteorológicas principales
+  variables:
+    - temperatura_max
+    - temperatura_min
+    - humedad_relativa
+    - precipitacion
+    - velocidad_viento
+    - direccion_viento
+    - presion_atmosferica
+    - radiacion_solar
+    - nubosidad
+
+# =============================================================================
+# CONFIGURACIÓN DE APIs
+# =============================================================================
+
+APIS:
+  openmeteo:
+    url_base: "https://api.open-meteo.com/v1"
+    timeout: 30  # segundos
+    max_retries: 3
+    rate_limit: 1000  # requests por hora
+    cache_duration: 3600  # segundos
+
+  # Configuración de respaldo
+  fallback:
+    habilitado: true
+    fuente_respaldo: "datos_locales"
+
+# =============================================================================
+# CONFIGURACIÓN DE DATOS
+# =============================================================================
+
+DATOS:
+  # Formatos soportados
+  formatos_salida:
+    - csv
+    - json
+    - excel
+    - parquet
+
+  # Configuración de archivos
+  archivos:
+    datos_historicos: "data/processed/datos_historicos.csv"
+    datos_actuales: "data/processed/datos_actuales.csv"
+    modelos_ml: "data/processed/modelos/"
+    reportes: "data/processed/reportes/"
+
+  # Configuración de base de datos
+  base_datos:
+    tipo: "sqlite"
+    archivo: "data/metgo_operativo.db"
+    backup_automatico: true
+    frecuencia_backup: "diario"
+
+# =============================================================================
+# CONFIGURACIÓN DE MACHINE LEARNING
+# =============================================================================
+
+MACHINE_LEARNING:
+  # Algoritmos disponibles
+  algoritmos:
+    - RandomForestRegressor
+    - LinearRegression
+    - SVR
+    - GradientBoostingRegressor
+    - KNeighborsRegressor
+
+  # Configuración de entrenamiento
+  entrenamiento:
+    test_size: 0.2
+    random_state: 42
+    cv_folds: 5
+    scoring: "neg_mean_squared_error"
+
+  # Configuración de modelos
+  modelos:
+    guardar_automatico: true
+    versionado: true
+    formato: "pickle"
+
+# =============================================================================
+# CONFIGURACIÓN DE LOGGING
+# =============================================================================
+
+LOGGING:
+  nivel: "INFO"
+  formato: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  archivo: "logs/metgo_operativo.log"
+  max_size: "10MB"
+  backup_count: 5
+  rotacion: "diaria"
+
+# =============================================================================
+# CONFIGURACIÓN DE VISUALIZACIÓN
+# =============================================================================
+
+VISUALIZACION:
+  # Configuración de gráficos
+  graficos:
+    tema: "quillota"
+    colores:
+      primario: "#2E7D32"
+      secundario: "#4CAF50"
+      temperatura_calor: "#FF5722"
+      temperatura_frio: "#2196F3"
+      precipitacion: "#03A9F4"
+      viento: "#9C27B0"
+      humedad: "#00BCD4"
+      alerta: "#FF9800"
+      peligro: "#F44336"
+      exito: "#4CAF50"
+
+  # Configuración de dashboard
+  dashboard:
+    actualizacion_automatica: true
+    intervalo_actualizacion: 300  # segundos
+    exportar_pdf: true
+    formato_exportacion: "A4"
+
+# =============================================================================
+# CONFIGURACIÓN DE ALERTAS
+# =============================================================================
+
+ALERTAS:
+  # Configuración de notificaciones
+  notificaciones:
+    email:
+      habilitado: false
+      servidor: "smtp.gmail.com"
+      puerto: 587
+      usuario: ""
+      password: ""
+      destinatarios: []
+
+    # Configuración de archivos de alerta
+    archivo:
+      habilitado: true
+      directorio: "logs/alertas/"
+      formato: "json"
+
+  # Configuración de umbrales de alerta
+  umbrales:
+    temperatura_critica: 5  # alertas por día
+    precipitacion_critica: 3  # alertas por día
+    viento_critico: 2  # alertas por día
+
+# =============================================================================
+# CONFIGURACIÓN DE RENDIMIENTO
+# =============================================================================
+
+RENDIMIENTO:
+  # Configuración de memoria
+  memoria:
+    max_memory_usage: "2GB"
+    cleanup_automatico: true
+
+  # Configuración de procesamiento
+  procesamiento:
+    max_workers: 4
+    chunk_size: 1000
+    parallel_processing: true
+
+  # Configuración de cache
+  cache:
+    habilitado: true
+    tamaño_maximo: "500MB"
+    tiempo_vida: 3600  # segundos

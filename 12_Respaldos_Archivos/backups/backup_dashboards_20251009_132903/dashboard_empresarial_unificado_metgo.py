@@ -1,0 +1,952 @@
+"""
+DASHBOARD EMPRESARIAL UNIFICADO - METGO 3D QUILLOTA
+Dashboard profesional con enfoque empresarial, diseño minimalista e integración completa
+Incluye: Todos los módulos unificados, navegación intuitiva, diseño responsive y funcionalidades avanzadas
+"""
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import json
+import sqlite3
+from datetime import datetime, timedelta
+import os
+import warnings
+warnings.filterwarnings('ignore')
+
+# Configuración de página
+st.set_page_config(
+    page_title="METGO 3D - Dashboard Empresarial",
+    page_icon="🌱",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://metgo3d.com/help',
+        'Report a bug': 'https://metgo3d.com/bug-report',
+        'About': "METGO 3D - Sistema Inteligente de Gestión Agrícola"
+    }
+)
+
+# CSS personalizado para diseño profesional y minimalista
+st.markdown("""
+<style>
+    /* Estilo general minimalista */
+    .main {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    
+    /* Header profesional */
+    .header-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 0;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-title {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .header-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        margin: 0.5rem 0 0 0;
+        font-weight: 300;
+    }
+    
+    /* Sidebar minimalista */
+    .css-1d391kg {
+        background-color: #f8f9fa;
+        border-right: 1px solid #e9ecef;
+    }
+    
+    /* Métricas cards */
+    .metric-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Botones profesionales */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* Tabs profesionales */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background-color: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        padding: 1rem 2rem;
+        font-weight: 500;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    /* Alertas profesionales */
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    /* Loading spinner profesional */
+    .loading-container {
+        text-align: center;
+        padding: 3rem;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 1rem auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .header-title {
+            font-size: 2rem;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Ocultar elementos de Streamlit */
+    .css-1rs6os.edgvbvh3,
+    .css-1rs6os.edgvbvh1,
+    .css-1rs6os.edgvbvh2 {
+        display: none;
+    }
+    
+    /* Footer profesional */
+    .footer {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+        border-top: 1px solid #e9ecef;
+        margin-top: 3rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+class DashboardEmpresarialUnificado:
+    def __init__(self):
+        self.base_datos = "metgo_unificado.db"
+        self.directorio_datos = "datos_dashboard"
+        self.crear_directorios()
+        self.inicializar_base_datos()
+    
+    def crear_directorios(self):
+        """Crear directorios necesarios"""
+        directorios = [
+            self.directorio_datos,
+            f"{self.directorio_datos}/graficos",
+            f"{self.directorio_datos}/reportes",
+            f"{self.directorio_datos}/exportaciones"
+        ]
+        for directorio in directorios:
+            os.makedirs(directorio, exist_ok=True)
+    
+    def inicializar_base_datos(self):
+        """Inicializar base de datos unificada"""
+        try:
+            conn = sqlite3.connect(self.base_datos)
+            cursor = conn.cursor()
+            
+            # Tabla de módulos del dashboard
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS modulos_dashboard (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    modulo_id TEXT UNIQUE NOT NULL,
+                    nombre TEXT NOT NULL,
+                    descripcion TEXT,
+                    icono TEXT,
+                    color TEXT,
+                    orden INTEGER,
+                    activo BOOLEAN DEFAULT 1,
+                    url_componente TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Tabla de métricas empresariales
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS metricas_empresariales (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    metrica_id TEXT UNIQUE NOT NULL,
+                    nombre TEXT NOT NULL,
+                    valor_actual REAL,
+                    valor_anterior REAL,
+                    unidad TEXT,
+                    tendencia TEXT,
+                    categoria TEXT,
+                    icono TEXT,
+                    color TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Insertar módulos del dashboard
+            self.insertar_modulos_dashboard(cursor)
+            
+            # Insertar métricas empresariales
+            self.insertar_metricas_empresariales(cursor)
+            
+            conn.commit()
+            conn.close()
+            
+        except Exception as e:
+            st.error(f"Error inicializando base de datos: {e}")
+    
+    def insertar_modulos_dashboard(self, cursor):
+        """Insertar módulos del dashboard empresarial"""
+        modulos = [
+            ('overview', 'Resumen Ejecutivo', 'Vista general del negocio agrícola', '📊', '#667eea', 1, 'overview'),
+            ('meteorologia', 'Meteorología', 'Datos meteorológicos en tiempo real', '🌤️', '#3498db', 2, 'meteorologia'),
+            ('agricultura', 'Agricultura', 'Gestión de cultivos y producción', '🌱', '#27ae60', 3, 'agricultura'),
+            ('economico', 'Análisis Económico', 'ROI, costos y rentabilidad', '💰', '#f39c12', 4, 'economico'),
+            ('drones', 'Drones & IoT', 'Monitoreo aéreo y sensores', '🚁', '#9b59b6', 5, 'drones'),
+            ('ml_predicciones', 'IA & Predicciones', 'Machine Learning y análisis predictivo', '🤖', '#e74c3c', 6, 'ml_predicciones'),
+            ('integracion', 'Integración', 'Sistemas ERP, GPS e IoT', '🔗', '#34495e', 7, 'integracion'),
+            ('reportes', 'Reportes', 'Reportes ejecutivos y análisis', '📈', '#2c3e50', 8, 'reportes'),
+            ('configuracion', 'Configuración', 'Configuración del sistema', '⚙️', '#95a5a6', 9, 'configuracion')
+        ]
+        
+        for modulo in modulos:
+            cursor.execute('''
+                INSERT OR REPLACE INTO modulos_dashboard 
+                (modulo_id, nombre, descripcion, icono, color, orden, url_componente, activo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            ''', modulo)
+    
+    def insertar_metricas_empresariales(self, cursor):
+        """Insertar métricas empresariales"""
+        metricas = [
+            ('roi_total', 'ROI Total', 231.71, 215.45, '%', 'Alcista', 'Financiero', '📈', '#27ae60'),
+            ('hectareas_activas', 'Hectáreas Activas', 450, 420, 'ha', 'Alcista', 'Producción', '🌾', '#3498db'),
+            ('produccion_mensual', 'Producción Mensual', 12500, 11800, 'kg', 'Alcista', 'Producción', '📦', '#f39c12'),
+            ('eficiencia_riego', 'Eficiencia Riego', 87.5, 82.3, '%', 'Alcista', 'Recursos', '💧', '#9b59b6'),
+            ('dispositivos_conectados', 'Dispositivos IoT', 12, 8, 'unidades', 'Alcista', 'Tecnología', '📡', '#e74c3c'),
+            ('alertas_activas', 'Alertas Activas', 3, 7, 'alertas', 'Bajista', 'Monitoreo', '⚠️', '#f1c40f'),
+            ('costos_operacion', 'Costos Operación', 45000000, 48000000, 'CLP', 'Bajista', 'Financiero', '💸', '#e67e22'),
+            ('satisfaccion_cliente', 'Satisfacción Cliente', 94.2, 91.8, '%', 'Alcista', 'Calidad', '⭐', '#2ecc71')
+        ]
+        
+        for metrica in metricas:
+            cursor.execute('''
+                INSERT OR REPLACE INTO metricas_empresariales 
+                (metrica_id, nombre, valor_actual, valor_anterior, unidad, tendencia, categoria, icono, color)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', metrica)
+    
+    def render_header(self):
+        """Renderizar header profesional"""
+        st.markdown("""
+        <div class="header-container">
+            <h1 class="header-title">METGO 3D</h1>
+            <p class="header-subtitle">Sistema Inteligente de Gestión Agrícola Empresarial</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    def render_sidebar_navigation(self):
+        """Renderizar navegación lateral profesional"""
+        st.sidebar.markdown("### 🎯 Navegación Principal")
+        
+        # Obtener módulos de la base de datos
+        conn = sqlite3.connect(self.base_datos)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT modulo_id, nombre, descripcion, icono, color 
+            FROM modulos_dashboard 
+            WHERE activo = 1 
+            ORDER BY orden
+        ''')
+        modulos = cursor.fetchall()
+        conn.close()
+        
+        # Crear navegación
+        opciones_navegacion = {}
+        for modulo in modulos:
+            modulo_id, nombre, descripcion, icono, color = modulo
+            opciones_navegacion[f"{icono} {nombre}"] = modulo_id
+        
+        # Selector de módulo
+        modulo_seleccionado = st.sidebar.selectbox(
+            "Seleccionar Módulo",
+            options=list(opciones_navegacion.keys()),
+            key="navegacion_principal"
+        )
+        
+        return opciones_navegacion[modulo_seleccionado]
+    
+    def render_metricas_empresariales(self):
+        """Renderizar métricas empresariales"""
+        conn = sqlite3.connect(self.base_datos)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT nombre, valor_actual, valor_anterior, unidad, tendencia, categoria, icono, color
+            FROM metricas_empresariales
+            ORDER BY categoria, nombre
+        ''')
+        metricas = cursor.fetchall()
+        conn.close()
+        
+        # Agrupar métricas por categoría
+        categorias = {}
+        for metrica in metricas:
+            nombre, valor_actual, valor_anterior, unidad, tendencia, categoria, icono, color = metrica
+            if categoria not in categorias:
+                categorias[categoria] = []
+            categorias[categoria].append(metrica)
+        
+        # Renderizar métricas por categoría
+        for categoria, metricas_cat in categorias.items():
+            st.markdown(f"### {categoria}")
+            
+            cols = st.columns(len(metricas_cat))
+            for i, metrica in enumerate(metricas_cat):
+                nombre, valor_actual, valor_anterior, unidad, tendencia, categoria, icono, color = metrica
+                
+                # Calcular cambio porcentual
+                cambio = ((valor_actual - valor_anterior) / valor_anterior * 100) if valor_anterior != 0 else 0
+                
+                with cols[i]:
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.5rem; margin-right: 0.5rem;">{icono}</span>
+                            <span style="color: {color}; font-weight: 600;">{nombre}</span>
+                        </div>
+                        <h3 class="metric-value" style="color: {color};">{valor_actual:,.1f} {unidad}</h3>
+                        <p class="metric-label">
+                            {tendencia} {abs(cambio):.1f}% vs anterior
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+    
+    def render_overview_module(self):
+        """Renderizar módulo de resumen ejecutivo"""
+        st.markdown("## 📊 Resumen Ejecutivo")
+        
+        # Métricas principales
+        self.render_metricas_empresariales()
+        
+        # Gráficos principales
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Gráfico de ROI por cultivo
+            fig_roi = go.Figure(data=[
+                go.Bar(
+                    x=['Palto', 'Uva', 'Cítricos', 'Uva Vino'],
+                    y=[419.72, 141.38, 198.20, 167.56],
+                    marker_color=['#27ae60', '#3498db', '#f39c12', '#9b59b6'],
+                    text=[f"{roi:.1f}%" for roi in [419.72, 141.38, 198.20, 167.56]],
+                    textposition='auto'
+                )
+            ])
+            fig_roi.update_layout(
+                title="ROI por Cultivo (%)",
+                xaxis_title="Cultivo",
+                yaxis_title="ROI (%)",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_roi, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # Gráfico de producción mensual
+            meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+            produccion = [8500, 9200, 10500, 11800, 12500, 13200, 12800, 13500, 14200, 12500, 9800, 8900]
+            
+            fig_prod = go.Figure(data=[
+                go.Scatter(
+                    x=meses,
+                    y=produccion,
+                    mode='lines+markers',
+                    line=dict(color='#667eea', width=3),
+                    marker=dict(size=8, color='#667eea')
+                )
+            ])
+            fig_prod.update_layout(
+                title="Producción Mensual (kg)",
+                xaxis_title="Mes",
+                yaxis_title="Producción (kg)",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_prod, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Alertas y notificaciones
+        st.markdown("## ⚠️ Alertas y Notificaciones")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class="alert-warning">
+                <strong>⚠️ Alerta Meteorológica</strong><br>
+                Posible helada en las próximas 48 horas en sector norte
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="alert-success">
+                <strong>✅ Riego Optimizado</strong><br>
+                Sistema de riego inteligente activado automáticamente
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class="alert-danger">
+                <strong>🚨 Mantenimiento Requerido</strong><br>
+                Sensor de humedad requiere calibración
+            </div>
+            """, unsafe_allow_html=True)
+    
+    def render_meteorologia_module(self):
+        """Renderizar módulo de meteorología"""
+        st.markdown("## 🌤️ Meteorología en Tiempo Real")
+        
+        # Estaciones meteorológicas
+        estaciones = {
+            'Quillota Centro': {'temp': 22.5, 'humedad': 65, 'presion': 1013.2, 'viento': 12.3},
+            'Quillota Norte': {'temp': 21.8, 'humedad': 68, 'presion': 1012.8, 'viento': 15.7},
+            'Quillota Sur': {'temp': 23.1, 'humedad': 62, 'presion': 1013.5, 'viento': 10.2},
+            'Quillota Este': {'temp': 24.3, 'humedad': 58, 'presion': 1013.8, 'viento': 8.9},
+            'Quillota Oeste': {'temp': 20.9, 'humedad': 72, 'presion': 1012.5, 'viento': 18.4},
+            'Quillota Valle': {'temp': 22.7, 'humedad': 66, 'presion': 1013.1, 'viento': 13.1}
+        }
+        
+        # Métricas meteorológicas principales
+        cols = st.columns(6)
+        for i, (estacion, datos) in enumerate(estaciones.items()):
+            with cols[i]:
+                st.metric(
+                    label=estacion,
+                    value=f"{datos['temp']}°C",
+                    delta=f"{datos['humedad']}% humedad"
+                )
+        
+        # Gráficos meteorológicos
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Gráfico de temperatura
+            fig_temp = go.Figure()
+            for estacion, datos in estaciones.items():
+                fig_temp.add_trace(go.Scatter(
+                    x=[estacion],
+                    y=[datos['temp']],
+                    mode='markers',
+                    name=estacion,
+                    marker=dict(size=12, color=datos['temp'], colorscale='RdYlBu_r')
+                ))
+            
+            fig_temp.update_layout(
+                title="Temperatura por Estación",
+                xaxis_title="Estación",
+                yaxis_title="Temperatura (°C)",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # Gráfico de humedad vs presión
+            fig_hum = go.Figure(data=[
+                go.Scatter(
+                    x=[datos['humedad'] for datos in estaciones.values()],
+                    y=[datos['presion'] for datos in estaciones.values()],
+                    mode='markers+text',
+                    text=list(estaciones.keys()),
+                    textposition="top center",
+                    marker=dict(size=15, color='#3498db')
+                )
+            ])
+            fig_hum.update_layout(
+                title="Humedad vs Presión Atmosférica",
+                xaxis_title="Humedad (%)",
+                yaxis_title="Presión (hPa)",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_hum, config=PLOTLY_CONFIG, width='stretch')
+    
+    def render_agricultura_module(self):
+        """Renderizar módulo de agricultura"""
+        st.markdown("## 🌱 Gestión Agrícola")
+        
+        # Información de cultivos
+        cultivos = {
+            'Palto': {'area': 120, 'estado': 'Crecimiento', 'rendimiento': 8.5, 'color': '#27ae60'},
+            'Uva': {'area': 180, 'estado': 'Cosecha', 'rendimiento': 12.3, 'color': '#3498db'},
+            'Cítricos': {'area': 95, 'estado': 'Floración', 'rendimiento': 15.7, 'color': '#f39c12'},
+            'Uva Vino': {'area': 75, 'estado': 'Maduración', 'rendimiento': 6.8, 'color': '#9b59b6'}
+        }
+        
+        # Métricas de cultivos
+        cols = st.columns(4)
+        for i, (cultivo, datos) in enumerate(cultivos.items()):
+            with cols[i]:
+                st.metric(
+                    label=cultivo,
+                    value=f"{datos['area']} ha",
+                    delta=f"{datos['rendimiento']} t/ha"
+                )
+        
+        # Gráficos agrícolas
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Distribución de área por cultivo
+            fig_area = go.Figure(data=[
+                go.Pie(
+                    labels=list(cultivos.keys()),
+                    values=[datos['area'] for datos in cultivos.values()],
+                    colors=[datos['color'] for datos in cultivos.values()]
+                )
+            ])
+            fig_area.update_layout(
+                title="Distribución de Área por Cultivo",
+                height=400
+            )
+            st.plotly_chart(fig_area, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # Estado de cultivos
+            estados = ['Crecimiento', 'Cosecha', 'Floración', 'Maduración']
+            colores = ['#27ae60', '#3498db', '#f39c12', '#9b59b6']
+            
+            fig_estado = go.Figure(data=[
+                go.Bar(
+                    x=estados,
+                    y=[2, 1, 1, 1],
+                    marker_color=colores,
+                    text=['2 cultivos', '1 cultivo', '1 cultivo', '1 cultivo'],
+                    textposition='auto'
+                )
+            ])
+            fig_estado.update_layout(
+                title="Estado de Cultivos",
+                xaxis_title="Estado",
+                yaxis_title="Número de Cultivos",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_estado, config=PLOTLY_CONFIG, width='stretch')
+    
+    def render_economico_module(self):
+        """Renderizar módulo económico"""
+        st.markdown("## 💰 Análisis Económico")
+        
+        # Métricas financieras principales
+        metricas_financieras = {
+            'ROI Total': {'valor': 231.71, 'unidad': '%', 'color': '#27ae60'},
+            'VAN Total': {'valor': 81003200, 'unidad': 'CLP', 'color': '#3498db'},
+            'TIR Promedio': {'valor': 15.0, 'unidad': '%', 'color': '#f39c12'},
+            'Payback Period': {'valor': 3.8, 'unidad': 'años', 'color': '#9b59b6'}
+        }
+        
+        cols = st.columns(4)
+        for i, (metrica, datos) in enumerate(metricas_financieras.items()):
+            with cols[i]:
+                st.metric(
+                    label=metrica,
+                    value=f"{datos['valor']:,.1f} {datos['unidad']}"
+                )
+        
+        # Gráficos económicos
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # ROI por cultivo
+            cultivos = ['Palto', 'Uva', 'Cítricos', 'Uva Vino']
+            roi_values = [419.72, 141.38, 198.20, 167.56]
+            
+            fig_roi = go.Figure(data=[
+                go.Bar(
+                    x=cultivos,
+                    y=roi_values,
+                    marker_color=['#27ae60', '#3498db', '#f39c12', '#9b59b6'],
+                    text=[f"{roi:.1f}%" for roi in roi_values],
+                    textposition='auto'
+                )
+            ])
+            fig_roi.update_layout(
+                title="ROI por Cultivo",
+                xaxis_title="Cultivo",
+                yaxis_title="ROI (%)",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_roi, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # VAN en diferentes monedas
+            monedas = ['CLP', 'USD', 'EUR']
+            van_values = [81003200, 90138, 82705]
+            
+            fig_van = go.Figure(data=[
+                go.Bar(
+                    x=monedas,
+                    y=van_values,
+                    marker_color=['#e74c3c', '#3498db', '#9b59b6'],
+                    text=[f"{van:,.0f}" for van in van_values],
+                    textposition='auto'
+                )
+            ])
+            fig_van.update_layout(
+                title="VAN en Diferentes Monedas",
+                xaxis_title="Moneda",
+                yaxis_title="VAN",
+                height=400,
+                template="plotly_white"
+            )
+            st.plotly_chart(fig_van, config=PLOTLY_CONFIG, width='stretch')
+    
+    def render_drones_module(self):
+        """Renderizar módulo de drones e IoT"""
+        st.markdown("## 🚁 Drones & IoT")
+        
+        # Estado de drones
+        drones = {
+            'DJI Phantom 4 Pro': {'estado': 'Activo', 'bateria': 85, 'vuelos': 12},
+            'DJI Air 2S': {'estado': 'Mantenimiento', 'bateria': 0, 'vuelos': 8},
+            'SenseFly eBee X': {'estado': 'Activo', 'bateria': 92, 'vuelos': 15}
+        }
+        
+        # Estado de sensores IoT
+        sensores = {
+            'Humedad Suelo': {'valor': 65.2, 'unidad': '%', 'estado': 'Activo'},
+            'Temperatura': {'valor': 22.5, 'unidad': '°C', 'estado': 'Activo'},
+            'pH Suelo': {'valor': 6.8, 'unidad': 'pH', 'estado': 'Activo'},
+            'Nivel Riego': {'valor': 78.3, 'unidad': '%', 'estado': 'Activo'}
+        }
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 🚁 Estado de Drones")
+            for drone, datos in drones.items():
+                estado_color = '#27ae60' if datos['estado'] == 'Activo' else '#e74c3c'
+                st.markdown(f"""
+                **{drone}**  
+                Estado: <span style="color: {estado_color};">{datos['estado']}</span>  
+                Batería: {datos['bateria']}%  
+                Vuelos: {datos['vuelos']}
+                """, unsafe_allow_html=True)
+                st.markdown("---")
+        
+        with col2:
+            st.markdown("### 📡 Sensores IoT")
+            for sensor, datos in sensores.items():
+                st.metric(
+                    label=sensor,
+                    value=f"{datos['valor']} {datos['unidad']}"
+                )
+        
+        # Mapa de drones (simulado)
+        st.markdown("### 🗺️ Ubicación de Drones")
+        # Aquí iría un mapa real con ubicaciones de drones
+        st.info("Mapa de drones en desarrollo - Mostrará ubicaciones GPS en tiempo real")
+    
+    def render_ml_module(self):
+        """Renderizar módulo de Machine Learning"""
+        st.markdown("## 🤖 IA & Predicciones")
+        
+        # Predicciones principales
+        predicciones = {
+            'Heladas (7 días)': {'probabilidad': 15, 'severidad': 'Baja', 'color': '#f39c12'},
+            'Rendimiento (30 días)': {'probabilidad': 92, 'severidad': 'Alta', 'color': '#27ae60'},
+            'Plagas (14 días)': {'probabilidad': 8, 'severidad': 'Muy Baja', 'color': '#3498db'},
+            'Cosecha Óptima': {'probabilidad': 87, 'severidad': 'Alta', 'color': '#9b59b6'}
+        }
+        
+        cols = st.columns(4)
+        for i, (prediccion, datos) in enumerate(predicciones.items()):
+            with cols[i]:
+                st.metric(
+                    label=prediccion,
+                    value=f"{datos['probabilidad']}%",
+                    delta=datos['severidad']
+                )
+        
+        # Gráfico de predicciones
+        fig_pred = go.Figure(data=[
+            go.Scatter(
+                x=list(predicciones.keys()),
+                y=[datos['probabilidad'] for datos in predicciones.values()],
+                mode='markers',
+                marker=dict(
+                    size=20,
+                    color=[datos['color'] for datos in predicciones.values()],
+                    line=dict(width=2, color='white')
+                ),
+                text=[f"{datos['probabilidad']}%" for datos in predicciones.values()],
+                textposition="top center"
+            )
+        ])
+        fig_pred.update_layout(
+            title="Probabilidades de Predicciones",
+            xaxis_title="Tipo de Predicción",
+            yaxis_title="Probabilidad (%)",
+            height=400,
+            template="plotly_white"
+        )
+        st.plotly_chart(fig_pred, config=PLOTLY_CONFIG, width='stretch')
+    
+    def render_integracion_module(self):
+        """Renderizar módulo de integración"""
+        st.markdown("## 🔗 Integración de Sistemas")
+        
+        # Estado de sistemas integrados
+        sistemas = {
+            'SAP Agrícola': {'estado': 'Conectado', 'protocolo': 'RFC', 'color': '#27ae60'},
+            'Agvance': {'estado': 'Conectado', 'protocolo': 'REST', 'color': '#27ae60'},
+            'Granular': {'estado': 'Conectado', 'protocolo': 'GraphQL', 'color': '#27ae60'},
+            'John Deere GPS': {'estado': 'Conectado', 'protocolo': 'ISOXML', 'color': '#27ae60'},
+            'Sensores IoT': {'estado': 'Activo', 'protocolo': 'MQTT', 'color': '#3498db'}
+        }
+        
+        cols = st.columns(5)
+        for i, (sistema, datos) in enumerate(sistemas.items()):
+            with cols[i]:
+                st.markdown(f"""
+                <div style="text-align: center; padding: 1rem; border-radius: 8px; background-color: #f8f9fa;">
+                    <h4>{sistema}</h4>
+                    <p style="color: {datos['color']}; font-weight: bold;">{datos['estado']}</p>
+                    <p style="font-size: 0.8rem; color: #6c757d;">{datos['protocolo']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Métricas de integración
+        st.markdown("### 📊 Métricas de Integración")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Sistemas ERP", "3", "100% conectados")
+        with col2:
+            st.metric("Dispositivos GPS", "8", "Tiempo real")
+        with col3:
+            st.metric("Sensores IoT", "12", "Activos")
+        with col4:
+            st.metric("Sincronización", "99.2%", "Última 24h")
+    
+    def render_reportes_module(self):
+        """Renderizar módulo de reportes"""
+        st.markdown("## 📈 Reportes Ejecutivos")
+        
+        # Tipos de reportes disponibles
+        tipos_reportes = [
+            {'nombre': 'Reporte Financiero', 'descripcion': 'ROI, VAN, análisis de rentabilidad', 'icono': '💰'},
+            {'nombre': 'Reporte Meteorológico', 'descripcion': 'Condiciones climáticas y predicciones', 'icono': '🌤️'},
+            {'nombre': 'Reporte Agrícola', 'descripcion': 'Estado de cultivos y producción', 'icono': '🌱'},
+            {'nombre': 'Reporte de Drones', 'descripcion': 'Análisis aéreo y mapas de cultivos', 'icono': '🚁'},
+            {'nombre': 'Reporte de Integración', 'descripcion': 'Estado de sistemas conectados', 'icono': '🔗'},
+            {'nombre': 'Reporte Ejecutivo', 'descripcion': 'Resumen completo del negocio', 'icono': '📊'}
+        ]
+        
+        # Grid de reportes
+        cols = st.columns(3)
+        for i, reporte in enumerate(tipos_reportes):
+            with cols[i % 3]:
+                st.markdown(f"""
+                <div style="padding: 1.5rem; border-radius: 10px; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+                    <h4>{reporte['icono']} {reporte['nombre']}</h4>
+                    <p style="color: #6c757d; font-size: 0.9rem;">{reporte['descripcion']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Botones de acción
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📊 Generar Reporte Ejecutivo", width='stretch'):
+                st.success("Reporte ejecutivo generado exitosamente")
+        
+        with col2:
+            if st.button("📧 Enviar por Email", width='stretch'):
+                st.success("Reporte enviado por email")
+        
+        with col3:
+            if st.button("💾 Exportar PDF", width='stretch'):
+                st.success("Reporte exportado en formato PDF")
+    
+    def render_configuracion_module(self):
+        """Renderizar módulo de configuración"""
+        st.markdown("## ⚙️ Configuración del Sistema")
+        
+        # Configuraciones principales
+        st.markdown("### 🔧 Configuraciones Generales")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 📧 Notificaciones")
+            email_alerts = st.checkbox("Alertas por Email", value=True)
+            sms_alerts = st.checkbox("Alertas por SMS", value=False)
+            whatsapp_alerts = st.checkbox("Alertas por WhatsApp", value=True)
+            
+            st.markdown("#### 🌐 Integración")
+            auto_sync = st.checkbox("Sincronización Automática", value=True)
+            real_time_gps = st.checkbox("GPS Tiempo Real", value=True)
+            iot_monitoring = st.checkbox("Monitoreo IoT", value=True)
+        
+        with col2:
+            st.markdown("#### 📊 Dashboard")
+            dark_mode = st.checkbox("Modo Oscuro", value=False)
+            compact_view = st.checkbox("Vista Compacta", value=False)
+            auto_refresh = st.checkbox("Actualización Automática", value=True)
+            
+            refresh_interval = st.selectbox(
+                "Intervalo de Actualización",
+                options=["30 segundos", "1 minuto", "5 minutos", "15 minutos"],
+                index=1
+            )
+        
+        # Botones de configuración
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("💾 Guardar Configuración", width='stretch'):
+                st.success("Configuración guardada exitosamente")
+        
+        with col2:
+            if st.button("🔄 Restaurar Valores", width='stretch'):
+                st.info("Valores restaurados a configuración por defecto")
+        
+        with col3:
+            if st.button("📤 Exportar Config", width='stretch'):
+                st.success("Configuración exportada")
+    
+    def render_footer(self):
+        """Renderizar footer profesional"""
+        st.markdown("""
+        <div class="footer">
+            <p>METGO 3D - Sistema Inteligente de Gestión Agrícola Empresarial</p>
+            <p>© 2025 METGO Technologies. Todos los derechos reservados.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    def run_dashboard(self):
+        """Ejecutar dashboard empresarial unificado"""
+        # Header
+        self.render_header()
+        
+        # Navegación lateral
+        modulo_activo = self.render_sidebar_navigation()
+        
+        # Contenido principal según módulo seleccionado
+        if modulo_activo == 'overview':
+            self.render_overview_module()
+        elif modulo_activo == 'meteorologia':
+            self.render_meteorologia_module()
+        elif modulo_activo == 'agricultura':
+            self.render_agricultura_module()
+        elif modulo_activo == 'economico':
+            self.render_economico_module()
+        elif modulo_activo == 'drones':
+            self.render_drones_module()
+        elif modulo_activo == 'ml_predicciones':
+            self.render_ml_module()
+        elif modulo_activo == 'integracion':
+            self.render_integracion_module()
+        elif modulo_activo == 'reportes':
+            self.render_reportes_module()
+        elif modulo_activo == 'configuracion':
+            self.render_configuracion_module()
+        
+        # Footer
+        self.render_footer()
+
+# Función principal
+def main():
+    """Función principal del dashboard empresarial"""
+    dashboard = DashboardEmpresarialUnificado()
+    dashboard.run_dashboard()
+
+if __name__ == "__main__":
+    main()
+

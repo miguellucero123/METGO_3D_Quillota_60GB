@@ -1,0 +1,447 @@
+"""
+DASHBOARD MAESTRO UNIFICADO METGO 3D
+Sistema central que integra todos los dashboards del proyecto METGO 3D
+"""
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+import sqlite3
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import subprocess
+import sys
+import webbrowser
+import time
+import requests
+import socket
+
+class DashboardMaestroUnificado:
+    def __init__(self, db_path="metgo_data.db"):
+        self.db_path = db_path
+        self.dashboards_config = {
+            "meteorologico": {
+                "nombre": "Dashboard Meteorológico Completo",
+                "script": "dashboard_meteorologico_final.py",
+                "puerto": 8502,
+                "descripcion": "Pronósticos meteorológicos con Tmax, Tmin, cobertura nubosa, presión, viento y dirección",
+                "icono": "🌤️",
+                "categoria": "Meteorología"
+            },
+            "agricola": {
+                "nombre": "Dashboard Agrícola Avanzado",
+                "script": "dashboard_agricola_avanzado.py",
+                "puerto": 8501,
+                "descripcion": "Recomendaciones agrícolas, riego inteligente y gestión de cultivos",
+                "icono": "🌱",
+                "categoria": "Agricultura"
+            },
+            "economico": {
+                "nombre": "Análisis Económico Agrícola",
+                "script": "analisis_economico_agricola_metgo_con_conversion.py",
+                "puerto": 8506,
+                "descripcion": "ROI, VAN, TIR y análisis de costos en CLP, USD y EUR",
+                "icono": "💰",
+                "categoria": "Economía"
+            },
+            "drones": {
+                "nombre": "Sistema de Drones Agrícolas",
+                "script": "dashboard_unificado_metgo_con_drones.py",
+                "puerto": 8504,
+                "descripcion": "Monitoreo aéreo, índices vegetativos y detección de plagas",
+                "icono": "🚁",
+                "categoria": "Tecnología"
+            },
+            "alertas": {
+                "nombre": "Sistema de Alertas Visuales",
+                "script": "sistema_alertas_visuales_integrado_metgo.py",
+                "puerto": 8511,
+                "descripcion": "Alertas meteorológicas y recomendaciones de emergencia",
+                "icono": "🚨",
+                "categoria": "Alertas"
+            },
+            "integracion": {
+                "nombre": "Integración con Sistemas Existentes",
+                "script": "integracion_sistemas_existentes_metgo.py",
+                "puerto": 8507,
+                "descripcion": "ERP, GPS, IoT y sistemas de gestión agrícola",
+                "icono": "🔗",
+                "categoria": "Integración"
+            }
+        }
+        self._inicializar_db()
+    
+    def _inicializar_db(self):
+        """Inicializar la base de datos si no existe"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS datos_meteorologicos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    estacion TEXT NOT NULL,
+                    fecha DATETIME NOT NULL,
+                    temperatura REAL,
+                    humedad REAL,
+                    presion REAL,
+                    precipitacion REAL,
+                    velocidad_viento REAL,
+                    direccion_viento REAL,
+                    nubosidad REAL,
+                    indice_uv REAL
+                )
+            ''')
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            st.error(f"Error inicializando base de datos: {e}")
+    
+    def verificar_puerto_disponible(self, port):
+        """Verificar si un puerto está disponible"""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                return s.connect_ex(('localhost', port)) == 0
+        except:
+            return False
+    
+    def obtener_estado_dashboards(self):
+        """Obtener el estado actual de todos los dashboards"""
+        estados = {}
+        for dashboard_id, config in self.dashboards_config.items():
+            puerto = config['puerto']
+            estado = "🟢 Activo" if self.verificar_puerto_disponible(puerto) else "🔴 Inactivo"
+            estados[dashboard_id] = {
+                'estado': estado,
+                'url': f"http://localhost:{puerto}",
+                'config': config
+            }
+        return estados
+    
+    def iniciar_dashboard(self, dashboard_id):
+        """Iniciar un dashboard específico"""
+        if dashboard_id not in self.dashboards_config:
+            st.error(f"Dashboard '{dashboard_id}' no encontrado")
+            return False
+        
+        config = self.dashboards_config[dashboard_id]
+        script = config['script']
+        puerto = config['puerto']
+        
+        if self.verificar_puerto_disponible(puerto):
+            st.success(f"✅ {config['nombre']} ya está activo en puerto {puerto}")
+            return True
+        
+        try:
+            command = [
+                sys.executable, "-m", "streamlit", "run",
+                script,
+                "--server.port", str(puerto),
+                "--server.headless", "true"
+            ]
+            subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(3)  # Esperar a que se inicie
+            
+            if self.verificar_puerto_disponible(puerto):
+                st.success(f"🚀 {config['nombre']} iniciado exitosamente en puerto {puerto}")
+                return True
+            else:
+                st.error(f"❌ Error iniciando {config['nombre']}")
+                return False
+        except Exception as e:
+            st.error(f"❌ Error iniciando {config['nombre']}: {e}")
+            return False
+    
+    def obtener_datos_actuales(self):
+        """Obtener datos meteorológicos actuales"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            query = """
+                SELECT estacion, fecha, temperatura, humedad, presion, precipitacion,
+                       velocidad_viento, direccion_viento, nubosidad, indice_uv
+                FROM datos_meteorologicos
+                WHERE fecha >= datetime('now', '-1 day')
+                ORDER BY fecha DESC
+            """
+            df = pd.read_sql_query(query, conn)
+            conn.close()
+            
+            if not df.empty:
+                df['fecha'] = pd.to_datetime(df['fecha'])
+            
+            return df
+        except Exception as e:
+            st.error(f"Error obteniendo datos actuales: {e}")
+            return pd.DataFrame()
+    
+    def crear_grafico_estado_general(self, datos):
+        """Crear gráfico del estado general del sistema"""
+        if datos.empty:
+            return go.Figure()
+        
+        # Calcular promedios
+        temp_promedio = datos['temperatura'].mean()
+        humedad_promedio = datos['humedad'].mean()
+        viento_promedio = datos['velocidad_viento'].mean()
+        estado_general = 100 if not datos.empty else 0
+        
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=('Temperatura', 'Humedad', 'Viento', 'Estado General'),
+            specs=[[{"type": "indicator"}, {"type": "indicator"}],
+                   [{"type": "indicator"}, {"type": "indicator"}]]
+        )
+        
+        # Temperatura
+        fig.add_trace(go.Indicator(
+            mode="gauge+number",
+            value=temp_promedio,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Temperatura (°C)"},
+            gauge={
+                'axis': {'range': [None, 40]},
+                'bar': {'color': "darkblue"},
+                'steps': [
+                    {'range': [0, 15], 'color': "lightblue"},
+                    {'range': [15, 25], 'color': "lightgreen"},
+                    {'range': [25, 35], 'color': "yellow"},
+                    {'range': [35, 40], 'color': "red"}
+                ]
+            }
+        ), row=1, col=1)
+        
+        # Humedad
+        fig.add_trace(go.Indicator(
+            mode="gauge+number",
+            value=humedad_promedio,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Humedad (%)"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "darkgreen"},
+                'steps': [
+                    {'range': [0, 30], 'color': "lightcoral"},
+                    {'range': [30, 60], 'color': "lightyellow"},
+                    {'range': [60, 80], 'color': "lightgreen"},
+                    {'range': [80, 100], 'color': "lightblue"}
+                ]
+            }
+        ), row=1, col=2)
+        
+        # Viento
+        fig.add_trace(go.Indicator(
+            mode="gauge+number",
+            value=viento_promedio,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Viento (km/h)"},
+            gauge={
+                'axis': {'range': [0, 40]},
+                'bar': {'color': "darkorange"},
+                'steps': [
+                    {'range': [0, 10], 'color': "lightgreen"},
+                    {'range': [10, 20], 'color': "orange"},
+                    {'range': [20, 30], 'color': "darkorange"},
+                    {'range': [30, 40], 'color': "red"}
+                ]
+            }
+        ), row=2, col=1)
+        
+        # Estado General
+        fig.add_trace(go.Indicator(
+            mode="gauge+number",
+            value=estado_general,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Estado General (%)"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "darkgreen"},
+                'steps': [
+                    {'range': [0, 20], 'color': "red"},
+                    {'range': [20, 40], 'color': "lightcoral"},
+                    {'range': [40, 80], 'color': "lightgreen"},
+                    {'range': [80, 100], 'color': "darkgreen"}
+                ]
+            }
+        ), row=2, col=2)
+        
+        fig.update_layout(
+            height=600,
+            title_text="Estado General del Sistema METGO 3D",
+            showlegend=False
+        )
+        
+        return fig
+    
+    def mostrar_dashboard(self):
+        """Mostrar el dashboard maestro unificado"""
+        st.set_page_config(
+            page_title="METGO 3D - Dashboard Maestro Unificado",
+            page_icon="🏠",
+            layout="wide",
+            initial_sidebar_state="expanded"
+        )
+        
+        # CSS personalizado
+        st.markdown("""
+        <style>
+        .main-header {
+            background: linear-gradient(90deg, #00467F, #A5CC82);
+            padding: 2rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .dashboard-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            border-left: 5px solid #A5CC82;
+        }
+        .status-active {
+            color: green;
+            font-weight: bold;
+        }
+        .status-inactive {
+            color: red;
+            font-weight: bold;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Header principal
+        st.markdown("""
+        <div class="main-header">
+            <h1>🏠 METGO 3D - Dashboard Maestro Unificado</h1>
+            <h3>Sistema Central de Gestión Meteorológica y Agrícola</h3>
+            <p>Control centralizado de todos los módulos del sistema METGO 3D</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Sidebar con información del sistema
+        with st.sidebar:
+            st.header("ℹ️ Información del Sistema")
+            st.write(f"**Versión:** METGO 3D v2.0")
+            st.write(f"**Última actualización:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            st.write(f"**Base de datos:** {self.db_path}")
+            
+            if st.button("🔄 Actualizar Estado"):
+                st.rerun()
+        
+        # Estado general del sistema
+        st.subheader("📊 Estado General del Sistema")
+        datos_actuales = self.obtener_datos_actuales()
+        
+        if not datos_actuales.empty:
+            fig_estado = self.crear_grafico_estado_general(datos_actuales)
+            st.plotly_chart(fig_estado, config=PLOTLY_CONFIG, use_container_width=True)
+        else:
+            st.warning("⚠️ No hay datos meteorológicos disponibles")
+        
+        st.markdown("---")
+        
+        # Panel de control de dashboards
+        st.subheader("🎛️ Panel de Control de Dashboards")
+        st.write("Gestiona todos los módulos del sistema METGO 3D desde un punto central")
+        
+        # Obtener estado de todos los dashboards
+        estados = self.obtener_estado_dashboards()
+        
+        # Agrupar por categoría
+        categorias = {}
+        for dashboard_id, estado_info in estados.items():
+            categoria = estado_info['config']['categoria']
+            if categoria not in categorias:
+                categorias[categoria] = []
+            categorias[categoria].append((dashboard_id, estado_info))
+        
+        # Mostrar dashboards por categoría
+        for categoria, dashboards in categorias.items():
+            st.markdown(f"### {categoria}")
+            
+            for dashboard_id, estado_info in dashboards:
+                config = estado_info['config']
+                estado = estado_info['estado']
+                
+                col1, col2, col3 = st.columns([3, 1, 1])
+                
+                with col1:
+                    st.markdown(f"""
+                    <div class="dashboard-card">
+                        <h4>{config['icono']} {config['nombre']}</h4>
+                        <p>{config['descripcion']}</p>
+                        <p><strong>Estado:</strong> <span class="{'status-active' if '🟢' in estado else 'status-inactive'}">{estado}</span></p>
+                        <p><strong>URL:</strong> {estado_info['url']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col2:
+                    if "🟢" in estado:
+                        if st.button(f"🌐 Abrir", key=f"open_{dashboard_id}"):
+                            webbrowser.open_new_tab(estado_info['url'])
+                    else:
+                        if st.button(f"🚀 Iniciar", key=f"start_{dashboard_id}"):
+                            self.iniciar_dashboard(dashboard_id)
+                            st.rerun()
+                
+                with col3:
+                    if "🟢" in estado:
+                        if st.button(f"📊 Ver", key=f"view_{dashboard_id}"):
+                            st.markdown(f"[Abrir {config['nombre']}]({estado_info['url']})")
+        
+        st.markdown("---")
+        
+        # Acciones rápidas
+        st.subheader("⚡ Acciones Rápidas")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🚀 Iniciar Todos los Dashboards"):
+                st.info("Iniciando todos los dashboards...")
+                for dashboard_id in self.dashboards_config.keys():
+                    self.iniciar_dashboard(dashboard_id)
+                st.success("✅ Todos los dashboards iniciados")
+                st.rerun()
+        
+        with col2:
+            if st.button("📊 Dashboard Meteorológico"):
+                if self.iniciar_dashboard("meteorologico"):
+                    webbrowser.open_new_tab("http://localhost:8502")
+        
+        with col3:
+            if st.button("🌱 Dashboard Agrícola"):
+                if self.iniciar_dashboard("agricola"):
+                    webbrowser.open_new_tab("http://localhost:8501")
+        
+        # Resumen del sistema
+        st.markdown("---")
+        st.subheader("📋 Resumen del Sistema")
+        
+        dashboards_activos = sum(1 for estado in estados.values() if "🟢" in estado['estado'])
+        total_dashboards = len(self.dashboards_config)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("📊 Dashboards Activos", f"{dashboards_activos}/{total_dashboards}")
+        
+        with col2:
+            st.metric("📈 Datos Meteorológicos", f"{len(datos_actuales)} registros" if not datos_actuales.empty else "0 registros")
+        
+        with col3:
+            estaciones_unicas = datos_actuales['estacion'].nunique() if not datos_actuales.empty else 0
+            st.metric("📍 Estaciones", estaciones_unicas)
+        
+        with col4:
+            st.metric("🕐 Última Actualización", datetime.now().strftime("%H:%M"))
+
+def main():
+    dashboard = DashboardMaestroUnificado()
+    dashboard.mostrar_dashboard()
+
+if __name__ == "__main__":
+    main()

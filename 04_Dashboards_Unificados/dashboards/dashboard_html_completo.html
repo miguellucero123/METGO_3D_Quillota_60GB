@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METGO 3D - Dashboard Completo con Gráficos</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2E8B57;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #2E8B57, #90EE90);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+
+        .nav a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 139, 87, 0.4);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #2E8B57;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #2E8B57;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2E8B57;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            background: #2E8B57;
+            color: white;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            color: #2E8B57;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .estaciones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .estacion-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #2E8B57;
+        }
+
+        .estacion-card h4 {
+            color: #2E8B57;
+            margin-bottom: 10px;
+        }
+
+        .estacion-info {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 METGO 3D - Dashboard Completo</h1>
+            <p>Sistema Meteorológico Agrícola Quillota - Versión 2.0</p>
+            <p>Dashboard con Gráficos y Estaciones Meteorológicas</p>
+        </div>
+
+        <div class="nav">
+            <a href="#dashboard">Dashboard</a>
+            <a href="#graficos">Gráficos</a>
+            <a href="#estaciones">Estaciones</a>
+            <a href="#analisis">Análisis</a>
+            <a href="#estado">Estado</a>
+        </div>
+
+        <div id="dashboard" class="dashboard">
+            <div class="card">
+                <h3>📊 Estado del Sistema</h3>
+                <div class="metric-label">Monitoreo en tiempo real del sistema unificado</div>
+                <div class="metric">5</div>
+                <div class="metric-label">Estaciones Activas</div>
+                <div class="status">Sistema Activo</div>
+            </div>
+
+            <div class="card">
+                <h3>🌡️ Temperatura Promedio</h3>
+                <div class="metric-label">Temperatura actual del sistema</div>
+                <div class="metric">18.5°C</div>
+                <div class="metric-label">Quillota Centro</div>
+                <div class="status">Datos Actualizados</div>
+            </div>
+
+            <div class="card">
+                <h3>💧 Humedad Relativa</h3>
+                <div class="metric-label">Humedad promedio del sistema</div>
+                <div class="metric">65%</div>
+                <div class="metric-label">Condiciones Normales</div>
+                <div class="status">Estable</div>
+            </div>
+
+            <div class="card">
+                <h3>🌬️ Velocidad del Viento</h3>
+                <div class="metric-label">Viento promedio del sistema</div>
+                <div class="metric">12 km/h</div>
+                <div class="metric-label">Dirección: NE</div>
+                <div class="status">Viento Moderado</div>
+            </div>
+
+            <div class="card">
+                <h3>🌧️ Precipitación</h3>
+                <div class="metric-label">Precipitación acumulada</div>
+                <div class="metric">2.3 mm</div>
+                <div class="metric-label">Últimas 24 horas</div>
+                <div class="status">Lluvia Ligera</div>
+            </div>
+
+            <div class="card">
+                <h3>☀️ Radiación Solar</h3>
+                <div class="metric-label">Radiación solar actual</div>
+                <div class="metric">450 W/m²</div>
+                <div class="metric-label">Condiciones Soleadas</div>
+                <div class="status">Alta Radiación</div>
+            </div>
+        </div>
+
+        <div id="graficos" class="chart-container">
+            <div class="chart-title">📈 Gráficos Meteorológicos - Quillota Centro</div>
+            <div id="grafico-temperatura" style="height: 400px;"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">🌧️ Precipitación - Últimos 7 Días</div>
+            <div id="grafico-precipitacion" style="height: 400px;"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">💧 Humedad y Presión Atmosférica</div>
+            <div id="grafico-humedad-presion" style="height: 400px;"></div>
+        </div>
+
+        <div id="estaciones" class="estaciones-grid">
+            <div class="estacion-card">
+                <h4>📍 Quillota Centro</h4>
+                <div class="estacion-info">
+                    <strong>Tipo:</strong> Principal<br>
+                    <strong>Coordenadas:</strong> -32.8833, -71.2333<br>
+                    <strong>Altitud:</strong> 127 m<br>
+                    <strong>Estado:</strong> <span class="status">Activa</span><br>
+                    <strong>Temperatura:</strong> 18.5°C<br>
+                    <strong>Humedad:</strong> 65%
+                </div>
+            </div>
+
+            <div class="estacion-card">
+                <h4>📍 Quillota Norte</h4>
+                <div class="estacion-info">
+                    <strong>Tipo:</strong> Secundaria<br>
+                    <strong>Coordenadas:</strong> -32.8500, -71.2000<br>
+                    <strong>Altitud:</strong> 150 m<br>
+                    <strong>Estado:</strong> <span class="status">Activa</span><br>
+                    <strong>Temperatura:</strong> 17.8°C<br>
+                    <strong>Humedad:</strong> 68%
+                </div>
+            </div>
+
+            <div class="estacion-card">
+                <h4>📍 Quillota Sur</h4>
+                <div class="estacion-info">
+                    <strong>Tipo:</strong> Secundaria<br>
+                    <strong>Coordenadas:</strong> -32.9167, -71.2667<br>
+                    <strong>Altitud:</strong> 100 m<br>
+                    <strong>Estado:</strong> <span class="status">Activa</span><br>
+                    <strong>Temperatura:</strong> 19.2°C<br>
+                    <strong>Humedad:</strong> 62%
+                </div>
+            </div>
+
+            <div class="estacion-card">
+                <h4>📍 Quillota Este</h4>
+                <div class="estacion-info">
+                    <strong>Tipo:</strong> Secundaria<br>
+                    <strong>Coordenadas:</strong> -32.8833, -71.2000<br>
+                    <strong>Altitud:</strong> 180 m<br>
+                    <strong>Estado:</strong> <span class="status">Activa</span><br>
+                    <strong>Temperatura:</strong> 17.1°C<br>
+                    <strong>Humedad:</strong> 70%
+                </div>
+            </div>
+
+            <div class="estacion-card">
+                <h4>📍 Quillota Oeste</h4>
+                <div class="estacion-info">
+                    <strong>Tipo:</strong> Secundaria<br>
+                    <strong>Coordenadas:</strong> -32.8833, -71.2667<br>
+                    <strong>Altitud:</strong> 80 m<br>
+                    <strong>Estado:</strong> <span class="status">Activa</span><br>
+                    <strong>Temperatura:</strong> 19.8°C<br>
+                    <strong>Humedad:</strong> 58%
+                </div>
+            </div>
+        </div>
+
+        <div id="analisis" class="chart-container">
+            <div class="chart-title">🔍 Análisis Comparativo de Estaciones</div>
+            <div id="grafico-comparativo" style="height: 400px;"></div>
+        </div>
+
+        <div class="footer">
+            <p>🌾 METGO 3D - Sistema Meteorológico Agrícola Quillota</p>
+            <p>Versión 2.0 | Última actualización: <span id="fecha-actual"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Actualizar fecha
+        document.getElementById('fecha-actual').textContent = new Date().toLocaleString('es-ES');
+
+        // Generar datos de ejemplo
+        function generarDatosTemperatura() {
+            const horas = [];
+            const temperaturas = [];
+            const fecha = new Date();
+            
+            for (let i = 23; i >= 0; i--) {
+                const hora = new Date(fecha.getTime() - i * 60 * 60 * 1000);
+                horas.push(hora.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}));
+                temperaturas.push(15 + 8 * Math.sin((24 - i) * Math.PI / 12) + (Math.random() - 0.5) * 4);
+            }
+            
+            return {horas, temperaturas};
+        }
+
+        function generarDatosPrecipitacion() {
+            const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            const precipitacion = [0, 2.1, 0, 0.5, 1.8, 0, 0.3];
+            return {dias, precipitacion};
+        }
+
+        function generarDatosHumedadPresion() {
+            const horas = [];
+            const humedad = [];
+            const presion = [];
+            const fecha = new Date();
+            
+            for (let i = 11; i >= 0; i--) {
+                const hora = new Date(fecha.getTime() - i * 2 * 60 * 60 * 1000);
+                horas.push(hora.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}));
+                humedad.push(60 + 20 * Math.sin((12 - i) * Math.PI / 6) + (Math.random() - 0.5) * 10);
+                presion.push(1013 + 5 * Math.sin((12 - i) * Math.PI / 6) + (Math.random() - 0.5) * 3);
+            }
+            
+            return {horas, humedad, presion};
+        }
+
+        // Gráfico de temperatura
+        const datosTemp = generarDatosTemperatura();
+        const graficoTemp = {
+            x: datosTemp.horas,
+            y: datosTemp.temperaturas,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Temperatura',
+            line: {color: '#2E8B57', width: 3},
+            marker: {color: '#2E8B57', size: 6}
+        };
+
+        const layoutTemp = {
+            title: 'Temperatura - Últimas 24 Horas',
+            xaxis: {title: 'Hora'},
+            yaxis: {title: 'Temperatura (°C)'},
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: '#333'}
+        };
+
+        Plotly.newPlot('grafico-temperatura', [graficoTemp], layoutTemp);
+
+        // Gráfico de precipitación
+        const datosPrecip = generarDatosPrecipitacion();
+        const graficoPrecip = {
+            x: datosPrecip.dias,
+            y: datosPrecip.precipitacion,
+            type: 'bar',
+            name: 'Precipitación',
+            marker: {color: '#4A90E2'}
+        };
+
+        const layoutPrecip = {
+            title: 'Precipitación - Últimos 7 Días',
+            xaxis: {title: 'Día'},
+            yaxis: {title: 'Precipitación (mm)'},
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: '#333'}
+        };
+
+        Plotly.newPlot('grafico-precipitacion', [graficoPrecip], layoutPrecip);
+
+        // Gráfico de humedad y presión
+        const datosHumPres = generarDatosHumedadPresion();
+        const graficoHumedad = {
+            x: datosHumPres.horas,
+            y: datosHumPres.humedad,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Humedad',
+            yaxis: 'y',
+            line: {color: '#E74C3C', width: 3},
+            marker: {color: '#E74C3C', size: 6}
+        };
+
+        const graficoPresion = {
+            x: datosHumPres.horas,
+            y: datosHumPres.presion,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Presión',
+            yaxis: 'y2',
+            line: {color: '#3498DB', width: 3},
+            marker: {color: '#3498DB', size: 6}
+        };
+
+        const layoutHumPres = {
+            title: 'Humedad y Presión Atmosférica - Últimas 24 Horas',
+            xaxis: {title: 'Hora'},
+            yaxis: {title: 'Humedad (%)', side: 'left'},
+            yaxis2: {title: 'Presión (hPa)', side: 'right', overlaying: 'y'},
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: '#333'}
+        };
+
+        Plotly.newPlot('grafico-humedad-presion', [graficoHumedad, graficoPresion], layoutHumPres);
+
+        // Gráfico comparativo
+        const estaciones = ['Quillota Centro', 'Quillota Norte', 'Quillota Sur', 'Quillota Este', 'Quillota Oeste'];
+        const temperaturas = [18.5, 17.8, 19.2, 17.1, 19.8];
+        const humedad = [65, 68, 62, 70, 58];
+
+        const graficoComparativo = [
+            {
+                x: estaciones,
+                y: temperaturas,
+                type: 'bar',
+                name: 'Temperatura (°C)',
+                marker: {color: '#2E8B57'}
+            },
+            {
+                x: estaciones,
+                y: humedad,
+                type: 'bar',
+                name: 'Humedad (%)',
+                yaxis: 'y2',
+                marker: {color: '#E74C3C'}
+            }
+        ];
+
+        const layoutComparativo = {
+            title: 'Comparación de Estaciones Meteorológicas',
+            xaxis: {title: 'Estación'},
+            yaxis: {title: 'Temperatura (°C)', side: 'left'},
+            yaxis2: {title: 'Humedad (%)', side: 'right', overlaying: 'y'},
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: '#333'}
+        };
+
+        Plotly.newPlot('grafico-comparativo', graficoComparativo, layoutComparativo);
+
+        // Actualizar datos cada 30 segundos
+        setInterval(() => {
+            // Actualizar métricas
+            const tempElement = document.querySelector('.metric');
+            if (tempElement) {
+                const nuevaTemp = (15 + 8 * Math.sin(Date.now() / 100000) + (Math.random() - 0.5) * 4).toFixed(1);
+                tempElement.textContent = nuevaTemp + '°C';
+            }
+            
+            // Actualizar fecha
+            document.getElementById('fecha-actual').textContent = new Date().toLocaleString('es-ES');
+        }, 30000);
+
+        // Navegación suave
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({behavior: 'smooth'});
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1408 @@
+"""
+DASHBOARD AGRÍCOLA AVANZADO - METGO 3D QUILLOTA
+Sistema sofisticado de recomendaciones agrícolas con múltiples estaciones meteorológicas
+"""
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+from datetime import datetime, timedelta
+import json
+import os
+from sistema_recomendaciones_agricolas_avanzado import SistemaRecomendacionesAvanzado
+from conector_apis_meteorologicas_reales import ConectorAPIsMeteorologicas
+from sistema_predicciones_ml_avanzado import SistemaPrediccionesMLAvanzado
+from sistema_alertas_visuales_avanzado import SistemaAlertasVisualesAvanzado
+from sistema_reportes_automaticos_avanzado import SistemaReportesAutomaticosAvanzado
+
+# Configuración de la página
+st.set_page_config(
+    page_title="METGO 3D - Dashboard Agrícola Avanzado",
+    page_icon="🌱",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+class DashboardAgricolaAvanzado:
+    def __init__(self):
+        self.sistema_recomendaciones = SistemaRecomendacionesAvanzado()
+        self.conector_apis = ConectorAPIsMeteorologicas()
+        self.sistema_ml = SistemaPrediccionesMLAvanzado()
+        self.sistema_alertas_visuales = SistemaAlertasVisualesAvanzado()
+        self.sistema_reportes = SistemaReportesAutomaticosAvanzado()
+        self._inicializar_session_state()
+    
+    def _inicializar_session_state(self):
+        """Inicializar variables de sesión"""
+        if 'datos_meteorologicos' not in st.session_state:
+            st.session_state.datos_meteorologicos = None
+        if 'reporte_integral' not in st.session_state:
+            st.session_state.reporte_integral = None
+        if 'datos_reales_apis' not in st.session_state:
+            st.session_state.datos_reales_apis = None
+        if 'ultima_actualizacion' not in st.session_state:
+            st.session_state.ultima_actualizacion = None
+    
+    def _obtener_datos_reales_apis(self):
+        """Obtener datos reales de las APIs meteorológicas"""
+        try:
+            # Coordenadas de las 6 estaciones meteorológicas del Valle de Quillota
+            estaciones = {
+                "Quillota_Centro": {"lat": -32.8833, "lon": -71.2667},
+                "La_Cruz": {"lat": -32.8167, "lon": -71.2167},
+                "Nogales": {"lat": -32.7500, "lon": -71.2167},
+                "San_Isidro": {"lat": -32.9167, "lon": -71.2333},
+                "Pocochay": {"lat": -32.8500, "lon": -71.3000},
+                "Valle_Hermoso": {"lat": -32.9333, "lon": -71.2833}
+            }
+            
+            datos_reales = {}
+            
+            for nombre_estacion, coordenadas in estaciones.items():
+                try:
+                    # Obtener datos de OpenMeteo (gratuito)
+                    datos_estacion = self.conector_apis.obtener_datos_openmeteo_coordenadas(
+                        coordenadas["lat"], 
+                        coordenadas["lon"]
+                    )
+                    
+                    if datos_estacion:
+                        datos_reales[nombre_estacion] = datos_estacion
+                        st.success(f"✅ Datos obtenidos de {nombre_estacion}")
+                    else:
+                        st.warning(f"⚠️ No se pudieron obtener datos de {nombre_estacion}")
+                        
+                except Exception as e:
+                    st.error(f"❌ Error obteniendo datos de {nombre_estacion}: {str(e)}")
+            
+            if datos_reales:
+                st.session_state.datos_reales_apis = datos_reales
+                st.session_state.ultima_actualizacion = datetime.now()
+                st.success(f"🌡️ Datos actualizados de {len(datos_reales)} estaciones")
+                return datos_reales
+            else:
+                st.error("❌ No se pudieron obtener datos de ninguna estación")
+                return None
+                
+        except Exception as e:
+            st.error(f"❌ Error general obteniendo datos de APIs: {str(e)}")
+            return None
+    
+    def ejecutar(self):
+        """Ejecutar el dashboard principal"""
+        # Header principal
+        st.title("🌱 METGO 3D - Dashboard Agrícola Avanzado")
+        st.markdown("**Sistema Integral de Gestión Agrícola para el Valle de Quillota**")
+        st.markdown("---")
+        
+        # Sidebar con controles
+        self._mostrar_sidebar()
+        
+        # Tabs principales
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+            "🏠 Inicio", 
+            "🌡️ Alertas de Heladas", 
+            "🤖 Predicciones ML",
+            "🌾 Recomendaciones de Cosecha", 
+            "🐛 Control de Plagas", 
+            "📊 Reportes Integrales",
+            "🌐 Datos en Tiempo Real"
+        ])
+        
+        with tab1:
+            self._mostrar_tab_inicio()
+        
+        with tab2:
+            self._mostrar_tab_heladas()
+        
+        with tab3:
+            self._mostrar_tab_predicciones_ml()
+        
+        with tab4:
+            self._mostrar_tab_cosecha()
+        
+        with tab5:
+            self._mostrar_tab_plagas()
+        
+        with tab6:
+            self._mostrar_tab_reportes()
+        
+        with tab7:
+            self._mostrar_tab_datos_tiempo_real()
+    
+    def _mostrar_tab_predicciones_ml(self):
+        """Mostrar pestaña de predicciones de Machine Learning"""
+        st.header("🤖 Predicciones de Machine Learning")
+        st.markdown("Sistema avanzado de predicciones meteorológicas usando algoritmos de ML")
+        
+        # Verificar si hay datos disponibles
+        if not st.session_state.datos_reales_apis:
+            st.warning("⚠️ No hay datos meteorológicos disponibles. Obtén datos reales primero.")
+            return
+        
+        # Seleccionar estación para predicciones
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            estaciones_disponibles = list(st.session_state.datos_reales_apis.keys())
+            estacion_seleccionada = st.selectbox(
+                "Seleccionar estación para predicciones:",
+                estaciones_disponibles
+            )
+        
+        with col2:
+            horizonte_horas = st.selectbox(
+                "Horizonte de predicción:",
+                [6, 12, 24, 48],
+                index=2  # Por defecto 24 horas
+            )
+        
+        if st.button("🚀 Generar Predicciones ML", type="primary"):
+            with st.spinner("Generando predicciones con Machine Learning..."):
+                try:
+                    # Obtener datos actuales de la estación seleccionada
+                    datos_actuales = st.session_state.datos_reales_apis[estacion_seleccionada]
+                    datos_actuales['estacion'] = estacion_seleccionada
+                    
+                    # Generar predicciones
+                    predicciones = self.sistema_ml.generar_predicciones_completas(datos_actuales)
+                    
+                    if predicciones:
+                        st.success(f"✅ Predicciones generadas para {estacion_seleccionada}")
+                        
+                        # Mostrar predicciones en columnas
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            st.subheader("🌡️ Temperatura")
+                            if 'temperatura_actual' in predicciones:
+                                pred = predicciones['temperatura_actual']
+                                st.metric(
+                                    "Temperatura Predicha",
+                                    f"{pred['valor_predicho']}°C",
+                                    f"Confianza: {pred['confianza']:.1%}"
+                                )
+                        
+                        with col2:
+                            st.subheader("💧 Humedad")
+                            if 'humedad_relativa' in predicciones:
+                                pred = predicciones['humedad_relativa']
+                                st.metric(
+                                    "Humedad Predicha",
+                                    f"{pred['valor_predicho']}%",
+                                    f"Confianza: {pred['confianza']:.1%}"
+                                )
+                        
+                        with col3:
+                            st.subheader("💨 Viento")
+                            if 'velocidad_viento' in predicciones:
+                                pred = predicciones['velocidad_viento']
+                                st.metric(
+                                    "Viento Predicho",
+                                    f"{pred['valor_predicho']} km/h",
+                                    f"Confianza: {pred['confianza']:.1%}"
+                                )
+                        
+                        # Gráfico de predicciones
+                        self._mostrar_grafico_predicciones(predicciones, estacion_seleccionada)
+                        
+                        # Tabla detallada
+                        self._mostrar_tabla_predicciones(predicciones)
+                        
+                        # Métricas de modelos
+                        self._mostrar_metricas_modelos()
+                        
+                    else:
+                        st.error("❌ No se pudieron generar predicciones")
+                        
+                except Exception as e:
+                    st.error(f"❌ Error generando predicciones: {str(e)}")
+    
+    def _mostrar_grafico_predicciones(self, predicciones: dict, estacion: str):
+        """Mostrar gráfico de predicciones"""
+        st.subheader("📊 Gráfico de Predicciones")
+        
+        # Crear gráfico con subplots
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=('Temperatura', 'Humedad', 'Viento', 'Precipitación'),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}],
+                   [{"secondary_y": False}, {"secondary_y": False}]]
+        )
+        
+        # Datos actuales vs predichos
+        variables = {
+            'temperatura_actual': {'title': 'Temperatura (°C)', 'row': 1, 'col': 1},
+            'humedad_relativa': {'title': 'Humedad (%)', 'row': 1, 'col': 2},
+            'velocidad_viento': {'title': 'Viento (km/h)', 'row': 2, 'col': 1},
+            'precipitacion': {'title': 'Precipitación (mm)', 'row': 2, 'col': 2}
+        }
+        
+        for variable, config in variables.items():
+            if variable in predicciones:
+                pred = predicciones[variable]
+                
+                # Obtener valor actual
+                valor_actual = st.session_state.datos_reales_apis[estacion].get(
+                    variable.replace('_actual', ''), 0
+                )
+                
+                # Crear datos para el gráfico
+                x = ['Actual', 'Predicho']
+                y = [valor_actual, pred['valor_predicho']]
+                
+                fig.add_trace(
+                    go.Bar(
+                        x=x, y=y,
+                        name=config['title'],
+                        marker_color=['blue', 'orange']
+                    ),
+                    row=config['row'], col=config['col']
+                )
+        
+        fig.update_layout(
+            height=600,
+            title_text=f"Predicciones ML - {estacion}",
+            showlegend=False
+        )
+        
+        st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
+    
+    def _mostrar_tabla_predicciones(self, predicciones: dict):
+        """Mostrar tabla detallada de predicciones"""
+        st.subheader("📋 Tabla Detallada de Predicciones")
+        
+        # Crear DataFrame
+        datos_tabla = []
+        for variable, pred in predicciones.items():
+            datos_tabla.append({
+                'Variable': variable.replace('_', ' ').title(),
+                'Valor Predicho': pred['valor_predicho'],
+                'Confianza': f"{pred['confianza']:.1%}",
+                'Modelo': pred['modelo_usado'].split('/')[-1].replace('.joblib', ''),
+                'R² Score': f"{pred['r2_score']:.3f}",
+                'RMSE': f"{pred['rmse']:.3f}"
+            })
+        
+        df = pd.DataFrame(datos_tabla)
+        st.dataframe(df, width='stretch')
+    
+    def _mostrar_metricas_modelos(self):
+        """Mostrar métricas de los modelos"""
+        st.subheader("📈 Métricas de Modelos ML")
+        
+        try:
+            metricas = self.sistema_ml.obtener_metricas_modelos()
+            
+            if metricas:
+                # Crear gráfico de métricas
+                fig = go.Figure()
+                
+                for variable, modelos in metricas.items():
+                    for modelo, metrica in modelos.items():
+                        fig.add_trace(go.Scatter(
+                            x=[variable],
+                            y=[metrica['r2_score']],
+                            mode='markers+text',
+                            name=modelo,
+                            text=[f"{metrica['r2_score']:.3f}"],
+                            textposition="top center",
+                            marker=dict(size=15)
+                        ))
+                
+                fig.update_layout(
+                    title="R² Score por Modelo y Variable",
+                    xaxis_title="Variable",
+                    yaxis_title="R² Score",
+                    height=400
+                , showlegend=False)
+                
+                st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
+            else:
+                st.info("No hay métricas de modelos disponibles")
+                
+        except Exception as e:
+            st.error(f"Error obteniendo métricas: {str(e)}")
+    
+    def _mostrar_sidebar(self):
+        """Mostrar controles en la barra lateral"""
+        st.sidebar.title("🎛️ Controles del Sistema")
+        
+        # Sección de datos en tiempo real
+        st.sidebar.markdown("### 🌡️ Datos Meteorológicos")
+        
+        # Botón para obtener datos reales de APIs
+        if st.sidebar.button("🌐 Obtener Datos Reales", type="primary"):
+            with st.spinner("Obteniendo datos de APIs meteorológicas..."):
+                self._obtener_datos_reales_apis()
+        
+        # Mostrar última actualización
+        if st.session_state.ultima_actualizacion:
+            st.sidebar.info(f"🕐 Última actualización: {st.session_state.ultima_actualizacion.strftime('%H:%M:%S')}")
+        
+        # Botón para generar datos sintéticos
+        if st.sidebar.button("🔄 Generar Datos Sintéticos"):
+            self._generar_datos_meteorologicos()
+        
+        # Selector de estación
+        estaciones = list(self.sistema_recomendaciones.estaciones_meteorologicas.keys())
+        estacion_seleccionada = st.sidebar.selectbox(
+            "📍 Estación Principal:",
+            estaciones,
+            format_func=lambda x: self.sistema_recomendaciones.estaciones_meteorologicas[x]["nombre"]
+        )
+        
+        # Selector de cultivo
+        cultivos = list(self.sistema_recomendaciones.cultivos_quillota.keys())
+        cultivo_seleccionado = st.sidebar.selectbox(
+            "🌾 Cultivo Principal:",
+            cultivos,
+            format_func=lambda x: self.sistema_recomendaciones.cultivos_quillota[x]["nombre"]
+        )
+        
+        # Guardar selecciones
+        st.session_state.estacion_seleccionada = estacion_seleccionada
+        st.session_state.cultivo_seleccionado = cultivo_seleccionado
+        
+        # Información del sistema
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 📊 Estado del Sistema")
+        
+        if st.session_state.datos_meteorologicos is not None:
+            datos = st.session_state.datos_meteorologicos
+            st.sidebar.metric("📅 Registros", len(datos))
+            st.sidebar.metric("🌡️ Temp Promedio", f"{datos['temperatura'].mean():.1f}°C")
+            st.sidebar.metric("💧 Humedad Promedio", f"{datos['humedad_relativa'].mean():.1f}%")
+        else:
+            st.sidebar.info("⚠️ Sin datos meteorológicos")
+    
+    def _generar_datos_meteorologicos(self):
+        """Generar datos meteorológicos sintéticos"""
+        with st.spinner("Generando datos meteorológicos..."):
+            # Generar datos para los últimos 7 días
+            fechas = pd.date_range(end=datetime.now(), periods=7, freq='D')
+            
+            datos = pd.DataFrame({
+                'fecha': fechas,
+                'temperatura': np.random.normal(18, 5, 7),
+                'temperatura_max': np.random.normal(25, 4, 7),
+                'temperatura_min': np.random.normal(12, 3, 7),
+                'precipitacion': np.random.exponential(2, 7),
+                'humedad_relativa': np.random.normal(70, 15, 7),
+                'presion_atmosferica': np.random.normal(1015, 5, 7),
+                'velocidad_viento': np.random.exponential(8, 7),
+                'direccion_viento': np.random.uniform(0, 360, 7),
+                'nubosidad': np.random.uniform(0, 100, 7),
+                'radiacion_solar': np.random.normal(500, 100, 7)
+            })
+            
+            # Asegurar que no haya valores negativos en precipitación
+            datos['precipitacion'] = np.maximum(datos['precipitacion'], 0)
+            
+            st.session_state.datos_meteorologicos = datos
+            st.session_state.reporte_integral = None  # Resetear reporte
+            
+            st.success("✅ Datos meteorológicos generados exitosamente")
+    
+    def _mostrar_tab_inicio(self):
+        """Mostrar tab de inicio"""
+        st.header("🏠 Panel de Control Principal")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.subheader("🌡️ Condiciones Actuales")
+            if st.session_state.datos_meteorologicos is not None:
+                datos = st.session_state.datos_meteorologicos.iloc[-1]
+                st.metric("Temperatura", f"{datos['temperatura']:.1f}°C")
+                st.metric("Humedad", f"{datos['humedad_relativa']:.1f}%")
+                st.metric("Presión", f"{datos['presion_atmosferica']:.1f} hPa")
+            else:
+                st.info("Generar datos meteorológicos para ver condiciones actuales")
+        
+        with col2:
+            st.subheader("📍 Estaciones Monitoreadas")
+            estaciones = self.sistema_recomendaciones.estaciones_meteorologicas
+            
+            for estacion_id, info in estaciones.items():
+                with st.expander(f"📍 {info['nombre']}"):
+                    st.write(f"**Altitud:** {info['altitud']} m")
+                    st.write(f"**Sector:** {info['sector']}")
+                    st.write(f"**Cultivos:** {', '.join(info['cultivos_principales'])}")
+                    st.write(f"**Riesgo Helada:** {info['riesgo_helada']}")
+        
+        with col3:
+            st.subheader("🌾 Cultivos Monitoreados")
+            cultivos = self.sistema_recomendaciones.cultivos_quillota
+            
+            for cultivo_id, info in cultivos.items():
+                with st.expander(f"🌾 {info['nombre']}"):
+                    st.write(f"**Temporada Cosecha:** {info['temporada_cosecha']}")
+                    st.write(f"**Rendimiento:** {info['rendimiento_esperado']}")
+                    st.write(f"**Precio:** {info['precio_mercado']}")
+        
+        # Mapa de estaciones
+        st.subheader("🗺️ Mapa de Estaciones Meteorológicas")
+        self._mostrar_mapa_estaciones()
+        
+        # Resumen ejecutivo
+        if st.session_state.datos_meteorologicos is not None:
+            st.subheader("📋 Resumen Ejecutivo")
+            self._generar_y_mostrar_resumen_ejecutivo()
+    
+    def _mostrar_mapa_estaciones(self):
+        """Mostrar mapa con ubicación de estaciones"""
+        estaciones = self.sistema_recomendaciones.estaciones_meteorologicas
+        
+        # Crear DataFrame para el mapa
+        datos_mapa = []
+        for estacion_id, info in estaciones.items():
+            datos_mapa.append({
+                'nombre': info['nombre'],
+                'lat': info['coordenadas']['lat'],
+                'lon': info['coordenadas']['lon'],
+                'altitud': info['altitud'],
+                'sector': info['sector'],
+                'cultivos': len(info['cultivos_principales']),
+                'riesgo': info['riesgo_helada']
+            })
+        
+        df_mapa = pd.DataFrame(datos_mapa)
+        
+        # Crear mapa
+        fig = px.scatter_mapbox(
+            df_mapa,
+            lat="lat",
+            lon="lon",
+            hover_name="nombre",
+            hover_data=["altitud", "sector", "cultivos", "riesgo"],
+            color="riesgo",
+            color_discrete_map={
+                "bajo": "green",
+                "medio": "yellow", 
+                "medio_alto": "orange",
+                "alto": "red"
+            },
+            zoom=10,
+            height=400
+        )
+        
+        fig.update_layout(
+            mapbox_style="open-street-map",
+            title="Estaciones Meteorológicas - Valle de Quillota"
+        , showlegend=False)
+        
+        st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
+    
+    def _generar_y_mostrar_resumen_ejecutivo(self):
+        """Generar y mostrar resumen ejecutivo"""
+        if st.session_state.reporte_integral is None:
+            with st.spinner("Generando reporte integral..."):
+                st.session_state.reporte_integral = self.sistema_recomendaciones.generar_reporte_integral(
+                    st.session_state.datos_meteorologicos
+                )
+        
+        reporte = st.session_state.reporte_integral
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Estado General", reporte["resumen_ejecutivo"]["estado_general"].replace("_", " ").title())
+            st.metric("Temperatura Mínima", f"{reporte['resumen_ejecutivo']['temperatura_minima']:.1f}°C")
+        
+        with col2:
+            alertas = reporte["resumen_ejecutivo"]["alertas"]
+            st.metric("Alertas Activas", len(alertas))
+            if alertas:
+                for alerta in alertas:
+                    st.warning(f"⚠️ {alerta['mensaje']}")
+        
+        with col3:
+            recomendaciones = reporte["resumen_ejecutivo"]["recomendaciones_principales"]
+            st.metric("Recomendaciones", len(recomendaciones))
+            if recomendaciones:
+                for rec in recomendaciones[:2]:  # Mostrar solo las primeras 2
+                    st.info(f"💡 {rec}")
+    
+    def _mostrar_tab_heladas(self):
+        """Mostrar pestaña de alertas de heladas con visualizaciones avanzadas"""
+        st.header("🌡️ Alertas de Heladas y Visualizaciones")
+        st.markdown("Sistema de monitoreo y alertas tempranas de heladas con indicadores visuales")
+        
+        # Verificar si hay datos disponibles
+        if not st.session_state.datos_reales_apis:
+            st.warning("⚠️ No hay datos meteorológicos disponibles. Obtén datos reales primero.")
+            return
+        
+        # Crear tabs dentro de la pestaña de heladas
+        tab_heladas_1, tab_heladas_2, tab_heladas_3 = st.tabs([
+            "🚨 Tablero de Alertas",
+            "📊 Gráficos de Estado", 
+            "🗺️ Mapa de Alertas"
+        ])
+        
+        with tab_heladas_1:
+            self._mostrar_tablero_alertas()
+        
+        with tab_heladas_2:
+            self._mostrar_graficos_estado()
+        
+        with tab_heladas_3:
+            self._mostrar_mapa_alertas()
+    
+    def _mostrar_tablero_alertas(self):
+        """Mostrar tablero de alertas visuales"""
+        st.subheader("🚨 Tablero de Alertas en Tiempo Real")
+        
+        # Crear tablero de alertas
+        fig_tablero = self.sistema_alertas_visuales.crear_tablero_alertas(
+            st.session_state.datos_reales_apis
+        )
+        st.plotly_chart(fig_tablero, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Mostrar KPIs
+        st.subheader("📈 Indicadores KPI")
+        indicadores_kpi = self.sistema_alertas_visuales.crear_indicadores_kpi(
+            st.session_state.datos_reales_apis
+        )
+        
+        if indicadores_kpi:
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.plotly_chart(indicadores_kpi[0], config=PLOTLY_CONFIG, width='stretch')
+            with col2:
+                st.plotly_chart(indicadores_kpi[1], config=PLOTLY_CONFIG, width='stretch')
+            with col3:
+                st.plotly_chart(indicadores_kpi[2], config=PLOTLY_CONFIG, width='stretch')
+    
+    def _mostrar_graficos_estado(self):
+        """Mostrar gráficos de estado de variables"""
+        st.subheader("📊 Análisis de Variables Meteorológicas")
+        
+        # Crear gráfico de alertas temporales (simulado)
+        datos_historicos = self._generar_datos_historicos_simulados()
+        fig_temporal = self.sistema_alertas_visuales.crear_grafico_alertas_temporales(datos_historicos)
+        st.plotly_chart(fig_temporal, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Mostrar alertas de heladas tradicionales
+        st.subheader("🌡️ Alertas de Heladas Detalladas")
+        self._mostrar_alertas_heladas_tradicionales()
+    
+    def _mostrar_mapa_alertas(self):
+        """Mostrar mapa de alertas geográfico"""
+        st.subheader("🗺️ Mapa de Alertas - Valle de Quillota")
+        
+        # Crear mapa de alertas
+        fig_mapa = self.sistema_alertas_visuales.crear_mapa_alertas(
+            st.session_state.datos_reales_apis
+        )
+        st.plotly_chart(fig_mapa, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Mostrar reporte de alertas
+        st.subheader("📋 Reporte de Alertas")
+        reporte = self.sistema_alertas_visuales.generar_reporte_alertas_visual(
+            st.session_state.datos_reales_apis
+        )
+        
+        if reporte:
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric(
+                    "🚨 Críticas",
+                    reporte['resumen_alertas']['criticas'],
+                    delta=None
+                )
+            
+            with col2:
+                st.metric(
+                    "⚠️ Advertencias",
+                    reporte['resumen_alertas']['advertencia'],
+                    delta=None
+                )
+            
+            with col3:
+                st.metric(
+                    "✅ Normales",
+                    reporte['resumen_alertas']['normales'],
+                    delta=None
+                )
+    
+    def _generar_datos_historicos_simulados(self):
+        """Generar datos históricos simulados para gráficos"""
+        try:
+            datos = []
+            fecha_base = datetime.now() - timedelta(hours=24)
+            
+            for i in range(24):
+                fecha = fecha_base + timedelta(hours=i)
+                
+                # Simular datos realistas
+                temp = 15 + 10 * np.sin(2 * np.pi * fecha.hour / 24) + np.random.normal(0, 2)
+                humedad = 70 + np.random.normal(0, 10)
+                viento = max(0, np.random.exponential(8))
+                
+                datos.append({
+                    'fecha': fecha,
+                    'temperatura': round(temp, 1),
+                    'humedad': round(humedad, 1),
+                    'viento': round(viento, 1)
+                })
+            
+            return datos
+            
+        except Exception as e:
+            st.error(f"Error generando datos históricos: {e}")
+            return []
+    
+    def _generar_analisis_heladas(self):
+        """Generar análisis de heladas para todas las estaciones"""
+        analisis_heladas = {}
+        
+        # Estaciones por defecto
+        estaciones = {
+            "quillota_centro": {"nombre": "Quillota Centro", "lat": -32.8833, "lon": -71.2667},
+            "la_cruz": {"nombre": "La Cruz", "lat": -32.8167, "lon": -71.2167},
+            "nogueira": {"nombre": "Nogales", "lat": -32.9333, "lon": -71.2167},
+            "colliguay": {"nombre": "Colliguay", "lat": -32.9500, "lon": -71.1833},
+            "hijuelas": {"nombre": "Hijuelas", "lat": -32.7833, "lon": -71.1500},
+            "la_calera": {"nombre": "La Calera", "lat": -32.7833, "lon": -71.2167}
+        }
+        
+        for estacion_id, info in estaciones.items():
+            # Generar datos simulados para el análisis
+            import random
+            temperatura_minima = round(random.uniform(-2, 8), 1)
+            probabilidad_helada = 0
+            
+            if temperatura_minima <= 0:
+                probabilidad_helada = 90
+                nivel_riesgo = "alto"
+            elif temperatura_minima <= 3:
+                probabilidad_helada = 60
+                nivel_riesgo = "medio"
+            elif temperatura_minima <= 5:
+                probabilidad_helada = 30
+                nivel_riesgo = "bajo"
+            else:
+                probabilidad_helada = 5
+                nivel_riesgo = "muy_bajo"
+            
+            analisis_heladas[estacion_id] = {
+                "estacion": info,
+                "riesgo": {
+                    "probabilidad": probabilidad_helada,
+                    "nivel": nivel_riesgo,
+                    "temperatura_minima": temperatura_minima
+                },
+                "recomendaciones": [
+                    "Monitorear temperatura continuamente",
+                    "Activar sistema de riego si temperatura < 2°C",
+                    "Cubrir cultivos sensibles si hay riesgo alto"
+                ]
+            }
+        
+        return analisis_heladas
+    
+    def _mostrar_alertas_heladas_tradicionales(self):
+        """Mostrar alertas de heladas tradicionales"""
+        st.info("⚠️ Sistema de alertas tradicionales (compatible con datos sintéticos)")
+        
+        # Generar análisis de heladas si no existe
+        if not hasattr(self, 'analisis_heladas') or not self.analisis_heladas:
+            self.analisis_heladas = self._generar_analisis_heladas()
+        
+        analisis_heladas = self.analisis_heladas
+        
+        # Resumen de riesgos
+        st.subheader("📊 Resumen de Riesgos por Estación")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Gráfico de barras de riesgo
+            estaciones = []
+            riesgos = []
+            colores = []
+            
+            for estacion_id, analisis in analisis_heladas.items():
+                estaciones.append(analisis["estacion"]["nombre"])
+                riesgos.append(analisis["riesgo"]["probabilidad"])
+                
+                if analisis["riesgo"]["nivel"] == "alto":
+                    colores.append("red")
+                elif analisis["riesgo"]["nivel"] == "medio":
+                    colores.append("orange")
+                elif analisis["riesgo"]["nivel"] == "bajo":
+                    colores.append("yellow")
+                else:
+                    colores.append("green")
+            
+            fig_riesgo = go.Figure(data=[
+                go.Bar(x=estaciones, y=riesgos, marker_color=colores)
+            ])
+            
+            fig_riesgo.update_layout(
+                title="Probabilidad de Heladas por Estación",
+                xaxis_title="Estación",
+                yaxis_title="Probabilidad (%)",
+                height=400
+            )
+            
+            st.plotly_chart(fig_riesgo, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # Mapa de calor de temperaturas mínimas
+            estaciones = []
+            temp_minimas = []
+            
+            for estacion_id, analisis in analisis_heladas.items():
+                estaciones.append(analisis["estacion"]["nombre"])
+                temp_minimas.append(analisis["riesgo"]["temperatura_minima"])
+            
+            fig_heatmap = go.Figure(data=go.Heatmap(
+                z=[temp_minimas],
+                x=estaciones,
+                y=["Temp Mínima"],
+                colorscale="RdYlBu_r",
+                text=np.round(temp_minimas, 1),
+                texttemplate="%{text}°C",
+                textfont={"size": 12}
+            ))
+            
+            fig_heatmap.update_layout(
+                title="Temperaturas Mínimas por Estación",
+                height=400
+            )
+            
+            st.plotly_chart(fig_heatmap, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Detalle por estación
+        st.subheader("📍 Análisis Detallado por Estación")
+        
+        for estacion_id, analisis in analisis_heladas.items():
+            with st.expander(f"📍 {analisis['estacion']['nombre']} - Riesgo: {analisis['riesgo']['nivel'].upper()}"):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Probabilidad", f"{analisis['riesgo']['probabilidad']:.1f}%")
+                    st.metric("Temperatura Mín", f"{analisis['riesgo']['temperatura_minima']:.1f}°C")
+                
+                with col2:
+                    st.metric("Intensidad", analisis['riesgo']['intensidad'].title())
+                    st.metric("Anticipación", analisis['riesgo']['tiempo_anticipacion'].title())
+                
+                with col3:
+                    st.metric("Humedad Promedio", f"{analisis['riesgo']['humedad_promedio']:.1f}%")
+                    st.metric("Altitud", f"{analisis['estacion']['altitud']} m")
+                
+                # Recomendaciones
+                st.subheader("💡 Recomendaciones")
+                for rec in analisis['recomendaciones']:
+                    if rec['tipo'] == 'crítico':
+                        st.error(f"🚨 {rec['medida']}: {rec['descripcion']}")
+                    elif rec['tipo'] == 'preventivo':
+                        st.warning(f"⚠️ {rec['medida']}: {rec['descripcion']}")
+                    else:
+                        st.info(f"ℹ️ {rec['medida']}: {rec['descripcion']}")
+    
+    def _mostrar_tab_cosecha(self):
+        """Mostrar tab de recomendaciones de cosecha"""
+        st.header("🌾 Recomendaciones de Cosecha")
+        
+        if st.session_state.datos_meteorologicos is None:
+            st.info("⚠️ Generar datos meteorológicos primero para analizar cosechas")
+            return
+        
+        # Generar análisis de cosecha
+        if st.session_state.reporte_integral is None:
+            with st.spinner("Analizando recomendaciones de cosecha..."):
+                st.session_state.reporte_integral = self.sistema_recomendaciones.generar_reporte_integral(
+                    st.session_state.datos_meteorologicos
+                )
+        
+        recomendaciones_cosecha = st.session_state.reporte_integral["recomendaciones_cosecha"]
+        
+        # Resumen por cultivo
+        st.subheader("📊 Estado de Cultivos")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Gráfico de madurez
+            cultivos = []
+            madurez = []
+            colores = []
+            
+            for cultivo_id, info in recomendaciones_cosecha.items():
+                cultivos.append(info["cultivo"]["nombre"])
+                madurez.append(info["estado"]["madurez"])
+                
+                if info["estado"]["estado"] == "listo_cosecha":
+                    colores.append("green")
+                elif info["estado"]["estado"] == "cerca_cosecha":
+                    colores.append("yellow")
+                elif info["estado"]["estado"] == "desarrollo":
+                    colores.append("blue")
+                else:
+                    colores.append("gray")
+            
+            fig_madurez = go.Figure(data=[
+                go.Bar(x=cultivos, y=madurez, marker_color=colores)
+            ])
+            
+            fig_madurez.update_layout(
+                title="Nivel de Madurez por Cultivo",
+                xaxis_title="Cultivo",
+                yaxis_title="Madurez (%)",
+                height=400
+            )
+            
+            st.plotly_chart(fig_madurez, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # Gráfico de rendimientos esperados
+            cultivos = []
+            precios = []
+            
+            for cultivo_id, info in recomendaciones_cosecha.items():
+                cultivos.append(info["cultivo"]["nombre"])
+                precio_valor = {"alto": 3, "medio": 2, "bajo": 1}
+                precios.append(precio_valor.get(info["cultivo"]["precio_mercado"], 1))
+            
+            fig_precios = go.Figure(data=[
+                go.Bar(x=cultivos, y=precios, marker_color="lightblue")
+            ])
+            
+            fig_precios.update_layout(
+                title="Valor de Mercado por Cultivo",
+                xaxis_title="Cultivo",
+                yaxis_title="Valor (1=Bajo, 2=Medio, 3=Alto)",
+                height=400
+            )
+            
+            st.plotly_chart(fig_precios, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Detalle por cultivo
+        st.subheader("🌾 Análisis Detallado por Cultivo")
+        
+        for cultivo_id, info in recomendaciones_cosecha.items():
+            with st.expander(f"🌾 {info['cultivo']['nombre']} - Estado: {info['estado']['estado'].replace('_', ' ').title()}"):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Madurez", f"{info['estado']['madurez']:.1f}%")
+                    st.metric("Días Plantación", info['estado']['dias_plantacion'])
+                
+                with col2:
+                    st.metric("Temp Promedio", f"{info['estado']['temperatura_promedio']:.1f}°C")
+                    st.metric("Humedad Promedio", f"{info['estado']['humedad_promedio']:.1f}%")
+                
+                with col3:
+                    st.metric("Rendimiento Esperado", info['estado']['rendimiento_esperado'])
+                    st.metric("Precio Mercado", info['estado']['precio_mercado'])
+                
+                # Recomendaciones
+                st.subheader("💡 Recomendaciones")
+                for rec in info['recomendaciones']:
+                    if rec['tipo'] == 'cosecha':
+                        st.success(f"✅ {rec['accion']}: {rec['descripcion']}")
+                    elif rec['tipo'] == 'monitoreo':
+                        st.warning(f"👁️ {rec['accion']}: {rec['descripcion']}")
+                    elif rec['tipo'] == 'preparacion':
+                        st.info(f"🔧 {rec['accion']}: {rec['descripcion']}")
+                    else:
+                        st.info(f"ℹ️ {rec['accion']}: {rec['descripcion']}")
+    
+    def _mostrar_tab_plagas(self):
+        """Mostrar tab de control de plagas"""
+        st.header("🐛 Sistema de Control de Plagas")
+        
+        if st.session_state.datos_meteorologicos is None:
+            st.info("⚠️ Generar datos meteorológicos primero para analizar plagas")
+            return
+        
+        # Generar análisis de plagas
+        if st.session_state.reporte_integral is None:
+            with st.spinner("Analizando riesgo de plagas..."):
+                st.session_state.reporte_integral = self.sistema_recomendaciones.generar_reporte_integral(
+                    st.session_state.datos_meteorologicos
+                )
+        
+        analisis_plagas = st.session_state.reporte_integral["analisis_plagas"]
+        
+        # Resumen de riesgos
+        st.subheader("📊 Riesgo de Plagas")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Gráfico de riesgo de plagas
+            plagas = []
+            riesgos = []
+            colores = []
+            
+            for plaga_id, analisis in analisis_plagas.items():
+                plagas.append(analisis["plaga"]["nombre"])
+                riesgos.append(analisis["riesgo"]["probabilidad"])
+                
+                if analisis["riesgo"]["nivel"] == "alto":
+                    colores.append("red")
+                elif analisis["riesgo"]["nivel"] == "medio":
+                    colores.append("orange")
+                elif analisis["riesgo"]["nivel"] == "bajo":
+                    colores.append("yellow")
+                else:
+                    colores.append("green")
+            
+            fig_riesgo = go.Figure(data=[
+                go.Bar(x=plagas, y=riesgos, marker_color=colores)
+            ])
+            
+            fig_riesgo.update_layout(
+                title="Probabilidad de Aparición de Plagas",
+                xaxis_title="Plaga",
+                yaxis_title="Probabilidad (%)",
+                height=400
+            )
+            
+            st.plotly_chart(fig_riesgo, config=PLOTLY_CONFIG, width='stretch')
+        
+        with col2:
+            # Condiciones ambientales
+            datos = st.session_state.datos_meteorologicos
+            temp_promedio = datos["temperatura"].mean()
+            humedad_promedio = datos["humedad_relativa"].mean()
+            
+            fig_condiciones = go.Figure()
+            
+            # Agregar condiciones actuales
+            fig_condiciones.add_trace(go.Scatter(
+                x=[temp_promedio],
+                y=[humedad_promedio],
+                mode='markers',
+                marker=dict(size=20, color='red'),
+                name='Condiciones Actuales'
+            ))
+            
+            # Agregar zonas de riesgo para cada plaga
+            for plaga_id, analisis in analisis_plagas.items():
+                plaga = analisis["plaga"]
+                condiciones = plaga["condiciones_favorables"]
+                
+                fig_condiciones.add_trace(go.Scatter(
+                    x=[condiciones["temperatura"]["min"], condiciones["temperatura"]["max"]],
+                    y=[condiciones["humedad"]["min"], condiciones["humedad"]["max"]],
+                    mode='lines',
+                    name=f"Zona {plaga['nombre'][:20]}",
+                    line=dict(dash='dash')
+                ))
+            
+            fig_condiciones.update_layout(
+                title="Condiciones Ambientales vs Zonas de Riesgo",
+                xaxis_title="Temperatura (°C)",
+                yaxis_title="Humedad Relativa (%)",
+                height=400
+            )
+            
+            st.plotly_chart(fig_condiciones, config=PLOTLY_CONFIG, width='stretch')
+        
+        # Detalle por plaga
+        st.subheader("🐛 Análisis Detallado por Plaga")
+        
+        for plaga_id, analisis in analisis_plagas.items():
+            with st.expander(f"🐛 {analisis['plaga']['nombre']} - Riesgo: {analisis['riesgo']['nivel'].upper()}"):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Probabilidad", f"{analisis['riesgo']['probabilidad']:.1f}%")
+                    st.metric("Daño Económico", analisis['plaga']['daño_economico'].replace('_', ' ').title())
+                
+                with col2:
+                    st.metric("Temp Favorable", "✅" if analisis['riesgo']['temperatura_favorable'] else "❌")
+                    st.metric("Humedad Favorable", "✅" if analisis['riesgo']['humedad_favorable'] else "❌")
+                
+                with col3:
+                    st.metric("Cultivos Afectados", len(analisis['plaga']['cultivos_afectados']))
+                    st.metric("Estación", analisis['plaga']['condiciones_favorables']['estacion'].replace('_', ' ').title())
+                
+                # Síntomas
+                st.subheader("🔍 Síntomas a Observar")
+                st.info(f"**{analisis['plaga']['sintomas']}**")
+                
+                # Recomendaciones
+                st.subheader("💡 Recomendaciones de Control")
+                for rec in analisis['recomendaciones']:
+                    if rec['tipo'] == 'urgente':
+                        st.error(f"🚨 {rec['accion']}: {rec['descripcion']}")
+                    elif rec['tipo'] == 'preventivo':
+                        st.warning(f"⚠️ {rec['accion']}: {rec['descripcion']}")
+                    elif rec['tipo'] == 'identificacion':
+                        st.info(f"🔍 {rec['accion']}: {rec['descripcion']}")
+                    else:
+                        st.info(f"ℹ️ {rec['accion']}: {rec['descripcion']}")
+    
+    def _mostrar_tab_reportes(self):
+        """Mostrar tab de reportes integrales con sistema automático"""
+        st.header("📊 Reportes Automáticos e Integrales")
+        
+        # Crear tabs dentro de la pestaña de reportes
+        tab_reportes_1, tab_reportes_2, tab_reportes_3 = st.tabs([
+            "🤖 Reportes Automáticos",
+            "📋 Reportes Históricos",
+            "📊 Análisis Integrales"
+        ])
+        
+        with tab_reportes_1:
+            self._mostrar_reportes_automaticos()
+        
+        with tab_reportes_2:
+            self._mostrar_reportes_historicos()
+        
+        with tab_reportes_3:
+            self._mostrar_analisis_integrales()
+    
+    def _mostrar_reportes_automaticos(self):
+        """Mostrar sistema de reportes automáticos"""
+        st.subheader("🤖 Generador de Reportes Automáticos")
+        
+        # Verificar si hay datos disponibles
+        if not st.session_state.datos_reales_apis:
+            st.warning("⚠️ No hay datos meteorológicos disponibles. Obtén datos reales primero.")
+            return
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("**Generar reportes automáticos con datos en tiempo real**")
+        
+        with col2:
+            if st.button("📄 Generar Reporte Diario", type="primary"):
+                with st.spinner("Generando reporte automático..."):
+                    try:
+                        # Obtener alertas actuales
+                        alertas = self.sistema_alertas_visuales.generar_reporte_alertas_visual(
+                            st.session_state.datos_reales_apis
+                        )
+                        
+                        # Generar predicciones ML para una estación
+                        estacion_principal = list(st.session_state.datos_reales_apis.keys())[0]
+                        datos_actuales = st.session_state.datos_reales_apis[estacion_principal].copy()
+                        datos_actuales['estacion'] = estacion_principal
+                        
+                        predicciones_ml = self.sistema_ml.generar_predicciones_completas(datos_actuales)
+                        
+                        # Generar reporte
+                        resultado = self.sistema_reportes.generar_reporte_diario(
+                            st.session_state.datos_reales_apis,
+                            predicciones_ml=predicciones_ml,
+                            alertas=alertas
+                        )
+                        
+                        if resultado['exito']:
+                            st.success("✅ Reporte diario generado exitosamente")
+                            
+                            # Mostrar archivos generados
+                            st.subheader("📁 Archivos Generados")
+                            for formato, archivo in resultado['archivos'].items():
+                                if archivo:
+                                    nombre_archivo = os.path.basename(archivo)
+                                    st.info(f"📄 {formato.upper()}: {nombre_archivo}")
+                                    
+                                    # Botón para descargar HTML
+                                    if formato == 'html':
+                                        with open(archivo, 'r', encoding='utf-8') as f:
+                                            contenido = f.read()
+                                        st.download_button(
+                                            label=f"📥 Descargar {formato.upper()}",
+                                            data=contenido,
+                                            file_name=nombre_archivo,
+                                            mime="text/html"
+                                        )
+                        else:
+                            st.error(f"❌ Error generando reporte: {resultado['error']}")
+                            
+                    except Exception as e:
+                        st.error(f"❌ Error inesperado: {str(e)}")
+        
+        # Mostrar reportes generados recientemente
+        self._mostrar_reportes_recientes()
+    
+    def _mostrar_reportes_recientes(self):
+        """Mostrar reportes generados recientemente"""
+        st.subheader("📋 Reportes Generados Recientemente")
+        
+        try:
+            reportes = self.sistema_reportes.listar_reportes_generados()
+            
+            if reportes:
+                # Mostrar los últimos 5 reportes
+                for i, reporte in enumerate(reportes[:5]):
+                    fecha = datetime.fromisoformat(reporte['fecha_generacion'])
+                    
+                    with st.expander(f"📄 {reporte['nombre_archivo']} - {fecha.strftime('%d/%m/%Y %H:%M')}"):
+                        col1, col2 = st.columns([3, 1])
+                        
+                        with col1:
+                            st.write(f"**Tipo:** {reporte.get('metadatos', {}).get('titulo', 'N/A')}")
+                            st.write(f"**Archivos:** {len(reporte.get('archivos_generados', {}))}")
+                            st.write(f"**Estado:** {reporte.get('estado', 'N/A')}")
+                        
+                        with col2:
+                            if st.button(f"Ver Detalles", key=f"ver_{i}"):
+                                st.json(reporte)
+            else:
+                st.info("No hay reportes generados aún")
+                
+        except Exception as e:
+            st.error(f"Error obteniendo reportes: {str(e)}")
+    
+    def _mostrar_reportes_historicos(self):
+        """Mostrar reportes históricos"""
+        st.subheader("📋 Reportes Históricos")
+        st.info("Sistema de reportes históricos en desarrollo")
+    
+    def _mostrar_analisis_integrales(self):
+        """Mostrar análisis integrales tradicionales"""
+        st.subheader("📊 Análisis Integrales")
+        
+        if st.session_state.reporte_integral is None:
+            st.info("⚠️ Generar datos meteorológicos primero para crear reportes")
+            return
+        
+        reporte = st.session_state.reporte_integral
+        
+        # Resumen general
+        st.subheader("📋 Resumen General")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Período Analizado", "7 días")
+            st.metric("Estaciones Monitoreadas", len(reporte["analisis_heladas"]))
+        
+        with col2:
+            st.metric("Cultivos Analizados", len(reporte["recomendaciones_cosecha"]))
+            st.metric("Plagas Monitoreadas", len(reporte["analisis_plagas"]))
+        
+        with col3:
+            alertas = reporte["resumen_ejecutivo"]["alertas"]
+            st.metric("Alertas Activas", len(alertas))
+            st.metric("Recomendaciones", len(reporte["resumen_ejecutivo"]["recomendaciones_principales"]))
+        
+        with col4:
+            datos = reporte["datos_meteorologicos"]["resumen"]
+            st.metric("Temp Promedio", f"{datos['temperatura_promedio']:.1f}°C")
+            st.metric("Humedad Promedio", f"{datos['humedad_promedio']:.1f}%")
+        
+        # Exportar reporte
+        st.subheader("📥 Exportar Reporte")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("📄 Descargar Reporte JSON"):
+                reporte_json = json.dumps(reporte, indent=2, ensure_ascii=False)
+                st.download_button(
+                    label="💾 Descargar",
+                    data=reporte_json,
+                    file_name=f"reporte_agricola_metgo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                    mime="application/json"
+                )
+        
+        with col2:
+            if st.button("📊 Generar Reporte PDF"):
+                st.info("Funcionalidad de PDF en desarrollo")
+        
+        # Vista previa del reporte
+        st.subheader("👁️ Vista Previa del Reporte")
+        
+        with st.expander("Ver Reporte Completo"):
+            st.json(reporte)
+    
+    def _mostrar_tab_datos_tiempo_real(self):
+        """Mostrar tab de datos en tiempo real de APIs"""
+        st.header("🌐 Datos Meteorológicos en Tiempo Real")
+        st.markdown("**Datos obtenidos directamente de APIs meteorológicas internacionales**")
+        
+        # Verificar si hay datos disponibles
+        if st.session_state.datos_reales_apis is None:
+            st.info("🔄 Haz clic en 'Obtener Datos Reales' en la barra lateral para cargar información meteorológica actual")
+            return
+        
+        datos_reales = st.session_state.datos_reales_apis
+        ultima_actualizacion = st.session_state.ultima_actualizacion
+        
+        # Header con información de actualización
+        col1, col2, col3 = st.columns([2, 1, 1])
+        
+        with col1:
+            st.success(f"✅ Datos actualizados de {len(datos_reales)} estaciones")
+        
+        with col2:
+            st.info(f"🕐 {ultima_actualizacion.strftime('%H:%M:%S')}")
+        
+        with col3:
+            if st.button("🔄 Actualizar Datos"):
+                with st.spinner("Actualizando datos..."):
+                    self._obtener_datos_reales_apis()
+                st.rerun()
+        
+        st.markdown("---")
+        
+        # Mostrar datos por estación
+        for nombre_estacion, datos in datos_reales.items():
+            with st.expander(f"📍 {nombre_estacion.replace('_', ' ').title()}", expanded=True):
+                
+                # Métricas principales
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    if 'temperatura_actual' in datos:
+                        st.metric(
+                            "🌡️ Temperatura Actual", 
+                            f"{datos['temperatura_actual']:.1f}°C",
+                            delta=f"{datos.get('temperatura_tendencia', 0):.1f}°C"
+                        )
+                
+                with col2:
+                    if 'humedad_relativa' in datos:
+                        st.metric(
+                            "💧 Humedad Relativa", 
+                            f"{datos['humedad_relativa']:.1f}%",
+                            delta=f"{datos.get('humedad_tendencia', 0):.1f}%"
+                        )
+                
+                with col3:
+                    if 'precipitacion' in datos:
+                        st.metric(
+                            "🌧️ Precipitación", 
+                            f"{datos['precipitacion']:.1f} mm/h",
+                            delta=f"{datos.get('precipitacion_tendencia', 0):.1f} mm/h"
+                        )
+                
+                with col4:
+                    if 'velocidad_viento' in datos:
+                        st.metric(
+                            "💨 Velocidad Viento", 
+                            f"{datos['velocidad_viento']:.1f} km/h",
+                            delta=f"{datos.get('viento_tendencia', 0):.1f} km/h"
+                        )
+                
+                # Información adicional
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("📊 Detalles Meteorológicos")
+                    detalles = [
+                        f"**Presión Atmosférica:** {datos.get('presion_atmosferica', 'N/A')} hPa",
+                        f"**Nubosidad:** {datos.get('nubosidad', 'N/A')}%",
+                        f"**Punto de Rocío:** {datos.get('punto_rocio', 'N/A')}°C",
+                        f"**Índice UV:** {datos.get('indice_uv', 'N/A')}",
+                        f"**Visibilidad:** {datos.get('visibilidad', 'N/A')} km"
+                    ]
+                    
+                    for detalle in detalles:
+                        st.markdown(detalle)
+                
+                with col2:
+                    st.subheader("🌅 Pronóstico 24h")
+                    
+                    if 'pronostico_24h' in datos and datos['pronostico_24h']:
+                        pronostico = datos['pronostico_24h']
+                        
+                        # Temperatura mínima y máxima
+                        if 'temp_min' in pronostico and 'temp_max' in pronostico:
+                            st.metric("🌡️ Temp Mín/Máx", f"{pronostico['temp_min']:.1f}°C / {pronostico['temp_max']:.1f}°C")
+                        
+                        # Precipitación esperada
+                        if 'precipitacion_total' in pronostico:
+                            st.metric("🌧️ Precipitación Total", f"{pronostico['precipitacion_total']:.1f} mm")
+                        
+                        # Condiciones generales
+                        if 'condiciones' in pronostico:
+                            st.info(f"**Condiciones:** {pronostico['condiciones']}")
+                        
+                        # Probabilidad de precipitación
+                        if 'probabilidad_lluvia' in pronostico:
+                            st.metric("🌧️ Prob. Lluvia", f"{pronostico['probabilidad_lluvia']:.0f}%")
+                    else:
+                        st.info("Pronóstico no disponible")
+                
+                # Alertas meteorológicas
+                if 'alertas' in datos and datos['alertas']:
+                    st.subheader("⚠️ Alertas Meteorológicas")
+                    
+                    for alerta in datos['alertas']:
+                        if alerta['nivel'] == 'critico':
+                            st.error(f"🚨 **{alerta['tipo']}:** {alerta['descripcion']}")
+                        elif alerta['nivel'] == 'advertencia':
+                            st.warning(f"⚠️ **{alerta['tipo']}:** {alerta['descripcion']}")
+                        else:
+                            st.info(f"ℹ️ **{alerta['tipo']}:** {alerta['descripcion']}")
+        
+        # Resumen comparativo de todas las estaciones
+        st.subheader("📊 Comparación de Estaciones")
+        
+        # Crear DataFrame para comparación
+        datos_comparacion = []
+        
+        for nombre_estacion, datos in datos_reales.items():
+            fila = {
+                'Estación': nombre_estacion.replace('_', ' ').title(),
+                'Temperatura (°C)': datos.get('temperatura_actual', 'N/A'),
+                'Humedad (%)': datos.get('humedad_relativa', 'N/A'),
+                'Precipitación (mm/h)': datos.get('precipitacion', 'N/A'),
+                'Viento (km/h)': datos.get('velocidad_viento', 'N/A'),
+                'Presión (hPa)': datos.get('presion_atmosferica', 'N/A')
+            }
+            datos_comparacion.append(fila)
+        
+        if datos_comparacion:
+            df_comparacion = pd.DataFrame(datos_comparacion)
+            st.dataframe(df_comparacion, width='stretch')
+            
+            # Gráfico comparativo
+            if len(datos_comparacion) > 1:
+                st.subheader("📈 Gráfico Comparativo")
+                
+                # Filtrar solo datos numéricos para el gráfico
+                df_numerico = df_comparacion.copy()
+                columnas_numericas = ['Temperatura (°C)', 'Humedad (%)', 'Precipitación (mm/h)', 'Viento (km/h)', 'Presión (hPa)']
+                
+                for col in columnas_numericas:
+                    df_numerico[col] = pd.to_numeric(df_numerico[col], errors='coerce')
+                
+                # Crear gráfico de barras
+                fig = go.Figure()
+                
+                colores = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+                
+                for i, col in enumerate(columnas_numericas):
+                    fig.add_trace(go.Bar(
+                        name=col,
+                        x=df_numerico['Estación'],
+                        y=df_numerico[col],
+                        marker_color=colores[i % len(colores)]
+                    ))
+                
+                fig.update_layout(
+                    title="Comparación de Variables Meteorológicas por Estación",
+                    xaxis_title="Estación",
+                    yaxis_title="Valor",
+                    barmode='group',
+                    height=500
+                , showlegend=False)
+                
+                st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
+
+def main():
+    """Función principal"""
+    dashboard = DashboardAgricolaAvanzado()
+    dashboard.ejecutar()
+
+if __name__ == "__main__":
+    main()

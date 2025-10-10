@@ -1,0 +1,1076 @@
+RESUMEN DE MIGRACIONES - METGO 3D
+==================================================
+
+ARCHIVO: cursor_revisar_la_carpeta_proyecto_metg.md
+------------------------------
+Linea 633: exportar_pdf: true
+Linea 2843: def exportar_graficos(self, formato: str = 'png'):
+Linea 2845: Exportar todos los gráficos generados.
+Linea 2868: self.logger.warning("No se encontraron gráficos para exportar")
+Linea 4326: exportar_pdf: true
+Linea 6356: # Guardar modelo en disco
+Linea 7391: exportar_pdf: true
+Linea 8808: def exportar_datos(datos, formato='csv', nombre_archivo=None):
+Linea 8810: Exportar datos meteorológicos en diferentes formatos
+Linea 8813: print("❌ No hay datos para exportar")
+Linea 8869: archivo_exportado = exportar_datos(datos_prueba, formato='csv')
+Linea 10447: def exportar_visualizaciones(datos, directorio="visualizaciones"):
+Linea 10449: Exportar todas las visualizaciones en diferentes formatos
+Linea 10454: print("❌ No hay datos para exportar")
+Linea 10469: # Exportar cada dashboard
+Linea 10521: # Exportar visualizaciones
+Linea 10522: exportacion_exitosa = exportar_visualizaciones(datos_prueba)
+Linea 14266: def exportar_reporte_html(reporte, nombre_archivo=None):
+Linea 14268: Exportar reporte en formato HTML
+Linea 14271: print("❌ No hay reporte para exportar")
+Linea 14301: def exportar_reporte_excel(reporte, nombre_archivo=None):
+Linea 14303: Exportar reporte en formato Excel
+Linea 14306: print("❌ No hay reporte para exportar")
+Linea 14656: # Exportar en formatos solicitados
+Linea 14661: archivo = exportar_reporte_html(reporte)
+Linea 14663: archivo = exportar_reporte_excel(reporte)
+Linea 14707: # Exportar reporte HTML
+Linea 14708: archivo_html = exportar_reporte_html(reporte_diario, "reporte_diario_prueba")
+Linea 14721: # Exportar reporte Excel
+Linea 14722: archivo_excel = exportar_reporte_excel(reporte_semanal, "reporte_semanal_prueba")
+Linea 17345: - **Espacio en Disco:** Mínimo 10GB libres
+Linea 17487: - **Disco:** Monitorear espacio en disco
+Linea 20791: - Menor uso de espacio en disco
+Linea 20946: # Disco
+Linea 20963: print(f"   💿 Disco: {disk_percent}% ({disk_free:.1f} GB libres)")
+Linea 21271: - **Disco**: {monitoring_data.get('system_resources', {}).get('disk_percent', 'N/A')}%
+Linea 21329: print(f"💿 Disco: {resources.get('disk_percent', 'N/A')}%")
+Linea 26185: .. py:function:: exportar_datos()
+Linea 26479: * exportar_datos
+Linea 27117: * exportar_datos
+Linea 27349: * exportar_datos
+Linea 29739: - Menor uso de espacio en disco
+Linea 29896: # Disco
+Linea 29897: disco = psutil.disk_usage('/')
+Linea 29898: disco_percent = disco.percent
+Linea 29899: disco_total = disco.total / (1024**3)  # GB
+Linea 29900: disco_usado = disco.used / (1024**3)  # GB
+Linea 29917: 'disco': {
+Linea 29918: 'percent': disco_percent,
+Linea 29919: 'total_gb': disco_total,
+Linea 29920: 'usado_gb': disco_usado
+Linea 30056: ### Disco
+Linea 30057: - **Uso**: {metricas['disco']['percent']:.1f}%
+Linea 30058: - **Total**: {metricas['disco']['total_gb']:.1f} GB
+Linea 30059: - **Usado**: {metricas['disco']['usado_gb']:.1f} GB
+Linea 30168: print(f"CPU: {metricas['cpu']['percent']:.1f}% | Memoria: {metricas['memoria']['percent']:.1f}% | Disco: {metricas['disco']['percent']:.1f}%")
+Linea 30226: print(f"🖥️ CPU: {metricas['cpu']['percent']:.1f}% | Memoria: {metricas['memoria']['percent']:.1f}% | Disco: {metricas['disco']['percent']:.1f}%")
+Linea 30971: def analizar_rendimiento_disco():
+Linea 30972: """Analizar rendimiento de disco"""
+Linea 30973: print_step(3, "Analizando rendimiento de disco")
+Linea 30976: # Obtener métricas de disco
+Linea 30977: disco = psutil.disk_usage('/')
+Linea 30979: # Análisis de uso de disco
+Linea 30980: if disco.percent < 50:
+Linea 30981: estado_disco = "ÓPTIMO"
+Linea 30982: recomendacion_disco = "Disco con espacio suficiente"
+Linea 30983: elif disco.percent < 75:
+Linea 30984: estado_disco = "BUENO"
+Linea 30985: recomendacion_disco = "Disco con uso moderado"
+Linea 30986: elif disco.percent < 90:
+Linea 30987: estado_disco = "MODERADO"
+Linea 30988: recomendacion_disco = "Disco con uso alto, considerar limpieza"
+Linea 30990: estado_disco = "CRÍTICO"
+Linea 30991: recomendacion_disco = "Disco casi lleno, liberar espacio urgentemente"
+Linea 30994: 'porcentaje': disco.percent,
+Linea 30995: 'total_gb': disco.total / (1024**3),
+Linea 30996: 'usado_gb': disco.used / (1024**3),
+Linea 30997: 'libre_gb': disco.free / (1024**3),
+Linea 30998: 'estado': estado_disco,
+Linea 30999: 'recomendacion': recomendacion_disco
+Linea 31003: print_error(f"Error analizando disco: {e}")
+Linea 31275: ## 💾 Análisis de Disco
+Linea 31276: - **Uso**: {metricas['disco']['porcentaje']:.1f}%
+Linea 31277: - **Total**: {metricas['disco']['total_gb']:.1f} GB
+Linea 31278: - **Usado**: {metricas['disco']['usado_gb']:.1f} GB
+Linea 31279: - **Libre**: {metricas['disco']['libre_gb']:.1f} GB
+Linea 31280: - **Estado**: {metricas['disco']['estado']}
+Linea 31281: - **Recomendación**: {metricas['disco']['recomendacion']}
+Linea 31320: metricas['disco']['estado'],
+Linea 31364: if metricas['disco']['estado'] in ['MODERADO', 'CRÍTICO']:
+Linea 31365: reporte_content += "- **Disco**: Ejecutar limpieza de archivos temporales y logs antiguos\n"
+Linea 31402: print(f"💾 Disco: {metricas['disco']['porcentaje']:.1f}% ({metricas['disco']['estado']})")
+Linea 31412: metricas['disco']['estado'],
+Linea 31455: 'disco': analizar_rendimiento_disco(),
+Linea 31813: # Disco
+Linea 31814: disco = psutil.disk_usage('/')
+Linea 31830: 'disco': {
+Linea 31831: 'porcentaje': disco.percent,
+Linea 31832: 'total_gb': disco.total / (1024**3),
+Linea 31833: 'usado_gb': disco.used / (1024**3),
+Linea 31834: 'libre_gb': disco.free / (1024**3)
+Linea 31844: print_success(f"Disco: {disco.percent:.1f}% ({disco.used / (1024**3):.1f} GB usados)")
+Linea 32012: - **Disco**: {diagnostico['recursos']['disco']['porcentaje']:.1f}% ({diagnostico['recursos']['disco']['usado_gb']:.1f} GB usados)
+Linea 32113: print(f"   Disco: {diagnostico['recursos']['disco']['porcentaje']:.1f}%")
+Linea 33157: - Análisis de disco
+Linea 34304: disco = psutil.disk_usage('/')
+Linea 34311: 'disco_percent': disco.percent,
+Linea 34502: if verificacion['disco_percent'] > 90:
+Linea 34503: generar_alerta("DISCO", f"Uso de disco alto: {verificacion['disco_percent']:.1f}%", "CRITICAL")
+Linea 34589: print(f"💾 Disco: {verificacion['disco_percent']:.1f}%")
+Linea 35154: elif tipo == 'DISCO':
+Linea 35155: return procesar_alerta_disco(alerta)
+Linea 35284: def procesar_alerta_disco(alerta):
+Linea 35285: """Procesar alerta de disco"""
+Linea 35287: log_message(f"Procesando alerta de disco: {alerta['mensaje']}", "INFO")
+Linea 35289: # Acciones para alertas de disco
+Linea 35303: log_message(f"Error procesando alerta de disco: {e}", "ERROR")
+Linea 35992: - Optimización de espacio en disco
+Linea 36001: 2. **Monitorear espacio**: Verificar espacio en disco
+Linea 38006: 'umbral_disco': 90
+Linea 38433: config['monitoreo']['umbral_disco'] = 90
+Linea 41030: "disco": 90,
+Linea 41111: <div class="metric-label">Uso de Disco</div>
+Linea 41270: "disco_lleno": {
+Linea 41272: "mensaje": "Disco casi lleno: {valor}%",
+Linea 41379: "disco": {
+Linea 41380: "nombre": "Uso de Disco",
+Linea 41498: - **Métricas en tiempo real**: CPU, memoria, disco
+Linea 41508: - **Disco lleno**: Umbral 90%, nivel critical
+Linea 41525: - **Disco**: Gauge, intervalo 300s, retención 30d
+Linea 47343: - **Disco**: Uso de disco del sistema
+Linea 47937: - **Disco**: Uso de disco del sistema
+Linea 50250: - **Disco**: Uso de disco
+Linea 50298: ### Despliegue en la Nube
+Linea 50373: - Despliegue en la nube
+Linea 51349: - **Disco**: Uso de disco
+Linea 51397: ### Despliegue en la Nube
+Linea 51472: - Despliegue en la nube
+Linea 54237: - **Monitoreo de espacio** en disco
+Linea 54402: # Información de disco
+Linea 54418: 'disco': {
+Linea 54427: print(f"💿 Disco: {disk_percent:.1f}% ({disk_free:.1f} GB libres)")
+Linea 54648: if recursos['disco']['estado'] == 'alto':
+Linea 54707: print(f"   Disco: {recursos['disco']['porcentaje']:.1f}% ({recursos['disco']['estado']})")
+Linea 55804: # Información de disco
+Linea 55824: 'disco': {
+Linea 55937: # Alertas de disco
+Linea 55938: if recursos and recursos['disco']['porcentaje'] > 90:
+Linea 55940: 'tipo': 'disco_lleno',
+Linea 55942: 'mensaje': f"Disco casi lleno: {recursos['disco']['porcentaje']:.1f}%",
+Linea 56001: print(f"   Disco: {recursos['disco']['porcentaje']:.1f}% ({recursos['disco']['estado']})")
+Linea 57842: def exportar_logs(formato='txt'):
+Linea 57843: """Exportar logs en formato específico"""
+Linea 57849: print_warning("No hay logs para exportar")
+Linea 57859: # Exportar como texto plano
+Linea 57884: # Exportar como JSON
+Linea 57929: print("7. 📤 Exportar logs")
+Linea 58008: archivo = exportar_logs(formato)
+Linea 58273: def exportar_datos(datos, archivo_salida, formato='csv'):
+Linea 58274: """Exportar datos a archivo"""
+Linea 58279: print_warning("No hay datos para exportar")
+Linea 58286: # Exportar según formato
+Linea 58458: print("5. 📤 Exportar datos")
+Linea 58532: exito = exportar_datos(datos_cargados, archivo, formato)
+Linea 58841: def exportar_reportes(formato='zip'):
+Linea 58842: """Exportar reportes en formato específico"""
+Linea 58848: print_warning("No hay reportes para exportar")
+Linea 58858: # Exportar como ZIP
+Linea 58871: # Exportar como texto plano
+Linea 59052: print("6. 📤 Exportar reportes")
+Linea 59136: archivo = exportar_reportes(formato)
+Linea 59955: def exportar_configuracion(config, archivo_salida):
+Linea 59956: """Exportar configuración a archivo"""
+Linea 59961: print_error("No hay configuración para exportar")
+Linea 59968: # Exportar según extensión
+Linea 60028: print("5. 📤 Exportar configuración")
+Linea 60127: exito = exportar_configuracion(config, archivo)
+Linea 60135: print_warning("No hay configuración para exportar")
+Linea 61163: print("6. 📤 Exportar documentación")
+Linea 61278: print_warning("No hay documentación para exportar")
+Linea 62521: 'disco': {
+Linea 62571: # Disco
+Linea 62572: disco = psutil.disk_usage('/')
+Linea 62573: print(f"💿 Disco: {disco.percent}% ({disco.used // (1024**3)}GB / {disco.total // (1024**3)}GB)")
+Linea 62575: if disco.percent > 90:
+Linea 62576: print_warning("Disco con uso alto")
+Linea 62577: elif disco.percent > 80:
+Linea 62578: print_info("Disco con uso moderado")
+Linea 62580: print_success("Disco con uso normal")
+Linea 62731: 'disco_uso': estado['disco']['porcentaje'],
+Linea 64534: # Disco
+Linea 64535: disco = psutil.disk_usage('/')
+Linea 64536: disco_total = disco.total / (1024**3)
+Linea 64537: disco_usado = disco.used / (1024**3)
+Linea 64538: disco_libre = disco.free / (1024**3)
+Linea 64539: disco_percent = disco.percent
+Linea 64559: 'disco': {
+Linea 64560: 'total_gb': round(disco_total, 2),
+Linea 64561: 'usado_gb': round(disco_usado, 2),
+Linea 64562: 'libre_gb': round(disco_libre, 2),
+Linea 64563: 'porcentaje': disco_percent,
+Linea 64564: 'estado': 'Alto' if disco_percent > 90 else 'Moderado' if disco_percent > 80 else 'Normal'
+Linea 64575: print(f"💿 Disco: {disco_percent}% ({rendimiento['disco']['estado']}) - {disco_usado:.2f}GB / {disco_total:.2f}GB")
+Linea 64829: print(f"Disco inicial: {rendimiento_inicial['disco']['porcentaje']:.1f}% -> Final: {rendimiento_final['disco']['porcentaje']:.1f}%")
+Linea 65646: 'disco_usado': psutil.disk_usage('/').percent,
+Linea 65725: disco = psutil.disk_usage('/')
+Linea 65733: print(f"💿 Disco usado: {disco.percent:.1f}%")
+Linea 65941: 'disco_alto': 90,
+Linea 65959: # Disco
+Linea 65960: disco = psutil.disk_usage('/')
+Linea 65961: disco_total = disco.total / (1024**3)
+Linea 65962: disco_usado = disco.used / (1024**3)
+Linea 65963: disco_libre = disco.free / (1024**3)
+Linea 65964: disco_percent = disco.percent
+Linea 65985: 'disco': {
+Linea 65986: 'total_gb': round(disco_total, 2),
+Linea 65987: 'usado_gb': round(disco_usado, 2),
+Linea 65988: 'libre_gb': round(disco_libre, 2),
+Linea 65989: 'porcentaje': disco_percent
+Linea 66027: # Alerta de disco alto
+Linea 66028: if metricas['disco']['porcentaje'] > self.umbrales['disco_alto']:
+Linea 66030: 'tipo': 'disco_alto',
+Linea 66031: 'mensaje': f"Disco con uso alto: {metricas['disco']['porcentaje']:.1f}%",
+Linea 66062: print(f"💿 Disco: {metricas['disco']['porcentaje']:.1f}% ({metricas['disco']['usado_gb']:.1f}GB / {metricas['disco']['total_gb']:.1f}GB)")
+Linea 66081: self.exportar_datos_monitoreo()
+Linea 66086: def exportar_datos_monitoreo(self):
+Linea 66087: """Exportar datos de monitoreo a archivo"""
+Linea 66116: disco_promedio = sum(m['disco']['porcentaje'] for m in self.datos_monitoreo) / len(self.datos_monitoreo)
+Linea 66120: disco_max = max(m['disco']['porcentaje'] for m in self.datos_monitoreo)
+Linea 66138: 'disco': {
+Linea 66139: 'promedio': round(disco_promedio, 2),
+Linea 66140: 'maximo': round(disco_max, 2)
+Linea 66905: 'disco_alto': 90,
+Linea 69849: 'disco_uso': 23.1
+Linea 72368: - Migración completa del sistema original a versión operativa
+Linea 73845: 'disco': 90,  # %
+Linea 73887: # Disco
+Linea 73888: disco = psutil.disk_usage('/')
+Linea 73889: disco_percent = disco.percent
+Linea 73890: disco_total = disco.total / (1024**3)  # GB
+Linea 73891: disco_usado = disco.used / (1024**3)  # GB
+Linea 73892: disco_libre = disco.free / (1024**3)  # GB
+Linea 73923: 'disco': {
+Linea 73924: 'porcentaje': disco_percent,
+Linea 73925: 'total_gb': round(disco_total, 2),
+Linea 73926: 'usado_gb': round(disco_usado, 2),
+Linea 73927: 'libre_gb': round(disco_libre, 2)
+Linea 73978: # Alerta de disco
+Linea 73979: if metricas['disco']['porcentaje'] > umbrales['disco']:
+Linea 73982: 'tipo': 'disco',
+Linea 73984: 'mensaje': f"Disco lleno: {metricas['disco']['porcentaje']:.1f}%",
+Linea 73985: 'valor': metricas['disco']['porcentaje'],
+Linea 73986: 'umbral': umbrales['disco']
+Linea 74031: # Disco
+Linea 74032: print(f"💿 Disco: {metricas['disco']['porcentaje']:.1f}% "
+Linea 74033: f"({metricas['disco']['usado_gb']:.1f}GB / {metricas['disco']['total_gb']:.1f}GB)")
+Linea 76178: # Disco
+Linea 76179: disco = psutil.disk_usage('/')
+Linea 76180: disco_percent = disco.percent
+Linea 76181: disco_total = disco.total / (1024**3)  # GB
+Linea 76182: disco_usado = disco.used / (1024**3)  # GB
+Linea 76183: disco_libre = disco.free / (1024**3)  # GB
+Linea 76200: 'disco': {
+Linea 76201: 'porcentaje': disco_percent,
+Linea 76202: 'total_gb': round(disco_total, 2),
+Linea 76203: 'usado_gb': round(disco_usado, 2),
+Linea 76204: 'libre_gb': round(disco_libre, 2)
+Linea 76518: print(f"Disco inicial: {stats_iniciales['disco']['usado_gb']:.2f} GB")
+Linea 76519: print(f"Disco final: {stats_finales['disco']['usado_gb']:.2f} GB")
+Linea 76609: print(f"Disco: {stats['disco']['porcentaje']:.1f}%")
+Linea 77779: 'disco': 90,  # %
+Linea 77826: # Disco
+Linea 77827: disco = psutil.disk_usage('/')
+Linea 77828: disco_percent = disco.percent
+Linea 77829: disco_total = disco.total / (1024**3)  # GB
+Linea 77830: disco_usado = disco.used / (1024**3)  # GB
+Linea 77831: disco_libre = disco.free / (1024**3)  # GB
+Linea 77862: 'disco': {
+Linea 77863: 'porcentaje': disco_percent,
+Linea 77864: 'total_gb': round(disco_total, 2),
+Linea 77865: 'usado_gb': round(disco_usado, 2),
+Linea 77866: 'libre_gb': round(disco_libre, 2)
+Linea 77954: # Alerta de disco
+Linea 77955: if metricas['disco']['porcentaje'] > umbrales['disco']:
+Linea 77958: 'tipo': 'disco',
+Linea 77960: 'mensaje': f"Disco lleno: {metricas['disco']['porcentaje']:.1f}%",
+Linea 77961: 'valor': metricas['disco']['porcentaje'],
+Linea 77962: 'umbral': umbrales['disco']
+Linea 78000: # Disco
+Linea 78001: print(f"💿 Disco: {metricas['disco']['porcentaje']:.1f}% "
+Linea 78002: f"({metricas['disco']['usado_gb']:.1f}GB / {metricas['disco']['total_gb']:.1f}GB)")
+Linea 79861: 'destinos': ['local', 'remoto', 'nube'],
+Linea 81642: def exportar_datos(self, df, archivo_salida, formato='csv'):
+Linea 81643: """Exportar datos"""
+Linea 81650: # Exportar según formato
+Linea 81756: print("8. 📤 Exportar datos")
+Linea 81866: archivo_datos = input("Archivo de datos a exportar: ").strip()
+Linea 81873: if gestor.exportar_datos(df, archivo_salida, formato):
+Linea 82178: 'disco_utilizado': datos_sistema.get('disco_utilizado', 0),
+Linea 82239: def exportar_reporte(self, reporte_id, formato='json'):
+Linea 82240: """Exportar reporte"""
+Linea 82261: # Exportar según formato
+Linea 82351: print("9. 📤 Exportar reporte")
+Linea 82448: 'disco_utilizado': 2048,
+Linea 82479: if gestor.exportar_reporte(reporte_id, formato):
+Linea 84392: - Espacio en disco: 2GB mínimo
+Linea 84620: def exportar_reporte(self, reporte, formato):
+Linea 84621: """Exportar reporte en formato específico"""
+Linea 84716: disco: 90
+Linea 84893: - Uso de disco
+Linea 84906: disco: 90
+Linea 86204: def test_exportar_reporte(self):
+Linea 86205: """Test exportar reporte"""
+Linea 86206: from gestion_reportes import exportar_reporte
+Linea 86210: # Test exportar a JSON
+Linea 86211: archivo_json = exportar_reporte(reporte, 'json', 'test_reporte')
+Linea 86214: # Test exportar a CSV
+Linea 86215: archivo_csv = exportar_reporte(reporte, 'csv', 'test_reporte')
+Linea 86443: self.assertIn('disco_lleno', tipos_alertas)
+Linea 88279: 'umbral_disco': 90
+Linea 88283: 'sistema': ['cpu', 'memoria', 'disco', 'red'],
+Linea 88338: disco: 90
+Linea 88353: - disco
+Linea 88390: # Disco
+Linea 88391: disco = psutil.disk_usage('/')
+Linea 88392: disco_percent = disco.percent
+Linea 88409: 'disco': {
+Linea 88410: 'porcentaje': disco_percent,
+Linea 88411: 'total': disco.total,
+Linea 88412: 'disponible': disco.free,
+Linea 88413: 'estado': 'OK' if disco_percent < self.configuracion['umbral_disco'] else 'ALERTA'
+Linea 88645: print(f"Disco: {metricas['disco']['porcentaje']}%")
+Linea 90313: 'umbral_disco': 90
+Linea 90319: 'optimizacion_disco',
+Linea 90371: disco: 90
+Linea 90384: disco:
+Linea 90480: def optimizar_disco(self):
+Linea 90481: """Optimizar uso de disco"""
+Linea 90483: print_info("Optimizando disco...")
+Linea 90485: # Obtener información de disco
+Linea 90486: disco = psutil.disk_usage('/')
+Linea 90487: disco_percent = disco.percent
+Linea 90489: print_info(f"Uso actual de disco: {disco_percent}%")
+Linea 90491: if disco_percent > self.configuracion['umbral_disco']:
+Linea 90492: print_warning("Disco lleno, aplicando optimizaciones...")
+Linea 90500: print_success("Disco optimizado")
+Linea 90502: print_info("Disco en niveles normales")
+Linea 90507: print_error(f"Error optimizando disco: {e}")
+Linea 90629: ('Optimización de disco', self.optimizar_disco),
+Linea 90673: disco = psutil.disk_usage('/')
+Linea 90692: 'disco': {
+Linea 90693: 'porcentaje': disco.percent,
+Linea 90694: 'total': disco.total,
+Linea 90695: 'disponible': disco.free,
+Linea 90696: 'estado': 'OK' if disco.percent < self.configuracion['umbral_disco'] else 'ALERTA'
+Linea 90702: 'optimizacion_disco': True,
+Linea 90716: if disco.percent > self.configuracion['umbral_disco']:
+Linea 90717: reporte['recomendaciones'].append("Considerar liberar espacio en disco")
+Linea 90733: print(f"Disco: {disco.percent}% ({reporte['metricas']['disco']['estado']})")
+Linea 90756: print("5. 💿 Optimizar disco")
+Linea 90811: print_step("5", "Optimizando disco")
+Linea 90812: if optimizador.optimizar_disco():
+Linea 90813: print_success("Disco optimizado correctamente")
+Linea 90815: print_error("Error optimizando disco")
+Linea 92080: 'umbral_disco': 90,
+Linea 92140: # Disco
+Linea 92141: disco = psutil.disk_usage('/')
+Linea 92161: 'disco': {
+Linea 92162: 'porcentaje': disco.percent,
+Linea 92163: 'total': disco.total,
+Linea 92164: 'disponible': disco.free,
+Linea 92165: 'estado': 'OK' if disco.percent < self.configuracion['umbral_disco'] else 'ALERTA'
+Linea 92298: # Verificar disco
+Linea 92299: if metricas['sistema']['disco']['estado'] == 'ALERTA':
+Linea 92301: 'tipo': 'disco',
+Linea 92302: 'mensaje': f"Disco lleno: {metricas['sistema']['disco']['porcentaje']}%",
+Linea 92417: print(f"Disco: {metricas_sistema['disco']['porcentaje']}% ({metricas_sistema['disco']['estado']})")
+Linea 92931: 'mejoras': ['memoria', 'disco', 'procesos']
+Linea 92951: 'disco': 23.1
+Linea 93362: 'disco',
+Linea 95067: def exportar_logs(self, tipo=None, formato='json', archivo_salida=None):
+Linea 95068: """Exportar logs"""
+Linea 95076: print_warning("No hay logs para exportar")
+Linea 95086: # Exportar según formato
+Linea 95170: print("6. 📤 Exportar logs")
+Linea 95278: archivo = gestor.exportar_logs(tipo, formato, archivo_salida)
+Linea 95429: 'exportar'
+Linea 95887: def exportar_datos(self, datos, archivo, formato=None, opciones=None):
+Linea 95888: """Exportar datos"""
+Linea 95893: print_error("No hay datos para exportar")
+Linea 95907: # Exportar según formato
+Linea 96008: print("10. 📤 Exportar datos")
+Linea 96192: if gestor.exportar_datos(datos, archivo, formato, opciones):
+Linea 96199: print_error("Error cargando datos para exportar")
+Linea 96842: if 'disco' in metricas:
+Linea 96843: axes[1, 0].plot(metricas['disco'])
+Linea 96844: axes[1, 0].set_title('Disco')
+Linea 96895: def exportar_reporte(self, reporte_id, formato='json', archivo_salida=None):
+Linea 96896: """Exportar reporte"""
+Linea 96913: # Exportar según formato
+Linea 97097: print("5. 📤 Exportar reporte")
+Linea 97177: if gestor.exportar_reporte(reporte_id, formato, archivo_salida):
+Linea 98209: 'exportar'
+Linea 98255: 'disco': 90,
+Linea 98270: 'sistema': ['cpu', 'memoria', 'disco', 'red'],
+Linea 98291: 'disco',
+Linea 98441: 'disco': 90
+Linea 100067: disco: 90
+Linea 101666: Despliegue en la nube
+Linea 103102: self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
+Linea 103124: def _on_mqtt_disconnect(self, client, userdata, rc):
+Linea 103340: self.mqtt_client.disconnect()
+Linea 107378: 'sistema': ['cpu', 'memoria', 'disco', 'red'],
+Linea 107385: 'disco_lleno': 90,
+Linea 107402: 'nube'
+Linea 107628: def exportar_configuracion(self, formato: str = 'yaml') -> str:
+Linea 107629: """Exportar configuración en formato específico"""
+Linea 111946: suite = loader.discover(
+Linea 111988: suite = loader.discover(
+Linea 115952: 'umbrales_disco': {'warning': 85, 'critical': 95},
+Linea 116121: self.metrica_disco = Gauge('metgo3d_disk_usage_percent', 'Uso de disco en porcentaje')
+Linea 116162: 'nombre': 'disco_lleno',
+Linea 116163: 'condicion': lambda m: m.nombre == 'disk_usage' and m.valor > self.configuracion_monitoreo['umbrales_disco']['critical'],
+Linea 116165: 'mensaje': 'Uso de disco crítico: {valor}%'
+Linea 116253: # Disco
+Linea 116254: disco = psutil.disk_usage('/')
+Linea 116257: valor=(disco.used / disco.total) * 100,
+Linea 116262: 'total': disco.total,
+Linea 116263: 'used': disco.used,
+Linea 116264: 'free': disco.free
+Linea 116729: self.metrica_disco.set(metrica.valor)
+Linea 117071: 'disco_uso': {'warning': 85, 'critical': 95},
+Linea 117273: # Métricas de disco
+Linea 117274: disco = psutil.disk_usage('/')
+Linea 117276: nombre='disco_uso',
+Linea 117277: valor=(disco.used / disco.total) * 100,
+Linea 117280: tags={'tipo': 'sistema', 'componente': 'disco'}
+Linea 118114: html.H5("💿 Disco", className="card-title"),
+Linea 118115: html.H2(id="metric-disco", className="text-center"),
+Linea 118243: Output('metric-disco', 'children'),
+Linea 118324: # Disco
+Linea 118325: disco = metricas_dict.get('disco_uso', (0, '%'))[0]
+Linea 118326: disco_str = f"{disco:.1f}" if disco else "0.0"
+Linea 118341: return cpu_str, memoria_str, disco_str, red_str, procesos_str, python_str
+Linea 118354: AND nombre IN ('cpu_uso', 'memoria_uso', 'disco_uso')
+Linea 118385: name='Disco',
+Linea 118395: for nombre in ['cpu_uso', 'memoria_uso', 'disco_uso']:
+Linea 118547: AND nombre IN ('cpu_uso', 'memoria_uso', 'disco_uso')
+Linea 118558: ('disco_uso', self.colores['acento'])]:
+Linea 118961: - **Métricas del sistema** (CPU, memoria, disco, red)
+Linea 119182: - **Monitoreo de espacio** en disco
+Linea 119206: - **Monitoreo de espacio** en disco
+Linea 119209: - **Respaldos en la nube** (opcional)
+Linea 119569: """Verificar espacio disponible en disco"""
+Linea 119684: respaldo.errores.append("Espacio insuficiente en disco")
+Linea 120495: "Monitorear el espacio en disco disponible",
+Linea 120498: "Implementar respaldos en la nube para mayor seguridad"
+Linea 120581: - Métricas del sistema: CPU, memoria, disco, red, procesos
+Linea 120615: - Métricas del sistema: CPU, memoria, disco, red, procesos
+Linea 120676: 'disco_uso': {'warning': 85, 'critical': 95},
+Linea 120740: 'disco_uso': {'warning': 85, 'critical': 95},
+Linea 120808: - **Espacio en disco**: Mínimo 2GB libres
+Linea 121083: - Uso de disco
+Linea 121389: 6. [Instalación en la Nube](#instalación-en-la-nube)
+Linea 121404: - **Espacio en disco**: 2GB libres
+Linea 121413: - **Espacio en disco**: 10GB libres
+Linea 121722: ## ☁️ Instalación en la Nube
+Linea 123723: disco_uso:
+Linea 124327: disco_uso:
+Linea 124385: disco_uso:
+Linea 124927: # Exportar configuración
+Linea 124928: python configuracion_unificada_metgo.py --exportar
+Linea 125259: disco_uso:
+Linea 125342: nube:
+Linea 126219: ### 1. Error de Espacio en Disco
+Linea 126225: # Verificar espacio en disco
+Linea 126463: # Espacio en disco
+Linea 126654: - Instalación en la nube
+Linea 127088: - Instalación en la nube (AWS, GCP, Azure, DigitalOcean)
+Linea 127242: DISCO = "disco"
+Linea 127261: disco_uso: float
+Linea 127389: disco_uso REAL NOT NULL,
+Linea 127556: disco = psutil.disk_usage('/')
+Linea 127576: disco_uso=(disco.used / disco.total) * 100,
+Linea 127599: (timestamp, cpu_uso, memoria_uso, disco_uso, red_entrada, red_salida,
+Linea 127606: metricas.disco_uso,
+Linea 128190: print(f"   Disco: {metricas_iniciales.disco_uso:.1f}%")
+Linea 128217: print(f"   Disco: {metricas_finales.disco_uso:.1f}%")
+Linea 128278: disco_io: float
+Linea 128390: disco_io REAL NOT NULL,
+Linea 128528: # Métricas de disco
+Linea 128529: disco = psutil.disk_io_counters()
+Linea 128530: disco_io = (disco.read_bytes + disco.write_bytes) / (1024 * 1024)  # MB
+Linea 128552: disco_io=disco_io,
+Linea 128581: # Métricas de disco
+Linea 128582: disco = psutil.disk_io_counters()
+Linea 128583: disco_io = (disco.read_bytes + disco.write_bytes) / (1024 * 1024)  # MB
+Linea 128605: disco_io=disco_io,
+Linea 128628: (timestamp, cpu_uso, memoria_uso, disco_io, red_io, tiempo_respuesta, throughput, latencia, errores, metadata)
+Linea 128634: metricas.disco_io,
+Linea 129224: discovery: str
+Linea 129250: 'habilitar_service_discovery': True,
+Linea 129261: self.service_discovery = None
+Linea 129385: # Configurar service discovery
+Linea 129386: if self.configuracion_escalabilidad['habilitar_service_discovery']:
+Linea 129387: self._configurar_service_discovery()
+Linea 129415: recursos={"cpu": 2, "memoria": 4, "disco": 20}
+Linea 129425: recursos={"cpu": 2, "memoria": 4, "disco": 20}
+Linea 129439: recursos={"cpu": 4, "memoria": 8, "disco": 100}
+Linea 129453: recursos={"cpu": 1, "memoria": 2, "disco": 10}
+Linea 129467: recursos={"cpu": 1, "memoria": 2, "disco": 10}
+Linea 129511: def _configurar_service_discovery(self):
+Linea 129512: """Configurar service discovery"""
+Linea 129514: # Configuración de service discovery
+Linea 129515: self.service_discovery = {
+Linea 129534: self.logger.info("Service discovery configurado")
+Linea 129537: self.logger.error(f"Error configurando service discovery: {e}")
+Linea 129976: 'service_discovery': self.service_discovery
+Linea 129983: "Configurar service discovery",
+Linea 130300: recursos={"cpu": 8, "memoria": 16, "disco": 100},
+Linea 130313: recursos={"cpu": 4, "memoria": 8, "disco": 200},
+Linea 130326: recursos={"cpu": 2, "memoria": 4, "disco": 50},
+Linea 130457: 'disco_uso': np.random.uniform(40, 90),
+Linea 131587: 'disco_io_por_segundo': 150,
+Linea 131633: 'disco_io_pico': 200
+Linea 131795: {'escenario': 'Fallos de disco', 'tiempo_recuperacion': 90, 'estado': 'ok'},
+Linea 131945: disco = psutil.disk_usage('/')
+Linea 131951: 'disco_uso': (disco.used / disco.total) * 100,
+Linea 131952: 'disco_disponible': disco.free / (1024**3),  # GB
+Linea 134033: - **Disco**: Mínimo 50GB, recomendado 100GB+
+Linea 134244: # Verificar uso de disco
+Linea 135231: # Exportar a Python
+Linea 137981: # Exportar a Python
+Linea 138859: # Exportar a Python
+Linea 139737: # Exportar a Python
+
+ARCHIVO: cursor_revisar_la_carpeta_proyecto_metg0.md
+------------------------------
+Linea 633: exportar_pdf: true
+Linea 2843: def exportar_graficos(self, formato: str = 'png'):
+Linea 2845: Exportar todos los gráficos generados.
+Linea 2868: self.logger.warning("No se encontraron gráficos para exportar")
+Linea 4326: exportar_pdf: true
+Linea 6356: # Guardar modelo en disco
+Linea 7391: exportar_pdf: true
+Linea 8808: def exportar_datos(datos, formato='csv', nombre_archivo=None):
+Linea 8810: Exportar datos meteorológicos en diferentes formatos
+Linea 8813: print("❌ No hay datos para exportar")
+Linea 8869: archivo_exportado = exportar_datos(datos_prueba, formato='csv')
+Linea 10447: def exportar_visualizaciones(datos, directorio="visualizaciones"):
+Linea 10449: Exportar todas las visualizaciones en diferentes formatos
+Linea 10454: print("❌ No hay datos para exportar")
+Linea 10469: # Exportar cada dashboard
+Linea 10521: # Exportar visualizaciones
+Linea 10522: exportacion_exitosa = exportar_visualizaciones(datos_prueba)
+Linea 14266: def exportar_reporte_html(reporte, nombre_archivo=None):
+Linea 14268: Exportar reporte en formato HTML
+Linea 14271: print("❌ No hay reporte para exportar")
+Linea 14301: def exportar_reporte_excel(reporte, nombre_archivo=None):
+Linea 14303: Exportar reporte en formato Excel
+Linea 14306: print("❌ No hay reporte para exportar")
+Linea 14656: # Exportar en formatos solicitados
+Linea 14661: archivo = exportar_reporte_html(reporte)
+Linea 14663: archivo = exportar_reporte_excel(reporte)
+Linea 14707: # Exportar reporte HTML
+Linea 14708: archivo_html = exportar_reporte_html(reporte_diario, "reporte_diario_prueba")
+Linea 14721: # Exportar reporte Excel
+Linea 14722: archivo_excel = exportar_reporte_excel(reporte_semanal, "reporte_semanal_prueba")
+Linea 17345: - **Espacio en Disco:** Mínimo 10GB libres
+Linea 17487: - **Disco:** Monitorear espacio en disco
+Linea 20791: - Menor uso de espacio en disco
+Linea 20946: # Disco
+Linea 20963: print(f"   💿 Disco: {disk_percent}% ({disk_free:.1f} GB libres)")
+Linea 21271: - **Disco**: {monitoring_data.get('system_resources', {}).get('disk_percent', 'N/A')}%
+Linea 21329: print(f"💿 Disco: {resources.get('disk_percent', 'N/A')}%")
+Linea 26185: .. py:function:: exportar_datos()
+Linea 26479: * exportar_datos
+Linea 27117: * exportar_datos
+Linea 27349: * exportar_datos
+Linea 29739: - Menor uso de espacio en disco
+Linea 29896: # Disco
+Linea 29897: disco = psutil.disk_usage('/')
+Linea 29898: disco_percent = disco.percent
+Linea 29899: disco_total = disco.total / (1024**3)  # GB
+Linea 29900: disco_usado = disco.used / (1024**3)  # GB
+Linea 29917: 'disco': {
+Linea 29918: 'percent': disco_percent,
+Linea 29919: 'total_gb': disco_total,
+Linea 29920: 'usado_gb': disco_usado
+Linea 30056: ### Disco
+Linea 30057: - **Uso**: {metricas['disco']['percent']:.1f}%
+Linea 30058: - **Total**: {metricas['disco']['total_gb']:.1f} GB
+Linea 30059: - **Usado**: {metricas['disco']['usado_gb']:.1f} GB
+Linea 30168: print(f"CPU: {metricas['cpu']['percent']:.1f}% | Memoria: {metricas['memoria']['percent']:.1f}% | Disco: {metricas['disco']['percent']:.1f}%")
+Linea 30226: print(f"🖥️ CPU: {metricas['cpu']['percent']:.1f}% | Memoria: {metricas['memoria']['percent']:.1f}% | Disco: {metricas['disco']['percent']:.1f}%")
+Linea 30971: def analizar_rendimiento_disco():
+Linea 30972: """Analizar rendimiento de disco"""
+Linea 30973: print_step(3, "Analizando rendimiento de disco")
+Linea 30976: # Obtener métricas de disco
+Linea 30977: disco = psutil.disk_usage('/')
+Linea 30979: # Análisis de uso de disco
+Linea 30980: if disco.percent < 50:
+Linea 30981: estado_disco = "ÓPTIMO"
+Linea 30982: recomendacion_disco = "Disco con espacio suficiente"
+Linea 30983: elif disco.percent < 75:
+Linea 30984: estado_disco = "BUENO"
+Linea 30985: recomendacion_disco = "Disco con uso moderado"
+Linea 30986: elif disco.percent < 90:
+Linea 30987: estado_disco = "MODERADO"
+Linea 30988: recomendacion_disco = "Disco con uso alto, considerar limpieza"
+Linea 30990: estado_disco = "CRÍTICO"
+Linea 30991: recomendacion_disco = "Disco casi lleno, liberar espacio urgentemente"
+Linea 30994: 'porcentaje': disco.percent,
+Linea 30995: 'total_gb': disco.total / (1024**3),
+Linea 30996: 'usado_gb': disco.used / (1024**3),
+Linea 30997: 'libre_gb': disco.free / (1024**3),
+Linea 30998: 'estado': estado_disco,
+Linea 30999: 'recomendacion': recomendacion_disco
+Linea 31003: print_error(f"Error analizando disco: {e}")
+Linea 31275: ## 💾 Análisis de Disco
+Linea 31276: - **Uso**: {metricas['disco']['porcentaje']:.1f}%
+Linea 31277: - **Total**: {metricas['disco']['total_gb']:.1f} GB
+Linea 31278: - **Usado**: {metricas['disco']['usado_gb']:.1f} GB
+Linea 31279: - **Libre**: {metricas['disco']['libre_gb']:.1f} GB
+Linea 31280: - **Estado**: {metricas['disco']['estado']}
+Linea 31281: - **Recomendación**: {metricas['disco']['recomendacion']}
+Linea 31320: metricas['disco']['estado'],
+Linea 31364: if metricas['disco']['estado'] in ['MODERADO', 'CRÍTICO']:
+Linea 31365: reporte_content += "- **Disco**: Ejecutar limpieza de archivos temporales y logs antiguos\n"
+Linea 31402: print(f"💾 Disco: {metricas['disco']['porcentaje']:.1f}% ({metricas['disco']['estado']})")
+Linea 31412: metricas['disco']['estado'],
+Linea 31455: 'disco': analizar_rendimiento_disco(),
+Linea 31813: # Disco
+Linea 31814: disco = psutil.disk_usage('/')
+Linea 31830: 'disco': {
+Linea 31831: 'porcentaje': disco.percent,
+Linea 31832: 'total_gb': disco.total / (1024**3),
+Linea 31833: 'usado_gb': disco.used / (1024**3),
+Linea 31834: 'libre_gb': disco.free / (1024**3)
+Linea 31844: print_success(f"Disco: {disco.percent:.1f}% ({disco.used / (1024**3):.1f} GB usados)")
+Linea 32012: - **Disco**: {diagnostico['recursos']['disco']['porcentaje']:.1f}% ({diagnostico['recursos']['disco']['usado_gb']:.1f} GB usados)
+Linea 32113: print(f"   Disco: {diagnostico['recursos']['disco']['porcentaje']:.1f}%")
+Linea 33157: - Análisis de disco
+Linea 34304: disco = psutil.disk_usage('/')
+Linea 34311: 'disco_percent': disco.percent,
+Linea 34502: if verificacion['disco_percent'] > 90:
+Linea 34503: generar_alerta("DISCO", f"Uso de disco alto: {verificacion['disco_percent']:.1f}%", "CRITICAL")
+Linea 34589: print(f"💾 Disco: {verificacion['disco_percent']:.1f}%")
+Linea 35154: elif tipo == 'DISCO':
+Linea 35155: return procesar_alerta_disco(alerta)
+Linea 35284: def procesar_alerta_disco(alerta):
+Linea 35285: """Procesar alerta de disco"""
+Linea 35287: log_message(f"Procesando alerta de disco: {alerta['mensaje']}", "INFO")
+Linea 35289: # Acciones para alertas de disco
+Linea 35303: log_message(f"Error procesando alerta de disco: {e}", "ERROR")
+Linea 35992: - Optimización de espacio en disco
+Linea 36001: 2. **Monitorear espacio**: Verificar espacio en disco
+Linea 38006: 'umbral_disco': 90
+Linea 38433: config['monitoreo']['umbral_disco'] = 90
+Linea 41030: "disco": 90,
+Linea 41111: <div class="metric-label">Uso de Disco</div>
+Linea 41270: "disco_lleno": {
+Linea 41272: "mensaje": "Disco casi lleno: {valor}%",
+Linea 41379: "disco": {
+Linea 41380: "nombre": "Uso de Disco",
+Linea 41498: - **Métricas en tiempo real**: CPU, memoria, disco
+Linea 41508: - **Disco lleno**: Umbral 90%, nivel critical
+Linea 41525: - **Disco**: Gauge, intervalo 300s, retención 30d
+Linea 47343: - **Disco**: Uso de disco del sistema
+Linea 47937: - **Disco**: Uso de disco del sistema
+Linea 50250: - **Disco**: Uso de disco
+Linea 50298: ### Despliegue en la Nube
+Linea 50373: - Despliegue en la nube
+Linea 51349: - **Disco**: Uso de disco
+Linea 51397: ### Despliegue en la Nube
+Linea 51472: - Despliegue en la nube
+Linea 54237: - **Monitoreo de espacio** en disco
+Linea 54402: # Información de disco
+Linea 54418: 'disco': {
+Linea 54427: print(f"💿 Disco: {disk_percent:.1f}% ({disk_free:.1f} GB libres)")
+Linea 54648: if recursos['disco']['estado'] == 'alto':
+Linea 54707: print(f"   Disco: {recursos['disco']['porcentaje']:.1f}% ({recursos['disco']['estado']})")
+Linea 55804: # Información de disco
+Linea 55824: 'disco': {
+Linea 55937: # Alertas de disco
+Linea 55938: if recursos and recursos['disco']['porcentaje'] > 90:
+Linea 55940: 'tipo': 'disco_lleno',
+Linea 55942: 'mensaje': f"Disco casi lleno: {recursos['disco']['porcentaje']:.1f}%",
+Linea 56001: print(f"   Disco: {recursos['disco']['porcentaje']:.1f}% ({recursos['disco']['estado']})")
+Linea 57842: def exportar_logs(formato='txt'):
+Linea 57843: """Exportar logs en formato específico"""
+Linea 57849: print_warning("No hay logs para exportar")
+Linea 57859: # Exportar como texto plano
+Linea 57884: # Exportar como JSON
+Linea 57929: print("7. 📤 Exportar logs")
+Linea 58008: archivo = exportar_logs(formato)
+Linea 58273: def exportar_datos(datos, archivo_salida, formato='csv'):
+Linea 58274: """Exportar datos a archivo"""
+Linea 58279: print_warning("No hay datos para exportar")
+Linea 58286: # Exportar según formato
+Linea 58458: print("5. 📤 Exportar datos")
+Linea 58532: exito = exportar_datos(datos_cargados, archivo, formato)
+Linea 58841: def exportar_reportes(formato='zip'):
+Linea 58842: """Exportar reportes en formato específico"""
+Linea 58848: print_warning("No hay reportes para exportar")
+Linea 58858: # Exportar como ZIP
+Linea 58871: # Exportar como texto plano
+Linea 59052: print("6. 📤 Exportar reportes")
+Linea 59136: archivo = exportar_reportes(formato)
+Linea 59955: def exportar_configuracion(config, archivo_salida):
+Linea 59956: """Exportar configuración a archivo"""
+Linea 59961: print_error("No hay configuración para exportar")
+Linea 59968: # Exportar según extensión
+Linea 60028: print("5. 📤 Exportar configuración")
+Linea 60127: exito = exportar_configuracion(config, archivo)
+Linea 60135: print_warning("No hay configuración para exportar")
+Linea 61163: print("6. 📤 Exportar documentación")
+Linea 61278: print_warning("No hay documentación para exportar")
+Linea 62521: 'disco': {
+Linea 62571: # Disco
+Linea 62572: disco = psutil.disk_usage('/')
+Linea 62573: print(f"💿 Disco: {disco.percent}% ({disco.used // (1024**3)}GB / {disco.total // (1024**3)}GB)")
+Linea 62575: if disco.percent > 90:
+Linea 62576: print_warning("Disco con uso alto")
+Linea 62577: elif disco.percent > 80:
+Linea 62578: print_info("Disco con uso moderado")
+Linea 62580: print_success("Disco con uso normal")
+Linea 62731: 'disco_uso': estado['disco']['porcentaje'],
+Linea 64534: # Disco
+Linea 64535: disco = psutil.disk_usage('/')
+Linea 64536: disco_total = disco.total / (1024**3)
+Linea 64537: disco_usado = disco.used / (1024**3)
+Linea 64538: disco_libre = disco.free / (1024**3)
+Linea 64539: disco_percent = disco.percent
+Linea 64559: 'disco': {
+Linea 64560: 'total_gb': round(disco_total, 2),
+Linea 64561: 'usado_gb': round(disco_usado, 2),
+Linea 64562: 'libre_gb': round(disco_libre, 2),
+Linea 64563: 'porcentaje': disco_percent,
+Linea 64564: 'estado': 'Alto' if disco_percent > 90 else 'Moderado' if disco_percent > 80 else 'Normal'
+Linea 64575: print(f"💿 Disco: {disco_percent}% ({rendimiento['disco']['estado']}) - {disco_usado:.2f}GB / {disco_total:.2f}GB")
+Linea 64829: print(f"Disco inicial: {rendimiento_inicial['disco']['porcentaje']:.1f}% -> Final: {rendimiento_final['disco']['porcentaje']:.1f}%")
+Linea 65646: 'disco_usado': psutil.disk_usage('/').percent,
+Linea 65725: disco = psutil.disk_usage('/')
+Linea 65733: print(f"💿 Disco usado: {disco.percent:.1f}%")
+Linea 65941: 'disco_alto': 90,
+Linea 65959: # Disco
+Linea 65960: disco = psutil.disk_usage('/')
+Linea 65961: disco_total = disco.total / (1024**3)
+Linea 65962: disco_usado = disco.used / (1024**3)
+Linea 65963: disco_libre = disco.free / (1024**3)
+Linea 65964: disco_percent = disco.percent
+Linea 65985: 'disco': {
+Linea 65986: 'total_gb': round(disco_total, 2),
+Linea 65987: 'usado_gb': round(disco_usado, 2),
+Linea 65988: 'libre_gb': round(disco_libre, 2),
+Linea 65989: 'porcentaje': disco_percent
+Linea 66027: # Alerta de disco alto
+Linea 66028: if metricas['disco']['porcentaje'] > self.umbrales['disco_alto']:
+Linea 66030: 'tipo': 'disco_alto',
+Linea 66031: 'mensaje': f"Disco con uso alto: {metricas['disco']['porcentaje']:.1f}%",
+Linea 66062: print(f"💿 Disco: {metricas['disco']['porcentaje']:.1f}% ({metricas['disco']['usado_gb']:.1f}GB / {metricas['disco']['total_gb']:.1f}GB)")
+Linea 66081: self.exportar_datos_monitoreo()
+Linea 66086: def exportar_datos_monitoreo(self):
+Linea 66087: """Exportar datos de monitoreo a archivo"""
+Linea 66116: disco_promedio = sum(m['disco']['porcentaje'] for m in self.datos_monitoreo) / len(self.datos_monitoreo)
+Linea 66120: disco_max = max(m['disco']['porcentaje'] for m in self.datos_monitoreo)
+Linea 66138: 'disco': {
+Linea 66139: 'promedio': round(disco_promedio, 2),
+Linea 66140: 'maximo': round(disco_max, 2)
+Linea 66905: 'disco_alto': 90,
+Linea 69849: 'disco_uso': 23.1
+Linea 72368: - Migración completa del sistema original a versión operativa
+Linea 73845: 'disco': 90,  # %
+Linea 73887: # Disco
+Linea 73888: disco = psutil.disk_usage('/')
+Linea 73889: disco_percent = disco.percent
+Linea 73890: disco_total = disco.total / (1024**3)  # GB
+Linea 73891: disco_usado = disco.used / (1024**3)  # GB
+Linea 73892: disco_libre = disco.free / (1024**3)  # GB
+Linea 73923: 'disco': {
+Linea 73924: 'porcentaje': disco_percent,
+Linea 73925: 'total_gb': round(disco_total, 2),
+Linea 73926: 'usado_gb': round(disco_usado, 2),
+Linea 73927: 'libre_gb': round(disco_libre, 2)
+Linea 73978: # Alerta de disco
+Linea 73979: if metricas['disco']['porcentaje'] > umbrales['disco']:
+Linea 73982: 'tipo': 'disco',
+Linea 73984: 'mensaje': f"Disco lleno: {metricas['disco']['porcentaje']:.1f}%",
+Linea 73985: 'valor': metricas['disco']['porcentaje'],
+Linea 73986: 'umbral': umbrales['disco']
+Linea 74031: # Disco
+Linea 74032: print(f"💿 Disco: {metricas['disco']['porcentaje']:.1f}% "
+Linea 74033: f"({metricas['disco']['usado_gb']:.1f}GB / {metricas['disco']['total_gb']:.1f}GB)")
+Linea 76178: # Disco
+Linea 76179: disco = psutil.disk_usage('/')
+Linea 76180: disco_percent = disco.percent
+Linea 76181: disco_total = disco.total / (1024**3)  # GB
+Linea 76182: disco_usado = disco.used / (1024**3)  # GB
+Linea 76183: disco_libre = disco.free / (1024**3)  # GB
+Linea 76200: 'disco': {
+Linea 76201: 'porcentaje': disco_percent,
+Linea 76202: 'total_gb': round(disco_total, 2),
+Linea 76203: 'usado_gb': round(disco_usado, 2),
+Linea 76204: 'libre_gb': round(disco_libre, 2)
+Linea 76518: print(f"Disco inicial: {stats_iniciales['disco']['usado_gb']:.2f} GB")
+Linea 76519: print(f"Disco final: {stats_finales['disco']['usado_gb']:.2f} GB")
+Linea 76609: print(f"Disco: {stats['disco']['porcentaje']:.1f}%")
+Linea 77779: 'disco': 90,  # %
+Linea 77826: # Disco
+Linea 77827: disco = psutil.disk_usage('/')
+Linea 77828: disco_percent = disco.percent
+Linea 77829: disco_total = disco.total / (1024**3)  # GB
+Linea 77830: disco_usado = disco.used / (1024**3)  # GB
+Linea 77831: disco_libre = disco.free / (1024**3)  # GB
+Linea 77862: 'disco': {
+Linea 77863: 'porcentaje': disco_percent,
+Linea 77864: 'total_gb': round(disco_total, 2),
+Linea 77865: 'usado_gb': round(disco_usado, 2),
+Linea 77866: 'libre_gb': round(disco_libre, 2)
+Linea 77954: # Alerta de disco
+Linea 77955: if metricas['disco']['porcentaje'] > umbrales['disco']:
+Linea 77958: 'tipo': 'disco',
+Linea 77960: 'mensaje': f"Disco lleno: {metricas['disco']['porcentaje']:.1f}%",
+Linea 77961: 'valor': metricas['disco']['porcentaje'],
+Linea 77962: 'umbral': umbrales['disco']
+Linea 78000: # Disco
+Linea 78001: print(f"💿 Disco: {metricas['disco']['porcentaje']:.1f}% "
+Linea 78002: f"({metricas['disco']['usado_gb']:.1f}GB / {metricas['disco']['total_gb']:.1f}GB)")
+Linea 79861: 'destinos': ['local', 'remoto', 'nube'],
+Linea 81642: def exportar_datos(self, df, archivo_salida, formato='csv'):
+Linea 81643: """Exportar datos"""
+Linea 81650: # Exportar según formato
+Linea 81756: print("8. 📤 Exportar datos")
+Linea 81866: archivo_datos = input("Archivo de datos a exportar: ").strip()
+Linea 81873: if gestor.exportar_datos(df, archivo_salida, formato):
+Linea 82178: 'disco_utilizado': datos_sistema.get('disco_utilizado', 0),
+Linea 82239: def exportar_reporte(self, reporte_id, formato='json'):
+Linea 82240: """Exportar reporte"""
+Linea 82261: # Exportar según formato
+Linea 82351: print("9. 📤 Exportar reporte")
+Linea 82448: 'disco_utilizado': 2048,
+Linea 82479: if gestor.exportar_reporte(reporte_id, formato):
+Linea 84392: - Espacio en disco: 2GB mínimo
+Linea 84620: def exportar_reporte(self, reporte, formato):
+Linea 84621: """Exportar reporte en formato específico"""
+Linea 84716: disco: 90
+Linea 84893: - Uso de disco
+Linea 84906: disco: 90
+Linea 86204: def test_exportar_reporte(self):
+Linea 86205: """Test exportar reporte"""
+Linea 86206: from gestion_reportes import exportar_reporte
+Linea 86210: # Test exportar a JSON
+Linea 86211: archivo_json = exportar_reporte(reporte, 'json', 'test_reporte')
+Linea 86214: # Test exportar a CSV
+Linea 86215: archivo_csv = exportar_reporte(reporte, 'csv', 'test_reporte')
+Linea 86443: self.assertIn('disco_lleno', tipos_alertas)
+Linea 88279: 'umbral_disco': 90
+Linea 88283: 'sistema': ['cpu', 'memoria', 'disco', 'red'],
+Linea 88338: disco: 90
+Linea 88353: - disco
+Linea 88390: # Disco
+Linea 88391: disco = psutil.disk_usage('/')
+Linea 88392: disco_percent = disco.percent
+Linea 88409: 'disco': {
+Linea 88410: 'porcentaje': disco_percent,
+Linea 88411: 'total': disco.total,
+Linea 88412: 'disponible': disco.free,
+Linea 88413: 'estado': 'OK' if disco_percent < self.configuracion['umbral_disco'] else 'ALERTA'
+Linea 88645: print(f"Disco: {metricas['disco']['porcentaje']}%")
+Linea 90313: 'umbral_disco': 90
+Linea 90319: 'optimizacion_disco',
+Linea 90371: disco: 90
+Linea 90384: disco:
+Linea 90480: def optimizar_disco(self):
+Linea 90481: """Optimizar uso de disco"""
+Linea 90483: print_info("Optimizando disco...")
+Linea 90485: # Obtener información de disco
+Linea 90486: disco = psutil.disk_usage('/')
+Linea 90487: disco_percent = disco.percent
+Linea 90489: print_info(f"Uso actual de disco: {disco_percent}%")
+Linea 90491: if disco_percent > self.configuracion['umbral_disco']:
+Linea 90492: print_warning("Disco lleno, aplicando optimizaciones...")
+Linea 90500: print_success("Disco optimizado")
+Linea 90502: print_info("Disco en niveles normales")
+Linea 90507: print_error(f"Error optimizando disco: {e}")
+Linea 90629: ('Optimización de disco', self.optimizar_disco),
+Linea 90673: disco = psutil.disk_usage('/')
+Linea 90692: 'disco': {
+Linea 90693: 'porcentaje': disco.percent,
+Linea 90694: 'total': disco.total,
+Linea 90695: 'disponible': disco.free,
+Linea 90696: 'estado': 'OK' if disco.percent < self.configuracion['umbral_disco'] else 'ALERTA'
+Linea 90702: 'optimizacion_disco': True,
+Linea 90716: if disco.percent > self.configuracion['umbral_disco']:
+Linea 90717: reporte['recomendaciones'].append("Considerar liberar espacio en disco")
+Linea 90733: print(f"Disco: {disco.percent}% ({reporte['metricas']['disco']['estado']})")
+Linea 90756: print("5. 💿 Optimizar disco")
+Linea 90811: print_step("5", "Optimizando disco")
+Linea 90812: if optimizador.optimizar_disco():
+Linea 90813: print_success("Disco optimizado correctamente")
+Linea 90815: print_error("Error optimizando disco")
+Linea 92080: 'umbral_disco': 90,
+Linea 92140: # Disco
+Linea 92141: disco = psutil.disk_usage('/')
+Linea 92161: 'disco': {
+Linea 92162: 'porcentaje': disco.percent,
+Linea 92163: 'total': disco.total,
+Linea 92164: 'disponible': disco.free,
+Linea 92165: 'estado': 'OK' if disco.percent < self.configuracion['umbral_disco'] else 'ALERTA'
+Linea 92298: # Verificar disco
+Linea 92299: if metricas['sistema']['disco']['estado'] == 'ALERTA':
+Linea 92301: 'tipo': 'disco',
+Linea 92302: 'mensaje': f"Disco lleno: {metricas['sistema']['disco']['porcentaje']}%",
+Linea 92417: print(f"Disco: {metricas_sistema['disco']['porcentaje']}% ({metricas_sistema['disco']['estado']})")
+Linea 92931: 'mejoras': ['memoria', 'disco', 'procesos']
+Linea 92951: 'disco': 23.1
+Linea 93362: 'disco',
+Linea 95067: def exportar_logs(self, tipo=None, formato='json', archivo_salida=None):
+Linea 95068: """Exportar logs"""
+Linea 95076: print_warning("No hay logs para exportar")
+Linea 95086: # Exportar según formato
+Linea 95170: print("6. 📤 Exportar logs")
+Linea 95278: archivo = gestor.exportar_logs(tipo, formato, archivo_salida)
+Linea 95429: 'exportar'
+Linea 95887: def exportar_datos(self, datos, archivo, formato=None, opciones=None):
+Linea 95888: """Exportar datos"""
+Linea 95893: print_error("No hay datos para exportar")
+Linea 95907: # Exportar según formato
+Linea 96008: print("10. 📤 Exportar datos")
+Linea 96192: if gestor.exportar_datos(datos, archivo, formato, opciones):
+Linea 96199: print_error("Error cargando datos para exportar")
+Linea 96842: if 'disco' in metricas:
+Linea 96843: axes[1, 0].plot(metricas['disco'])
+Linea 96844: axes[1, 0].set_title('Disco')
+Linea 96895: def exportar_reporte(self, reporte_id, formato='json', archivo_salida=None):
+Linea 96896: """Exportar reporte"""
+Linea 96913: # Exportar según formato
+Linea 97097: print("5. 📤 Exportar reporte")
+Linea 97177: if gestor.exportar_reporte(reporte_id, formato, archivo_salida):
+Linea 98209: 'exportar'
+Linea 98255: 'disco': 90,
+Linea 98270: 'sistema': ['cpu', 'memoria', 'disco', 'red'],
+Linea 98291: 'disco',
+Linea 98441: 'disco': 90
+Linea 100067: disco: 90
+Linea 101666: Despliegue en la nube
+Linea 103102: self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
+Linea 103124: def _on_mqtt_disconnect(self, client, userdata, rc):
+Linea 103340: self.mqtt_client.disconnect()
+Linea 107378: 'sistema': ['cpu', 'memoria', 'disco', 'red'],
+Linea 107385: 'disco_lleno': 90,
+Linea 107402: 'nube'
+Linea 107628: def exportar_configuracion(self, formato: str = 'yaml') -> str:
+Linea 107629: """Exportar configuración en formato específico"""
+Linea 111946: suite = loader.discover(
+Linea 111988: suite = loader.discover(
+Linea 115952: 'umbrales_disco': {'warning': 85, 'critical': 95},
+Linea 116121: self.metrica_disco = Gauge('metgo3d_disk_usage_percent', 'Uso de disco en porcentaje')
+Linea 116162: 'nombre': 'disco_lleno',
+Linea 116163: 'condicion': lambda m: m.nombre == 'disk_usage' and m.valor > self.configuracion_monitoreo['umbrales_disco']['critical'],
+Linea 116165: 'mensaje': 'Uso de disco crítico: {valor}%'
+Linea 116253: # Disco
+Linea 116254: disco = psutil.disk_usage('/')
+Linea 116257: valor=(disco.used / disco.total) * 100,
+Linea 116262: 'total': disco.total,
+Linea 116263: 'used': disco.used,
+Linea 116264: 'free': disco.free
+Linea 116729: self.metrica_disco.set(metrica.valor)
+Linea 117071: 'disco_uso': {'warning': 85, 'critical': 95},
+Linea 117273: # Métricas de disco
+Linea 117274: disco = psutil.disk_usage('/')
+Linea 117276: nombre='disco_uso',
+Linea 117277: valor=(disco.used / disco.total) * 100,
+Linea 117280: tags={'tipo': 'sistema', 'componente': 'disco'}
+Linea 118114: html.H5("💿 Disco", className="card-title"),
+Linea 118115: html.H2(id="metric-disco", className="text-center"),
+Linea 118243: Output('metric-disco', 'children'),
+Linea 118324: # Disco
+Linea 118325: disco = metricas_dict.get('disco_uso', (0, '%'))[0]
+Linea 118326: disco_str = f"{disco:.1f}" if disco else "0.0"
+Linea 118341: return cpu_str, memoria_str, disco_str, red_str, procesos_str, python_str
+Linea 118354: AND nombre IN ('cpu_uso', 'memoria_uso', 'disco_uso')
+Linea 118385: name='Disco',
+Linea 118395: for nombre in ['cpu_uso', 'memoria_uso', 'disco_uso']:
+Linea 118547: AND nombre IN ('cpu_uso', 'memoria_uso', 'disco_uso')
+Linea 118558: ('disco_uso', self.colores['acento'])]:
+Linea 118961: - **Métricas del sistema** (CPU, memoria, disco, red)
+Linea 119182: - **Monitoreo de espacio** en disco
+Linea 119206: - **Monitoreo de espacio** en disco
+Linea 119209: - **Respaldos en la nube** (opcional)
+Linea 119569: """Verificar espacio disponible en disco"""
+Linea 119684: respaldo.errores.append("Espacio insuficiente en disco")
+Linea 120495: "Monitorear el espacio en disco disponible",
+Linea 120498: "Implementar respaldos en la nube para mayor seguridad"
+Linea 120581: - Métricas del sistema: CPU, memoria, disco, red, procesos
+Linea 120615: - Métricas del sistema: CPU, memoria, disco, red, procesos
+Linea 120676: 'disco_uso': {'warning': 85, 'critical': 95},
+Linea 120740: 'disco_uso': {'warning': 85, 'critical': 95},
+Linea 120808: - **Espacio en disco**: Mínimo 2GB libres
+Linea 121083: - Uso de disco
+Linea 121389: 6. [Instalación en la Nube](#instalación-en-la-nube)
+Linea 121404: - **Espacio en disco**: 2GB libres
+Linea 121413: - **Espacio en disco**: 10GB libres
+Linea 121722: ## ☁️ Instalación en la Nube
+Linea 123723: disco_uso:
+Linea 124327: disco_uso:
+Linea 124385: disco_uso:
+Linea 124927: # Exportar configuración
+Linea 124928: python configuracion_unificada_metgo.py --exportar
+Linea 125259: disco_uso:
+Linea 125342: nube:
+Linea 126219: ### 1. Error de Espacio en Disco
+Linea 126225: # Verificar espacio en disco
+Linea 126463: # Espacio en disco
+Linea 126654: - Instalación en la nube
+Linea 127088: - Instalación en la nube (AWS, GCP, Azure, DigitalOcean)
+Linea 127242: DISCO = "disco"
+Linea 127261: disco_uso: float
+Linea 127389: disco_uso REAL NOT NULL,
+Linea 127556: disco = psutil.disk_usage('/')
+Linea 127576: disco_uso=(disco.used / disco.total) * 100,
+Linea 127599: (timestamp, cpu_uso, memoria_uso, disco_uso, red_entrada, red_salida,
+Linea 127606: metricas.disco_uso,
+Linea 128190: print(f"   Disco: {metricas_iniciales.disco_uso:.1f}%")
+Linea 128217: print(f"   Disco: {metricas_finales.disco_uso:.1f}%")
+Linea 128278: disco_io: float
+Linea 128390: disco_io REAL NOT NULL,
+Linea 128528: # Métricas de disco
+Linea 128529: disco = psutil.disk_io_counters()
+Linea 128530: disco_io = (disco.read_bytes + disco.write_bytes) / (1024 * 1024)  # MB
+Linea 128552: disco_io=disco_io,
+Linea 128581: # Métricas de disco
+Linea 128582: disco = psutil.disk_io_counters()
+Linea 128583: disco_io = (disco.read_bytes + disco.write_bytes) / (1024 * 1024)  # MB
+Linea 128605: disco_io=disco_io,
+Linea 128628: (timestamp, cpu_uso, memoria_uso, disco_io, red_io, tiempo_respuesta, throughput, latencia, errores, metadata)
+Linea 128634: metricas.disco_io,
+Linea 129224: discovery: str
+Linea 129250: 'habilitar_service_discovery': True,
+Linea 129261: self.service_discovery = None
+Linea 129385: # Configurar service discovery
+Linea 129386: if self.configuracion_escalabilidad['habilitar_service_discovery']:
+Linea 129387: self._configurar_service_discovery()
+Linea 129415: recursos={"cpu": 2, "memoria": 4, "disco": 20}
+Linea 129425: recursos={"cpu": 2, "memoria": 4, "disco": 20}
+Linea 129439: recursos={"cpu": 4, "memoria": 8, "disco": 100}
+Linea 129453: recursos={"cpu": 1, "memoria": 2, "disco": 10}
+Linea 129467: recursos={"cpu": 1, "memoria": 2, "disco": 10}
+Linea 129511: def _configurar_service_discovery(self):
+Linea 129512: """Configurar service discovery"""
+Linea 129514: # Configuración de service discovery
+Linea 129515: self.service_discovery = {
+Linea 129534: self.logger.info("Service discovery configurado")
+Linea 129537: self.logger.error(f"Error configurando service discovery: {e}")
+Linea 129976: 'service_discovery': self.service_discovery
+Linea 129983: "Configurar service discovery",
+Linea 130300: recursos={"cpu": 8, "memoria": 16, "disco": 100},
+Linea 130313: recursos={"cpu": 4, "memoria": 8, "disco": 200},
+Linea 130326: recursos={"cpu": 2, "memoria": 4, "disco": 50},
+Linea 130457: 'disco_uso': np.random.uniform(40, 90),
+Linea 131587: 'disco_io_por_segundo': 150,
+Linea 131633: 'disco_io_pico': 200
+Linea 131795: {'escenario': 'Fallos de disco', 'tiempo_recuperacion': 90, 'estado': 'ok'},
+Linea 131945: disco = psutil.disk_usage('/')
+Linea 131951: 'disco_uso': (disco.used / disco.total) * 100,
+Linea 131952: 'disco_disponible': disco.free / (1024**3),  # GB
+Linea 134033: - **Disco**: Mínimo 50GB, recomendado 100GB+
+Linea 134244: # Verificar uso de disco
+Linea 135231: # Exportar a Python
+

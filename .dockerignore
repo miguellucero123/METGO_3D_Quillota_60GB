@@ -1,0 +1,37 @@
+# Archivos a ignorar en Docker
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Logs
+logs/
+*.log
+
+# Datos temporales
+*.tmp
+*.temp
+*.backup
+
+# Entornos virtuales
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

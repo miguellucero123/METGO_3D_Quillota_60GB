@@ -1,0 +1,649 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+📊 DASHBOARD COMPLETO METGO 3D CON GRÁFICOS Y ESTACIONES
+Sistema Meteorológico Agrícola Quillota - Dashboard Completo con Visualizaciones
+"""
+
+import os
+import sys
+import time
+import json
+import warnings
+import numpy as np
+import pandas as pd
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List, Tuple, Optional, Any
+import logging
+import sqlite3
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.figure_factory as ff
+import streamlit as st
+import streamlit.components.v1 as components
+
+# Configuración
+warnings.filterwarnings('ignore')
+
+class DashboardCompletoMETGO:
+    """Dashboard completo con gráficos y estaciones meteorológicas"""
+    
+    def __init__(self):
+        self.configuracion = {
+            'directorio_datos': 'data/dashboard',
+            'directorio_logs': 'logs/dashboard',
+            'directorio_graficos': 'graficos/dashboard',
+            'version': '2.0',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        # Crear directorios
+        self._crear_directorios()
+        
+        # Configurar logging
+        self._configurar_logging()
+        
+        # Estaciones meteorológicas de Quillota
+        self.estaciones_meteorologicas = {
+            'quillota_centro': {
+                'nombre': 'Quillota Centro',
+                'latitud': -32.8833,
+                'longitud': -71.2333,
+                'altitud': 127,
+                'tipo': 'Principal',
+                'estado': 'Activa'
+            },
+            'quillota_norte': {
+                'nombre': 'Quillota Norte',
+                'latitud': -32.8500,
+                'longitud': -71.2000,
+                'altitud': 150,
+                'tipo': 'Secundaria',
+                'estado': 'Activa'
+            },
+            'quillota_sur': {
+                'nombre': 'Quillota Sur',
+                'latitud': -32.9167,
+                'longitud': -71.2667,
+                'altitud': 100,
+                'tipo': 'Secundaria',
+                'estado': 'Activa'
+            },
+            'quillota_este': {
+                'nombre': 'Quillota Este',
+                'latitud': -32.8833,
+                'longitud': -71.2000,
+                'altitud': 180,
+                'tipo': 'Secundaria',
+                'estado': 'Activa'
+            },
+            'quillota_oeste': {
+                'nombre': 'Quillota Oeste',
+                'latitud': -32.8833,
+                'longitud': -71.2667,
+                'altitud': 80,
+                'tipo': 'Secundaria',
+                'estado': 'Activa'
+            }
+        }
+        
+        # Base de datos
+        self._inicializar_base_datos()
+        
+        # Generar datos de ejemplo
+        self._generar_datos_ejemplo()
+    
+    def _crear_directorios(self):
+        """Crear directorios necesarios"""
+        try:
+            for directorio in self.configuracion.values():
+                if isinstance(directorio, str) and '/' in directorio:
+                    Path(directorio).mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            print(f"Error creando directorios: {e}")
+    
+    def _configurar_logging(self):
+        """Configurar sistema de logging"""
+        try:
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                handlers=[
+                    logging.FileHandler(f"{self.configuracion['directorio_logs']}/dashboard_completo.log"),
+                    logging.StreamHandler()
+                ]
+            )
+            self.logger = logging.getLogger('METGO_DASHBOARD_COMPLETO')
+            self.logger.info("Sistema de logging configurado")
+        except Exception as e:
+            print(f"Error configurando logging: {e}")
+    
+    def _inicializar_base_datos(self):
+        """Inicializar base de datos SQLite"""
+        try:
+            archivo_bd = f"{self.configuracion['directorio_datos']}/dashboard_completo.db"
+            
+            self.conexion_bd = sqlite3.connect(archivo_bd, check_same_thread=False)
+            self.cursor_bd = self.conexion_bd.cursor()
+            
+            # Crear tablas
+            self._crear_tablas_bd()
+            
+            self.logger.info(f"Base de datos inicializada: {archivo_bd}")
+            
+        except Exception as e:
+            self.logger.error(f"Error inicializando base de datos: {e}")
+    
+    def _crear_tablas_bd(self):
+        """Crear tablas en la base de datos"""
+        try:
+            # Tabla de estaciones
+            self.cursor_bd.execute('''
+                CREATE TABLE IF NOT EXISTS estaciones (
+                    id TEXT PRIMARY KEY,
+                    nombre TEXT NOT NULL,
+                    latitud REAL NOT NULL,
+                    longitud REAL NOT NULL,
+                    altitud REAL NOT NULL,
+                    tipo TEXT NOT NULL,
+                    estado TEXT NOT NULL,
+                    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Tabla de datos meteorológicos
+            self.cursor_bd.execute('''
+                CREATE TABLE IF NOT EXISTS datos_meteorologicos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    estacion_id TEXT NOT NULL,
+                    timestamp DATETIME NOT NULL,
+                    temperatura REAL,
+                    precipitacion REAL,
+                    viento_velocidad REAL,
+                    viento_direccion REAL,
+                    humedad REAL,
+                    presion REAL,
+                    radiacion_solar REAL,
+                    punto_rocio REAL,
+                    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Crear índices
+            self.cursor_bd.execute('CREATE INDEX IF NOT EXISTS idx_datos_estacion ON datos_meteorologicos(estacion_id)')
+            self.cursor_bd.execute('CREATE INDEX IF NOT EXISTS idx_datos_timestamp ON datos_meteorologicos(timestamp)')
+            
+            self.conexion_bd.commit()
+            self.logger.info("Tablas de base de datos creadas")
+            
+        except Exception as e:
+            self.logger.error(f"Error creando tablas: {e}")
+    
+    def _generar_datos_ejemplo(self):
+        """Generar datos de ejemplo para las estaciones"""
+        try:
+            # Insertar estaciones
+            for estacion_id, estacion in self.estaciones_meteorologicas.items():
+                self.cursor_bd.execute('''
+                    INSERT OR REPLACE INTO estaciones 
+                    (id, nombre, latitud, longitud, altitud, tipo, estado)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    estacion_id,
+                    estacion['nombre'],
+                    estacion['latitud'],
+                    estacion['longitud'],
+                    estacion['altitud'],
+                    estacion['tipo'],
+                    estacion['estado']
+                ))
+            
+            # Generar datos meteorológicos de ejemplo
+            fecha_inicio = datetime.now() - timedelta(days=30)
+            
+            for estacion_id in self.estaciones_meteorologicas.keys():
+                for i in range(720):  # 30 días * 24 horas
+                    timestamp = fecha_inicio + timedelta(hours=i)
+                    
+                    # Datos meteorológicos simulados
+                    temperatura = 15 + 10 * np.sin(i * 2 * np.pi / 24) + np.random.normal(0, 2)
+                    precipitacion = max(0, np.random.exponential(0.5))
+                    viento_velocidad = 5 + 3 * np.random.random()
+                    viento_direccion = 360 * np.random.random()
+                    humedad = 60 + 20 * np.random.random()
+                    presion = 1013 + 10 * np.random.random()
+                    radiacion_solar = max(0, 800 * np.sin(i * 2 * np.pi / 24) + np.random.normal(0, 50))
+                    punto_rocio = temperatura - 5 - 3 * np.random.random()
+                    
+                    self.cursor_bd.execute('''
+                        INSERT INTO datos_meteorologicos 
+                        (estacion_id, timestamp, temperatura, precipitacion, viento_velocidad, 
+                         viento_direccion, humedad, presion, radiacion_solar, punto_rocio)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        estacion_id, timestamp, temperatura, precipitacion, viento_velocidad,
+                        viento_direccion, humedad, presion, radiacion_solar, punto_rocio
+                    ))
+            
+            self.conexion_bd.commit()
+            self.logger.info("Datos de ejemplo generados")
+            
+        except Exception as e:
+            self.logger.error(f"Error generando datos de ejemplo: {e}")
+    
+    def crear_dashboard_streamlit(self):
+        """Crear dashboard completo con Streamlit"""
+        try:
+            # Configurar página
+            st.set_page_config(
+                page_title="METGO 3D - Dashboard Completo",
+                page_icon="🌾",
+                layout="wide",
+                initial_sidebar_state="expanded"
+            )
+            
+            # Título principal
+            st.title("🌾 METGO 3D - Dashboard Completo")
+            st.markdown("### Sistema Meteorológico Agrícola Quillota - Versión 2.0")
+            
+            # Sidebar
+            with st.sidebar:
+                st.header("⚙️ Configuración")
+                
+                # Selector de estación
+                estaciones = list(self.estaciones_meteorologicas.keys())
+                estacion_seleccionada = st.selectbox(
+                    "📍 Estación Meteorológica",
+                    estaciones,
+                    format_func=lambda x: self.estaciones_meteorologicas[x]['nombre']
+                )
+                
+                # Selector de período
+                periodo = st.selectbox(
+                    "📅 Período de análisis",
+                    ["Últimas 24 horas", "Últimos 7 días", "Últimos 30 días"]
+                )
+                
+                # Selector de variables
+                variables = st.multiselect(
+                    "📊 Variables meteorológicas",
+                    ["Temperatura", "Precipitación", "Humedad", "Viento", "Presión", "Radiación Solar"],
+                    default=["Temperatura", "Precipitación"]
+                )
+            
+            # Contenido principal
+            self._mostrar_metricas_generales()
+            self._mostrar_graficos_estacion(estacion_seleccionada, periodo, variables)
+            self._mostrar_mapa_estaciones()
+            self._mostrar_tabla_estaciones()
+            self._mostrar_analisis_avanzado()
+            
+        except Exception as e:
+            st.error(f"Error creando dashboard: {e}")
+            self.logger.error(f"Error creando dashboard: {e}")
+    
+    def _mostrar_metricas_generales(self):
+        """Mostrar métricas generales del sistema"""
+        try:
+            st.header("📊 Métricas Generales del Sistema")
+            
+            # Obtener métricas
+            total_estaciones = len(self.estaciones_meteorologicas)
+            estaciones_activas = sum(1 for e in self.estaciones_meteorologicas.values() if e['estado'] == 'Activa')
+            
+            # Obtener datos recientes
+            self.cursor_bd.execute('''
+                SELECT AVG(temperatura), AVG(humedad), AVG(presion), AVG(viento_velocidad)
+                FROM datos_meteorologicos 
+                WHERE timestamp >= datetime('now', '-1 hour')
+            ''')
+            datos_recientes = self.cursor_bd.fetchone()
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total Estaciones", total_estaciones)
+            
+            with col2:
+                st.metric("Estaciones Activas", estaciones_activas)
+            
+            with col3:
+                if datos_recientes[0]:
+                    st.metric("Temperatura Promedio", f"{datos_recientes[0]:.1f}°C")
+                else:
+                    st.metric("Temperatura Promedio", "N/A")
+            
+            with col4:
+                if datos_recientes[1]:
+                    st.metric("Humedad Promedio", f"{datos_recientes[1]:.1f}%")
+                else:
+                    st.metric("Humedad Promedio", "N/A")
+            
+        except Exception as e:
+            st.error(f"Error mostrando métricas: {e}")
+    
+    def _mostrar_graficos_estacion(self, estacion_id: str, periodo: str, variables: List[str]):
+        """Mostrar gráficos para una estación específica"""
+        try:
+            st.header(f"📈 Gráficos - {self.estaciones_meteorologicas[estacion_id]['nombre']}")
+            
+            # Determinar rango de fechas
+            if periodo == "Últimas 24 horas":
+                fecha_inicio = datetime.now() - timedelta(hours=24)
+            elif periodo == "Últimos 7 días":
+                fecha_inicio = datetime.now() - timedelta(days=7)
+            else:  # Últimos 30 días
+                fecha_inicio = datetime.now() - timedelta(days=30)
+            
+            # Obtener datos
+            self.cursor_bd.execute('''
+                SELECT timestamp, temperatura, precipitacion, humedad, viento_velocidad, 
+                       presion, radiacion_solar
+                FROM datos_meteorologicos 
+                WHERE estacion_id = ? AND timestamp >= ?
+                ORDER BY timestamp
+            ''', (estacion_id, fecha_inicio))
+            
+            datos = self.cursor_bd.fetchall()
+            
+            if datos:
+                df = pd.DataFrame(datos, columns=[
+                    'timestamp', 'temperatura', 'precipitacion', 'humedad', 
+                    'viento_velocidad', 'presion', 'radiacion_solar'
+                ])
+                df['timestamp'] = pd.to_datetime(df['timestamp'])
+                
+                # Gráfico de temperatura
+                if "Temperatura" in variables:
+                    fig_temp = px.line(
+                        df, x='timestamp', y='temperatura',
+                        title=f'Temperatura - {self.estaciones_meteorologicas[estacion_id]["nombre"]}',
+                        labels={'temperatura': 'Temperatura (°C)', 'timestamp': 'Fecha y Hora'}
+                    )
+                    fig_temp.update_layout(height=400)
+                    st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Gráfico de precipitación
+                if "Precipitación" in variables:
+                    fig_precip = px.bar(
+                        df, x='timestamp', y='precipitacion',
+                        title=f'Precipitación - {self.estaciones_meteorologicas[estacion_id]["nombre"]}',
+                        labels={'precipitacion': 'Precipitación (mm)', 'timestamp': 'Fecha y Hora'}
+                    )
+                    fig_precip.update_layout(height=400)
+                    st.plotly_chart(fig_precip, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Gráfico de humedad
+                if "Humedad" in variables:
+                    fig_humedad = px.line(
+                        df, x='timestamp', y='humedad',
+                        title=f'Humedad - {self.estaciones_meteorologicas[estacion_id]["nombre"]}',
+                        labels={'humedad': 'Humedad (%)', 'timestamp': 'Fecha y Hora'}
+                    )
+                    fig_humedad.update_layout(height=400)
+                    st.plotly_chart(fig_humedad, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Gráfico de viento
+                if "Viento" in variables:
+                    fig_viento = px.line(
+                        df, x='timestamp', y='viento_velocidad',
+                        title=f'Velocidad del Viento - {self.estaciones_meteorologicas[estacion_id]["nombre"]}',
+                        labels={'viento_velocidad': 'Velocidad del Viento (m/s)', 'timestamp': 'Fecha y Hora'}
+                    )
+                    fig_viento.update_layout(height=400)
+                    st.plotly_chart(fig_viento, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Gráfico de presión
+                if "Presión" in variables:
+                    fig_presion = px.line(
+                        df, x='timestamp', y='presion',
+                        title=f'Presión Atmosférica - {self.estaciones_meteorologicas[estacion_id]["nombre"]}',
+                        labels={'presion': 'Presión (hPa)', 'timestamp': 'Fecha y Hora'}
+                    )
+                    fig_presion.update_layout(height=400)
+                    st.plotly_chart(fig_presion, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Gráfico de radiación solar
+                if "Radiación Solar" in variables:
+                    fig_radiacion = px.line(
+                        df, x='timestamp', y='radiacion_solar',
+                        title=f'Radiación Solar - {self.estaciones_meteorologicas[estacion_id]["nombre"]}',
+                        labels={'radiacion_solar': 'Radiación Solar (W/m²)', 'timestamp': 'Fecha y Hora'}
+                    )
+                    fig_radiacion.update_layout(height=400)
+                    st.plotly_chart(fig_radiacion, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Gráfico combinado
+                if len(variables) > 1:
+                    fig_combinado = make_subplots(
+                        rows=2, cols=2,
+                        subplot_titles=variables[:4],
+                        vertical_spacing=0.1
+                    )
+                    
+                    if "Temperatura" in variables:
+                        fig_combinado.add_trace(
+                            go.Scatter(x=df['timestamp'], y=df['temperatura'], name='Temperatura'),
+                            row=1, col=1
+                        )
+                    
+                    if "Precipitación" in variables:
+                        fig_combinado.add_trace(
+                            go.Bar(x=df['timestamp'], y=df['precipitacion'], name='Precipitación'),
+                            row=1, col=2
+                        )
+                    
+                    if "Humedad" in variables:
+                        fig_combinado.add_trace(
+                            go.Scatter(x=df['timestamp'], y=df['humedad'], name='Humedad'),
+                            row=2, col=1
+                        )
+                    
+                    if "Viento" in variables:
+                        fig_combinado.add_trace(
+                            go.Scatter(x=df['timestamp'], y=df['viento_velocidad'], name='Viento'),
+                            row=2, col=2
+                        )
+                    
+                    fig_combinado.update_layout(
+                        height=600, 
+                        title_text="Gráfico Combinado",
+                        showlegend=False
+                    )
+                    st.plotly_chart(fig_combinado, config=PLOTLY_CONFIG, width='stretch')
+            
+            else:
+                st.warning("No hay datos disponibles para la estación seleccionada")
+                
+        except Exception as e:
+            st.error(f"Error mostrando gráficos: {e}")
+    
+    def _mostrar_mapa_estaciones(self):
+        """Mostrar mapa con las estaciones meteorológicas"""
+        try:
+            st.header("🗺️ Mapa de Estaciones Meteorológicas")
+            
+            # Crear DataFrame de estaciones
+            estaciones_df = pd.DataFrame([
+                {
+                    'nombre': estacion['nombre'],
+                    'latitud': estacion['latitud'],
+                    'longitud': estacion['longitud'],
+                    'altitud': estacion['altitud'],
+                    'tipo': estacion['tipo'],
+                    'estado': estacion['estado']
+                }
+                for estacion in self.estaciones_meteorologicas.values()
+            ])
+            
+            # Crear mapa
+            fig_mapa = px.scatter_mapbox(
+                estaciones_df,
+                lat='latitud',
+                lon='longitud',
+                hover_name='nombre',
+                hover_data=['altitud', 'tipo', 'estado'],
+                color='tipo',
+                size='altitud',
+                title='Estaciones Meteorológicas de Quillota',
+                mapbox_style='open-street-map',
+                zoom=11,
+                center={'lat': -32.8833, 'lon': -71.2333}
+            )
+            
+            fig_mapa.update_layout(height=500)
+            st.plotly_chart(fig_mapa, config=PLOTLY_CONFIG, width='stretch')
+            
+        except Exception as e:
+            st.error(f"Error mostrando mapa: {e}")
+    
+    def _mostrar_tabla_estaciones(self):
+        """Mostrar tabla con información de las estaciones"""
+        try:
+            st.header("📋 Información de Estaciones")
+            
+            # Crear DataFrame de estaciones
+            estaciones_df = pd.DataFrame([
+                {
+                    'ID': estacion_id,
+                    'Nombre': estacion['nombre'],
+                    'Latitud': estacion['latitud'],
+                    'Longitud': estacion['longitud'],
+                    'Altitud (m)': estacion['altitud'],
+                    'Tipo': estacion['tipo'],
+                    'Estado': estacion['estado']
+                }
+                for estacion_id, estacion in self.estaciones_meteorologicas.items()
+            ])
+            
+            st.dataframe(estaciones_df, width='stretch')
+            
+        except Exception as e:
+            st.error(f"Error mostrando tabla: {e}")
+    
+    def _mostrar_analisis_avanzado(self):
+        """Mostrar análisis avanzado"""
+        try:
+            st.header("🔍 Análisis Avanzado")
+            
+            # Obtener datos de todas las estaciones
+            self.cursor_bd.execute('''
+                SELECT e.nombre, AVG(d.temperatura), AVG(d.humedad), AVG(d.presion), AVG(d.viento_velocidad)
+                FROM estaciones e
+                LEFT JOIN datos_meteorologicos d ON e.id = d.estacion_id
+                WHERE d.timestamp >= datetime('now', '-24 hours')
+                GROUP BY e.id, e.nombre
+            ''')
+            
+            datos_analisis = self.cursor_bd.fetchall()
+            
+            if datos_analisis:
+                df_analisis = pd.DataFrame(datos_analisis, columns=[
+                    'Estación', 'Temperatura Promedio', 'Humedad Promedio', 
+                    'Presión Promedio', 'Viento Promedio'
+                ])
+                
+                # Gráfico de barras comparativo
+                fig_comparativo = px.bar(
+                    df_analisis, x='Estación', y=['Temperatura Promedio', 'Humedad Promedio'],
+                    title='Comparación de Estaciones - Últimas 24 horas',
+                    barmode='group'
+                )
+                fig_comparativo.update_layout(height=400)
+                st.plotly_chart(fig_comparativo, config=PLOTLY_CONFIG, width='stretch')
+                
+                # Tabla de análisis
+                st.subheader("📊 Resumen de Análisis")
+                st.dataframe(df_analisis, width='stretch')
+            
+        except Exception as e:
+            st.error(f"Error mostrando análisis avanzado: {e}")
+    
+    def generar_reporte_dashboard(self) -> str:
+        """Generar reporte del dashboard completo"""
+        try:
+            self.logger.info("Generando reporte del dashboard completo...")
+            
+            # Obtener estadísticas
+            total_estaciones = len(self.estaciones_meteorologicas)
+            estaciones_activas = sum(1 for e in self.estaciones_meteorologicas.values() if e['estado'] == 'Activa')
+            
+            # Obtener datos de la base de datos
+            self.cursor_bd.execute('SELECT COUNT(*) FROM datos_meteorologicos')
+            total_datos = self.cursor_bd.fetchone()[0]
+            
+            reporte = {
+                'timestamp': datetime.now().isoformat(),
+                'sistema': 'METGO 3D - Dashboard Completo',
+                'version': self.configuracion['version'],
+                'estadisticas': {
+                    'total_estaciones': total_estaciones,
+                    'estaciones_activas': estaciones_activas,
+                    'total_datos': total_datos,
+                    'porcentaje_actividad': (estaciones_activas / total_estaciones * 100) if total_estaciones > 0 else 0
+                },
+                'estaciones': self.estaciones_meteorologicas,
+                'recomendaciones': [
+                    "Monitorear estaciones regularmente",
+                    "Verificar calidad de datos",
+                    "Actualizar configuraciones de estaciones",
+                    "Revisar alertas meteorológicas",
+                    "Optimizar visualizaciones"
+                ]
+            }
+            
+            # Guardar reporte
+            reportes_dir = Path("reportes")
+            reportes_dir.mkdir(exist_ok=True)
+            
+            reporte_file = reportes_dir / f"dashboard_completo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(reporte_file, 'w', encoding='utf-8') as f:
+                json.dump(reporte, f, indent=2, ensure_ascii=False)
+            
+            self.logger.info(f"Reporte del dashboard completo generado: {reporte_file}")
+            return str(reporte_file)
+            
+        except Exception as e:
+            self.logger.error(f"Error generando reporte: {e}")
+            return ""
+
+def main():
+    """Función principal del dashboard completo"""
+    print("DASHBOARD COMPLETO METGO 3D CON GRAFICOS Y ESTACIONES")
+    print("Sistema Meteorologico Agricola Quillota - Version 2.0")
+    print("=" * 70)
+    
+    try:
+        # Crear dashboard
+        dashboard = DashboardCompletoMETGO()
+        
+        # Generar reporte
+        print("\nGenerando reporte...")
+        reporte = dashboard.generar_reporte_dashboard()
+        
+        if reporte:
+            print(f"Reporte generado: {reporte}")
+        else:
+            print(f"Error generando reporte")
+        
+        # Iniciar dashboard Streamlit
+        print(f"\nIniciando dashboard completo con Streamlit...")
+        print(f"   Ejecuta: streamlit run dashboard_completo_metgo.py")
+        print(f"   URL: http://localhost:8501")
+        
+        return True
+        
+    except Exception as e:
+        print(f"\nError en dashboard completo: {e}")
+        return False
+
+if __name__ == "__main__":
+    try:
+        exito = main()
+        sys.exit(0 if exito else 1)
+    except Exception as e:
+        print(f"\nError inesperado: {e}")
+        sys.exit(1)
