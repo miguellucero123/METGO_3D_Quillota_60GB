@@ -258,12 +258,11 @@ def mostrar_pantalla_login():
         - Optimización agrícola
         """)
     
-    # Credenciales por defecto
+    # Información de acceso
     st.info("""
-    **🔑 Credenciales de Prueba:**
-    - Usuario: `admin` | Contraseña: `admin123`
-    - Usuario: `user` | Contraseña: `user123`
-    - Usuario: `metgo` | Contraseña: `metgo2025`
+    **🔐 Sistema de Autenticación:**
+    - Contacta al administrador para obtener las credenciales de acceso
+    - El sistema requiere autenticación para acceder a las funciones avanzadas
     """)
 
 def mostrar_dashboard_principal():
