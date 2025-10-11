@@ -1,0 +1,49 @@
+# 🌾 METGO 3D - Sistema Meteorológico Agrícola Quillota
+# Archivo de dependencias Python - Versión Operativa 2.0
+
+# Manipulación de datos
+pandas>=1.3.0
+numpy>=1.21.0
+
+# Visualización
+matplotlib>=3.4.0
+seaborn>=0.11.0
+plotly>=5.0.0
+
+# Machine Learning
+scikit-learn>=1.0.0
+joblib>=1.0.0
+
+# APIs y conectividad
+requests>=2.25.0
+urllib3>=1.26.0
+
+# Configuración y utilidades
+pyyaml>=5.4.0
+python-dateutil>=2.8.0
+
+# Jupyter y notebooks
+jupyter>=1.0.0
+nbconvert>=6.0.0
+ipykernel>=6.0.0
+
+# Dashboard interactivo
+streamlit>=1.0.0
+
+# Testing y validación
+pytest>=6.0.0
+pytest-cov>=2.12.0
+
+# Logging y monitoreo
+colorlog>=6.0.0
+
+# Procesamiento de archivos
+openpyxl>=3.0.0
+xlsxwriter>=3.0.0
+
+# Optimización y rendimiento
+numba>=0.56.0
+
+# Utilidades adicionales
+tqdm>=4.62.0
+pathlib2>=2.3.0
