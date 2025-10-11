@@ -1,0 +1,196 @@
+# 🌾 METGO 3D - Docker Compose
+# Sistema Meteorológico Agrícola Quillota - Orquestación de Contenedores
+
+version: '3.8'
+
+services:
+  # Contenedor principal del sistema
+  metgo3d:
+    build: .
+    container_name: metgo3d_principal
+    restart: unless-stopped
+    ports:
+      - "5000:5000"  # API principal
+      - "5001:5001"  # API meteorología
+      - "5002:5002"  # API agrícola
+      - "5003:5003"  # API alertas
+      - "5004:5004"  # API IoT
+      - "5005:5005"  # API ML
+      - "5006:5006"  # API visualización
+      - "5007:5007"  # API reportes
+      - "5008:5008"  # API configuración
+      - "5009:5009"  # API monitoreo
+      - "8050:8050"  # Dashboard
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./reportes:/app/reportes
+      - ./graficos:/app/graficos
+      - ./dashboard_html:/app/dashboard_html
+      - ./temp:/app/temp
+      - ./resultados:/app/resultados
+    environment:
+      - METGO_ENV=production
+      - METGO_DEBUG=False
+      - METGO_LOG_LEVEL=INFO
+      - METGO_DB_PATH=/app/data/metgo3d.db
+      - METGO_CONFIG_PATH=/app/config
+      - METGO_LOGS_PATH=/app/logs
+    networks:
+      - metgo3d_network
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/health', timeout=10)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:13
+    container_name: metgo3d_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=metgo3d
+      - POSTGRES_USER=metgo3d
+      - POSTGRES_PASSWORD=metgo3d_2024_secure
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - metgo3d_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metgo3d -d metgo3d"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis para cache y colas
+  redis:
+    image: redis:6-alpine
+    container_name: metgo3d_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - metgo3d_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx como proxy reverso
+  nginx:
+    image: nginx:alpine
+    container_name: metgo3d_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - metgo3d_network
+    depends_on:
+      - metgo3d
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Contenedor de monitoreo
+  monitoring:
+    build: .
+    container_name: metgo3d_monitoring
+    restart: unless-stopped
+    command: ["python", "monitor_sistema.py"]
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    environment:
+      - METGO_ENV=production
+      - METGO_DEBUG=False
+      - METGO_LOG_LEVEL=INFO
+    networks:
+      - metgo3d_network
+    depends_on:
+      - metgo3d
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; exit(0 if os.path.exists('/app/logs/monitor.log') else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Contenedor de respaldos
+  backup:
+    build: .
+    container_name: metgo3d_backup
+    restart: unless-stopped
+    command: ["python", "backup_sistema.py"]
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./backups:/app/backups
+    environment:
+      - METGO_ENV=production
+      - METGO_DEBUG=False
+      - METGO_LOG_LEVEL=INFO
+    networks:
+      - metgo3d_network
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; exit(0 if os.path.exists('/app/backups') else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Contenedor de tests
+  tests:
+    build: .
+    container_name: metgo3d_tests
+    restart: "no"
+    command: ["python", "tests/runner_tests.py", "--categoria", "todos"]
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./tests:/app/tests
+    environment:
+      - METGO_ENV=testing
+      - METGO_DEBUG=True
+      - METGO_LOG_LEVEL=DEBUG
+    networks:
+      - metgo3d_network
+    depends_on:
+      - postgres
+      - redis
+
+# Volúmenes persistentes
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# Red personalizada
+networks:
+  metgo3d_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

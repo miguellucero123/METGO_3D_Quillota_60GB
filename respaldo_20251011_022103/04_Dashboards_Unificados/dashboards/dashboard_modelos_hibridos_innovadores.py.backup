@@ -1,0 +1,691 @@
+"""
+DASHBOARD MODELOS HÍBRIDOS INNOVADORES - METGO 3D QUILLOTA
+Dashboard interactivo para crear y gestionar modelos híbridos de máxima precisión
+"""
+
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import numpy as np
+from datetime import datetime, timedelta
+import json
+from sistema_modelos_hibridos_innovadores import SistemaModelosHibridosInnovadores
+
+# Configuración de página
+st.set_page_config(
+    page_title="Modelos Híbridos Innovadores - METGO 3D",
+    page_icon="🚀",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+class DashboardModelosHibridosInnovadores:
+    def __init__(self):
+        self.sistema = SistemaModelosHibridosInnovadores()
+        self._inicializar_session_state()
+    
+    def _inicializar_session_state(self):
+        """Inicializar estado de sesión"""
+        if 'modelos_hibridos_creados' not in st.session_state:
+            st.session_state.modelos_hibridos_creados = []
+        
+        if 'proyecciones_hibridas_generadas' not in st.session_state:
+            st.session_state.proyecciones_hibridas_generadas = {}
+        
+        if 'benchmark_realizado' not in st.session_state:
+            st.session_state.benchmark_realizado = False
+    
+    def mostrar_header(self):
+        """Mostrar header del dashboard"""
+        st.title("🚀 Sistema de Modelos Híbridos Innovadores")
+        st.markdown("**Modelos de Machine Learning de máxima exactitud y rapidez para agricultura de precisión**")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "Modelos Híbridos",
+                len(self.sistema.modelos_hibridos),
+                delta=None
+            )
+        
+        with col2:
+            st.metric(
+                "Algoritmos Base",
+                len(self.sistema.modelos_base_optimizados),
+                delta=None
+            )
+        
+        with col3:
+            st.metric(
+                "Tipos de Híbridos",
+                4,
+                delta=None
+            )
+        
+        with col4:
+            st.metric(
+                "Proyecciones Hoy",
+                len(st.session_state.proyecciones_hibridas_generadas),
+                delta=None
+            )
+    
+    def mostrar_sidebar(self):
+        """Mostrar sidebar con controles"""
+        st.sidebar.title("🎛️ Panel de Control Avanzado")
+        
+        # Sección de información del sistema
+        st.sidebar.header("ℹ️ Sistema Híbrido")
+        st.sidebar.info("""
+        **Características Innovadoras:**
+        - 🧠 5 algoritmos base optimizados
+        - 🔄 4 tipos de híbridos disponibles
+        - 📊 Análisis de incertidumbre
+        - ⚡ Optimización automática de pesos
+        - 🎯 Máxima precisión y rapidez
+        """)
+        
+        # Mostrar modelos híbridos activos
+        modelos_hibridos = self.sistema.listar_modelos_hibridos()
+        if modelos_hibridos:
+            st.sidebar.header("🤖 Modelos Híbridos Activos")
+            for modelo in modelos_hibridos:
+                st.sidebar.write(f"**{modelo['nombre']}**")
+                st.sidebar.write(f"• Tipo: {modelo['tipo_hibrido']}")
+                st.sidebar.write(f"• R²: {modelo['r2']:.6f}")
+                st.sidebar.write(f"• Tiempo: {modelo['tiempo_entrenamiento']:.2f}s")
+                st.sidebar.write("---")
+        else:
+            st.sidebar.warning("No hay modelos híbridos activos")
+        
+        # Sección de configuración
+        st.sidebar.header("⚙️ Configuración")
+        
+        mostrar_detalles_tecnicos = st.sidebar.checkbox("Mostrar Detalles Técnicos", value=False)
+        incluir_incertidumbre = st.sidebar.checkbox("Incluir Análisis de Incertidumbre", value=True)
+        
+        return {
+            'mostrar_detalles_tecnicos': mostrar_detalles_tecnicos,
+            'incluir_incertidumbre': incluir_incertidumbre
+        }
+    
+    def mostrar_tab_crear_hibrido(self):
+        """Mostrar tab para crear modelos híbridos innovadores"""
+        st.header("🚀 Crear Modelo Híbrido Innovador")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            # Formulario para crear modelo híbrido
+            with st.form("crear_hibrido_form"):
+                st.subheader("Configuración del Modelo Híbrido")
+                
+                # Información básica
+                col_nombre, col_tipo = st.columns(2)
+                
+                with col_nombre:
+                    nombre_modelo = st.text_input(
+                        "Nombre del Modelo Híbrido",
+                        placeholder="ej: Ensemble_Ultra_Temp",
+                        help="Nombre único para identificar el modelo híbrido"
+                    )
+                
+                with col_tipo:
+                    tipos_hibridos = [
+                        'ensemble_optimizado',
+                        'stacking_avanzado', 
+                        'voting_inteligente',
+                        'hibrido_adaptativo'
+                    ]
+                    tipo_hibrido = st.selectbox(
+                        "Tipo de Híbrido",
+                        tipos_hibridos,
+                        format_func=lambda x: {
+                            'ensemble_optimizado': '🎯 Ensemble Optimizado',
+                            'stacking_avanzado': '📚 Stacking Avanzado',
+                            'voting_inteligente': '🗳️ Voting Inteligente',
+                            'hibrido_adaptativo': '🔄 Híbrido Adaptativo'
+                        }[x],
+                        help="Tipo de modelo híbrido a crear"
+                    )
+                
+                # Variable objetivo
+                variables_objetivo = [
+                    'temperatura_promedio',
+                    'temperatura_max',
+                    'temperatura_min',
+                    'humedad_relativa',
+                    'precipitacion',
+                    'velocidad_viento',
+                    'presion_atmosferica',
+                    'radiacion_solar'
+                ]
+                
+                variable_objetivo = st.selectbox(
+                    "Variable Objetivo",
+                    variables_objetivo,
+                    format_func=lambda x: {
+                        'temperatura_promedio': '🌡️ Temperatura Promedio (°C)',
+                        'temperatura_max': '🔥 Temperatura Máxima (°C)',
+                        'temperatura_min': '❄️ Temperatura Mínima (°C)',
+                        'humedad_relativa': '💧 Humedad Relativa (%)',
+                        'precipitacion': '🌧️ Precipitación (mm)',
+                        'velocidad_viento': '💨 Velocidad del Viento (km/h)',
+                        'presion_atmosferica': '📊 Presión Atmosférica (hPa)',
+                        'radiacion_solar': '☀️ Radiación Solar (W/m²)'
+                    }[x],
+                    help="Variable que el modelo híbrido va a predecir"
+                )
+                
+                # Descripción
+                descripcion = st.text_area(
+                    "Descripción del Modelo Híbrido",
+                    placeholder="Descripción del propósito y características del modelo híbrido...",
+                    help="Descripción detallada del modelo híbrido"
+                )
+                
+                # Información del tipo de híbrido seleccionado
+                st.subheader("ℹ️ Información del Tipo de Híbrido")
+                
+                info_hibridos = {
+                    'ensemble_optimizado': {
+                        'descripcion': 'Combina 5 algoritmos optimizados con pesos automáticamente ajustados para máxima precisión.',
+                        'ventajas': ['Máxima precisión', 'Robusto a outliers', 'Optimización automática de pesos'],
+                        'algoritmos': ['RandomForest Ultra', 'GradientBoosting Ultra', 'ExtraTrees Ultra', 'SVR Ultra', 'MLP Ultra']
+                    },
+                    'stacking_avanzado': {
+                        'descripcion': 'Usa meta-aprendizaje con Ridge optimizado para combinar predicciones de modelos base.',
+                        'ventajas': ['Meta-aprendizaje inteligente', 'Captura relaciones complejas', 'Validación cruzada temporal'],
+                        'algoritmos': ['5 modelos base + Meta-aprendizaje Ridge']
+                    },
+                    'voting_inteligente': {
+                        'descripcion': 'Voting regressor con pesos adaptativos que se ajustan según el rendimiento.',
+                        'ventajas': ['Pesos adaptativos', 'Rápido entrenamiento', 'Buen balance precisión/velocidad'],
+                        'algoritmos': ['Todos los modelos base con voting inteligente']
+                    },
+                    'hibrido_adaptativo': {
+                        'descripcion': 'Selecciona automáticamente el mejor modelo individual según el contexto.',
+                        'ventajas': ['Selección automática', 'Máxima velocidad', 'Adaptación contextual'],
+                        'algoritmos': ['Mejor modelo individual seleccionado automáticamente']
+                    }
+                }
+                
+                info = info_hibridos[tipo_hibrido]
+                
+                st.write(f"**Descripción:** {info['descripcion']}")
+                
+                with st.expander("Ver Ventajas"):
+                    for ventaja in info['ventajas']:
+                        st.write(f"• {ventaja}")
+                
+                with st.expander("Ver Algoritmos"):
+                    for algoritmo in info['algoritmos']:
+                        st.write(f"• {algoritmo}")
+                
+                # Botón de creación
+                submitted = st.form_submit_button("Crear Modelo Híbrido Innovador", type="primary")
+                
+                if submitted:
+                    if nombre_modelo and tipo_hibrido and variable_objetivo:
+                        with st.spinner("Creando modelo híbrido innovador..."):
+                            resultado = self.sistema.crear_modelo_hibrido_innovador(
+                                nombre_modelo=nombre_modelo,
+                                variable_objetivo=variable_objetivo,
+                                tipo_hibrido=tipo_hibrido,
+                                descripcion=descripcion
+                            )
+                            
+                            if 'error' not in resultado:
+                                st.success(f"Modelo híbrido '{nombre_modelo}' creado exitosamente!")
+                                
+                                # Mostrar métricas avanzadas
+                                metricas = resultado['metricas']
+                                
+                                col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
+                                
+                                with col_metric1:
+                                    st.metric("R²", f"{metricas['r2']:.6f}")
+                                
+                                with col_metric2:
+                                    st.metric("RMSE", f"{metricas['rmse']:.6f}")
+                                
+                                with col_metric3:
+                                    st.metric("MAE", f"{metricas['mae']:.6f}")
+                                
+                                with col_metric4:
+                                    st.metric("Tiempo (s)", f"{metricas['tiempo_entrenamiento']:.2f}")
+                                
+                                # Métricas adicionales
+                                with st.expander("Métricas Detalladas"):
+                                    col_det1, col_det2 = st.columns(2)
+                                    
+                                    with col_det1:
+                                        st.write(f"**MAPE:** {metricas['mape']:.4f}%")
+                                        st.write(f"**Max Error:** {metricas['max_error']:.4f}")
+                                        st.write(f"**CV R² Mean:** {metricas['cv_r2_mean']:.6f}")
+                                    
+                                    with col_det2:
+                                        st.write(f"**CV R² Std:** {metricas['cv_r2_std']:.6f}")
+                                        st.write(f"**Skewness:** {metricas['skewness']:.4f}")
+                                        st.write(f"**Kurtosis:** {metricas['kurtosis']:.4f}")
+                                
+                                # Actualizar estado
+                                st.session_state.modelos_hibridos_creados.append(resultado)
+                                st.rerun()
+                            else:
+                                st.error(f"Error creando modelo híbrido: {resultado['error']}")
+                    else:
+                        st.error("Por favor completa todos los campos obligatorios")
+        
+        with col2:
+            # Información de algoritmos base
+            st.subheader("🧠 Algoritmos Base Optimizados")
+            
+            for nombre, config in self.sistema.modelos_base_optimizados.items():
+                with st.expander(f"**{nombre}**"):
+                    st.write(f"**Peso inicial:** {config['peso_inicial']}")
+                    st.write("**Parámetros principales:**")
+                    for param, valor in config['parametros'].items():
+                        if param not in ['random_state', 'n_jobs']:
+                            st.write(f"• {param}: {valor}")
+    
+    def mostrar_tab_proyecciones_hibridas(self):
+        """Mostrar tab para generar proyecciones híbridas"""
+        st.header("📈 Proyecciones Híbridas con Análisis de Incertidumbre")
+        
+        # Seleccionar modelo híbrido
+        modelos_hibridos = self.sistema.listar_modelos_hibridos()
+        
+        if not modelos_hibridos:
+            st.warning("No hay modelos híbridos activos. Crea un modelo híbrido primero.")
+            return
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.subheader("Configuración de Proyecciones Híbridas")
+            
+            # Selector de modelo híbrido
+            modelo_seleccionado = st.selectbox(
+                "Seleccionar Modelo Híbrido",
+                [m['nombre'] for m in modelos_hibridos],
+                format_func=lambda x: f"{x} ({next(m['tipo_hibrido'] for m in modelos_hibridos if m['nombre'] == x)})"
+            )
+            
+            # Información del modelo seleccionado
+            modelo_info = next(m for m in modelos_hibridos if m['nombre'] == modelo_seleccionado)
+            
+            col_info1, col_info2, col_info3, col_info4 = st.columns(4)
+            
+            with col_info1:
+                st.metric("Tipo", modelo_info['tipo_hibrido'].replace('_', ' ').title())
+            
+            with col_info2:
+                st.metric("Variable", modelo_info['variable_objetivo'].replace('_', ' ').title())
+            
+            with col_info3:
+                st.metric("R²", f"{modelo_info['r2']:.6f}")
+            
+            with col_info4:
+                st.metric("Tiempo", f"{modelo_info['tiempo_entrenamiento']:.2f}s")
+            
+            # Configuración de proyección
+            col_config1, col_config2 = st.columns(2)
+            
+            with col_config1:
+                horizonte_dias = st.slider(
+                    "Horizonte de Proyección (días)",
+                    min_value=1,
+                    max_value=90,
+                    value=30,
+                    help="Número de días hacia el futuro para proyectar"
+                )
+            
+            with col_config2:
+                incluir_incertidumbre = st.checkbox(
+                    "Incluir Análisis de Incertidumbre",
+                    value=True,
+                    help="Mostrar análisis detallado de incertidumbre"
+                )
+            
+            # Generar proyecciones híbridas
+            if st.button("Generar Proyecciones Híbridas", type="primary"):
+                with st.spinner("Generando proyecciones híbridas..."):
+                    proyecciones = self.sistema.generar_proyecciones_hibridas(
+                        modelo_seleccionado,
+                        horizonte_dias,
+                        incluir_incertidumbre
+                    )
+                    
+                    if proyecciones:
+                        st.session_state.proyecciones_hibridas_generadas[modelo_seleccionado] = proyecciones
+                        st.success(f"Proyecciones híbridas generadas: {len(proyecciones)} puntos")
+                        st.rerun()
+                    else:
+                        st.error("Error generando proyecciones híbridas")
+        
+        with col2:
+            # Mostrar proyecciones si existen
+            if modelo_seleccionado in st.session_state.proyecciones_hibridas_generadas:
+                st.subheader("📊 Proyecciones Híbridas")
+                
+                proyecciones = st.session_state.proyecciones_hibridas_generadas[modelo_seleccionado]
+                
+                # Crear gráfico avanzado
+                df_proyecciones = pd.DataFrame(proyecciones)
+                df_proyecciones['fecha'] = pd.to_datetime(df_proyecciones['fecha'])
+                
+                fig = go.Figure()
+                
+                # Línea principal
+                fig.add_trace(go.Scatter(
+                    x=df_proyecciones['fecha'],
+                    y=df_proyecciones['valor_proyectado'],
+                    mode='lines+markers',
+                    name='Proyección Híbrida',
+                    line=dict(color='blue', width=3),
+                    marker=dict(size=6)
+                ))
+                
+                # Intervalos de confianza
+                if incluir_incertidumbre and 'intervalo_inferior' in df_proyecciones.columns:
+                    fig.add_trace(go.Scatter(
+                        x=df_proyecciones['fecha'],
+                        y=df_proyecciones['intervalo_superior'],
+                        mode='lines',
+                        name='Confianza 95%',
+                        line=dict(width=0),
+                        showlegend=False
+                    ))
+                    
+                    fig.add_trace(go.Scatter(
+                        x=df_proyecciones['fecha'],
+                        y=df_proyecciones['intervalo_inferior'],
+                        mode='lines',
+                        name='Intervalo Confianza',
+                        line=dict(width=0),
+                        fill='tonexty',
+                        fillcolor='rgba(0,100,80,0.2)',
+                        showlegend=True
+                    ))
+                
+                fig.update_layout(
+                    title=f"Proyecciones Híbridas: {modelo_info['variable_objetivo']}",
+                    xaxis_title="Fecha",
+                    yaxis_title=f"{modelo_info['variable_objetivo']}",
+                    hovermode='x unified',
+                    height=400
+                , showlegend=False)
+                
+                st.plotly_chart(fig, config=PLOTLY_CONFIG, use_container_width=True)
+                
+                # Análisis de incertidumbre
+                if incluir_incertidumbre:
+                    st.subheader("🔍 Análisis de Incertidumbre")
+                    
+                    col_inc1, col_inc2 = st.columns(2)
+                    
+                    with col_inc1:
+                        # Gráfico de confianza temporal
+                        fig_conf = px.line(
+                            df_proyecciones, 
+                            x='fecha', 
+                            y='confianza',
+                            title='Confianza por Horizonte Temporal'
+                        )
+                        fig_conf.update_layout(height=300)
+                        st.plotly_chart(fig_conf, config=PLOTLY_CONFIG, use_container_width=True)
+                    
+                    with col_inc2:
+                        # Gráfico de tipos de incertidumbre
+                        fig_inc = go.Figure()
+                        fig_inc.add_trace(go.Scatter(
+                            x=df_proyecciones['fecha'],
+                            y=df_proyecciones['incertidumbre_epistemica'],
+                            mode='lines',
+                            name='Incertidumbre Epistémica',
+                            line=dict(color='red')
+                        ))
+                        fig_inc.add_trace(go.Scatter(
+                            x=df_proyecciones['fecha'],
+                            y=df_proyecciones['incertidumbre_aleatoria'],
+                            mode='lines',
+                            name='Incertidumbre Aleatoria',
+                            line=dict(color='orange')
+                        ))
+                        fig_inc.update_layout(
+                            title='Tipos de Incertidumbre',
+                            height=300
+                        )
+                        st.plotly_chart(fig_inc, config=PLOTLY_CONFIG, use_container_width=True)
+                
+                # Tabla de proyecciones
+                st.subheader("📋 Datos de Proyección Híbrida")
+                
+                df_mostrar = df_proyecciones[['fecha', 'valor_proyectado', 'confianza']].copy()
+                if incluir_incertidumbre:
+                    df_mostrar['intervalo_inferior'] = df_proyecciones['intervalo_inferior']
+                    df_mostrar['intervalo_superior'] = df_proyecciones['intervalo_superior']
+                
+                df_mostrar['fecha'] = df_mostrar['fecha'].dt.strftime('%Y-%m-%d')
+                df_mostrar['valor_proyectado'] = df_mostrar['valor_proyectado'].round(4)
+                df_mostrar['confianza'] = (df_mostrar['confianza'] * 100).round(1).astype(str) + '%'
+                
+                if incluir_incertidumbre:
+                    df_mostrar['intervalo_inferior'] = df_mostrar['intervalo_inferior'].round(4)
+                    df_mostrar['intervalo_superior'] = df_mostrar['intervalo_superior'].round(4)
+                
+                st.dataframe(df_mostrar, use_container_width=True)
+    
+    def mostrar_tab_benchmark(self):
+        """Mostrar tab de benchmark comparativo"""
+        st.header("🏆 Benchmark Comparativo de Modelos Híbridos")
+        
+        modelos_hibridos = self.sistema.listar_modelos_hibridos()
+        
+        if len(modelos_hibridos) < 2:
+            st.warning("Necesitas al menos 2 modelos híbridos para realizar benchmark.")
+            return
+        
+        # Análisis comparativo
+        st.subheader("📊 Análisis Comparativo de Rendimiento")
+        
+        df_modelos = pd.DataFrame(modelos_hibridos)
+        
+        # Gráfico de comparación de R²
+        fig_r2 = px.bar(
+            df_modelos,
+            x='nombre',
+            y='r2',
+            title='Comparación de R² por Modelo Híbrido',
+            color='r2',
+            color_continuous_scale='Viridis'
+        )
+        fig_r2.update_layout(height=400)
+        st.plotly_chart(fig_r2, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        # Gráfico de comparación de tiempo vs precisión
+        fig_scatter = px.scatter(
+            df_modelos,
+            x='tiempo_entrenamiento',
+            y='r2',
+            size='rmse',
+            color='tipo_hibrido',
+            hover_data=['nombre'],
+            title='Tiempo vs Precisión (Burbujas = RMSE)',
+            labels={
+                'tiempo_entrenamiento': 'Tiempo de Entrenamiento (s)',
+                'r2': 'R² Score',
+                'rmse': 'RMSE'
+            }
+        )
+        fig_scatter.update_layout(height=400)
+        st.plotly_chart(fig_scatter, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        # Tabla de ranking
+        st.subheader("🏅 Ranking de Modelos Híbridos")
+        
+        # Calcular score compuesto (R² alto, RMSE bajo, tiempo bajo)
+        df_modelos['score_compuesto'] = (
+            df_modelos['r2'] * 0.5 + 
+            (1 - df_modelos['rmse'] / df_modelos['rmse'].max()) * 0.3 +
+            (1 - df_modelos['tiempo_entrenamiento'] / df_modelos['tiempo_entrenamiento'].max()) * 0.2
+        )
+        
+        df_ranking = df_modelos.sort_values('score_compuesto', ascending=False)
+        
+        col_rank1, col_rank2, col_rank3 = st.columns(3)
+        
+        with col_rank1:
+            st.metric("🥇 Mejor Modelo", df_ranking.iloc[0]['nombre'])
+            st.metric("R²", f"{df_ranking.iloc[0]['r2']:.6f}")
+        
+        with col_rank2:
+            if len(df_ranking) > 1:
+                st.metric("🥈 Segundo Lugar", df_ranking.iloc[1]['nombre'])
+                st.metric("R²", f"{df_ranking.iloc[1]['r2']:.6f}")
+        
+        with col_rank3:
+            if len(df_ranking) > 2:
+                st.metric("🥉 Tercer Lugar", df_ranking.iloc[2]['nombre'])
+                st.metric("R²", f"{df_ranking.iloc[2]['r2']:.6f}")
+        
+        # Tabla detallada
+        st.subheader("📋 Métricas Detalladas")
+        
+        df_mostrar = df_ranking[['nombre', 'tipo_hibrido', 'variable_objetivo', 'r2', 'rmse', 'tiempo_entrenamiento', 'score_compuesto']].copy()
+        df_mostrar['r2'] = df_mostrar['r2'].round(6)
+        df_mostrar['rmse'] = df_mostrar['rmse'].round(6)
+        df_mostrar['tiempo_entrenamiento'] = df_mostrar['tiempo_entrenamiento'].round(2)
+        df_mostrar['score_compuesto'] = df_mostrar['score_compuesto'].round(4)
+        
+        st.dataframe(df_mostrar, use_container_width=True)
+        
+        # Análisis por tipo de híbrido
+        st.subheader("🔍 Análisis por Tipo de Híbrido")
+        
+        tipo_stats = df_modelos.groupby('tipo_hibrido').agg({
+            'r2': ['mean', 'std', 'count'],
+            'rmse': ['mean', 'std'],
+            'tiempo_entrenamiento': ['mean', 'std']
+        }).round(6)
+        
+        st.dataframe(tipo_stats, use_container_width=True)
+    
+    def mostrar_tab_tecnicas_avanzadas(self):
+        """Mostrar tab de técnicas avanzadas"""
+        st.header("🔬 Técnicas Avanzadas de Modelos Híbridos")
+        
+        # Información sobre técnicas
+        st.subheader("🧠 Algoritmos Base Optimizados")
+        
+        for nombre, config in self.sistema.modelos_base_optimizados.items():
+            with st.expander(f"**{nombre}**"):
+                st.write(f"**Descripción:** {config['clase'].__name__} con parámetros ultra-optimizados")
+                st.write(f"**Peso inicial:** {config['peso_inicial']}")
+                st.write("**Parámetros optimizados:**")
+                for param, valor in config['parametros'].items():
+                    if param not in ['random_state', 'n_jobs']:
+                        st.write(f"• `{param}`: {valor}")
+        
+        st.subheader("🔄 Tipos de Modelos Híbridos")
+        
+        tipos_hibridos = {
+            'Ensemble Optimizado': {
+                'descripcion': 'Combina múltiples algoritmos con pesos optimizados automáticamente',
+                'ventajas': ['Máxima precisión', 'Robusto', 'Optimización automática'],
+                'casos_uso': 'Predicciones de alta precisión cuando el rendimiento es crítico'
+            },
+            'Stacking Avanzado': {
+                'descripcion': 'Usa meta-aprendizaje para combinar predicciones de modelos base',
+                'ventajas': ['Meta-aprendizaje', 'Captura relaciones complejas', 'Validación cruzada'],
+                'casos_uso': 'Datos complejos con relaciones no lineales entre variables'
+            },
+            'Voting Inteligente': {
+                'descripcion': 'Voting regressor con pesos adaptativos según rendimiento',
+                'ventajas': ['Rápido', 'Adaptativo', 'Balance precisión/velocidad'],
+                'casos_uso': 'Aplicaciones en tiempo real que requieren velocidad'
+            },
+            'Híbrido Adaptativo': {
+                'descripcion': 'Selecciona automáticamente el mejor modelo según el contexto',
+                'ventajas': ['Selección automática', 'Máxima velocidad', 'Adaptación contextual'],
+                'casos_uso': 'Sistemas que deben adaptarse a diferentes condiciones'
+            }
+        }
+        
+        for tipo, info in tipos_hibridos.items():
+            with st.expander(f"**{tipo}**"):
+                st.write(f"**Descripción:** {info['descripcion']}")
+                
+                st.write("**Ventajas:**")
+                for ventaja in info['ventajas']:
+                    st.write(f"• {ventaja}")
+                
+                st.write(f"**Casos de uso:** {info['casos_uso']}")
+        
+        st.subheader("📊 Técnicas de Optimización")
+        
+        tecnicas = {
+            'Selección de Características': [
+                'SelectKBest con f_regression',
+                'RFE (Recursive Feature Elimination)',
+                'PCA para reducción dimensional'
+            ],
+            'Preprocesamiento Avanzado': [
+                'RobustScaler para datos con outliers',
+                'PolynomialFeatures para interacciones',
+                'Pipeline automatizado'
+            ],
+            'Optimización de Pesos': [
+                'Minimización de RMSE',
+                'L-BFGS-B para optimización numérica',
+                'Normalización automática de pesos'
+            ],
+            'Análisis de Incertidumbre': [
+                'Incertidumbre epistémica (del modelo)',
+                'Incertidumbre aleatoria (ruido inherente)',
+                'Intervalos de confianza del 95%'
+            ]
+        }
+        
+        for categoria, tecnicas_lista in tecnicas.items():
+            with st.expander(f"**{categoria}**"):
+                for tecnica in tecnicas_lista:
+                    st.write(f"• {tecnica}")
+    
+    def ejecutar_dashboard(self):
+        """Ejecutar dashboard principal"""
+        self.mostrar_header()
+        
+        # Sidebar
+        config = self.mostrar_sidebar()
+        
+        # Tabs principales
+        tab1, tab2, tab3, tab4 = st.tabs([
+            "🚀 Crear Híbrido",
+            "📈 Proyecciones Híbridas", 
+            "🏆 Benchmark",
+            "🔬 Técnicas Avanzadas"
+        ])
+        
+        with tab1:
+            self.mostrar_tab_crear_hibrido()
+        
+        with tab2:
+            self.mostrar_tab_proyecciones_hibridas()
+        
+        with tab3:
+            self.mostrar_tab_benchmark()
+        
+        with tab4:
+            self.mostrar_tab_tecnicas_avanzadas()
+
+def main():
+    """Función principal"""
+    dashboard = DashboardModelosHibridosInnovadores()
+    dashboard.ejecutar_dashboard()
+
+if __name__ == "__main__":
+    main()

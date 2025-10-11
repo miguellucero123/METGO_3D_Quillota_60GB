@@ -1,0 +1,235 @@
+================================================================================
+REPORTE DE REVISIÓN DE CÓDIGO
+Archivo: Detector_errores.ipynb
+Fecha: 2025-08-20 13:11:10
+================================================================================
+
+ESTADÍSTICAS GENERALES:
+----------------------------------------
+total_celdas: 10
+celdas_con_errores: 10
+errores_sintaxis: 0
+errores_importacion: 14
+errores_logica: 24
+advertencias: 30
+mejoras_aplicadas: 10
+tiempo_ejecucion: 3.108298
+
+DETALLE POR CELDA:
+================================================================================
+
+CELDA 1 (code):
+------------------------------------------------------------
+ERRORES (1):
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 1
+    - no_usados: 0
+    - faltantes: 0
+
+
+CELDA 2 (code):
+------------------------------------------------------------
+ERRORES (1):
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 1
+    - no_usados: 0
+    - faltantes: 0
+
+
+CELDA 3 (code):
+------------------------------------------------------------
+ERRORES (1):
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+ADVERTENCIAS (7):
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 11
+    - no_usados: 7
+    - faltantes: 0
+
+
+CELDA 4 (code):
+------------------------------------------------------------
+ERRORES (7):
+  • [MEDIO] Import faltante: Se detectó uso de '\bpd\.' pero no se encontró el import: pandas as pd
+    → Sugerencia: Agregar: import pandas as pd
+  • [MEDIO] Import faltante: Se detectó uso de '\bplt\.' pero no se encontró el import: matplotlib.pyplot as plt
+    → Sugerencia: Agregar: import matplotlib.pyplot as plt
+  • [MEDIO] Import faltante: Se detectó uso de '\bsns\.' pero no se encontró el import: seaborn as sns
+    → Sugerencia: Agregar: import seaborn as sns
+  • [MEDIO] Import faltante: Se detectó uso de '\bos\.' pero no se encontró el import: os
+    → Sugerencia: Agregar: import os
+  • [MEDIO] Import faltante: Se detectó uso de '\bnbformat\.' pero no se encontró el import: nbformat
+    → Sugerencia: Agregar: import nbformat
+  • [MEDIO] Import faltante: Se detectó uso de '\bwarnings\.' pero no se encontró el import: warnings
+    → Sugerencia: Agregar: import warnings
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 1
+    - no_usados: 0
+    - faltantes: 6
+
+
+CELDA 5 (code):
+------------------------------------------------------------
+ERRORES (1):
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+ADVERTENCIAS (5):
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 8
+    - no_usados: 5
+    - faltantes: 0
+
+
+CELDA 6 (code):
+------------------------------------------------------------
+ERRORES (3):
+  • [MEDIO] Import faltante: Se detectó uso de '\bos\.' pero no se encontró el import: os
+    → Sugerencia: Agregar: import os
+  • [MEDIO] Import faltante: Se detectó uso de '\bdatetime\.' pero no se encontró el import: datetime
+    → Sugerencia: Agregar: import datetime
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 0
+    - no_usados: 0
+    - faltantes: 2
+
+
+CELDA 7 (code):
+------------------------------------------------------------
+ERRORES (2):
+  • [MEDIO] Import faltante: Se detectó uso de '\bPath\(' pero no se encontró el import: from pathlib import Path
+    → Sugerencia: Agregar: import from pathlib import Path
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+ADVERTENCIAS (1):
+  • [BAJO] Import no usado: 
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 3
+    - no_usados: 1
+    - faltantes: 1
+
+
+CELDA 8 (code):
+------------------------------------------------------------
+ERRORES (2):
+  • [MEDIO] Import faltante: Se detectó uso de '\bnbformat\.' pero no se encontró el import: nbformat
+    → Sugerencia: Agregar: import nbformat
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 0
+    - no_usados: 0
+    - faltantes: 1
+
+
+CELDA 9 (code):
+------------------------------------------------------------
+ERRORES (1):
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 0
+    - no_usados: 0
+    - faltantes: 0
+
+
+CELDA 10 (code):
+------------------------------------------------------------
+ERRORES (5):
+  • [MEDIO] Import faltante: Se detectó uso de '\bpd\.' pero no se encontró el import: pandas as pd
+    → Sugerencia: Agregar: import pandas as pd
+  • [MEDIO] Import faltante: Se detectó uso de '\bnp\.' pero no se encontró el import: numpy as np
+    → Sugerencia: Agregar: import numpy as np
+  • [MEDIO] Import faltante: Se detectó uso de '\bplt\.' pero no se encontró el import: matplotlib.pyplot as plt
+    → Sugerencia: Agregar: import matplotlib.pyplot as plt
+  • [MEDIO] Import faltante: Se detectó uso de '\bPath\(' pero no se encontró el import: from pathlib import Path
+    → Sugerencia: Agregar: import from pathlib import Path
+  • [MEDIO] Error al analizar lógica: argument of type 'module' is not iterable
+
+ADVERTENCIAS (17):
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+  • [BAJO] Import no usado: 
+
+CORRECCIONES APLICADAS (1):
+  • Formato PEP8: Se aplicó formato según PEP8
+
+MÉTRICAS:
+  • imports:
+    - total: 29
+    - no_usados: 17
+    - faltantes: 4
+

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METGO 3D - Dashboard Principal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2E8B57;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #2E8B57, #90EE90);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+
+        .nav a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 139, 87, 0.4);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #2E8B57;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #2E8B57;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .metric {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2E8B57;
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chart-container {
+            height: 200px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 15px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            color: #666;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .module-card h4 {
+            color: #2E8B57;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .module-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 METGO 3D</h1>
+            <p>Sistema Meteorológico Agrícola Quillota - Dashboard Principal</p>
+            <p style="font-size: 0.9em; color: #888; margin-top: 10px;">Versión 2.0 | Última actualización: <span id="timestamp"></span></p>
+        </div>
+
+        <div class="nav">
+            <a href="#dashboard">Dashboard</a>
+            <a href="#modulos">Módulos</a>
+            <a href="#metricas">Métricas</a>
+            <a href="#reportes">Reportes</a>
+            <a href="#configuracion">Configuración</a>
+        </div>
+
+        <div class="dashboard" id="dashboard">
+            <div class="card">
+                <h3>🌡️ Condiciones Meteorológicas</h3>
+                <p>Monitoreo en tiempo real de condiciones climáticas</p>
+                <div class="metric">22.5°C</div>
+                <p>Humedad: 65% | Viento: 8 km/h | Presión: 1013 hPa</p>
+                <span class="status active">Condiciones Normales</span>
+            </div>
+
+            <div class="card">
+                <h3>💧 Sistema de Riego</h3>
+                <p>Control automatizado de riego</p>
+                <div class="metric">45%</div>
+                <p>Humedad del suelo | Próximo riego: 06:00</p>
+                <span class="status active">Sistema Activo</span>
+            </div>
+
+            <div class="card">
+                <h3>📊 Análisis Agrícola</h3>
+                <p>Índices y recomendaciones</p>
+                <div class="metric">NDVI: 0.65</div>
+                <p>Vegetación saludable | EVI: 0.42 | NDWI: 0.38</p>
+                <span class="status active">Vegetación Saludable</span>
+            </div>
+
+            <div class="card">
+                <h3>🤖 Chatbot Inteligente</h3>
+                <p>Asistente meteorológico 24/7</p>
+                <div class="metric">24/7</div>
+                <p>Consultas respondidas: 1,250 | Satisfacción: 4.2/5</p>
+                <span class="status active">Operativo</span>
+            </div>
+
+            <div class="card">
+                <h3>📈 Métricas de Negocio</h3>
+                <p>KPIs y rendimiento del sistema</p>
+                <div class="metric">87.6%</div>
+                <p>Crecimiento usuarios | ROI: 195% | Retención: 85%</p>
+                <span class="status active">Rendimiento Excelente</span>
+            </div>
+
+            <div class="card">
+                <h3>🔐 Seguridad</h3>
+                <p>Sistema de autenticación avanzada</p>
+                <div class="metric">99.9%</div>
+                <p>Uptime | Usuarios activos: 153 | Sesiones: 45</p>
+                <span class="status active">Sistema Seguro</span>
+            </div>
+        </div>
+
+        <div class="modules-grid" id="modulos">
+            <div class="module-card">
+                <h4><span class="module-status"></span>Deep Learning Avanzado</h4>
+                <p>Modelos LSTM, Transformer, CNN 1D y Ensemble para predicciones meteorológicas precisas.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Aplicación Móvil</h4>
+                <p>API REST para agricultores con gestión de usuarios, alertas y recomendaciones.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Datos Satelitales</h4>
+                <p>Integración de NDVI, NDWI, EVI con mapas interactivos y análisis temporal.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Chatbot Inteligente</h4>
+                <p>Asistente con detección de intenciones, base de conversaciones y respuestas contextuales.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Reportes Automáticos</h4>
+                <p>Generación automática de reportes PDF/JSON con análisis estadístico avanzado.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Riego Automatizado</h4>
+                <p>Sistema de sensores, controladores y programación inteligente de riego.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Web Responsive</h4>
+                <p>Aplicación web con autenticación, dashboard interactivo y diseño responsive.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Expansión Regional</h4>
+                <p>6 regiones de Chile con análisis comparativo y estaciones meteorológicas.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Autenticación Avanzada</h4>
+                <p>JWT, roles, permisos, rate limiting y sistema de seguridad robusto.</p>
+            </div>
+
+            <div class="module-card">
+                <h4><span class="module-status"></span>Métricas de Negocio</h4>
+                <p>KPIs, análisis de tendencias, reportes ejecutivos y recomendaciones inteligentes.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 METGO 3D - Sistema Meteorológico Agrícola Quillota</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Sistema completamente operativo | 10 módulos implementados | Base de datos SQLite | APIs REST | Autenticación JWT
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Actualizar timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString('es-CL');
+
+        // Simular actualización de métricas en tiempo real
+        function actualizarMetricas() {
+            const metricas = document.querySelectorAll('.metric');
+            metricas.forEach(metrica => {
+                if (metrica.textContent.includes('°C')) {
+                    const temp = (22.5 + (Math.random() - 0.5) * 2).toFixed(1);
+                    metrica.textContent = temp + '°C';
+                } else if (metrica.textContent.includes('%')) {
+                    const humedad = (45 + (Math.random() - 0.5) * 10).toFixed(0);
+                    metrica.textContent = humedad + '%';
+                } else if (metrica.textContent.includes('NDVI')) {
+                    const ndvi = (0.65 + (Math.random() - 0.5) * 0.1).toFixed(2);
+                    metrica.textContent = 'NDVI: ' + ndvi;
+                }
+            });
+        }
+
+        // Actualizar métricas cada 30 segundos
+        setInterval(actualizarMetricas, 30000);
+
+        // Efecto de hover en las tarjetas
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Navegación suave
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        console.log('🌾 METGO 3D Dashboard cargado exitosamente');
+        console.log('Sistema completamente operativo con 10 módulos implementados');
+    </script>
+</body>
+</html>

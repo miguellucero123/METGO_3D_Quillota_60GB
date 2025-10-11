@@ -1,0 +1,575 @@
+"""
+DASHBOARD CENTRAL - METGO 3D QUILLOTA
+Página central de acceso a todos los dashboards del sistema
+Incluye: Navegación unificada, estado de dashboards, y gestión centralizada
+"""
+
+import streamlit as st
+import subprocess
+import sys
+import os
+import time
+import threading
+import webbrowser
+from datetime import datetime
+import json
+
+class DashboardCentralMetgo:
+    def __init__(self):
+        self.dashboards = {
+            'dashboard_empresarial': {
+                'nombre': 'Dashboard Empresarial',
+                'descripcion': 'Vista ejecutiva con métricas empresariales y KPIs',
+                'icono': '📊',
+                'archivo': 'dashboard_empresarial_unificado_metgo.py',
+                'puerto': 8503,
+                'color': '#667eea',
+                'categoria': 'Ejecutivo',
+                'estado': 'detenido'
+            },
+            'dashboard_agricola': {
+                'nombre': 'Dashboard Agrícola',
+                'descripcion': 'Gestión completa de cultivos, producción y recomendaciones',
+                'icono': '🌱',
+                'archivo': 'dashboard_agricola_avanzado_metgo.py',
+                'puerto': 8501,
+                'color': '#27ae60',
+                'categoria': 'Agrícola',
+                'estado': 'detenido'
+            },
+            'dashboard_meteorologico': {
+                'nombre': 'Dashboard Meteorológico',
+                'descripcion': 'Monitoreo climático en tiempo real y pronósticos',
+                'icono': '🌤️',
+                'archivo': 'dashboard_meteorologico_metgo.py',
+                'puerto': 8502,
+                'color': '#3498db',
+                'categoria': 'Meteorológico',
+                'estado': 'detenido'
+            },
+            'dashboard_drones': {
+                'nombre': 'Dashboard con Drones',
+                'descripcion': 'Monitoreo aéreo, análisis de cultivos y detección de problemas',
+                'icono': '🚁',
+                'archivo': 'dashboard_unificado_metgo_con_drones.py',
+                'puerto': 8504,
+                'color': '#9b59b6',
+                'categoria': 'Tecnología',
+                'estado': 'detenido'
+            },
+            'sistema_economico': {
+                'nombre': 'Sistema Económico',
+                'descripcion': 'Análisis de ROI, costos y rentabilidad en tiempo real',
+                'icono': '💰',
+                'archivo': 'analisis_economico_agricola_metgo_con_conversion.py',
+                'puerto': 8506,
+                'color': '#f39c12',
+                'categoria': 'Económico',
+                'estado': 'detenido'
+            },
+            'sistema_integracion': {
+                'nombre': 'Sistema de Integración',
+                'descripcion': 'ERP, GPS, IoT y sistemas externos integrados',
+                'icono': '🔗',
+                'archivo': 'integracion_sistemas_existentes_metgo.py',
+                'puerto': 8507,
+                'color': '#34495e',
+                'categoria': 'Integración',
+                'estado': 'detenido'
+            },
+            'reportes_avanzados': {
+                'nombre': 'Reportes Avanzados',
+                'descripcion': 'Generación de reportes PDF y análisis comparativos',
+                'icono': '📈',
+                'archivo': 'generador_reportes_avanzados.py',
+                'puerto': 8508,
+                'color': '#2c3e50',
+                'categoria': 'Reportes',
+                'estado': 'detenido'
+            },
+            'base_datos_historica': {
+                'nombre': 'Base de Datos Histórica',
+                'descripcion': 'Datos históricos de 5 años y análisis de tendencias',
+                'icono': '🗄️',
+                'archivo': 'sistema_base_datos_historica_5_anios.py',
+                'puerto': None,
+                'color': '#95a5a6',
+                'categoria': 'Datos',
+                'estado': 'disponible'
+            }
+        }
+        
+        self.procesos_activos = {}
+        
+    def verificar_archivo(self, archivo):
+        """Verificar que el archivo existe"""
+        return os.path.exists(archivo)
+    
+    def iniciar_dashboard(self, dashboard_id):
+        """Iniciar un dashboard específico"""
+        try:
+            dashboard = self.dashboards[dashboard_id]
+            
+            if not self.verificar_archivo(dashboard['archivo']):
+                return False, f"Archivo {dashboard['archivo']} no encontrado"
+            
+            if dashboard['puerto'] is None:
+                return False, "Este módulo no requiere servidor web"
+            
+            # Comando para ejecutar Streamlit
+            comando = [
+                sys.executable, "-m", "streamlit", "run", 
+                dashboard['archivo'], 
+                "--server.port", str(dashboard['puerto']),
+                "--server.headless", "true"
+            ]
+            
+            # Ejecutar en proceso separado
+            proceso = subprocess.Popen(comando, 
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE)
+            
+            self.procesos_activos[dashboard_id] = proceso
+            dashboard['estado'] = 'activo'
+            
+            return True, f"Dashboard iniciado en puerto {dashboard['puerto']}"
+            
+        except Exception as e:
+            return False, f"Error: {e}"
+    
+    def detener_dashboard(self, dashboard_id):
+        """Detener un dashboard específico"""
+        try:
+            if dashboard_id in self.procesos_activos:
+                proceso = self.procesos_activos[dashboard_id]
+                proceso.terminate()
+                del self.procesos_activos[dashboard_id]
+                self.dashboards[dashboard_id]['estado'] = 'detenido'
+                return True, "Dashboard detenido"
+            else:
+                return False, "Dashboard no está activo"
+        except Exception as e:
+            return False, f"Error: {e}"
+    
+    def obtener_estado_dashboards(self):
+        """Obtener estado actual de todos los dashboards"""
+        for dashboard_id, proceso in list(self.procesos_activos.items()):
+            if proceso.poll() is not None:  # Proceso terminado
+                del self.procesos_activos[dashboard_id]
+                self.dashboards[dashboard_id]['estado'] = 'detenido'
+        
+        return self.dashboards
+
+def render_dashboard_central():
+    """Renderizar dashboard central"""
+    st.set_page_config(
+        page_title="METGO 3D - Dashboard Central",
+        page_icon="🎯",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # CSS personalizado
+    st.markdown("""
+    <style>
+        .main {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1.2rem;
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .dashboard-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .dashboard-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .dashboard-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+        
+        .dashboard-category {
+            background: #f8f9fa;
+            color: #6c757d;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        
+        .dashboard-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-activo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-detenido {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-disponible {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .launch-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .stop-button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        
+        .stop-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .stats-container {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+        
+        .sidebar-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+        }
+        
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .info-item {
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .info-icon {
+            margin-right: 0.5rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Header principal
+    st.markdown("""
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">METGO 3D</h1>
+        <p class="dashboard-subtitle">Sistema de Gestión Agrícola Inteligente - Dashboard Central</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Inicializar sistema central
+    if 'central_system' not in st.session_state:
+        st.session_state.central_system = DashboardCentralMetgo()
+    
+    central_system = st.session_state.central_system
+    
+    # Sidebar con información del sistema
+    with st.sidebar:
+        st.markdown("""
+        <div class="sidebar-info">
+            <div class="info-title">Sistema METGO 3D</div>
+            <div class="info-item">
+                <span class="info-icon">🎯</span>
+                Dashboard Central
+            </div>
+            <div class="info-item">
+                <span class="info-icon">🔐</span>
+                Autenticación Activa
+            </div>
+            <div class="info-item">
+                <span class="info-icon">📊</span>
+                8 Módulos Disponibles
+            </div>
+            <div class="info-item">
+                <span class="info-icon">⚡</span>
+                Sistema en Tiempo Real
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("### 🚀 Acciones Rápidas")
+        
+        if st.button("🔄 Actualizar Estado", width='stretch'):
+            st.rerun()
+        
+        if st.button("🛑 Detener Todos", width='stretch'):
+            for dashboard_id in list(central_system.procesos_activos.keys()):
+                central_system.detener_dashboard(dashboard_id)
+            st.success("Todos los dashboards han sido detenidos")
+            st.rerun()
+        
+        if st.button("🚀 Iniciar Todos", width='stretch'):
+            dashboards_iniciados = 0
+            for dashboard_id in central_system.dashboards.keys():
+                if central_system.dashboards[dashboard_id]['puerto'] is not None:
+                    success, message = central_system.iniciar_dashboard(dashboard_id)
+                    if success:
+                        dashboards_iniciados += 1
+                    time.sleep(1)  # Esperar entre inicios
+            
+            st.success(f"Se iniciaron {dashboards_iniciados} dashboards")
+            st.rerun()
+        
+        st.markdown("### 📊 Estadísticas")
+        dashboards_activos = len(central_system.procesos_activos)
+        dashboards_totales = len([d for d in central_system.dashboards.values() if d['puerto'] is not None])
+        
+        st.metric("Dashboards Activos", dashboards_activos)
+        st.metric("Total Disponibles", dashboards_totales)
+        st.metric("Estado Sistema", "🟢 Operativo" if dashboards_activos > 0 else "🔴 Detenido")
+    
+    # Estadísticas principales
+    dashboards_activos = len(central_system.procesos_activos)
+    dashboards_totales = len([d for d in central_system.dashboards.values() if d['puerto'] is not None])
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f"""
+        <div class="stat-item">
+            <div class="stat-number">{dashboards_activos}</div>
+            <div class="stat-label">Dashboards Activos</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="stat-item">
+            <div class="stat-number">{dashboards_totales}</div>
+            <div class="stat-label">Total Disponibles</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="stat-item">
+            <div class="stat-number">{len(central_system.dashboards)}</div>
+            <div class="stat-label">Módulos Sistema</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        estado_sistema = "🟢" if dashboards_activos > 0 else "🔴"
+        st.markdown(f"""
+        <div class="stat-item">
+            <div class="stat-number">{estado_sistema}</div>
+            <div class="stat-label">Estado Sistema</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Grid de dashboards
+    st.markdown("### 🎯 Módulos del Sistema")
+    
+    # Obtener estado actualizado
+    dashboards = central_system.obtener_estado_dashboards()
+    
+    # Crear grid de dashboards
+    cols = st.columns(2)
+    for i, (dashboard_id, dashboard) in enumerate(dashboards.items()):
+        with cols[i % 2]:
+            # Determinar clase de estado
+            estado_class = f"status-{dashboard['estado']}"
+            
+            st.markdown(f"""
+            <div class="dashboard-card">
+                <div class="dashboard-status {estado_class}">
+                    {dashboard['estado'].upper()}
+                </div>
+                <div class="dashboard-icon" style="color: {dashboard['color']};">{dashboard['icono']}</div>
+                <h3 class="dashboard-name">{dashboard['nombre']}</h3>
+                <div class="dashboard-category">{dashboard['categoria']}</div>
+                <p class="dashboard-description">{dashboard['descripcion']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Botones de control
+            col_btn1, col_btn2 = st.columns(2)
+            
+            with col_btn1:
+                if dashboard['estado'] == 'activo':
+                    if st.button(f"🌐 Abrir", key=f"open_{dashboard_id}", width='stretch'):
+                        if dashboard['puerto']:
+                            url = f"http://localhost:{dashboard['puerto']}"
+                            st.success(f"Abriendo {dashboard['nombre']}")
+                            st.markdown(f"**URL:** {url}")
+                            # Intentar abrir en navegador
+                            try:
+                                webbrowser.open(url)
+                            except:
+                                st.info("Abre manualmente la URL en tu navegador")
+                else:
+                    if st.button(f"🚀 Iniciar", key=f"start_{dashboard_id}", width='stretch'):
+                        success, message = central_system.iniciar_dashboard(dashboard_id)
+                        if success:
+                            st.success(message)
+                        else:
+                            st.error(message)
+                        st.rerun()
+            
+            with col_btn2:
+                if dashboard['estado'] == 'activo':
+                    if st.button(f"🛑 Detener", key=f"stop_{dashboard_id}", width='stretch'):
+                        success, message = central_system.detener_dashboard(dashboard_id)
+                        if success:
+                            st.success(message)
+                        else:
+                            st.error(message)
+                        st.rerun()
+                elif dashboard['puerto'] is None:
+                    if st.button(f"📄 Ejecutar", key=f"run_{dashboard_id}", width='stretch'):
+                        st.info(f"Ejecutando {dashboard['nombre']}...")
+                        st.code(f"python {dashboard['archivo']}")
+    
+    # Información adicional
+    st.markdown("---")
+    
+    col_info1, col_info2 = st.columns(2)
+    
+    with col_info1:
+        st.markdown("### 🔐 Información de Autenticación")
+        st.info("""
+        **Usuarios de Prueba:**
+        - **Admin:** admin / admin123
+        - **Ejecutivo:** ejecutivo / ejecutivo123
+        - **Agricultor:** agricultor / agricultor123
+        - **Técnico:** tecnico / tecnico123
+        - **Usuario:** usuario / usuario123
+        """)
+    
+    with col_info2:
+        st.markdown("### 💡 Instrucciones de Uso")
+        st.info("""
+        1. **Inicia** el dashboard que necesites
+        2. **Abre** la URL en tu navegador
+        3. **Inicia sesión** con las credenciales
+        4. **Navega** por el dashboard específico
+        5. **Detén** cuando termines de usar
+        """)
+    
+    # Auto-refresh cada 30 segundos
+    if dashboards_activos > 0:
+        time.sleep(30)
+        st.rerun()
+
+def main():
+    """Función principal del dashboard central"""
+    render_dashboard_central()
+
+if __name__ == "__main__":
+    main()

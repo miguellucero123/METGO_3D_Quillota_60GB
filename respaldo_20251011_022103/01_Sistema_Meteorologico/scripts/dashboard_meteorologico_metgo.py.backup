@@ -1,0 +1,599 @@
+"""
+DASHBOARD METEOROLÓGICO METGO 3D QUILLOTA
+Dashboard especializado en monitoreo climático en tiempo real
+"""
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+import sqlite3
+import json
+import requests
+import numpy as np
+import sys
+import os
+
+# Agregar el directorio actual al path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from conector_apis_meteorologicas_reales import ConectorAPIsMeteorologicas
+
+class DashboardMeteorologico:
+    def __init__(self):
+        self.db_path = "datos_meteorologicos_reales.db"
+        self.conector_apis = ConectorAPIsMeteorologicas()
+        self.inicializar_db()
+    
+    def inicializar_db(self):
+        """Inicializar base de datos meteorológica"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Verificar si la tabla existe y tiene las columnas correctas
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='datos_meteorologicos'")
+            if cursor.fetchone():
+                # La tabla existe, verificar columnas
+                cursor.execute("PRAGMA table_info(datos_meteorologicos)")
+                columns = [column[1] for column in cursor.fetchall()]
+                
+                # Si falta la columna humedad, agregarla
+                if 'humedad' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN humedad REAL")
+                if 'presion' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN presion REAL")
+                if 'precipitacion' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN precipitacion REAL")
+                if 'velocidad_viento' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN velocidad_viento REAL")
+                if 'direccion_viento' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN direccion_viento REAL")
+                if 'nubosidad' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN nubosidad REAL")
+                if 'indice_uv' not in columns:
+                    cursor.execute("ALTER TABLE datos_meteorologicos ADD COLUMN indice_uv REAL")
+            else:
+                # Crear la tabla desde cero
+                cursor.execute('''
+                    CREATE TABLE datos_meteorologicos (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        estacion TEXT NOT NULL,
+                        fecha DATETIME NOT NULL,
+                        temperatura REAL,
+                        humedad REAL,
+                        presion REAL,
+                        precipitacion REAL,
+                        velocidad_viento REAL,
+                        direccion_viento REAL,
+                        nubosidad REAL,
+                        indice_uv REAL,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+            
+            conn.commit()
+            conn.close()
+            
+        except Exception as e:
+            st.error(f"Error inicializando base de datos: {e}")
+    
+    def obtener_datos_reales(self):
+        """Obtener datos meteorológicos reales desde APIs"""
+        try:
+            with st.spinner("🔄 Obteniendo datos meteorológicos reales..."):
+                # Obtener datos actuales desde OpenMeteo
+                datos_obtenidos = self.conector_apis.obtener_datos_todas_estaciones(dias=1)
+                
+                if datos_obtenidos and 'datos_combinados' in datos_obtenidos:
+                    # Guardar en base de datos
+                    conn = sqlite3.connect(self.db_path)
+                    cursor = conn.cursor()
+                    
+                    # Los datos vienen como DataFrame
+                    df_combinado = datos_obtenidos['datos_combinados']
+                    
+                    # Procesar cada fila del DataFrame
+                    for _, fila in df_combinado.iterrows():
+                        # Mapear las columnas disponibles a nuestras variables
+                        temperatura = None
+                        humedad = None
+                        presion = None
+                        precipitacion = None
+                        velocidad_viento = None
+                        direccion_viento = None
+                        nubosidad = None
+                        indice_uv = None
+                        
+                        # Mapear directamente las columnas conocidas
+                        temperatura = fila.get('temperatura', None)
+                        humedad = fila.get('humedad_relativa', None)
+                        presion = fila.get('presion_atmosferica', None)
+                        precipitacion = fila.get('precipitacion', None)
+                        velocidad_viento = fila.get('velocidad_viento', None)
+                        direccion_viento = fila.get('direccion_viento', None)
+                        nubosidad = fila.get('nubosidad', None)
+                        indice_uv = fila.get('radiacion_solar', None)  # Usar radiación solar como proxy para UV
+                        
+                        # Obtener el nombre de la estación
+                        estacion = "Estación Desconocida"
+                        if 'estacion' in df_combinado.columns:
+                            estacion = fila.get('estacion', 'Estación Desconocida')
+                        elif 'station' in df_combinado.columns:
+                            estacion = fila.get('station', 'Estación Desconocida')
+                        
+                        # Obtener la fecha
+                        fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        if 'fecha' in df_combinado.columns:
+                            fecha = str(fila.get('fecha', datetime.now()))
+                        
+                        cursor.execute('''
+                            INSERT OR REPLACE INTO datos_meteorologicos 
+                            (estacion, fecha, temperatura, humedad, presion, precipitacion, 
+                             velocidad_viento, direccion_viento, nubosidad, indice_uv)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', (
+                            estacion, fecha, temperatura, humedad, presion, precipitacion,
+                            velocidad_viento, direccion_viento, nubosidad, indice_uv
+                        ))
+                    
+                    conn.commit()
+                    conn.close()
+                    
+                    total_estaciones = datos_obtenidos.get('total_estaciones', 0)
+                    st.success(f"✅ Datos reales obtenidos de {total_estaciones} estaciones")
+                    return True
+                else:
+                    st.warning("⚠️ No se pudieron obtener datos reales, generando datos simulados...")
+                    return self.generar_datos_simulados()
+                    
+        except Exception as e:
+            st.error(f"Error obteniendo datos reales: {e}")
+            st.info("🔄 Intentando con datos simulados...")
+            return self.generar_datos_simulados()
+    
+    def generar_datos_simulados(self):
+        """Generar datos meteorológicos simulados para demostración"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Generar datos para las últimas 24 horas
+            estaciones = ['Quillota Centro', 'Quillota Norte', 'Quillota Sur', 'La Cruz', 'Nogales', 'Hijuelas']
+            ahora = datetime.now()
+            
+            for i in range(24):
+                fecha = ahora - timedelta(hours=i)
+                
+                for estacion in estaciones:
+                    # Datos simulados realistas para Quillota
+                    temperatura = 15 + 10 * np.sin(i * np.pi / 12) + np.random.normal(0, 2)
+                    humedad = 60 + 20 * np.sin(i * np.pi / 12) + np.random.normal(0, 5)
+                    presion = 1013 + np.random.normal(0, 5)
+                    precipitacion = np.random.exponential(0.5) if np.random.random() < 0.1 else 0
+                    velocidad_viento = np.random.exponential(3)
+                    direccion_viento = np.random.uniform(0, 360)
+                    nubosidad = np.random.uniform(0, 100)
+                    indice_uv = max(0, 5 + 5 * np.sin(i * np.pi / 12) + np.random.normal(0, 1))
+                    
+                    cursor.execute('''
+                        INSERT OR REPLACE INTO datos_meteorologicos 
+                        (estacion, fecha, temperatura, humedad, presion, precipitacion, 
+                         velocidad_viento, direccion_viento, nubosidad, indice_uv)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (estacion, fecha.strftime('%Y-%m-%d %H:%M:%S'), temperatura, humedad, presion, precipitacion,
+                          velocidad_viento, direccion_viento, nubosidad, indice_uv))
+            
+            conn.commit()
+            conn.close()
+            st.success("✅ Datos meteorológicos simulados generados")
+            return True
+            
+        except Exception as e:
+            st.error(f"Error generando datos simulados: {e}")
+            return False
+    
+    def mostrar_debug_datos(self):
+        """Mostrar información de debug sobre los datos obtenidos"""
+        try:
+            with st.spinner("🔍 Analizando estructura de datos..."):
+                datos_obtenidos = self.conector_apis.obtener_datos_todas_estaciones(dias=1)
+                
+                if datos_obtenidos and 'datos_combinados' in datos_obtenidos:
+                    df = datos_obtenidos['datos_combinados']
+                    
+                    st.subheader("🔍 Información de Debug - Estructura de Datos")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write("**Columnas disponibles:**")
+                        st.write(list(df.columns))
+                        
+                        st.write("**Primeras 3 filas:**")
+                        st.dataframe(df.head(3))
+                    
+                    with col2:
+                        st.write("**Información del DataFrame:**")
+                        st.write(f"- Filas: {len(df)}")
+                        st.write(f"- Columnas: {len(df.columns)}")
+                        
+                        if len(df) > 0:
+                            st.write("**Tipos de datos:**")
+                            st.write(df.dtypes.to_dict())
+                            
+                            st.write("**Valores únicos en columnas principales:**")
+                            for col in df.columns[:5]:  # Solo las primeras 5 columnas
+                                unique_vals = df[col].nunique()
+                                st.write(f"- {col}: {unique_vals} valores únicos")
+                else:
+                    st.error("No se pudieron obtener datos para debug")
+                    
+        except Exception as e:
+            st.error(f"Error en debug: {e}")
+    
+    def obtener_datos_actuales(self):
+        """Obtener datos meteorológicos actuales"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            
+            # Datos más recientes por estación
+            query = '''
+                SELECT estacion, 
+                       MAX(fecha) as ultima_fecha,
+                       temperatura, humedad, presion, precipitacion,
+                       velocidad_viento, direccion_viento, nubosidad, indice_uv
+                FROM datos_meteorologicos
+                WHERE fecha >= datetime('now', '-1 hour')
+                GROUP BY estacion
+                ORDER BY estacion
+            '''
+            
+            df = pd.read_sql_query(query, conn)
+            conn.close()
+            
+            return df
+            
+        except Exception as e:
+            st.error(f"Error obteniendo datos actuales: {e}")
+            return pd.DataFrame()
+    
+    def obtener_datos_historicos(self, horas=24):
+        """Obtener datos históricos"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            
+            # Obtener todos los datos y filtrar después en pandas
+            query = '''
+                SELECT estacion, fecha, temperatura, humedad, presion, precipitacion,
+                       velocidad_viento, direccion_viento, nubosidad, indice_uv
+                FROM datos_meteorologicos
+                ORDER BY fecha DESC
+            '''
+            
+            df = pd.read_sql_query(query, conn)
+            conn.close()
+            
+            if not df.empty:
+                # Convertir fecha a datetime
+                df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
+                
+                # Filtrar por las últimas N horas si hay datos
+                if not df['fecha'].empty:
+                    fecha_limite = df['fecha'].max() - pd.Timedelta(hours=horas)
+                    df = df[df['fecha'] >= fecha_limite]
+            
+            return df
+            
+        except Exception as e:
+            st.error(f"Error obteniendo datos históricos: {e}")
+            return pd.DataFrame()
+
+def main():
+    """Función principal del dashboard meteorológico"""
+    st.set_page_config(
+        page_title="METGO 3D - Dashboard Meteorológico",
+        page_icon="🌤️",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # CSS personalizado
+    st.markdown("""
+    <style>
+        .main {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .alert-card {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .warning-card {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Header
+    st.title("🌤️ Dashboard Meteorológico METGO 3D")
+    st.markdown("**Monitoreo Climático en Tiempo Real - Valle de Quillota**")
+    
+    # Inicializar dashboard
+    dashboard = DashboardMeteorologico()
+    
+    # Sidebar
+    with st.sidebar:
+        st.header("⚙️ Configuración")
+        
+        # Opciones de datos
+        st.subheader("📡 Fuente de Datos")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🌐 Datos Reales"):
+                dashboard.obtener_datos_reales()
+                st.rerun()
+        
+        with col2:
+            if st.button("🧪 Datos Simulados"):
+                dashboard.generar_datos_simulados()
+                st.rerun()
+        
+        # Actualizar datos
+        if st.button("🔄 Actualizar Datos"):
+            dashboard.obtener_datos_reales()
+            st.rerun()
+        
+        # Debug de datos
+        if st.button("🔍 Ver Estructura de Datos"):
+            dashboard.mostrar_debug_datos()
+        
+        # Selector de período
+        periodo = st.selectbox(
+            "📅 Período de Análisis",
+            ["Últimas 6 horas", "Últimas 12 horas", "Últimas 24 horas", "Últimos 3 días"]
+        )
+        
+        # Mapeo de períodos
+        horas_map = {
+            "Últimas 6 horas": 6,
+            "Últimas 12 horas": 12,
+            "Últimas 24 horas": 24,
+            "Últimos 3 días": 72
+        }
+        
+        horas = horas_map[periodo]
+        
+        # Selector de estación
+        estaciones = ['Todas las Estaciones', 'Quillota Centro', 'Quillota Norte', 'Quillota Sur', 'La Cruz', 'Nogales', 'Hijuelas']
+        estacion_seleccionada = st.selectbox("📍 Estación", estaciones)
+    
+    # Obtener datos
+    datos_actuales = dashboard.obtener_datos_actuales()
+    datos_historicos = dashboard.obtener_datos_historicos(horas)
+    
+    if datos_actuales.empty:
+        st.warning("⚠️ No hay datos meteorológicos disponibles. Genera datos de prueba desde el sidebar.")
+        return
+    
+    # Filtrar por estación si se selecciona una específica
+    if estacion_seleccionada != 'Todas las Estaciones':
+        datos_historicos = datos_historicos[datos_historicos['estacion'] == estacion_seleccionada]
+    
+    # Métricas principales
+    st.subheader("📊 Métricas Actuales")
+    
+    if not datos_actuales.empty:
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            temp_promedio = datos_actuales['temperatura'].mean()
+            st.metric("🌡️ Temperatura Promedio", f"{temp_promedio:.1f}°C")
+        
+        with col2:
+            humedad_promedio = datos_actuales['humedad'].mean()
+            st.metric("💧 Humedad Promedio", f"{humedad_promedio:.1f}%")
+        
+        with col3:
+            presion_promedio = datos_actuales['presion'].mean()
+            st.metric("🔽 Presión Promedio", f"{presion_promedio:.1f} hPa")
+        
+        with col4:
+            viento_promedio = datos_actuales['velocidad_viento'].mean()
+            st.metric("💨 Viento Promedio", f"{viento_promedio:.1f} km/h")
+    
+    # Alertas meteorológicas
+    st.subheader("⚠️ Alertas Meteorológicas")
+    
+    alertas = []
+    
+    if not datos_actuales.empty:
+        # Alerta de temperatura
+        temp_max = datos_actuales['temperatura'].max()
+        temp_min = datos_actuales['temperatura'].min()
+        
+        if temp_max > 30:
+            alertas.append("🔥 Temperatura alta detectada (>30°C)")
+        if temp_min < 5:
+            alertas.append("❄️ Riesgo de heladas detectado (<5°C)")
+        
+        # Alerta de precipitación
+        prec_total = datos_actuales['precipitacion'].sum()
+        if prec_total > 10:
+            alertas.append("🌧️ Precipitación intensa detectada")
+        
+        # Alerta de viento
+        viento_max = datos_actuales['velocidad_viento'].max()
+        if viento_max > 50:
+            alertas.append("💨 Vientos fuertes detectados (>50 km/h)")
+        
+        # Alerta de humedad
+        humedad_min = datos_actuales['humedad'].min()
+        if humedad_min < 30:
+            alertas.append("🏜️ Humedad muy baja detectada (<30%)")
+    
+    if alertas:
+        for alerta in alertas:
+            st.warning(alerta)
+    else:
+        st.success("✅ Condiciones meteorológicas normales")
+    
+    # Gráficos principales
+    if not datos_historicos.empty:
+        st.subheader("📈 Análisis Temporal")
+        
+        # Convertir fecha a datetime con manejo de errores
+        try:
+            datos_historicos['fecha'] = pd.to_datetime(datos_historicos['fecha'], format='mixed', errors='coerce')
+            # Eliminar filas con fechas inválidas
+            datos_historicos = datos_historicos.dropna(subset=['fecha'])
+        except Exception as e:
+            st.error(f"Error procesando fechas: {e}")
+            # Intentar con formato más flexible
+            datos_historicos['fecha'] = pd.to_datetime(datos_historicos['fecha'], errors='coerce')
+            datos_historicos = datos_historicos.dropna(subset=['fecha'])
+        
+        # Gráfico de temperatura
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig_temp = px.line(
+                datos_historicos, 
+                x='fecha', 
+                y='temperatura', 
+                color='estacion',
+                title='🌡️ Evolución de la Temperatura',
+                labels={'temperatura': 'Temperatura (°C)', 'fecha': 'Fecha'}
+            )
+            fig_temp.update_layout(height=400)
+            st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        with col2:
+            fig_humedad = px.line(
+                datos_historicos, 
+                x='fecha', 
+                y='humedad', 
+                color='estacion',
+                title='💧 Evolución de la Humedad',
+                labels={'humedad': 'Humedad (%)', 'fecha': 'Fecha'}
+            )
+            fig_humedad.update_layout(height=400)
+            st.plotly_chart(fig_humedad, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        # Gráfico de presión y viento
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig_presion = px.line(
+                datos_historicos, 
+                x='fecha', 
+                y='presion', 
+                color='estacion',
+                title='🔽 Evolución de la Presión',
+                labels={'presion': 'Presión (hPa)', 'fecha': 'Fecha'}
+            )
+            fig_presion.update_layout(height=400)
+            st.plotly_chart(fig_presion, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        with col2:
+            fig_viento = px.line(
+                datos_historicos, 
+                x='fecha', 
+                y='velocidad_viento', 
+                color='estacion',
+                title='💨 Evolución del Viento',
+                labels={'velocidad_viento': 'Velocidad (km/h)', 'fecha': 'Fecha'}
+            )
+            fig_viento.update_layout(height=400)
+            st.plotly_chart(fig_viento, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        # Gráfico de precipitación
+        fig_precip = px.bar(
+            datos_historicos, 
+            x='fecha', 
+            y='precipitacion', 
+            color='estacion',
+            title='🌧️ Precipitación por Estación',
+            labels={'precipitacion': 'Precipitación (mm)', 'fecha': 'Fecha'}
+        )
+        fig_precip.update_layout(height=400)
+        st.plotly_chart(fig_precip, config=PLOTLY_CONFIG, use_container_width=True)
+        
+        # Mapa de calor de variables meteorológicas
+        st.subheader("🗺️ Mapa de Calor - Variables Meteorológicas")
+        
+        # Preparar datos para mapa de calor
+        datos_heatmap = datos_historicos.groupby(['estacion']).agg({
+            'temperatura': 'mean',
+            'humedad': 'mean',
+            'presion': 'mean',
+            'velocidad_viento': 'mean',
+            'precipitacion': 'sum'
+        }).round(2)
+        
+        fig_heatmap = px.imshow(
+            datos_heatmap.T,
+            labels=dict(x="Estación", y="Variable", color="Valor"),
+            title="🌡️ Mapa de Calor - Promedios por Estación",
+            aspect="auto"
+        )
+        fig_heatmap.update_layout(height=400)
+        st.plotly_chart(fig_heatmap, config=PLOTLY_CONFIG, use_container_width=True)
+    
+    # Tabla de datos detallados
+    st.subheader("📋 Datos Detallados")
+    
+    if not datos_actuales.empty:
+        # Mostrar datos actuales
+        st.markdown("**Datos Más Recientes por Estación:**")
+        st.dataframe(
+            datos_actuales.drop(columns=['ultima_fecha']).round(2),
+            use_container_width=True
+        )
+    
+    # Información del sistema
+    with st.expander("ℹ️ Información del Sistema"):
+        st.markdown("""
+        **Dashboard Meteorológico METGO 3D**
+        
+        - **Ubicación:** Valle de Quillota, Chile
+        - **Estaciones Monitoreadas:** 6 estaciones meteorológicas
+        - **Variables:** Temperatura, Humedad, Presión, Precipitación, Viento, Nubosidad, Índice UV
+        - **Frecuencia de Actualización:** Tiempo real
+        - **Base de Datos:** SQLite local
+        
+        **Funcionalidades:**
+        - Monitoreo en tiempo real
+        - Análisis histórico
+        - Alertas automáticas
+        - Visualizaciones interactivas
+        - Exportación de datos
+        """)
+    
+    # Footer
+    st.markdown("---")
+    st.markdown(
+        "**METGO 3D Quillota** | Dashboard Meteorológico | "
+        f"Última actualización: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+
+if __name__ == "__main__":
+    main()

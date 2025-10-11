@@ -1,0 +1,59 @@
+# 🌾 METGO 3D - Black Configuration
+# Sistema Meteorológico Agrícola Quillota - Versión Operativa 2.0
+
+[tool.black]
+# Configuración básica
+line-length = 127
+target-version = ['py38', 'py39', 'py310']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # Directorios a excluir
+  \.git
+  | \.venv
+  | venv
+  | \.env
+  | \.pytest_cache
+  | \.coverage
+  | htmlcov
+  | \.tox
+  | dist
+  | build
+  | \*.egg-info
+  | \.ipynb_checkpoints
+  | logs
+  | data
+  | reportes_revision
+  | test_results
+  | backups
+)/
+'''
+
+# Configuración de formato
+skip-string-normalization = false
+skip-magic-trailing-comma = false
+preview = false
+
+# Configuración de Jupyter
+[tool.black]
+extend-exclude = '''
+/(
+  \.git
+  | \.venv
+  | venv
+  | \.env
+  | \.pytest_cache
+  | \.coverage
+  | htmlcov
+  | \.tox
+  | dist
+  | build
+  | \*.egg-info
+  | \.ipynb_checkpoints
+  | logs
+  | data
+  | reportes_revision
+  | test_results
+  | backups
+)/
+'''
