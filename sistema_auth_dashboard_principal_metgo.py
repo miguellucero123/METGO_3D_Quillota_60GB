@@ -256,12 +256,23 @@ def generar_datos_meteorologicos(estacion="Quillota", fecha_inicio=None, fecha_f
     """Genera datos meteorológicos reales de OpenMeteo o simulados como respaldo"""
     
     # Intentar obtener datos reales de OpenMeteo primero
-    if DATOS_REALES_DISPONIBLES and tipo_analisis == "Histórico":
+    if DATOS_REALES_DISPONIBLES and tipo_analisis in ["Histórico", "Pronóstico"]:
         try:
-            st.info(f"🌐 Obteniendo datos reales de OpenMeteo para {estacion}...")
-            datos_reales = obtener_datos_meteorologicos_reales(estacion, 'historicos', 30)
+            if tipo_analisis == "Histórico":
+                st.info(f"🌐 Obteniendo datos históricos reales de OpenMeteo para {estacion}...")
+                datos_reales = obtener_datos_meteorologicos_reales(estacion, 'historicos', 30)
+            else:  # Pronóstico
+                st.info(f"🌤️ Obteniendo pronóstico real de OpenMeteo para {estacion}...")
+                datos_reales = obtener_datos_meteorologicos_reales(estacion, 'pronostico', 7)
             
             if datos_reales is not None and len(datos_reales) > 0:
+                # Normalizar nombres de columnas para compatibilidad
+                datos_reales = datos_reales.rename(columns={
+                    'temperatura_max': 'temp_max',
+                    'temperatura_min': 'temp_min', 
+                    'temperatura_promedio': 'temp_promedio',
+                    'velocidad_viento': 'viento_velocidad'
+                })
                 st.success(f"✅ Datos reales obtenidos: {len(datos_reales)} registros")
                 return datos_reales
             else:
