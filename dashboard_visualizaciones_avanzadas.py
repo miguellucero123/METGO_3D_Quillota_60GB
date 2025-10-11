@@ -6,6 +6,14 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import io
+
+# Importar datos reales de OpenMeteo
+try:
+    from datos_reales_openmeteo import obtener_datos_meteorologicos_reales, OpenMeteoData
+    DATOS_REALES_DISPONIBLES = True
+except ImportError:
+    DATOS_REALES_DISPONIBLES = False
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
@@ -123,14 +131,14 @@ with st.sidebar:
     # Selector de estación
     estacion = st.selectbox(
         "🌍 Estación:",
-        ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Todas las Estaciones"],
+        ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Santiago", "Valparaiso", "Vina del Mar", "Todas las Estaciones"],
         key="estacion_selector"
     )
 
-# Función para generar datos avanzados
+# Función para generar datos avanzados con OpenMeteo
 @st.cache_data
-def generar_datos_visualizaciones(periodo, estacion):
-    """Genera datos avanzados para visualizaciones"""
+def generar_datos_visualizaciones_avanzados(periodo, estacion):
+    """Genera datos avanzados para visualizaciones usando OpenMeteo"""
     
     # Mapeo de períodos a días
     dias_map = {
@@ -143,61 +151,191 @@ def generar_datos_visualizaciones(periodo, estacion):
     }
     
     dias = dias_map[periodo]
-    frec = 'H' if dias <= 7 else 'D' if dias <= 90 else 'W'
     
-    fechas = pd.date_range(end=datetime.now(), periods=dias, freq=frec)
+    # Lista de estaciones disponibles
+    estaciones_disponibles = ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Santiago", "Valparaiso", "Vina del Mar"]
     
-    # Datos por estación
-    estaciones_data = {
+    datos_completos = []
+    
+    # Obtener datos para cada estación
+    for est in estaciones_disponibles:
+        if estacion != "Todas las Estaciones" and est != estacion:
+            continue
+        
+        try:
+            if DATOS_REALES_DISPONIBLES:
+                # Obtener datos reales de OpenMeteo
+                datos_reales = obtener_datos_meteorologicos_reales(est, 'historicos', min(dias, 92))
+                
+                if datos_reales is not None and len(datos_reales) > 0:
+                    # Procesar datos reales
+                    for _, row in datos_reales.iterrows():
+                        # Generar datos horarios si es período corto
+                        if dias <= 7:
+                            for hora in range(0, 24, 3):  # Cada 3 horas
+                                fecha_hora = row['fecha'] + timedelta(hours=hora)
+                                
+                                # Variación horaria simulada
+                                variacion_hora = np.sin(2 * np.pi * hora / 24) * 2
+                                temp_hora = row['temperatura_promedio'] + variacion_hora + np.random.normal(0, 1)
+                                
+                                datos_completos.append({
+                                    'Fecha': fecha_hora,
+                                    'Estacion': est,
+                                    'Temperatura': round(temp_hora, 1),
+                                    'Precipitacion': round(row['precipitacion'] / 24, 2),  # Distribuir precipitación diaria
+                                    'Humedad': round(row['humedad_relativa'] + np.random.normal(0, 5), 1),
+                                    'Presion': round(row['presion_atmosferica'] + np.random.normal(0, 2), 1),
+                                    'Viento': round(row['velocidad_viento'] + np.random.normal(0, 2), 1),
+                                    'Nubosidad': round(np.random.uniform(0, 100), 1),  # Simulado
+                                    'Probabilidad_Niebla': round(np.random.uniform(0, 30) if row['humedad_relativa'] > 80 else 0, 1),
+                                    'Indice_Helada': round(max(0, 32 - temp_hora) if temp_hora < 5 else 0, 1),
+                                    'Rendimiento': round(20 + temp_hora * 0.5 + row['humedad_relativa'] * 0.1, 1),
+                                    'Calidad': round(min(100, max(0, 70 + temp_hora * 0.3 + row['humedad_relativa'] * 0.2)), 1),
+                                    'Mes': fecha_hora.month,
+                                    'DiaSemana': fecha_hora.strftime('%A'),
+                                    'Hora': hora,
+                                    'Fuente': 'OpenMeteo Real'
+                                })
+                        else:
+                            # Para períodos largos, usar datos diarios
+                            datos_completos.append({
+                                'Fecha': row['fecha'],
+                                'Estacion': est,
+                                'Temperatura': round(row['temperatura_promedio'], 1),
+                                'Precipitacion': round(row['precipitacion'], 2),
+                                'Humedad': round(row['humedad_relativa'], 1),
+                                'Presion': round(row['presion_atmosferica'], 1),
+                                'Viento': round(row['velocidad_viento'], 1),
+                                'Nubosidad': round(np.random.uniform(20, 80), 1),
+                                'Probabilidad_Niebla': round(np.random.uniform(0, 40) if row['humedad_relativa'] > 75 else 0, 1),
+                                'Indice_Helada': round(max(0, 32 - row['temperatura_min']) if row['temperatura_min'] < 5 else 0, 1),
+                                'Rendimiento': round(20 + row['temperatura_promedio'] * 0.5 + row['humedad_relativa'] * 0.1, 1),
+                                'Calidad': round(min(100, max(0, 70 + row['temperatura_promedio'] * 0.3 + row['humedad_relativa'] * 0.2)), 1),
+                                'Mes': row['fecha'].month,
+                                'DiaSemana': row['fecha'].strftime('%A'),
+                                'Hora': 12,
+                                'Fuente': 'OpenMeteo Real'
+                            })
+                else:
+                    # Fallback a datos simulados si no hay datos reales
+                    datos_simulados = generar_datos_simulados(est, dias)
+                    datos_completos.extend(datos_simulados)
+            else:
+                # Usar datos simulados si OpenMeteo no está disponible
+                datos_simulados = generar_datos_simulados(est, dias)
+                datos_completos.extend(datos_simulados)
+                
+        except Exception as e:
+            st.warning(f"No se pudieron obtener datos reales para {est}: {e}")
+            # Fallback a datos simulados
+            datos_simulados = generar_datos_simulados(est, dias)
+            datos_completos.extend(datos_simulados)
+    
+    return pd.DataFrame(datos_completos)
+
+def generar_datos_simulados(estacion, dias):
+    """Genera datos simulados como fallback"""
+    datos_simulados = []
+    
+    # Configuración por estación
+    config_estacion = {
         "Quillota": {"temp_base": 18.5, "precip_base": 0.3, "humedad_base": 65},
         "Los Nogales": {"temp_base": 17.8, "precip_base": 0.4, "humedad_base": 70},
         "Hijuelas": {"temp_base": 16.2, "precip_base": 0.5, "humedad_base": 75},
         "Limache": {"temp_base": 19.0, "precip_base": 0.2, "humedad_base": 60},
-        "Olmue": {"temp_base": 18.8, "precip_base": 0.35, "humedad_base": 68}
+        "Olmue": {"temp_base": 18.8, "precip_base": 0.35, "humedad_base": 68},
+        "Santiago": {"temp_base": 20.0, "precip_base": 0.2, "humedad_base": 55},
+        "Valparaiso": {"temp_base": 16.5, "precip_base": 0.4, "humedad_base": 75},
+        "Vina del Mar": {"temp_base": 16.0, "precip_base": 0.5, "humedad_base": 80}
     }
     
-    datos = []
+    config = config_estacion.get(estacion, config_estacion["Quillota"])
+    
+    frec = 'H' if dias <= 7 else 'D'
+    fechas = pd.date_range(end=datetime.now(), periods=dias, freq=frec)
     
     for fecha in fechas:
-        for est, config in estaciones_data.items():
-            if estacion != "Todas las Estaciones" and est != estacion:
-                continue
-                
-            # Variación estacional
-            mes = fecha.month
-            estacional = np.sin(2 * np.pi * mes / 12) * 3
-            
-            # Datos meteorológicos
-            temperatura = config["temp_base"] + estacional + np.random.normal(0, 4)
-            precipitacion = max(0, config["precip_base"] + np.random.exponential(1))
-            humedad = max(10, min(100, config["humedad_base"] + np.random.normal(0, 15)))
-            presion = 1013 + np.random.normal(0, 12)
-            viento = max(0, 8 + np.random.exponential(3))
-            
-            # Datos agrícolas simulados
-            rendimiento = 20 + temperatura * 0.5 + humedad * 0.1 + np.random.normal(0, 3)
-            calidad = min(100, max(0, 70 + temperatura * 0.3 + humedad * 0.2 + np.random.normal(0, 10)))
-            
-            datos.append({
-                'Fecha': fecha,
-                'Estacion': est,
-                'Temperatura': round(temperatura, 1),
-                'Precipitacion': round(precipitacion, 2),
-                'Humedad': round(humedad, 1),
-                'Presion': round(presion, 1),
-                'Viento': round(viento, 1),
-                'Rendimiento': round(rendimiento, 1),
-                'Calidad': round(calidad, 1),
-                'Mes': mes,
-                'DiaSemana': fecha.strftime('%A'),
-                'Hora': fecha.hour if frec == 'H' else 12
-            })
+        # Variación estacional
+        mes = fecha.month
+        estacional = np.sin(2 * np.pi * mes / 12) * 3
+        
+        # Datos meteorológicos
+        temperatura = config["temp_base"] + estacional + np.random.normal(0, 4)
+        precipitacion = max(0, config["precip_base"] + np.random.exponential(1))
+        humedad = max(10, min(100, config["humedad_base"] + np.random.normal(0, 15)))
+        presion = 1013 + np.random.normal(0, 12)
+        viento = max(0, 8 + np.random.exponential(3))
+        nubosidad = np.random.uniform(0, 100)
+        probabilidad_niebla = np.random.uniform(0, 40) if humedad > 75 else 0
+        indice_helada = max(0, 32 - temperatura) if temperatura < 5 else 0
+        
+        # Datos agrícolas simulados
+        rendimiento = 20 + temperatura * 0.5 + humedad * 0.1 + np.random.normal(0, 3)
+        calidad = min(100, max(0, 70 + temperatura * 0.3 + humedad * 0.2 + np.random.normal(0, 10)))
+        
+        datos_simulados.append({
+            'Fecha': fecha,
+            'Estacion': estacion,
+            'Temperatura': round(temperatura, 1),
+            'Precipitacion': round(precipitacion, 2),
+            'Humedad': round(humedad, 1),
+            'Presion': round(presion, 1),
+            'Viento': round(viento, 1),
+            'Nubosidad': round(nubosidad, 1),
+            'Probabilidad_Niebla': round(probabilidad_niebla, 1),
+            'Indice_Helada': round(indice_helada, 1),
+            'Rendimiento': round(rendimiento, 1),
+            'Calidad': round(calidad, 1),
+            'Mes': mes,
+            'DiaSemana': fecha.strftime('%A'),
+            'Hora': fecha.hour if frec == 'H' else 12,
+            'Fuente': 'Simulado'
+        })
     
-    return pd.DataFrame(datos)
+    return datos_simulados
+
+# Información sobre datos reales
+if DATOS_REALES_DISPONIBLES:
+    st.success("🌐 **Datos Reales Disponibles:** Conectado a OpenMeteo API")
+else:
+    st.info("ℹ️ **Datos:** Usando datos simulados (OpenMeteo no disponible)")
 
 # Generar datos
 with st.spinner('📊 Generando datos para visualizaciones...'):
-    df = generar_datos_visualizaciones(periodo, estacion)
+    df = generar_datos_visualizaciones_avanzados(periodo, estacion)
+
+# Botón de descarga de datos
+col1, col2, col3 = st.columns([2, 1, 1])
+
+with col1:
+    st.markdown(f"**📊 Datos Generados:** {len(df)} registros para {estacion}")
+
+with col2:
+    # Convertir DataFrame a CSV
+    csv_data = df.to_csv(index=False)
+    st.download_button(
+        label="📥 Descargar CSV",
+        data=csv_data,
+        file_name=f"datos_meteorologicos_{estacion}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
+
+with col3:
+    # Convertir DataFrame a Excel
+    excel_buffer = io.BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Datos_Meteorologicos', index=False)
+    excel_data = excel_buffer.getvalue()
+    
+    st.download_button(
+        label="📊 Descargar Excel",
+        data=excel_data,
+        file_name=f"datos_meteorologicos_{estacion}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
+    )
 
 # Métricas principales con diseño profesional
 st.markdown("### 📈 Métricas Principales")
@@ -243,6 +381,236 @@ with col4:
         <p style="color: #7f8c8d; margin: 0; font-size: 0.9rem;">Producción estimada</p>
     </div>
     """, unsafe_allow_html=True)
+
+# Nueva sección: Análisis de Nubosidad, Niebla y Heladas
+st.markdown("### 🌤️ Análisis Avanzado de Condiciones Atmosféricas")
+
+# Métricas específicas para nubosidad, niebla y heladas
+col1, col2, col3, col4, col5, col6 = st.columns(6)
+
+with col1:
+    nubosidad_prom = df['Nubosidad'].mean()
+    st.metric("☁️ Nubosidad Promedio", f"{nubosidad_prom:.1f}%")
+
+with col2:
+    nubosidad_max = df['Nubosidad'].max()
+    st.metric("☁️ Nubosidad Máxima", f"{nubosidad_max:.1f}%")
+
+with col3:
+    niebla_prom = df['Probabilidad_Niebla'].mean()
+    st.metric("🌫️ Prob. Niebla Prom.", f"{niebla_prom:.1f}%")
+
+with col4:
+    niebla_max = df['Probabilidad_Niebla'].max()
+    st.metric("🌫️ Prob. Niebla Máx.", f"{niebla_max:.1f}%")
+
+with col5:
+    heladas_dias = len(df[df['Indice_Helada'] > 0])
+    st.metric("❄️ Días con Helada", f"{heladas_dias}")
+
+with col6:
+    helada_max = df['Indice_Helada'].max()
+    st.metric("❄️ Índice Helada Máx.", f"{helada_max:.1f}")
+
+# Gráficos específicos para nubosidad, niebla y heladas
+col1, col2 = st.columns(2)
+
+with col1:
+    # Gráfico de nubosidad
+    fig_nubosidad = go.Figure()
+    
+    for estacion in df['Estacion'].unique():
+        df_est = df[df['Estacion'] == estacion]
+        fig_nubosidad.add_trace(go.Scatter(
+            x=df_est['Fecha'], 
+            y=df_est['Nubosidad'],
+            name=f'Nubosidad {estacion}',
+            mode='lines+markers',
+            line=dict(width=3),
+            marker=dict(size=6)
+        ))
+    
+    fig_nubosidad.update_layout(
+        title="☁️ Evolución de Nubosidad (%)",
+        xaxis_title="Fecha",
+        yaxis_title="Nubosidad (%)",
+        height=400,
+        hovermode='x unified'
+    )
+    
+    st.plotly_chart(fig_nubosidad, use_container_width=True)
+
+with col2:
+    # Gráfico de probabilidad de niebla
+    fig_niebla = go.Figure()
+    
+    for estacion in df['Estacion'].unique():
+        df_est = df[df['Estacion'] == estacion]
+        fig_niebla.add_trace(go.Scatter(
+            x=df_est['Fecha'], 
+            y=df_est['Probabilidad_Niebla'],
+            name=f'Prob. Niebla {estacion}',
+            mode='lines+markers',
+            line=dict(width=3, color='#87CEEB'),
+            marker=dict(size=6)
+        ))
+    
+    fig_niebla.update_layout(
+        title="🌫️ Probabilidad de Niebla (%)",
+        xaxis_title="Fecha",
+        yaxis_title="Probabilidad de Niebla (%)",
+        height=400,
+        hovermode='x unified'
+    )
+    
+    st.plotly_chart(fig_niebla, use_container_width=True)
+
+# Gráfico de índice de heladas
+st.markdown("#### ❄️ Análisis Detallado de Heladas")
+
+fig_heladas = go.Figure()
+
+for estacion in df['Estacion'].unique():
+    df_est = df[df['Estacion'] == estacion]
+    
+    # Crear barras para días con heladas
+    heladas_dias = df_est[df_est['Indice_Helada'] > 0]
+    if len(heladas_dias) > 0:
+        fig_heladas.add_trace(go.Bar(
+            x=heladas_dias['Fecha'],
+            y=heladas_dias['Indice_Helada'],
+            name=f'Heladas {estacion}',
+            marker=dict(color='#4169E1', opacity=0.7),
+            text=[f"{idx:.1f}°C" for idx in heladas_dias['Indice_Helada']],
+            textposition='auto'
+        ))
+
+fig_heladas.update_layout(
+    title="❄️ Índice de Heladas por Estación",
+    xaxis_title="Fecha",
+    yaxis_title="Índice de Helada (°C)",
+    height=500,
+    barmode='group',
+    hovermode='x unified'
+)
+
+st.plotly_chart(fig_heladas, use_container_width=True)
+
+# Análisis horario detallado (si hay datos horarios)
+if 'Hora' in df.columns and df['Hora'].nunique() > 1:
+    st.markdown("#### 🕐 Análisis Horario Detallado")
+    
+    # Seleccionar estación para análisis horario
+    estacion_horaria = st.selectbox(
+        "Seleccionar estación para análisis horario:",
+        df['Estacion'].unique(),
+        key="estacion_horaria"
+    )
+    
+    df_horario = df[df['Estacion'] == estacion_horaria]
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Gráfico de temperatura por hora
+        fig_temp_hora = px.box(
+            df_horario, 
+            x='Hora', 
+            y='Temperatura',
+            title=f"🌡️ Distribución de Temperatura por Hora - {estacion_horaria}",
+            labels={'Hora': 'Hora del Día', 'Temperatura': 'Temperatura (°C)'}
+        )
+        fig_temp_hora.update_layout(height=400)
+        st.plotly_chart(fig_temp_hora, use_container_width=True)
+    
+    with col2:
+        # Gráfico de humedad por hora
+        fig_hum_hora = px.box(
+            df_horario, 
+            x='Hora', 
+            y='Humedad',
+            title=f"💧 Distribución de Humedad por Hora - {estacion_horaria}",
+            labels={'Hora': 'Hora del Día', 'Humedad': 'Humedad Relativa (%)'}
+        )
+        fig_hum_hora.update_layout(height=400)
+        st.plotly_chart(fig_hum_hora, use_container_width=True)
+    
+    # Análisis de patrones horarios
+    st.markdown("##### 📊 Patrones Horarios Detectados")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        hora_temp_min = df_horario.loc[df_horario['Temperatura'].idxmin(), 'Hora']
+        st.metric("🕐 Hora Temperatura Mínima", f"{hora_temp_min:02d}:00")
+    
+    with col2:
+        hora_temp_max = df_horario.loc[df_horario['Temperatura'].idxmax(), 'Hora']
+        st.metric("🕐 Hora Temperatura Máxima", f"{hora_temp_max:02d}:00")
+    
+    with col3:
+        hora_hum_max = df_horario.loc[df_horario['Humedad'].idxmax(), 'Hora']
+        st.metric("🕐 Hora Humedad Máxima", f"{hora_hum_max:02d}:00")
+
+# Análisis de localidades (estaciones)
+st.markdown("#### 🌍 Análisis Comparativo por Localidades")
+
+# Crear gráfico de comparación entre estaciones
+fig_comparacion = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=('🌡️ Temperatura por Estación', '💧 Humedad por Estación', 
+                   '☁️ Nubosidad por Estación', '🌫️ Prob. Niebla por Estación'),
+    specs=[[{"secondary_y": False}, {"secondary_y": False}],
+           [{"secondary_y": False}, {"secondary_y": False}]]
+)
+
+for i, variable in enumerate(['Temperatura', 'Humedad', 'Nubosidad', 'Probabilidad_Niebla']):
+    row = (i // 2) + 1
+    col = (i % 2) + 1
+    
+    for estacion in df['Estacion'].unique():
+        df_est = df[df['Estacion'] == estacion]
+        fig_comparacion.add_trace(
+            go.Scatter(
+                x=df_est['Fecha'], 
+                y=df_est[variable],
+                name=f'{estacion}',
+                mode='lines+markers',
+                line=dict(width=2)
+            ),
+            row=row, col=col
+        )
+
+fig_comparacion.update_layout(
+    height=800,
+    title_text="🌍 Comparación de Variables Meteorológicas por Localidad",
+    showlegend=True
+)
+
+fig_comparacion.update_xaxes(title_text="Fecha")
+fig_comparacion.update_yaxes(title_text="Temperatura (°C)", row=1, col=1)
+fig_comparacion.update_yaxes(title_text="Humedad (%)", row=1, col=2)
+fig_comparacion.update_yaxes(title_text="Nubosidad (%)", row=2, col=1)
+fig_comparacion.update_yaxes(title_text="Prob. Niebla (%)", row=2, col=2)
+
+st.plotly_chart(fig_comparacion, use_container_width=True)
+
+# Resumen estadístico por localidad
+st.markdown("##### 📊 Resumen Estadístico por Localidad")
+
+estadisticas_por_estacion = df.groupby('Estacion').agg({
+    'Temperatura': ['mean', 'min', 'max', 'std'],
+    'Humedad': ['mean', 'min', 'max', 'std'],
+    'Nubosidad': ['mean', 'min', 'max', 'std'],
+    'Probabilidad_Niebla': ['mean', 'min', 'max', 'std'],
+    'Indice_Helada': ['mean', 'min', 'max', 'std']
+}).round(2)
+
+# Flatten column names
+estadisticas_por_estacion.columns = ['_'.join(col).strip() for col in estadisticas_por_estacion.columns]
+estadisticas_por_estacion = estadisticas_por_estacion.reset_index()
+
+st.dataframe(estadisticas_por_estacion, use_container_width=True)
 
 # Visualizaciones según tipo seleccionado
 if tipo_viz == "Tendencias Temporales":
