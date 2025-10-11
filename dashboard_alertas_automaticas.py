@@ -515,7 +515,6 @@ with col2:
     fig_estados = px.bar(x=list(estados_alertas.keys()),
                         y=list(estados_alertas.values()),
                         title='📊 Estado de Alertas',
-                        color=list(estados_alertas.keys()),
                         color_discrete_map={
                             'Activa': '#e74c3c',
                             'En Proceso': '#f39c12',
