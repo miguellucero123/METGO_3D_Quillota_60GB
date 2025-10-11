@@ -255,15 +255,16 @@ st.markdown("""
 def generar_datos_meteorologicos(estacion="Quillota", fecha_inicio=None, fecha_fin=None, tipo_analisis="Histórico"):
     """Genera datos meteorológicos reales de OpenMeteo o simulados como respaldo"""
     
-    # Intentar obtener datos reales de OpenMeteo primero
-    if DATOS_REALES_DISPONIBLES and tipo_analisis in ["Histórico", "Pronóstico"]:
+    # SIEMPRE intentar obtener datos reales de OpenMeteo primero
+    if DATOS_REALES_DISPONIBLES:
         try:
             if tipo_analisis == "Histórico":
-                st.info(f"🌐 Obteniendo datos históricos reales de OpenMeteo para {estacion}...")
                 datos_reales = obtener_datos_meteorologicos_reales(estacion, 'historicos', 30)
-            else:  # Pronóstico
-                st.info(f"🌤️ Obteniendo pronóstico real de OpenMeteo para {estacion}...")
+            elif tipo_analisis == "Pronóstico":
                 datos_reales = obtener_datos_meteorologicos_reales(estacion, 'pronostico', 7)
+            else:
+                # Para comparativo, usar históricos
+                datos_reales = obtener_datos_meteorologicos_reales(estacion, 'historicos', 30)
             
             if datos_reales is not None and len(datos_reales) > 0:
                 # Normalizar nombres de columnas para compatibilidad
@@ -273,20 +274,19 @@ def generar_datos_meteorologicos(estacion="Quillota", fecha_inicio=None, fecha_f
                     'temperatura_promedio': 'temp_promedio',
                     'velocidad_viento': 'viento_velocidad'
                 })
-                st.success(f"✅ Datos reales obtenidos: {len(datos_reales)} registros")
+                st.success(f"🌐 Datos reales de OpenMeteo: {len(datos_reales)} registros para {estacion}")
                 return datos_reales
-            else:
-                st.warning("⚠️ No se pudieron obtener datos reales, usando datos simulados")
         except Exception as e:
-            st.error(f"❌ Error obteniendo datos reales: {e}")
+            st.warning(f"⚠️ Error obteniendo datos reales: {e}")
     
-    # Si no hay datos reales disponibles, usar datos simulados
+    # Si no hay datos reales disponibles, usar datos simulados con valores realistas
     st.info(f"🔄 Generando datos simulados para {estacion}...")
     # Configuración específica para estaciones meteorológicas de la región de Quillota
+    # Valores actualizados basados en datos reales de OpenMeteo
     configuraciones = {
         "Quillota": {
-            "temp_base": 20, "variacion_temp": 5, "humedad_base": 70,
-            "precip_base": 0.3, "viento_base": 8, "presion_base": 1013,
+            "temp_base": 14, "variacion_temp": 4, "humedad_base": 65,
+            "precip_base": 0.1, "viento_base": 8, "presion_base": 1013,
             "descripcion": "Valle Central - Clima Mediterráneo",
             "coordenadas": {"lat": -32.8833, "lon": -71.25},
             "elevacion": 120, "poblacion": 97572, "superficie_agricola": 15000
