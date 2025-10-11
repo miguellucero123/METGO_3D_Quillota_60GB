@@ -12,6 +12,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
+
+# Importar datos reales de OpenMeteo
+try:
+    from datos_reales_openmeteo import obtener_datos_meteorologicos_reales, verificar_datos_reales
+    DATOS_REALES_DISPONIBLES = True
+except ImportError:
+    DATOS_REALES_DISPONIBLES = False
 import os
 
 # Configurar página optimizada para móviles
@@ -246,7 +253,24 @@ st.markdown("""
 
 # Funciones para generar datos meteorológicos
 def generar_datos_meteorologicos(estacion="Quillota", fecha_inicio=None, fecha_fin=None, tipo_analisis="Histórico"):
-    """Genera datos meteorológicos simulados para diferentes estaciones"""
+    """Genera datos meteorológicos reales de OpenMeteo o simulados como respaldo"""
+    
+    # Intentar obtener datos reales de OpenMeteo primero
+    if DATOS_REALES_DISPONIBLES and tipo_analisis == "Histórico":
+        try:
+            st.info(f"🌐 Obteniendo datos reales de OpenMeteo para {estacion}...")
+            datos_reales = obtener_datos_meteorologicos_reales(estacion, 'historicos', 30)
+            
+            if datos_reales is not None and len(datos_reales) > 0:
+                st.success(f"✅ Datos reales obtenidos: {len(datos_reales)} registros")
+                return datos_reales
+            else:
+                st.warning("⚠️ No se pudieron obtener datos reales, usando datos simulados")
+        except Exception as e:
+            st.error(f"❌ Error obteniendo datos reales: {e}")
+    
+    # Si no hay datos reales disponibles, usar datos simulados
+    st.info(f"🔄 Generando datos simulados para {estacion}...")
     # Configuración específica para estaciones meteorológicas de la región de Quillota
     configuraciones = {
         "Quillota": {
@@ -506,7 +530,7 @@ def mostrar_dashboard_principal():
     with col1:
         estacion_seleccionada = st.selectbox(
             "🌍 Estación Meteorológica",
-            ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue"],
+            ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Santiago", "Valparaiso", "Vina del Mar"],
             key="estacion_selector"
         )
     
@@ -525,6 +549,18 @@ def mostrar_dashboard_principal():
             ["Manual", "5 min", "15 min", "30 min", "1 hora"],
             key="intervalo_selector"
         )
+    
+    # Información sobre datos reales
+    if DATOS_REALES_DISPONIBLES:
+        try:
+            if verificar_datos_reales():
+                st.success("🌐 **Datos Reales Disponibles:** Conectado a OpenMeteo API")
+            else:
+                st.warning("⚠️ **Datos Reales:** Sin conexión, usando datos simulados")
+        except:
+            st.info("ℹ️ **Datos:** Usando datos simulados (OpenMeteo no disponible)")
+    else:
+        st.info("ℹ️ **Datos:** Usando datos simulados (OpenMeteo no disponible)")
     
     # Selector de fechas
     st.markdown("### 📅 Selector de Período")
