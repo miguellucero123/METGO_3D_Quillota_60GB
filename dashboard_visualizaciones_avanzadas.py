@@ -179,19 +179,32 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
                                 variacion_hora = np.sin(2 * np.pi * hora / 24) * 2
                                 temp_hora = row['temperatura_promedio'] + variacion_hora + np.random.normal(0, 1)
                                 
+                                # Calcular temperatura mínima y máxima para el día
+                                temp_min_dia = temp_hora - np.random.uniform(2, 6)
+                                temp_max_dia = temp_hora + np.random.uniform(2, 6)
+                                
+                                # Calcular sensación térmica agrícola
+                                humedad_hora = row['humedad_relativa'] + np.random.normal(0, 5)
+                                viento_hora = row['velocidad_viento'] + np.random.normal(0, 2)
+                                sensacion_termica = temp_hora * (1 + (humedad_hora - 50) * 0.01) * (1 + (viento_hora / 10) * 0.1)
+                                sensacion_termica = max(-10, min(50, sensacion_termica))
+                                
                                 datos_completos.append({
                                     'Fecha': fecha_hora,
                                     'Estacion': est,
                                     'Temperatura': round(temp_hora, 1),
+                                    'Temperatura_Min': round(temp_min_dia, 1),
+                                    'Temperatura_Max': round(temp_max_dia, 1),
                                     'Precipitacion': round(row['precipitacion'] / 24, 2),  # Distribuir precipitación diaria
-                                    'Humedad': round(row['humedad_relativa'] + np.random.normal(0, 5), 1),
+                                    'Humedad': round(humedad_hora, 1),
                                     'Presion': round(row['presion_atmosferica'] + np.random.normal(0, 2), 1),
-                                    'Viento': round(row['velocidad_viento'] + np.random.normal(0, 2), 1),
+                                    'Viento': round(viento_hora, 1),
                                     'Nubosidad': round(np.random.uniform(0, 100), 1),  # Simulado
-                                    'Probabilidad_Niebla': round(np.random.uniform(0, 30) if row['humedad_relativa'] > 80 else 0, 1),
+                                    'Probabilidad_Niebla': round(np.random.uniform(0, 30) if humedad_hora > 80 else 0, 1),
                                     'Indice_Helada': round(max(0, 32 - temp_hora) if temp_hora < 5 else 0, 1),
-                                    'Rendimiento': round(20 + temp_hora * 0.5 + row['humedad_relativa'] * 0.1, 1),
-                                    'Calidad': round(min(100, max(0, 70 + temp_hora * 0.3 + row['humedad_relativa'] * 0.2)), 1),
+                                    'Sensacion_Termica_Agricola': round(sensacion_termica, 1),
+                                    'Rendimiento': round(20 + temp_hora * 0.5 + humedad_hora * 0.1, 1),
+                                    'Calidad': round(min(100, max(0, 70 + temp_hora * 0.3 + humedad_hora * 0.2)), 1),
                                     'Mes': fecha_hora.month,
                                     'DiaSemana': fecha_hora.strftime('%A'),
                                     'Hora': hora,
@@ -199,10 +212,16 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
                                 })
                         else:
                             # Para períodos largos, usar datos diarios
+                            # Calcular sensación térmica agrícola
+                            sensacion_termica = row['temperatura_promedio'] * (1 + (row['humedad_relativa'] - 50) * 0.01) * (1 + (row['velocidad_viento'] / 10) * 0.1)
+                            sensacion_termica = max(-10, min(50, sensacion_termica))
+                            
                             datos_completos.append({
                                 'Fecha': row['fecha'],
                                 'Estacion': est,
                                 'Temperatura': round(row['temperatura_promedio'], 1),
+                                'Temperatura_Min': round(row['temperatura_min'], 1),
+                                'Temperatura_Max': round(row['temperatura_max'], 1),
                                 'Precipitacion': round(row['precipitacion'], 2),
                                 'Humedad': round(row['humedad_relativa'], 1),
                                 'Presion': round(row['presion_atmosferica'], 1),
@@ -210,6 +229,7 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
                                 'Nubosidad': round(np.random.uniform(20, 80), 1),
                                 'Probabilidad_Niebla': round(np.random.uniform(0, 40) if row['humedad_relativa'] > 75 else 0, 1),
                                 'Indice_Helada': round(max(0, 32 - row['temperatura_min']) if row['temperatura_min'] < 5 else 0, 1),
+                                'Sensacion_Termica_Agricola': round(sensacion_termica, 1),
                                 'Rendimiento': round(20 + row['temperatura_promedio'] * 0.5 + row['humedad_relativa'] * 0.1, 1),
                                 'Calidad': round(min(100, max(0, 70 + row['temperatura_promedio'] * 0.3 + row['humedad_relativa'] * 0.2)), 1),
                                 'Mes': row['fecha'].month,
@@ -274,10 +294,20 @@ def generar_datos_simulados(estacion, dias):
         rendimiento = 20 + temperatura * 0.5 + humedad * 0.1 + np.random.normal(0, 3)
         calidad = min(100, max(0, 70 + temperatura * 0.3 + humedad * 0.2 + np.random.normal(0, 10)))
         
+        # Calcular temperatura mínima y máxima
+        temp_min = temperatura - np.random.uniform(2, 6)
+        temp_max = temperatura + np.random.uniform(2, 6)
+        
+        # Calcular sensación térmica agrícola
+        sensacion_termica = temperatura * (1 + (humedad - 50) * 0.01) * (1 + (viento / 10) * 0.1)
+        sensacion_termica = max(-10, min(50, sensacion_termica))
+        
         datos_simulados.append({
             'Fecha': fecha,
             'Estacion': estacion,
             'Temperatura': round(temperatura, 1),
+            'Temperatura_Min': round(temp_min, 1),
+            'Temperatura_Max': round(temp_max, 1),
             'Precipitacion': round(precipitacion, 2),
             'Humedad': round(humedad, 1),
             'Presion': round(presion, 1),
@@ -285,6 +315,7 @@ def generar_datos_simulados(estacion, dias):
             'Nubosidad': round(nubosidad, 1),
             'Probabilidad_Niebla': round(probabilidad_niebla, 1),
             'Indice_Helada': round(indice_helada, 1),
+            'Sensacion_Termica_Agricola': round(sensacion_termica, 1),
             'Rendimiento': round(rendimiento, 1),
             'Calidad': round(calidad, 1),
             'Mes': mes,
@@ -465,36 +496,188 @@ with col2:
     
     st.plotly_chart(fig_niebla, use_container_width=True)
 
-# Gráfico de índice de heladas
-st.markdown("#### ❄️ Análisis Detallado de Heladas")
+# Análisis detallado de heladas con explicaciones
+st.markdown("#### ❄️ Análisis Detallado de Heladas y Sensación Térmica Agrícola")
 
+# Explicación del índice de heladas
+st.markdown("""
+<div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196f3;">
+    <h4 style="color: #1976d2; margin: 0 0 15px 0;">📚 ¿Qué es el Índice de Helada?</h4>
+    <p style="margin: 5px 0; color: #424242;"><strong>• Índice de Helada:</strong> Mide qué tan severa es una helada basándose en la temperatura mínima del día.</p>
+    <p style="margin: 5px 0; color: #424242;"><strong>• Cálculo:</strong> Índice = 32°C - Temperatura Mínima (cuando la temperatura mínima es menor a 5°C)</p>
+    <p style="margin: 5px 0; color: #424242;"><strong>• Interpretación:</strong></p>
+    <ul style="margin: 5px 0; color: #424242;">
+        <li><strong>0-5°C:</strong> Helada leve - Daño mínimo a cultivos resistentes</li>
+        <li><strong>5-10°C:</strong> Helada moderada - Daño a cultivos sensibles</li>
+        <li><strong>10-15°C:</strong> Helada severa - Daño extenso a la mayoría de cultivos</li>
+        <li><strong>>15°C:</strong> Helada extrema - Destrucción total de cultivos</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
+
+# Corregir el cálculo del índice de heladas para usar temperatura mínima
+if 'Temperatura_Min' not in df.columns:
+    # Si no tenemos temperatura mínima, simularla basada en la temperatura promedio
+    df['Temperatura_Min'] = df['Temperatura'] - np.random.uniform(3, 8, len(df))
+    df['Temperatura_Max'] = df['Temperatura'] + np.random.uniform(3, 8, len(df))
+
+# Recalcular el índice de heladas usando temperatura mínima
+df['Indice_Helada_Corregido'] = df.apply(lambda row: max(0, 32 - row['Temperatura_Min']) if row['Temperatura_Min'] < 5 else 0, axis=1)
+
+# Calcular sensación térmica agrícola
+def calcular_sensacion_termica_agricola(temp, humedad, viento):
+    """Calcula la sensación térmica específica para el sector agrícola"""
+    # Factor de humedad para agricultura (mayor humedad = mayor sensación de frío)
+    factor_humedad = 1 + (humedad - 50) * 0.01
+    
+    # Factor de viento para agricultura (viento = mayor pérdida de calor)
+    factor_viento = 1 + (viento / 10) * 0.1
+    
+    # Sensación térmica agrícola
+    sensacion = temp * factor_humedad * factor_viento
+    
+    # Aplicar límites realistas
+    sensacion = max(-10, min(50, sensacion))
+    
+    return round(sensacion, 1)
+
+df['Sensacion_Termica_Agricola'] = df.apply(
+    lambda row: calcular_sensacion_termica_agricola(row['Temperatura'], row['Humedad'], row['Viento']), 
+    axis=1
+)
+
+# Métricas de heladas corregidas
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    heladas_dias_corregido = len(df[df['Indice_Helada_Corregido'] > 0])
+    st.metric("❄️ Días con Helada", f"{heladas_dias_corregido}")
+
+with col2:
+    helada_max_corregido = df['Indice_Helada_Corregido'].max()
+    st.metric("❄️ Helada Más Severa", f"{helada_max_corregido:.1f}°C")
+
+with col3:
+    temp_min_global = df['Temperatura_Min'].min()
+    st.metric("🌡️ Temp. Mínima Registrada", f"{temp_min_global:.1f}°C")
+
+with col4:
+    sensacion_min = df['Sensacion_Termica_Agricola'].min()
+    st.metric("🥶 Sensación Térmica Mín", f"{sensacion_min:.1f}°C")
+
+# Gráfico de heladas corregido
 fig_heladas = go.Figure()
 
 for estacion in df['Estacion'].unique():
     df_est = df[df['Estacion'] == estacion]
     
-    # Crear barras para días con heladas
-    heladas_dias = df_est[df_est['Indice_Helada'] > 0]
+    # Crear barras para días con heladas (usando índice corregido)
+    heladas_dias = df_est[df_est['Indice_Helada_Corregido'] > 0]
     if len(heladas_dias) > 0:
         fig_heladas.add_trace(go.Bar(
             x=heladas_dias['Fecha'],
-            y=heladas_dias['Indice_Helada'],
+            y=heladas_dias['Indice_Helada_Corregido'],
             name=f'Heladas {estacion}',
             marker=dict(color='#4169E1', opacity=0.7),
-            text=[f"{idx:.1f}°C" for idx in heladas_dias['Indice_Helada']],
-            textposition='auto'
+            text=[f"Temp. Min: {row['Temperatura_Min']:.1f}°C<br>Índice: {row['Indice_Helada_Corregido']:.1f}°C" 
+                  for _, row in heladas_dias.iterrows()],
+            textposition='auto',
+            hovertemplate=f"<b>{estacion}</b><br>" +
+                         "Fecha: %{x}<br>" +
+                         "Índice de Helada: %{y:.1f}°C<br>" +
+                         "Temp. Mínima: %{customdata[0]:.1f}°C<br>" +
+                         "Sensación Térmica: %{customdata[1]:.1f}°C<br>" +
+                         "<extra></extra>",
+            customdata=list(zip(heladas_dias['Temperatura_Min'], heladas_dias['Sensacion_Termica_Agricola']))
         ))
 
 fig_heladas.update_layout(
-    title="❄️ Índice de Heladas por Estación",
+    title="❄️ Índice de Heladas por Estación (Basado en Temperatura Mínima)",
     xaxis_title="Fecha",
     yaxis_title="Índice de Helada (°C)",
     height=500,
     barmode='group',
-    hovermode='x unified'
+    hovermode='closest'
 )
 
 st.plotly_chart(fig_heladas, use_container_width=True)
+
+# Gráfico de sensación térmica agrícola
+st.markdown("##### 🌡️ Sensación Térmica Agrícola")
+
+fig_sensacion = go.Figure()
+
+for estacion in df['Estacion'].unique():
+    df_est = df[df['Estacion'] == estacion]
+    
+    fig_sensacion.add_trace(go.Scatter(
+        x=df_est['Fecha'],
+        y=df_est['Sensacion_Termica_Agricola'],
+        name=f'Sensación {estacion}',
+        mode='lines+markers',
+        line=dict(width=3),
+        marker=dict(size=6),
+        hovertemplate=f"<b>{estacion}</b><br>" +
+                     "Fecha: %{x}<br>" +
+                     "Sensación Térmica: %{y:.1f}°C<br>" +
+                     "Temp. Real: %{customdata[0]:.1f}°C<br>" +
+                     "Humedad: %{customdata[1]:.1f}%<br>" +
+                     "Viento: %{customdata[2]:.1f} km/h<br>" +
+                     "<extra></extra>",
+        customdata=list(zip(df_est['Temperatura'], df_est['Humedad'], df_est['Viento']))
+    ))
+
+fig_sensacion.update_layout(
+    title="🌡️ Sensación Térmica Agrícola por Estación",
+    xaxis_title="Fecha",
+    yaxis_title="Sensación Térmica (°C)",
+    height=400,
+    hovermode='x unified'
+)
+
+st.plotly_chart(fig_sensacion, use_container_width=True)
+
+# Explicación de la sensación térmica agrícola
+st.markdown("""
+<div style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); padding: 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #9c27b0;">
+    <h4 style="color: #7b1fa2; margin: 0 0 15px 0;">🌡️ Sensación Térmica Agrícola</h4>
+    <p style="margin: 5px 0; color: #424242;"><strong>¿Qué es?</strong> La temperatura que realmente "sienten" los cultivos considerando humedad y viento.</p>
+    <p style="margin: 5px 0; color: #424242;"><strong>Factores que influyen:</strong></p>
+    <ul style="margin: 5px 0; color: #424242;">
+        <li><strong>Humedad alta:</strong> Aumenta la sensación de frío (mayor conductividad térmica)</li>
+        <li><strong>Viento:</strong> Aumenta la pérdida de calor por convección</li>
+        <li><strong>Temperatura base:</strong> Punto de partida para el cálculo</li>
+    </ul>
+    <p style="margin: 5px 0; color: #424242;"><strong>Impacto agrícola:</strong> Ayuda a predecir mejor el daño por frío en cultivos, especialmente en condiciones de alta humedad y viento.</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Tabla de resumen de heladas por estación
+st.markdown("##### 📊 Resumen de Heladas por Estación")
+
+resumen_heladas = df.groupby('Estacion').agg({
+    'Temperatura_Min': ['min', 'mean'],
+    'Indice_Helada_Corregido': ['max', 'mean', 'sum'],
+    'Sensacion_Termica_Agricola': ['min', 'mean']
+}).round(2)
+
+# Flatten column names
+resumen_heladas.columns = ['_'.join(col).strip() for col in resumen_heladas.columns]
+resumen_heladas = resumen_heladas.reset_index()
+
+# Renombrar columnas para mejor comprensión
+resumen_heladas = resumen_heladas.rename(columns={
+    'Estacion': 'Estación',
+    'Temperatura_Min_min': 'Temp. Mín. Absoluta (°C)',
+    'Temperatura_Min_mean': 'Temp. Mín. Promedio (°C)',
+    'Indice_Helada_Corregido_max': 'Helada Más Severa (°C)',
+    'Indice_Helada_Corregido_mean': 'Índice Helada Promedio (°C)',
+    'Indice_Helada_Corregido_sum': 'Índice Helada Total (°C)',
+    'Sensacion_Termica_Agricola_min': 'Sensación Térmica Mín (°C)',
+    'Sensacion_Termica_Agricola_mean': 'Sensación Térmica Promedio (°C)'
+})
+
+st.dataframe(resumen_heladas, use_container_width=True)
 
 # Análisis horario detallado (si hay datos horarios)
 if 'Hora' in df.columns and df['Hora'].nunique() > 1:
