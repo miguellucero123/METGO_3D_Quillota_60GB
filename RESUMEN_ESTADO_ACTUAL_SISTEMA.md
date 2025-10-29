@@ -69,3 +69,4 @@ python detener_sistema.py
 ---
 **Sistema METGO - Estado Operativo**  
 **Última actualización:** 11/10/2025 03:38 AM
+
