@@ -26,3 +26,9 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment variables — NEVER commit real credentials
+.env
+
+# Large backup folders — use git tags or releases for snapshots
+respaldo_*/

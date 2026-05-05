@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master", "copilot/**"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  smoke-test:
+    name: Smoke test – imports & OpenMeteo module
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install core dependencies
+        run: |
+          pip install --upgrade pip
+          pip install streamlit plotly pandas numpy requests scikit-learn joblib python-dotenv
+
+      - name: Import smoke test
+        run: |
+          python -c "import streamlit, plotly, pandas, numpy, requests, sklearn, joblib"
+          echo "✅ All core imports OK"
+
+      - name: Verify OpenMeteo module loads
+        run: |
+          python -c "
+          from datos_reales_openmeteo import obtener_datos_meteorologicos_reales, verificar_datos_reales
+          print('✅ datos_reales_openmeteo importado correctamente')
+          "
+
+      - name: Verify auth module loads
+        run: |
+          python -c "
+          import ast, sys
+          with open('sistema_auth_dashboard_principal_metgo.py') as f:
+              source = f.read()
+          ast.parse(source)
+          print('✅ sistema_auth_dashboard_principal_metgo.py sintaxis OK')
+          "

@@ -14,6 +14,15 @@ import time
 import warnings
 warnings.filterwarnings('ignore')
 
+# Cache opcional de Streamlit: se activa sólo cuando el módulo es importado
+# desde un contexto Streamlit (dashboards).  En scripts puros no tiene efecto.
+try:
+    import streamlit as st
+    _cache_data = st.cache_data(ttl=3600)
+except Exception:
+    def _cache_data(func):
+        return func
+
 class OpenMeteoData:
     """Clase para obtener datos reales de OpenMeteo API"""
     
@@ -309,6 +318,7 @@ class OpenMeteoData:
             return False
 
 # Función principal para usar en los dashboards
+@_cache_data
 def obtener_datos_meteorologicos_reales(estacion='Quillota', tipo='historicos', dias=30):
     """
     Función principal para obtener datos meteorológicos reales

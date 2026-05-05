@@ -12,6 +12,14 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
+import os
+
+# Cargar variables de entorno desde .env si existe (no obligatorio en producción)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv no instalado; se usan variables de entorno del sistema
 
 # Importar datos reales de OpenMeteo
 try:
@@ -19,7 +27,6 @@ try:
     DATOS_REALES_DISPONIBLES = True
 except ImportError:
     DATOS_REALES_DISPONIBLES = False
-import os
 
 # Configurar página optimizada para móviles
 st.set_page_config(
@@ -431,11 +438,16 @@ def generar_datos_agricolas(estacion="Quillota"):
 
 # Función de autenticación simple
 def verificar_credenciales(usuario, contraseña):
-    """Verificar credenciales de acceso"""
+    """Verificar credenciales de acceso.
+
+    Las contraseñas se leen desde variables de entorno para evitar
+    exponerlas en el código fuente.  Si la variable no existe se usa
+    el valor de desarrollo indicado en .env.example.
+    """
     credenciales_validas = {
-        "admin": "admin123",
-        "user": "user123",
-        "metgo": "metgo2025"
+        "admin": os.getenv("METGO_PASSWORD_ADMIN", "admin123"),
+        "user": os.getenv("METGO_PASSWORD_USER", "user123"),
+        "metgo": os.getenv("METGO_PASSWORD_METGO", "metgo2025"),
     }
     return credenciales_validas.get(usuario) == contraseña
 
