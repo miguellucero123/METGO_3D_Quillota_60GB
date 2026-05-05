@@ -39,17 +39,17 @@ def main():
     # Configuración de dashboards y puertos
     dashboards = [
         ("sistema_auth_dashboard_principal_metgo.py", 8501, "🏠 Dashboard Principal"),
-        ("dashboard_meteorologico_profesional.py", 8502, "🌤️ Meteorológico Profesional"),
-        ("dashboard_agricola_inteligente.py", 8503, "🌾 Agrícola Inteligente"),
-        ("dashboard_monitoreo_tiempo_real.py", 8504, "🔍 Monitoreo Tiempo Real"),
-        ("dashboard_ia_ml_avanzado.py", 8505, "🤖 IA/ML Avanzado"),
-        ("dashboard_visualizaciones_avanzadas.py", 8506, "📊 Visualizaciones Avanzadas"),
-        ("dashboard_global_metricas.py", 8507, "📈 Global Métricas"),
-        ("dashboard_agricultura_precision.py", 8508, "🌾 Agricultura Precisión"),
-        ("dashboard_analisis_comparativo.py", 8509, "📊 Análisis Comparativo"),
-        ("dashboard_alertas_automaticas.py", 8510, "🔬 Alertas Automáticas"),
-        ("dashboard_simple_optimizado.py", 8511, "📊 Dashboard Simple"),
-        ("dashboard_unificado_diferenciado.py", 8512, "🏠 Dashboard Unificado")
+        ("dashboards/dashboard_meteorologico_profesional.py", 8502, "🌤️ Meteorológico Profesional"),
+        ("dashboards/dashboard_agricola_inteligente.py", 8503, "🌾 Agrícola Inteligente"),
+        ("dashboards/dashboard_monitoreo_tiempo_real.py", 8504, "🔍 Monitoreo Tiempo Real"),
+        ("dashboards/dashboard_ia_ml_avanzado.py", 8505, "🤖 IA/ML Avanzado"),
+        ("dashboards/dashboard_visualizaciones_avanzadas.py", 8506, "📊 Visualizaciones Avanzadas"),
+        ("dashboards/dashboard_global_metricas.py", 8507, "📈 Global Métricas"),
+        ("dashboards/dashboard_agricultura_precision.py", 8508, "🌾 Agricultura Precisión"),
+        ("dashboards/dashboard_analisis_comparativo.py", 8509, "📊 Análisis Comparativo"),
+        ("dashboards/dashboard_alertas_automaticas.py", 8510, "🔬 Alertas Automáticas"),
+        ("dashboards/dashboard_simple_optimizado.py", 8511, "📊 Dashboard Simple"),
+        ("dashboards/dashboard_unificado_diferenciado.py", 8512, "🏠 Dashboard Unificado")
     ]
     
     procesos = []

@@ -7,8 +7,8 @@ echo.
 REM Crear el script de inicio
 echo Creando script de inicio...
 echo @echo off > "iniciar_metgo.bat"
-echo cd /d "%~dp0" >> "iniciar_metgo.bat"
-echo python iniciar_sistema_automatico.py >> "iniciar_metgo.bat"
+echo cd /d "%~dp0\.." >> "iniciar_metgo.bat"
+echo python scripts\iniciar_sistema_automatico.py >> "iniciar_metgo.bat"
 echo pause >> "iniciar_metgo.bat"
 
 REM Obtener la ruta actual

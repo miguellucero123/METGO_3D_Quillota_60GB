@@ -19,9 +19,9 @@ REM Crear directorio de logs si no existe
 if not exist "logs" mkdir logs
 
 REM Verificar archivo principal
-if not exist "sistema_permanente_metgo.py" (
-    echo ERROR: No se encuentra el archivo sistema_permanente_metgo.py
-    echo Asegúrate de ejecutar este script desde el directorio correcto
+if not exist "scripts\sistema_permanente_metgo.py" (
+    echo ERROR: No se encuentra el archivo scripts\sistema_permanente_metgo.py
+    echo Asegúrate de ejecutar este script desde el directorio raíz del proyecto
     pause
     exit /b 1
 )
@@ -38,7 +38,7 @@ echo Presiona Ctrl+C para detener el sistema
 echo.
 
 REM Iniciar el sistema permanente
-python sistema_permanente_metgo.py iniciar
+python scripts\sistema_permanente_metgo.py iniciar
 
 echo.
 echo Sistema detenido.

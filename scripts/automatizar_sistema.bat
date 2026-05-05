@@ -14,7 +14,7 @@ set /p opcion="Selecciona una opcion (1-5): "
 if "%opcion%"=="1" (
     echo.
     echo Iniciando Sistema METGO...
-    python iniciar_sistema_automatico.py
+    python scripts\iniciar_sistema_automatico.py
     pause
     goto :eof
 )
@@ -22,7 +22,7 @@ if "%opcion%"=="1" (
 if "%opcion%"=="2" (
     echo.
     echo Deteniendo Sistema METGO...
-    python detener_sistema.py
+    python scripts\detener_sistema.py
     pause
     goto :eof
 )
@@ -30,7 +30,7 @@ if "%opcion%"=="2" (
 if "%opcion%"=="3" (
     echo.
     echo Monitoreando Sistema METGO...
-    python monitorear_sistema.py
+    python scripts\monitorear_sistema.py
     pause
     goto :eof
 )
@@ -38,7 +38,7 @@ if "%opcion%"=="3" (
 if "%opcion%"=="4" (
     echo.
     echo Reiniciando Sistema METGO...
-    python reiniciar_sistema.py
+    python scripts\reiniciar_sistema.py
     pause
     goto :eof
 )

@@ -7,6 +7,11 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
 import io
+import sys
+import os
+
+# Allow imports from project root (datos_reales_openmeteo lives there)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Importar datos reales de OpenMeteo
 try:
