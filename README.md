@@ -1,151 +1,115 @@
-# 🌾 Dashboard METGO - Sistema Integrado de Monitoreo Meteorológico y Agrícola
+# Dashboard METGO - Sistema Integrado de Monitoreo Meteorológico y Agrícola
 
-## 📋 Descripción
-Dashboard principal integrado para monitoreo meteorológico y agrícola en Quillota, Chile. Sistema completo que combina análisis meteorológico, gestión agrícola, alertas ML y navegación a todos los módulos del sistema METGO.
+Dashboard integrado para monitoreo meteorológico y agrícola en Quillota, Chile. El proyecto combina visualización en Streamlit, análisis de datos, modelos de ML y módulos especializados.
 
-## ✨ Características Principales
+## Estado del repositorio (actualización 2026-05-05)
 
-### 🔐 Sistema de Autenticación
-- Login seguro con usuario y contraseña
-- Acceso controlado al sistema
+Este repositorio incorporó mejoras de seguridad, rendimiento y mantenibilidad:
 
-### 🌤️ Monitoreo Meteorológico
-- Datos en tiempo real para Quillota y estaciones cercanas
-- Gráficos interactivos con Plotly
-- Pronósticos y análisis comparativo
-- Alertas meteorológicas automáticas
+- **Seguridad**: credenciales movidas a variables de entorno (`METGO_PASSWORD_{ADMIN,USER,METGO}`) y soporte de `.env` mediante `python-dotenv`.
+- **Rendimiento**: caching con TTL para llamadas a APIs meteorológicas (en Streamlit) para reducir latencia y cuotas.
+- **Higiene del repo**: exclusión de respaldos pesados (`respaldo_*/`) desde git y `.env` ignorado.
+- **Dependencias**: `requirements.txt` actualizado para reflejar imports reales (ML/visualización + dotenv).
+- **CI/DX**: workflow de GitHub Actions con smoke test de imports y chequeo de sintaxis; `Makefile` con comandos comunes.
 
-### 🌱 Análisis Agrícola
-- Datos de cultivos específicos de la región
-- Recomendaciones agrícolas basadas en ML
-- Análisis de riesgo agrícola
-- Predicción de producción
+## Características principales
 
-### 🤖 Inteligencia Artificial
-- Sistema de alertas ML
-- Recomendaciones automáticas
-- Predicción de riesgos
-- Análisis de confort climático
+### Sistema de autenticación
+- Login con usuario y contraseña.
+- Acceso controlado por credenciales configurables vía variables de entorno.
 
-### 🚀 Navegación Integrada
-- Acceso a todos los dashboards del sistema METGO
-- 12 módulos especializados
-- Navegación centralizada
+### Monitoreo meteorológico
+- Datos para Quillota y estaciones cercanas.
+- Gráficos interactivos.
+- Pronósticos y análisis comparativo.
+- Alertas meteorológicas.
 
-## 🛠️ Instalación Local
+### Análisis agrícola
+- Recomendaciones agrícolas basadas en modelos.
+- Análisis de riesgo y predicción.
+
+### Inteligencia artificial
+- Alertas y recomendaciones automáticas.
+- Predicción de riesgos y análisis de confort climático.
+
+### Navegación integrada
+- Acceso centralizado a módulos del sistema.
+
+## Instalación local
 
 ### Prerrequisitos
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
+- Python 3.8+
+- pip
 
-### Pasos de Instalación
+### Pasos
+
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/dashboard-metgo.git
-cd dashboard-metgo
+# 1) Clonar
+git clone https://github.com/miguellucero123/METGO_3D_Quillota_60GB.git
+cd METGO_3D_Quillota_60GB
 
-# 2. Instalar dependencias
+# 2) Instalar dependencias
 pip install -r requirements.txt
 
-# 3. Ejecutar el dashboard
+# 3) (Recomendado) Configurar variables de entorno
+cp .env.example .env
+# Edita .env y define:
+# METGO_PASSWORD_ADMIN=
+# METGO_PASSWORD_USER=
+# METGO_PASSWORD_METGO=
+
+# 4) Ejecutar (ejemplo)
 streamlit run sistema_auth_dashboard_principal_metgo.py
 ```
 
-## 🌐 Acceso
+## Configuración (credenciales)
+
+Las contraseñas se leen desde variables de entorno:
+
+- `METGO_PASSWORD_ADMIN`
+- `METGO_PASSWORD_USER`
+- `METGO_PASSWORD_METGO`
+
+Nota: si alguna no está definida, el sistema emite un warning en runtime y puede caer a valores de desarrollo (según implementación).
+
+## Acceso
 
 ### Local
-- **URL:** http://localhost:8501
-- **Red Local:** http://192.168.1.7:8501
+- URL: http://localhost:8501
 
-### Streamlit Cloud (Público)
-- **URL:** https://metgo-3d-quillota-60gb.streamlit.app
-- **Accesible desde cualquier lugar del mundo**
-- **Credenciales:** Contactar administrador
+### Streamlit Cloud (público)
+- URL: https://metgo-3d-quillota-60gb.streamlit.app
+- Credenciales: contactar administrador
 
-## 📊 Módulos del Sistema
+## Estaciones meteorológicas soportadas
 
-| Módulo | Puerto | Descripción |
-|--------|--------|-------------|
-| 🏠 Principal | 8501 | Dashboard principal integrado |
+- Quillota (principal)
+- Los Nogales
+- Hijuelas
+- Limache
+- Olmué
 
-## 🎯 Estaciones Meteorológicas Soportadas
+## Estructura del proyecto (referencia)
 
-- **Quillota** (Principal)
-- **Los Nogales**
-- **Hijuelas**
-- **Limache**
-- **Olmue**
-
-## 📈 Funcionalidades Avanzadas
-
-### Panel de Control
-- Selector de estación meteorológica
-- Botón de actualización de datos
-- Selector de período de análisis
-- Generación de reportes
-
-### Análisis Temporal
-- **Histórico:** Análisis de datos pasados
-- **Pronóstico:** Proyecciones futuras
-- **Comparativo:** Comparación entre períodos
-
-### Sistema de Alertas
-- Alertas de heladas
-- Alertas de calor extremo
-- Alertas de precipitación intensa
-- Alertas de viento fuerte
-- Alertas de humedad baja
-
-## 🔧 Configuración
-
-
-### Archivo de Configuración
-El archivo `.streamlit/config.toml` contiene la configuración personalizada del dashboard.
-
-## 📁 Estructura del Proyecto
-
-```
-dashboard-metgo/
-├── sistema_auth_dashboard_principal_metgo.py  # Dashboard principal
-├── dashboard_meteorologico_metgo.py           # Dashboard meteorológico
-├── dashboard_agricola_metgo.py                # Dashboard agrícola
-├── dashboard_unificado_metgo.py               # Dashboard unificado
-├── dashboard_simple_metgo.py                  # Dashboard simple
-├── requirements.txt                           # Dependencias
-├── .streamlit/config.toml                     # Configuración
-└── README.md                                  # Este archivo
+```text
+METGO_3D_Quillota_60GB/
+├── sistema_auth_dashboard_principal_metgo.py
+├── 01_Sistema_Meteorologico/
+├── 02_Sistema_Agricola/
+├── requirements.txt
+├── .github/workflows/
+└── README.md
 ```
 
-## 🚀 Despliegue
+## CI
 
+El workflow en `.github/workflows/ci.yml` ejecuta validaciones básicas en cada push/PR (smoke test de imports + chequeo de sintaxis).
 
-### Local con Acceso Externo
-# Configurando router
-configurar_router.bat
-```
+## Licencia
 
-## 🤝 Contribución
+MIT. Ver `LICENSE`.
 
-## 📄 Licencia
+## Soporte
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 👥 Autores
-
-- **Sistema METGO_3D** - *Desarrollo inicial* - [GitHub](https://github.com/metgo)
-- **Equipo Técnico Análisis de Datos AEIP-ONL** - *Implementación regional*
-
-## 🙏 Agradecimientos
-
-- OpenMeteo
-- Desarrolladores de Streamlit y Plotly
-
-## 📞 Soporte
-
-Para soporte técnico o consultas:
-- **Email:** miguel.lucero@metgo3d.com
-- **GitHub Issues:** [Crear issue](https://github.com/miguellucero123/dashboard-metgo/issues)
-
----
-
-**Dashboard METGO - Sistema Integrado de Monitoreo Meteorológico y Agrícola para Quillota** 
+- Email: miguel.lucero@metgo3d.com
+- Issues: https://github.com/miguellucero123/METGO_3D_Quillota_60GB/issues
