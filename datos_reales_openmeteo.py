@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore')
 try:
     import streamlit as st
     _cache_data = st.cache_data(ttl=3600)
-except Exception:
+except ImportError:
     def _cache_data(func):
         return func
 

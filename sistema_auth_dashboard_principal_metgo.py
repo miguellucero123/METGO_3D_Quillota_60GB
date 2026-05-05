@@ -441,14 +441,25 @@ def verificar_credenciales(usuario, contraseña):
     """Verificar credenciales de acceso.
 
     Las contraseñas se leen desde variables de entorno para evitar
-    exponerlas en el código fuente.  Si la variable no existe se usa
-    el valor de desarrollo indicado en .env.example.
+    exponerlas en el código fuente.  Configura METGO_PASSWORD_* en .env
+    (ver .env.example) antes de desplegar en producción.
     """
+    import logging
     credenciales_validas = {
-        "admin": os.getenv("METGO_PASSWORD_ADMIN", "admin123"),
-        "user": os.getenv("METGO_PASSWORD_USER", "user123"),
-        "metgo": os.getenv("METGO_PASSWORD_METGO", "metgo2025"),
+        "admin": os.getenv("METGO_PASSWORD_ADMIN"),
+        "user": os.getenv("METGO_PASSWORD_USER"),
+        "metgo": os.getenv("METGO_PASSWORD_METGO"),
     }
+    # Advertir si alguna variable no está configurada (desarrollo)
+    _defaults = {"admin": "admin123", "user": "user123", "metgo": "metgo2025"}
+    for nombre, valor in credenciales_validas.items():
+        if valor is None:
+            logging.warning(
+                "METGO_PASSWORD_%s no configurada; usando contraseña de desarrollo. "
+                "Configura las variables de entorno antes de desplegar en producción.",
+                nombre.upper(),
+            )
+            credenciales_validas[nombre] = _defaults[nombre]
     return credenciales_validas.get(usuario) == contraseña
 
 # Función principal
