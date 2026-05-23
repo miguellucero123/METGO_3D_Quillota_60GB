@@ -2,7 +2,7 @@
 
 Sistema integrado de monitoreo meteorológico y gestión agrícola (MIP) para el Valle de Quillota, Chile.
 
-**Actualización:** 2026-05-23 — Raíz organizada en **backend · frontend · site-web · docs**.
+**Actualización:** 2026-05-23 — Raíz organizada.
 
 ---
 
