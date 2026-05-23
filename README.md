@@ -58,38 +58,38 @@ Quillota · Los Nogales · Hijuelas · Limache · Olmué
 
 ```mermaid
 flowchart TB
-  subgraph Clientes["Clientes"]
-    U[Operador / Agrónomo]
-    P[Usuario público]
+  subgraph clientes [Clientes]
+    U["Operador / Agronomo"]
+    P["Usuario publico"]
   end
 
-  subgraph Frontend["frontend/"]
-    V[Vue 3 + Vite :5173]
-    ST[Streamlit dashboards :8501+]
+  subgraph capa_frontend [Capa frontend]
+    V["Vue 3 + Vite puerto 5173"]
+    ST["Streamlit dashboards 8501+"]
   end
 
-  subgraph SiteWeb["site-web/"]
-    PUB[Streamlit público]
+  subgraph capa_siteweb [Capa site-web]
+    PUB["Streamlit publico"]
   end
 
-  subgraph Backend["backend/"]
-    API[API REST Flask :8080]
-    AUTH[JWT / metgo_auth]
-    M01[01 Meteorología]
-    M02[02 Agrícola]
-    M06[06 ML / IA]
-    M07[07 Monitoreo]
-    M08[08 Datos]
+  subgraph capa_backend [Capa backend]
+    API["API REST Flask puerto 8080"]
+    AUTH["JWT metgo_auth"]
+    M01["01 Meteorologia"]
+    M02["02 Agricola"]
+    M06["06 ML e IA"]
+    M07["07 Monitoreo"]
+    M08["08 Datos"]
   end
 
-  subgraph Externos["Fuentes externas"]
-    OM[OpenMeteo API]
+  subgraph externos [Fuentes externas]
+    OM["OpenMeteo API"]
   end
 
   U --> V
   U --> ST
   P --> PUB
-  V -->|REST + JWT| API
+  V -->|REST y JWT| API
   ST --> M01
   ST --> M02
   API --> AUTH
@@ -105,18 +105,18 @@ flowchart TB
 ```mermaid
 sequenceDiagram
   participant B as Navegador
-  participant V as frontend/vue
+  participant V as frontend vue
   participant A as API Flask
-  participant D as OpenMeteo / servicios
+  participant D as OpenMeteo
 
-  B->>V: Login (usuario/contraseña)
-  V->>A: POST /api/auth/login
-  A-->>V: JWT (access token)
-  V->>A: GET /api/meteo/{estacion} + Authorization
+  B->>V: Login usuario y contrasena
+  V->>A: POST api auth login
+  A-->>V: JWT access token
+  V->>A: GET api meteo por estacion
   A->>D: Consulta datos
-  D-->>A: JSON meteorológico
+  D-->>A: JSON meteorologico
   A-->>V: Respuesta normalizada
-  V-->>B: Panel / Meteo / Agrícola
+  V-->>B: Panel Meteo y Agricola
 ```
 
 ### Puertos y procesos (desarrollo local)
@@ -134,12 +134,12 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-  subgraph Dev["Desarrollo local"]
-    LAPI[API :8080]
-    LVUE[Vue :5173]
+  subgraph dev_local [Desarrollo local]
+    LAPI["API puerto 8080"]
+    LVUE["Vue puerto 5173"]
   end
 
-  subgraph Cloud["Producción ligera"]
+  subgraph prod_ligera [Produccion ligera]
     GH[GitHub master]
     SC[Streamlit Cloud]
     GH --> SC
@@ -344,26 +344,26 @@ Roadmap orientado a producción y mantenibilidad. Las fases son orientativas; el
 
 ```mermaid
 gantt
-    title METGO 3D — Roadmap orientativo
+    title METGO 3D Roadmap orientativo
     dateFormat YYYY-MM
     section Plataforma
-    Consolidar API única :8080 y deprecar :8000     :done, 2026-05, 2026-05
-    Layout backend/frontend/site-web               :done, 2026-05, 2026-05
-    CI/CD GitHub Actions (tests + lint)              :active, 2026-05, 2026-06
+    API unica puerto 8080 deprecar 8000     :done, plat_api, 2026-05, 2026-05
+    Layout backend frontend site-web        :done, plat_layout, 2026-05, 2026-05
+    CI CD GitHub Actions tests y lint       :active, plat_ci, 2026-05, 2026-06
     section Frontend
-    Migrar vistas Streamlit críticas a Vue         :2026-06, 2026-08
-    PWA / modo offline ligero                        :2026-07, 2026-09
+    Migrar Streamlit critico a Vue          :fe_vue, 2026-06, 2026-08
+    PWA modo offline ligero                 :fe_pwa, 2026-07, 2026-09
     section Backend
-    Cache Redis o in-memory para OpenMeteo          :2026-06, 2026-07
-    Endpoints agrícolas unificados v2               :2026-06, 2026-08
-    Reentrenamiento ML automatizado                 :2026-07, 2026-10
+    Cache Redis para OpenMeteo              :be_cache, 2026-06, 2026-07
+    Endpoints agricolas v2                  :be_api, 2026-06, 2026-08
+    Reentrenamiento ML automatizado         :be_ml, 2026-07, 2026-10
     section DevOps
-    Docker Compose (API + Vue build)                :2026-06, 2026-07
-    Scripts deploy en subcarpetas arranque/legacy   :2026-05, 2026-06
-    Reverse proxy único (Caddy/nginx)               :2026-08, 2026-09
+    Docker Compose API y Vue                :do_docker, 2026-06, 2026-07
+    Scripts deploy arranque y legacy        :do_scripts, 2026-05, 2026-06
+    Reverse proxy Caddy o nginx             :do_proxy, 2026-08, 2026-09
     section Calidad
-    Cobertura pytest módulos 01/05/07               :2026-06, 2026-08
-    Documentación OpenAPI (Swagger UI)              :2026-06, 2026-07
+    Cobertura pytest modulos 01 05 07        :qa_test, 2026-06, 2026-08
+    Documentacion OpenAPI Swagger           :qa_docs, 2026-06, 2026-07
 ```
 
 ### Detalle por iniciativa
