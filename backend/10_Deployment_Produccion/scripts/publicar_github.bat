@@ -69,8 +69,19 @@ if not errorlevel 1 (
 )
 
 echo.
-echo Archivos en el próximo commit:
-git diff --cached --name-status
+for /f %%c in ('git diff --cached --name-only 2^>nul ^| find /c /v ""') do set STAGED_COUNT=%%c
+echo Archivos en staging: !STAGED_COUNT!  (lista completa omitida si son muchos)
+git diff --cached --shortstat
+if !STAGED_COUNT! LEQ 30 (
+  git diff --cached --name-status
+)
+echo.
+echo ======================================================================
+echo  ATENCION: El script ESPERA su respuesta aqui abajo.
+echo  Escriba S y pulse Enter para commit + push.
+echo  Escriba N para cancelar.
+echo  El commit puede tardar VARIOS MINUTOS si hay modelos .joblib grandes.
+echo ======================================================================
 echo.
 
 set /p CONFIRM="¿Crear commit y push? (S/N): "
@@ -80,7 +91,7 @@ if /i not "!CONFIRM!"=="S" (
 )
 
 echo.
-echo [3/4] Commit...
+echo [3/4] Commit... (puede tardar 1-10 minutos, no cierre la ventana)
 git commit -m "!MSG!"
 if errorlevel 1 (
   echo [ERROR] git commit falló.
@@ -88,7 +99,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [4/4] Push...
+echo [4/4] Push... (subida a GitHub, puede tardar segun tamano del repo)
 for /f "tokens=*" %%b in ('git branch --show-current 2^>nul') do set BRANCH=%%b
 if not defined BRANCH set BRANCH=main
 
