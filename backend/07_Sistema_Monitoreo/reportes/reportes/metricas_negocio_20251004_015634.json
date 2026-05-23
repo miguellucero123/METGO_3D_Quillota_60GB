@@ -1,0 +1,256 @@
+{
+  "timestamp": "2025-10-04T01:56:34.472901",
+  "sistema": "METGO 3D - Sistema de Métricas de Negocio",
+  "version": "2.0",
+  "configuracion_metricas": {
+    "frecuencia_calculo": 3600,
+    "periodo_analisis": 30,
+    "umbral_alertas": 0.8,
+    "tendencias_activas": true,
+    "reportes_automaticos": true,
+    "dashboard_tiempo_real": true,
+    "exportacion_datos": true
+  },
+  "metricas_actuales": {
+    "metric_usuarios_activos": {
+      "nombre": "Usuarios Activos",
+      "categoria": "usuarios",
+      "valor": 151,
+      "unidad": "usuarios",
+      "objetivo": 200,
+      "cumplimiento": 75.5,
+      "tendencia": "creciente",
+      "timestamp": "2025-10-04T01:56:34.407951"
+    },
+    "metric_consultas_diarias": {
+      "nombre": "Consultas Diarias",
+      "categoria": "uso",
+      "valor": 1214,
+      "unidad": "consultas",
+      "objetivo": 2000,
+      "cumplimiento": 60.699999999999996,
+      "tendencia": "creciente",
+      "timestamp": "2025-10-04T01:56:34.414743"
+    },
+    "metric_tiempo_respuesta": {
+      "nombre": "Tiempo de Respuesta",
+      "categoria": "rendimiento",
+      "valor": 0.9776239763906158,
+      "unidad": "segundos",
+      "objetivo": 0.8,
+      "cumplimiento": 122.20299704882697,
+      "tendencia": "decreciente",
+      "timestamp": "2025-10-04T01:56:34.419736"
+    },
+    "metric_satisfaccion_usuario": {
+      "nombre": "Satisfacción del Usuario",
+      "categoria": "calidad",
+      "valor": 4.231890218468939,
+      "unidad": "puntos",
+      "objetivo": 4.5,
+      "cumplimiento": 94.04200485486531,
+      "tendencia": "creciente",
+      "timestamp": "2025-10-04T01:56:34.424508"
+    },
+    "metric_uptime_sistema": {
+      "nombre": "Disponibilidad del Sistema",
+      "categoria": "rendimiento",
+      "valor": 99.63952064610007,
+      "unidad": "%",
+      "objetivo": 99.9,
+      "cumplimiento": 99.73925990600607,
+      "tendencia": "estable",
+      "timestamp": "2025-10-04T01:56:34.429832"
+    },
+    "metric_ingresos_mensuales": {
+      "nombre": "Ingresos Mensuales",
+      "categoria": "financiero",
+      "valor": 44685,
+      "unidad": "USD",
+      "objetivo": 60000,
+      "cumplimiento": 74.47500000000001,
+      "tendencia": "creciente",
+      "timestamp": "2025-10-04T01:56:34.434822"
+    }
+  },
+  "kpis_actuales": {
+    "kpi_crecimiento_usuarios": {
+      "nombre": "Crecimiento de Usuarios",
+      "descripcion": "Tasa de crecimiento mensual de usuarios activos",
+      "valor_actual": 17.521030569613053,
+      "valor_objetivo": 20.0,
+      "unidad": "%",
+      "cumplimiento": 87.60515284806527,
+      "estado": "bueno",
+      "frecuencia": "mensual",
+      "timestamp": "2025-10-04T01:56:34.470352"
+    },
+    "kpi_retencion_usuarios": {
+      "nombre": "Retención de Usuarios",
+      "descripcion": "Porcentaje de usuarios que continúan usando el sistema",
+      "valor_actual": 85.89928571717924,
+      "valor_objetivo": 90.0,
+      "unidad": "%",
+      "cumplimiento": 95.44365079686582,
+      "estado": "bueno",
+      "frecuencia": "mensual",
+      "timestamp": "2025-10-04T01:56:34.470352"
+    },
+    "kpi_eficiencia_sistema": {
+      "nombre": "Eficiencia del Sistema",
+      "descripcion": "Relación entre consultas exitosas y total de consultas",
+      "valor_actual": 96.91799461234349,
+      "valor_objetivo": 98.0,
+      "unidad": "%",
+      "cumplimiento": 98.89591286973825,
+      "estado": "bueno",
+      "frecuencia": "diaria",
+      "timestamp": "2025-10-04T01:56:34.470352"
+    },
+    "kpi_roi_sistema": {
+      "nombre": "ROI del Sistema",
+      "descripcion": "Retorno de inversión del sistema METGO 3D",
+      "valor_actual": 195.12378120346017,
+      "valor_objetivo": 200.0,
+      "unidad": "%",
+      "cumplimiento": 97.56189060173008,
+      "estado": "bueno",
+      "frecuencia": "trimestral",
+      "timestamp": "2025-10-04T01:56:34.470352"
+    },
+    "kpi_tiempo_resolucion": {
+      "nombre": "Tiempo de Resolución",
+      "descripcion": "Tiempo promedio para resolver consultas de usuarios",
+      "valor_actual": 2.9616144902843793,
+      "valor_objetivo": 2.0,
+      "unidad": "minutos",
+      "cumplimiento": 148.08072451421896,
+      "estado": "excelente",
+      "frecuencia": "diaria",
+      "timestamp": "2025-10-04T01:56:34.470352"
+    }
+  },
+  "analisis_tendencias": {
+    "metric_usuarios_activos": {
+      "nombre": "Usuarios Activos",
+      "categoria": "usuarios",
+      "tendencia_7d": 0,
+      "tendencia_30d": 0,
+      "clasificacion": "estable",
+      "valores_recientes": [
+        152.0,
+        151.0
+      ],
+      "promedio": 151.5,
+      "desviacion": 0.5
+    },
+    "metric_consultas_diarias": {
+      "nombre": "Consultas Diarias",
+      "categoria": "uso",
+      "tendencia_7d": 0,
+      "tendencia_30d": 0,
+      "clasificacion": "estable",
+      "valores_recientes": [
+        1178.0,
+        1214.0
+      ],
+      "promedio": 1196.0,
+      "desviacion": 18.0
+    },
+    "metric_tiempo_respuesta": {
+      "nombre": "Tiempo de Respuesta",
+      "categoria": "rendimiento",
+      "tendencia_7d": 0,
+      "tendencia_30d": 0,
+      "clasificacion": "estable",
+      "valores_recientes": [
+        0.7552479527812317,
+        0.9776239763906158
+      ],
+      "promedio": 0.8664359645859238,
+      "desviacion": 0.11118801180469207
+    },
+    "metric_satisfaccion_usuario": {
+      "nombre": "Satisfacción del Usuario",
+      "categoria": "calidad",
+      "tendencia_7d": 0,
+      "tendencia_30d": 0,
+      "clasificacion": "estable",
+      "valores_recientes": [
+        4.263780436937878,
+        4.231890218468939
+      ],
+      "promedio": 4.247835327703408,
+      "desviacion": 0.015945109234469346
+    },
+    "metric_uptime_sistema": {
+      "nombre": "Disponibilidad del Sistema",
+      "categoria": "rendimiento",
+      "tendencia_7d": 0,
+      "tendencia_30d": 0,
+      "clasificacion": "estable",
+      "valores_recientes": [
+        99.77904129220013,
+        99.63952064610007
+      ],
+      "promedio": 99.7092809691501,
+      "desviacion": 0.06976032305003343
+    },
+    "metric_ingresos_mensuales": {
+      "nombre": "Ingresos Mensuales",
+      "categoria": "financiero",
+      "tendencia_7d": 0,
+      "tendencia_30d": 0,
+      "clasificacion": "estable",
+      "valores_recientes": [
+        44370.0,
+        44685.0
+      ],
+      "promedio": 44527.5,
+      "desviacion": 157.5
+    }
+  },
+  "conclusiones": [
+    "El sistema requiere atención inmediata para cumplir con los objetivos",
+    "Los KPIs requieren atención para mejorar el rendimiento",
+    "Las tendencias muestran una desaceleración que requiere atención"
+  ],
+  "recomendaciones": [
+    "Implementar machine learning para predicciones",
+    "Agregar métricas de satisfacción del cliente",
+    "Implementar benchmarking competitivo",
+    "Agregar métricas de sostenibilidad",
+    "Implementar alertas automáticas",
+    "Agregar visualizaciones interactivas",
+    "Implementar métricas de ROI por funcionalidad",
+    "Agregar análisis de cohortes",
+    "Implementar métricas de engagement",
+    "Agregar análisis de churn"
+  ],
+  "resumen_ejecutivo": {
+    "total_metricas": 6,
+    "total_kpis": 5,
+    "metricas_cumpliendo_objetivo": 1,
+    "kpis_estado_excelente": 1,
+    "tendencias_crecientes": 0
+  },
+  "funcionalidades_implementadas": [
+    "Sistema de métricas de negocio",
+    "KPIs automatizados",
+    "Análisis de tendencias",
+    "Base de datos histórica",
+    "Reportes automáticos",
+    "Dashboard de métricas",
+    "Alertas por umbrales",
+    "Exportación de datos",
+    "Análisis de cumplimiento",
+    "Recomendaciones inteligentes"
+  ],
+  "tecnologias_utilizadas": [
+    "SQLite para base de datos",
+    "NumPy para análisis estadístico",
+    "Pandas para manejo de datos",
+    "Logging estructurado",
+    "Análisis de tendencias"
+  ]
+}

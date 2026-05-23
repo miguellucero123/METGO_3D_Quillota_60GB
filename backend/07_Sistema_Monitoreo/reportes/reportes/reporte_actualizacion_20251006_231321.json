@@ -1,0 +1,53 @@
+{
+  "fecha": "2025-10-06T23:13:21.330598",
+  "resumen": {
+    "total_estaciones": 6,
+    "exitos": 6,
+    "errores": 0,
+    "tasa_exito": 100.0
+  },
+  "estaciones": {
+    "Quillota_Centro": {
+      "temperatura": 11.2,
+      "humedad": 71,
+      "precipitacion": 0.0,
+      "viento": 6.4,
+      "alertas": 0
+    },
+    "La_Cruz": {
+      "temperatura": 10.7,
+      "humedad": 71,
+      "precipitacion": 0.0,
+      "viento": 6.4,
+      "alertas": 0
+    },
+    "Nogales": {
+      "temperatura": 11.9,
+      "humedad": 70,
+      "precipitacion": 0.0,
+      "viento": 8.1,
+      "alertas": 0
+    },
+    "San_Isidro": {
+      "temperatura": 11.2,
+      "humedad": 71,
+      "precipitacion": 0.0,
+      "viento": 6.4,
+      "alertas": 0
+    },
+    "Pocochay": {
+      "temperatura": 14.3,
+      "humedad": 57,
+      "precipitacion": 0.0,
+      "viento": 10.3,
+      "alertas": 0
+    },
+    "Valle_Hermoso": {
+      "temperatura": 11.4,
+      "humedad": 71,
+      "precipitacion": 0.0,
+      "viento": 6.4,
+      "alertas": 0
+    }
+  }
+}

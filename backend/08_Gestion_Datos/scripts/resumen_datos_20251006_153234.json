@@ -1,0 +1,39 @@
+{
+  "fecha_generacion": "2025-10-06T15:32:34.136188",
+  "periodo": {
+    "inicio": "2025-09-06T15:32:34.105103",
+    "fin": "2025-10-06T15:32:34.105103",
+    "total_registros": 721
+  },
+  "variables_generadas": [
+    "temperatura",
+    "temperatura_max",
+    "temperatura_min",
+    "precipitacion",
+    "humedad_relativa",
+    "presion_atmosferica",
+    "velocidad_viento",
+    "direccion_viento",
+    "nubosidad",
+    "radiacion_solar",
+    "punto_rocio",
+    "grados_dia",
+    "confort_termico"
+  ],
+  "estadisticas": {
+    "temperatura_promedio": 10.17140083217753,
+    "precipitacion_total": 41.3,
+    "humedad_promedio": 86.8419417475728,
+    "presion_promedio": 988.7528848821081,
+    "viento_promedio": 4.987059639389736,
+    "nubosidad_promedio": 39.32975034674064
+  },
+  "alertas": [
+    {
+      "tipo": "helada",
+      "severidad": "alta",
+      "descripcion": "Riesgo de heladas detectado"
+    }
+  ],
+  "archivo_generado": "datos_meteorologicos_completos_20251006_153234.csv"
+}

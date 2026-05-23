@@ -1,0 +1,136 @@
+import axios from 'axios'
+
+const TOKEN_KEY = 'metgo_access_token'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_METGO_API ?? '/api',
+  timeout: 30000,
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+/** Redirige a login sin recargar la página (evita error de iframe en preview de Cursor/Chrome). */
+let onUnauthorized = null
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler
+}
+
+api.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem('metgo_user')
+      if (onUnauthorized) {
+        onUnauthorized()
+      } else if (window.self === window.top && !window.location.pathname.includes('/login')) {
+        window.location.assign('/login')
+      }
+    }
+    const msg =
+      err.response?.data?.error ??
+      err.message ??
+      'Error de conexion con la API METGO'
+    return Promise.reject(new Error(msg))
+  }
+)
+
+export async function login(username, password) {
+  const { data } = await api.post('/auth/login', { username, password })
+  return data
+}
+
+export async function fetchMe() {
+  const { data } = await api.get('/auth/me')
+  return data
+}
+
+export async function fetchHealth() {
+  const { data } = await api.get('/health')
+  return data
+}
+
+export async function fetchEstaciones() {
+  const { data } = await api.get('/estaciones')
+  return data
+}
+
+export async function fetchResumenMeteo(estacionId, tipo = 'pronostico') {
+  const { data } = await api.get(`/meteo/${estacionId}`, { params: { tipo } })
+  return data
+}
+
+export async function fetchPronostico(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/pronostico`, {
+    params: { dias },
+  })
+  return data
+}
+
+export async function fetchHistorico(estacionId, dias = 30) {
+  const { data } = await api.get(`/meteo/${estacionId}/historico`, {
+    params: { dias },
+  })
+  return data
+}
+
+export async function fetchAlertas(estacionId) {
+  const { data } = await api.get('/alertas', {
+    params: estacionId ? { estacion: estacionId } : {},
+  })
+  return data
+}
+
+export async function fetchRecomendacionesAgricolas(estacionId) {
+  const { data } = await api.get(`/agricola/${estacionId}`)
+  return data
+}
+
+export async function fetchSistemaResumen() {
+  const { data } = await api.get('/sistema/resumen')
+  return data
+}
+
+export async function fetchModulos(categoria) {
+  const { data } = await api.get('/modulos', {
+    params: categoria ? { categoria } : {},
+  })
+  return data
+}
+
+export async function fetchModulo(id) {
+  const { data } = await api.get(`/modulos/${id}`)
+  return data
+}
+
+export async function fetchConfiguracionEstacion(estacionId) {
+  const { data } = await api.get(`/configuracion/estacion/${estacionId}`)
+  return data
+}
+
+export async function fetchServiciosStreamlit() {
+  const { data } = await api.get('/servicios/streamlit')
+  return data
+}
+
+export async function iniciarServicioStreamlit(moduloId) {
+  const { data } = await api.post(`/servicios/streamlit/${moduloId}/iniciar`)
+  return data
+}
+
+export async function detenerServicioStreamlit(moduloId) {
+  const { data } = await api.post(`/servicios/streamlit/${moduloId}/detener`)
+  return data
+}
+
+export async function detenerTodosStreamlit() {
+  const { data } = await api.post('/servicios/streamlit/detener-todos')
+  return data
+}

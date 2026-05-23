@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-10-06T15:44:07.212302",
+  "sistema": "METGO 3D - Dashboard Completo",
+  "version": "2.0",
+  "estadisticas": {
+    "total_estaciones": 5,
+    "estaciones_activas": 5,
+    "total_datos": 14400,
+    "porcentaje_actividad": 100.0
+  },
+  "estaciones": {
+    "quillota_centro": {
+      "nombre": "Quillota Centro",
+      "latitud": -32.8833,
+      "longitud": -71.2333,
+      "altitud": 127,
+      "tipo": "Principal",
+      "estado": "Activa"
+    },
+    "quillota_norte": {
+      "nombre": "Quillota Norte",
+      "latitud": -32.85,
+      "longitud": -71.2,
+      "altitud": 150,
+      "tipo": "Secundaria",
+      "estado": "Activa"
+    },
+    "quillota_sur": {
+      "nombre": "Quillota Sur",
+      "latitud": -32.9167,
+      "longitud": -71.2667,
+      "altitud": 100,
+      "tipo": "Secundaria",
+      "estado": "Activa"
+    },
+    "quillota_este": {
+      "nombre": "Quillota Este",
+      "latitud": -32.8833,
+      "longitud": -71.2,
+      "altitud": 180,
+      "tipo": "Secundaria",
+      "estado": "Activa"
+    },
+    "quillota_oeste": {
+      "nombre": "Quillota Oeste",
+      "latitud": -32.8833,
+      "longitud": -71.2667,
+      "altitud": 80,
+      "tipo": "Secundaria",
+      "estado": "Activa"
+    }
+  },
+  "recomendaciones": [
+    "Monitorear estaciones regularmente",
+    "Verificar calidad de datos",
+    "Actualizar configuraciones de estaciones",
+    "Revisar alertas meteorológicas",
+    "Optimizar visualizaciones"
+  ]
+}

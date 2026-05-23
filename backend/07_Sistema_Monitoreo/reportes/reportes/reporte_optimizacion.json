@@ -1,0 +1,206 @@
+{
+  "fecha": "2025-10-07T09:36:12.336990",
+  "metricas_antes": {
+    "memoria": {
+      "total_gb": 15.64,
+      "usado_gb": 7.42,
+      "disponible_gb": 8.22,
+      "porcentaje": 47.4
+    },
+    "cpu": {
+      "porcentaje": 29.0,
+      "nucleos": 8,
+      "frecuencia": 2803.0
+    },
+    "disco": {
+      "total_gb": 931.39,
+      "usado_gb": 224.86,
+      "disponible_gb": 706.52,
+      "porcentaje": 24.14
+    },
+    "bases_datos": {
+      "metgo_agricola.db": {
+        "error": "Archivo no encontrado"
+      },
+      "metgo_ml.db": {
+        "error": "Archivo no encontrado"
+      },
+      "metgo_notificaciones.db": {
+        "error": "Archivo no encontrado"
+      }
+    },
+    "archivos_python": {
+      "total_archivos": 2461,
+      "archivos_grandes": [
+        {
+          "archivo": ".\\sistema_unificado_con_conectores.py",
+          "tama\u00f1o_kb": 103.21
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\doctest.py",
+          "tama\u00f1o_kb": 104.25
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\inspect.py",
+          "tama\u00f1o_kb": 124.15
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\pydoc.py",
+          "tama\u00f1o_kb": 110.85
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\tarfile.py",
+          "tama\u00f1o_kb": 109.81
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\turtle.py",
+          "tama\u00f1o_kb": 142.93
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\typing.py",
+          "tama\u00f1o_kb": 116.05
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\_pydecimal.py",
+          "tama\u00f1o_kb": 221.96
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\email\\_header_value_parser.py",
+          "tama\u00f1o_kb": 108.52
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\idlelib\\configdialog.py",
+          "tama\u00f1o_kb": 102.84
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\pydoc_data\\topics.py",
+          "tama\u00f1o_kb": 507.41
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\pip\\_vendor\\idna\\uts46data.py",
+          "tama\u00f1o_kb": 233.68
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\pip\\_vendor\\pkg_resources\\__init__.py",
+          "tama\u00f1o_kb": 121.53
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\pip\\_vendor\\rich\\_emoji_codes.py",
+          "tama\u00f1o_kb": 136.95
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\pkg_resources\\__init__.py",
+          "tama\u00f1o_kb": 123.25
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\setuptools\\config\\_validate_pyproject\\fastjsonschema_validations.py",
+          "tama\u00f1o_kb": 346.37
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\setuptools\\_vendor\\typing_extensions.py",
+          "tama\u00f1o_kb": 131.3
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\setuptools\\_vendor\\backports\\tarfile\\__init__.py",
+          "tama\u00f1o_kb": 105.95
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\setuptools\\_vendor\\inflect\\__init__.py",
+          "tama\u00f1o_kb": 101.36
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\site-packages\\setuptools\\_vendor\\more_itertools\\more.py",
+          "tama\u00f1o_kb": 144.89
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\tkinter\\__init__.py",
+          "tama\u00f1o_kb": 169.11
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\unittest\\mock.py",
+          "tama\u00f1o_kb": 103.83
+        },
+        {
+          "archivo": ".\\.conda\\Lib\\urllib\\request.py",
+          "tama\u00f1o_kb": 101.09
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\typing_extensions.py",
+          "tama\u00f1o_kb": 108.53
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\chardet\\langbulgarianmodel.py",
+          "tama\u00f1o_kb": 102.11
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\chardet\\langrussianmodel.py",
+          "tama\u00f1o_kb": 125.03
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\chardet\\langthaimodel.py",
+          "tama\u00f1o_kb": 100.37
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\idna\\uts46data.py",
+          "tama\u00f1o_kb": 201.7
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\pkg_resources\\__init__.py",
+          "tama\u00f1o_kb": 106.8
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\pyparsing\\core.py",
+          "tama\u00f1o_kb": 219.18
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pip\\_vendor\\rich\\_emoji_codes.py",
+          "tama\u00f1o_kb": 136.95
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pkg_resources\\__init__.py",
+          "tama\u00f1o_kb": 106.02
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pkg_resources\\_vendor\\more_itertools\\more.py",
+          "tama\u00f1o_kb": 129.46
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\pkg_resources\\_vendor\\pyparsing\\core.py",
+          "tama\u00f1o_kb": 208.31
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\setuptools\\config\\_validate_pyproject\\fastjsonschema_validations.py",
+          "tama\u00f1o_kb": 263.57
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\setuptools\\_vendor\\more_itertools\\more.py",
+          "tama\u00f1o_kb": 115.19
+        },
+        {
+          "archivo": ".\\metgo_env\\Lib\\site-packages\\setuptools\\_vendor\\pyparsing\\core.py",
+          "tama\u00f1o_kb": 208.31
+        }
+      ],
+      "tama\u00f1o_total_kb": 32124.670000000006
+    },
+    "cache_actual": 0
+  },
+  "optimizaciones_aplicadas": [
+    "Bases de datos optimizadas",
+    "Cache de datos optimizado",
+    "Consultas SQL optimizadas",
+    "Modelos ML optimizados",
+    "Visualizaciones optimizadas",
+    "Procesamiento paralelo implementado"
+  ],
+  "configuracion_optimizacion": {
+    "cache_size": 1000,
+    "max_workers": 4,
+    "batch_size": 1000,
+    "memory_limit_mb": 1024,
+    "optimize_queries": true,
+    "use_parallel_processing": true,
+    "enable_caching": true,
+    "optimize_visualizations": true
+  }
+}

@@ -1,0 +1,292 @@
+{
+  "fecha": "2025-10-07T10:57:31.826845",
+  "tiempo_total_segundos": 72.39345,
+  "resumen": {
+    "total_tests": 34,
+    "exitosos": 34,
+    "fallidos": 0,
+    "porcentaje_exito": 100.0
+  },
+  "fases": {
+    "Sistema Base": {
+      "fase": "Sistema Base",
+      "tests": [
+        {
+          "nombre": "Verificar Python",
+          "exito": true,
+          "mensaje": "Python 3.11.9 - OK",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "Verificar Dependencias",
+          "exito": true,
+          "mensaje": "Todas las dependencias (8) - OK",
+          "tiempo": 0.8066563606262207
+        },
+        {
+          "nombre": "Verificar Archivos",
+          "exito": true,
+          "mensaje": "Todos los archivos principales (7) - OK",
+          "tiempo": 0.0010037422180175781
+        },
+        {
+          "nombre": "Verificar Directorios",
+          "exito": true,
+          "mensaje": "Todos los directorios (4) - OK",
+          "tiempo": 0.0009970664978027344
+        },
+        {
+          "nombre": "Verificar Permisos",
+          "exito": true,
+          "mensaje": "Permisos de archivos cr\u00edticos - OK",
+          "tiempo": 0.0
+        }
+      ],
+      "exitosos": 5,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845379.4333954,
+      "tiempo_total": 0.808657169342041
+    },
+    "APIs Meteorol\u00f3gicas": {
+      "fase": "APIs Meteorol\u00f3gicas",
+      "tests": [
+        {
+          "nombre": "OpenMeteo API",
+          "exito": true,
+          "mensaje": "OpenMeteo API - OK (Status: 200)",
+          "tiempo": 0.9073467254638672
+        },
+        {
+          "nombre": "Conector APIs",
+          "exito": true,
+          "mensaje": "Conector APIs - OK (Estaci\u00f3n: coordenadas_-32.8833_-71.2667)",
+          "tiempo": 0.9368681907653809
+        },
+        {
+          "nombre": "Datos Meteorol\u00f3gicos",
+          "exito": true,
+          "mensaje": "Datos Meteorol\u00f3gicos - OK (4/4 variables)",
+          "tiempo": 0.9007964134216309
+        },
+        {
+          "nombre": "Validaci\u00f3n Datos",
+          "exito": true,
+          "mensaje": "Validaci\u00f3n Datos - OK (5/5 variables)",
+          "tiempo": 0.0
+        }
+      ],
+      "exitosos": 4,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845380.2420526,
+      "tiempo_total": 2.745011329650879
+    },
+    "Machine Learning": {
+      "fase": "Machine Learning",
+      "tests": [
+        {
+          "nombre": "Sistema ML",
+          "exito": true,
+          "mensaje": "Sistema ML - OK (3/3 m\u00e9todos disponibles)",
+          "tiempo": 0.12616205215454102
+        },
+        {
+          "nombre": "Entrenamiento Modelos",
+          "exito": true,
+          "mensaje": "Entrenamiento Modelos - OK (Modelos: 4)",
+          "tiempo": 4.3346335887908936
+        },
+        {
+          "nombre": "Predicciones ML",
+          "exito": true,
+          "mensaje": "Predicciones ML - OK (Variables: 6)",
+          "tiempo": 22.203675031661987
+        },
+        {
+          "nombre": "Precisi\u00f3n Modelos",
+          "exito": true,
+          "mensaje": "Precisi\u00f3n Modelos - OK (4/4 modelos > 0.85 R\u00b2)",
+          "tiempo": 0.0
+        }
+      ],
+      "exitosos": 4,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845382.987064,
+      "tiempo_total": 26.664470672607422
+    },
+    "Notificaciones": {
+      "fase": "Notificaciones",
+      "tests": [
+        {
+          "nombre": "Sistema Notificaciones",
+          "exito": true,
+          "mensaje": "Sistema Notificaciones - OK (M\u00e9todos disponibles)",
+          "tiempo": 0.012002944946289062
+        },
+        {
+          "nombre": "Configuraci\u00f3n Notificaciones",
+          "exito": true,
+          "mensaje": "Configuraci\u00f3n Notificaciones - OK (3/3 canales)",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "WhatsApp",
+          "exito": true,
+          "mensaje": "WhatsApp - OK (Configurado y activo)",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "Email",
+          "exito": true,
+          "mensaje": "Email - OK (Configurado y activo)",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "SMS",
+          "exito": true,
+          "mensaje": "SMS - OK (Configurado y activo)",
+          "tiempo": 0.0
+        }
+      ],
+      "exitosos": 5,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845409.6515346,
+      "tiempo_total": 0.012002944946289062
+    },
+    "Dashboards": {
+      "fase": "Dashboards",
+      "tests": [
+        {
+          "nombre": "Dashboard Principal",
+          "exito": true,
+          "mensaje": "Dashboard Principal - OK (4/4 funcionalidades)",
+          "tiempo": 0.0009989738464355469
+        },
+        {
+          "nombre": "Dashboard Agr\u00edcola Avanzado",
+          "exito": true,
+          "mensaje": "Dashboard Agr\u00edcola - OK (4/4 funcionalidades)",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "Conectividad Dashboards",
+          "exito": true,
+          "mensaje": "Conectividad Dashboards - OK (Dashboards no ejecut\u00e1ndose, pero archivos disponibles)",
+          "tiempo": 16.365832090377808
+        },
+        {
+          "nombre": "Funcionalidades Dashboards",
+          "exito": true,
+          "mensaje": "Funcionalidades Dashboards - OK (2/2 dashboards)",
+          "tiempo": 0.00191497802734375
+        }
+      ],
+      "exitosos": 4,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845409.6635375,
+      "tiempo_total": 16.368746042251587
+    },
+    "Base de Datos": {
+      "fase": "Base de Datos",
+      "tests": [
+        {
+          "nombre": "Conexi\u00f3n SQLite",
+          "exito": true,
+          "mensaje": "Conexi\u00f3n SQLite - OK",
+          "tiempo": 0.000997781753540039
+        },
+        {
+          "nombre": "Esquemas Base de Datos",
+          "exito": true,
+          "mensaje": "Esquemas BD - OK (Bases de datos se crear\u00e1n autom\u00e1ticamente)",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "Operaciones CRUD",
+          "exito": true,
+          "mensaje": "Operaciones CRUD - OK",
+          "tiempo": 0.0
+        },
+        {
+          "nombre": "Integridad Datos",
+          "exito": true,
+          "mensaje": "Integridad Datos - OK (Restricciones funcionando)",
+          "tiempo": 0.0
+        }
+      ],
+      "exitosos": 4,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845426.0322835,
+      "tiempo_total": 0.000997781753540039
+    },
+    "Rendimiento": {
+      "fase": "Rendimiento",
+      "tests": [
+        {
+          "nombre": "Tiempo de Respuesta APIs",
+          "exito": true,
+          "mensaje": "Tiempo Respuesta APIs - OK (0.92s)",
+          "tiempo": 0.9195566177368164
+        },
+        {
+          "nombre": "Memoria del Sistema",
+          "exito": true,
+          "mensaje": "Memoria Sistema - OK (51.6% usado)",
+          "tiempo": 0.002986907958984375
+        },
+        {
+          "nombre": "Velocidad ML",
+          "exito": true,
+          "mensaje": "Velocidad ML - OK (0.05s)",
+          "tiempo": 0.0524141788482666
+        },
+        {
+          "nombre": "Carga de Datos",
+          "exito": true,
+          "mensaje": "Carga Datos - OK (0.005s para 1000 registros)",
+          "tiempo": 0.0047414302825927734
+        }
+      ],
+      "exitosos": 4,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845426.0332813,
+      "tiempo_total": 0.9796991348266602
+    },
+    "End-to-End": {
+      "fase": "End-to-End",
+      "tests": [
+        {
+          "nombre": "Flujo Completo Datos",
+          "exito": true,
+          "mensaje": "Flujo Completo Datos - OK",
+          "tiempo": 0.9392023086547852
+        },
+        {
+          "nombre": "Flujo Completo ML",
+          "exito": true,
+          "mensaje": "Flujo Completo ML - OK",
+          "tiempo": 22.96773099899292
+        },
+        {
+          "nombre": "Flujo Completo Alertas",
+          "exito": true,
+          "mensaje": "Flujo Completo Alertas - OK",
+          "tiempo": 0.4325263500213623
+        },
+        {
+          "nombre": "Flujo Completo Reportes",
+          "exito": true,
+          "mensaje": "Flujo Completo Reportes - OK",
+          "tiempo": 0.4733593463897705
+        }
+      ],
+      "exitosos": 4,
+      "fallidos": 0,
+      "tiempo_inicio": 1759845427.0129805,
+      "tiempo_total": 24.813865184783936
+    }
+  },
+  "errores": [],
+  "recomendaciones": [
+    "Sistema completamente funcional - Listo para producci\u00f3n"
+  ]
+}

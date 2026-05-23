@@ -1,0 +1,328 @@
+{
+  "timestamp": "2025-10-04T03:45:00Z",
+  "sistema": "METGO 3D - Conectores Especificos",
+  "version": "2.0",
+  "conectores_identificados": 10,
+  "categorias": [
+    "datos_meteorologicos",
+    "bases_datos",
+    "machine_learning",
+    "visualizacion",
+    "sistemas_especializados",
+    "integracion",
+    "apis_servicios",
+    "datos_agricolas",
+    "testing_validacion",
+    "deployment_produccion"
+  ],
+  "conectores_criticos": [
+    "openmeteo",
+    "openweather",
+    "sqlite_principal",
+    "postgresql_produccion",
+    "modelos_principales",
+    "ia_avanzada",
+    "dashboard_principal",
+    "visualizacion_3d",
+    "orquestador_principal",
+    "pipeline_completo",
+    "sistema_unificado",
+    "monitoreo_avanzado",
+    "respaldos_automaticos"
+  ],
+  "estado_conectores": {
+    "sistema_unificado_metgo.py": true,
+    "orquestador_metgo_avanzado.py": true,
+    "pipeline_completo_metgo.py": true,
+    "configuracion_unificada_metgo.py": true,
+    "monitoreo_avanzado_metgo.py": true,
+    "respaldos_automaticos_metgo.py": true,
+    "apis_avanzadas_metgo.py": true,
+    "dashboard_completo_metgo.py": true,
+    "ia_avanzada_metgo.py": true,
+    "sistema_iot_metgo.py": true,
+    "data/": true,
+    "data/satelitales/": true,
+    "data/satelitales/imagenes/": true,
+    "data/satelitales/metadatos/": true,
+    "logs/": true,
+    "reportes/": true
+  },
+  "resumen": {
+    "total_categorias": 10,
+    "conectores_activos": 16,
+    "conectores_totales": 16,
+    "porcentaje_activos": 100.0
+  },
+  "detalles_conectores": {
+    "datos_meteorologicos": {
+      "apis_externas": {
+        "openmeteo": {
+          "url_base": "https://api.open-meteo.com/v1",
+          "endpoints": {
+            "forecast": "/forecast",
+            "historical": "/forecast",
+            "air_quality": "/air-quality"
+          },
+          "configuracion": {
+            "timeout": 30,
+            "max_retries": 3,
+            "rate_limit": 1000,
+            "cache_duration": 3600
+          }
+        },
+        "openweather": {
+          "url_base": "https://api.openweathermap.org/data/2.5",
+          "endpoints": {
+            "current": "/weather",
+            "forecast": "/forecast",
+            "historical": "/onecall/timemachine"
+          },
+          "configuracion": {
+            "timeout": 30,
+            "max_retries": 3,
+            "api_key_required": true
+          }
+        }
+      },
+      "datos_satelitales": {
+        "imagenes_satelitales": {
+          "directorio": "data/satelitales/imagenes/",
+          "formatos": [
+            "tiff",
+            "geotiff",
+            "png",
+            "jpg"
+          ],
+          "procesamiento": "deep_learning_avanzado_metgo.py"
+        },
+        "metadatos_satelitales": {
+          "directorio": "data/satelitales/metadatos/",
+          "formatos": [
+            "json",
+            "xml",
+            "csv"
+          ],
+          "procesamiento": "analisis_avanzado_metgo.py"
+        }
+      },
+      "sensores_iot": {
+        "sistema_iot": {
+          "archivo": "sistema_iot_metgo.py",
+          "protocolo": "MQTT",
+          "sensores": [
+            "temperatura",
+            "humedad",
+            "presion",
+            "viento",
+            "radiacion_solar",
+            "precipitacion",
+            "suelo"
+          ]
+        }
+      }
+    },
+    "bases_datos": {
+      "sqlite_principal": {
+        "archivo": "data/metgo_operativo.db",
+        "tablas": [
+          "datos_meteorologicos",
+          "predicciones_ml",
+          "alertas_agricolas",
+          "indices_agricolas",
+          "estaciones_meteorologicas"
+        ]
+      },
+      "postgresql_produccion": {
+        "host": "localhost",
+        "port": 5432,
+        "database": "metgo_agro_db",
+        "username": "metgo_user",
+        "password": "metgo_secure_2025",
+        "docker_container": "metgo_postgres"
+      },
+      "redis_cache": {
+        "host": "localhost",
+        "port": 6379,
+        "database": 0,
+        "timeout": 30
+      }
+    },
+    "machine_learning": {
+      "modelos_principales": {
+        "archivo": "05_Modelos_ML.ipynb",
+        "algoritmos": [
+          "RandomForestRegressor",
+          "LinearRegression",
+          "SVR",
+          "GradientBoostingRegressor",
+          "KNeighborsRegressor"
+        ]
+      },
+      "ia_avanzada": {
+        "archivo": "ia_avanzada_metgo.py",
+        "modelos": [
+          "LSTM",
+          "Transformer",
+          "AutoML",
+          "Ensemble"
+        ]
+      },
+      "deep_learning": {
+        "archivo": "deep_learning_avanzado_metgo.py",
+        "aplicaciones": [
+          "imagenes_satelitales",
+          "prediccion_tiempo",
+          "analisis_patrones"
+        ]
+      }
+    },
+    "visualizacion": {
+      "dashboards_streamlit": {
+        "dashboard_principal": "dashboard_completo_metgo.py",
+        "dashboard_integrado": "dashboard_integrado_notebooks.py",
+        "dashboard_global": "dashboard_global_metgo.py",
+        "dashboard_unificado": "dashboard_unificado_metgo.py"
+      },
+      "visualizacion_3d": {
+        "archivo": "visualizacion_3d_metgo.py",
+        "herramientas": [
+          "Plotly",
+          "Matplotlib",
+          "Seaborn"
+        ]
+      },
+      "graficos_interactivos": {
+        "plotly": "Gráficos interactivos",
+        "matplotlib": "Gráficos estáticos",
+        "seaborn": "Gráficos estadísticos"
+      }
+    },
+    "sistemas_especializados": {
+      "monitoreo": {
+        "monitoreo_avanzado": "monitoreo_avanzado_metgo.py",
+        "monitoreo_tiempo_real": "monitoreo_tiempo_real.py",
+        "monitoreo_continuo": "monitoreo_continuo.py"
+      },
+      "respaldos": {
+        "respaldos_automaticos": "respaldos_automaticos_metgo.py",
+        "backup_sistema": "backup_sistema.py",
+        "gestion_respaldos": "gestion_respaldos.py"
+      },
+      "optimizacion": {
+        "optimizacion_rendimiento": "optimizacion_rendimiento_metgo.py",
+        "escalabilidad": "escalabilidad_metgo.py",
+        "limpiar_sistema": "limpiar_sistema.py"
+      }
+    },
+    "integracion": {
+      "orquestador_principal": {
+        "archivo": "orquestador_metgo_avanzado.py",
+        "funcion": "Coordinacion de todos los modulos"
+      },
+      "pipeline_completo": {
+        "archivo": "pipeline_completo_metgo.py",
+        "funcion": "Pipeline end-to-end de datos"
+      },
+      "configuracion_unificada": {
+        "archivo": "configuracion_unificada_metgo.py",
+        "funcion": "Gestion centralizada de configuracion"
+      },
+      "sistema_unificado": {
+        "archivo": "sistema_unificado_metgo.py",
+        "funcion": "Sistema principal unificado"
+      }
+    },
+    "apis_servicios": {
+      "apis_avanzadas": {
+        "archivo": "apis_avanzadas_metgo.py",
+        "endpoints": [
+          "/api/weather/current",
+          "/api/weather/forecast",
+          "/api/agricultural/indices",
+          "/api/ml/predictions",
+          "/api/alerts/agricultural"
+        ]
+      },
+      "web_responsive": {
+        "archivo": "web_responsive_metgo.py",
+        "funcion": "Interfaz web responsive"
+      },
+      "app_movil": {
+        "archivo": "app_movil_metgo.py",
+        "funcion": "Aplicacion movil"
+      }
+    },
+    "datos_agricolas": {
+      "indices_agricolas": {
+        "grados_dia": "Calculo de grados-dia",
+        "confort_termico": "Indice de confort termico",
+        "necesidad_riego": "Calculo de necesidad de riego",
+        "riesgo_heladas": "Evaluacion de riesgo de heladas",
+        "riesgo_hongos": "Evaluacion de riesgo de hongos"
+      },
+      "estaciones_quillota": {
+        "coordenadas": {
+          "latitud": -32.8833,
+          "longitud": -71.25,
+          "elevacion": 120
+        },
+        "variables": [
+          "temperatura_max",
+          "temperatura_min",
+          "humedad_relativa",
+          "precipitacion",
+          "velocidad_viento",
+          "direccion_viento",
+          "presion_atmosferica",
+          "radiacion_solar",
+          "nubosidad"
+        ]
+      }
+    },
+    "testing_validacion": {
+      "tests_unitarios": {
+        "directorio": "tests/",
+        "archivos": [
+          "test_ia_avanzada.py",
+          "test_sistema_iot.py",
+          "test_integracion_completa.py",
+          "test_rendimiento.py"
+        ]
+      },
+      "pruebas_finales": {
+        "archivo": "pruebas_finales_metgo.py",
+        "funcion": "Pruebas completas del sistema"
+      },
+      "testing_integracion": {
+        "archivo": "testing_integracion_metgo.py",
+        "funcion": "Tests de integracion entre modulos"
+      }
+    },
+    "deployment_produccion": {
+      "docker": {
+        "dockerfile": "Dockerfile",
+        "docker_compose": "docker-compose.yml",
+        "contenedores": [
+          "metgo_app",
+          "metgo_postgres",
+          "metgo_redis",
+          "metgo_nginx"
+        ]
+      },
+      "ci_cd": {
+        "github_actions": ".github/workflows/",
+        "pipelines": [
+          "ci-cd.yml",
+          "security.yml",
+          "release.yml"
+        ]
+      },
+      "deployment_scripts": {
+        "deploy_linux": "scripts/deploy.sh",
+        "deploy_windows": "scripts/deploy.ps1",
+        "deployment_completo": "deployment_produccion_completo.py"
+      }
+    }
+  }
+}

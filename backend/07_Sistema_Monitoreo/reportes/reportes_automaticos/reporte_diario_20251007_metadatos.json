@@ -1,0 +1,20 @@
+{
+  "nombre_archivo": "reporte_diario_20251007",
+  "fecha_generacion": "2025-10-07T10:57:31.823769",
+  "archivos_generados": {
+    "html": "reportes_automaticos\\reporte_diario_20251007.html",
+    "json": "reportes_automaticos\\reporte_diario_20251007.json",
+    "csv": "",
+    "pdf": "reportes_automaticos\\reporte_diario_20251007.pdf"
+  },
+  "metadatos": {
+    "fecha_generacion": "2025-10-07T10:57:31.819769",
+    "titulo": "Reporte Diario METGO 3D - 07/10/2025",
+    "datos_estaciones": "html",
+    "predicciones_ml": {},
+    "alertas": {},
+    "estadisticas": {},
+    "resumen_ejecutivo": "<p>Error generando resumen ejecutivo</p>"
+  },
+  "estado": "completado"
+}

@@ -1,0 +1,35 @@
+{
+  "openweathermap": {
+    "api_key": "YOUR_OPENWEATHERMAP_API_KEY",
+    "base_url": "https://api.openweathermap.org/data/2.5",
+    "activa": false,
+    "notas": "Requiere registro gratuito en https://openweathermap.org/api"
+  },
+  "accuweather": {
+    "api_key": "YOUR_ACCUWEATHER_API_KEY",
+    "base_url": "https://dataservice.accuweather.com",
+    "activa": false,
+    "notas": "API comercial, requiere suscripción de pago"
+  },
+  "openmeteo": {
+    "api_key": null,
+    "base_url": "https://api.open-meteo.com/v1",
+    "activa": true,
+    "notas": "API gratuita sin registro, datos de alta calidad"
+  },
+  "weatherapi": {
+    "api_key": "YOUR_WEATHERAPI_API_KEY",
+    "base_url": "https://api.weatherapi.com/v1",
+    "activa": false,
+    "notas": "Requiere registro gratuito en https://www.weatherapi.com/"
+  },
+  "configuracion": {
+    "tiempo_espera_entre_requests": 1,
+    "timeout_requests": 30,
+    "max_reintentos": 3,
+    "usar_datos_sinteticos_si_falla": true,
+    "actualizar_automaticamente": true,
+    "intervalo_actualizacion_minutos": 60
+  }
+}
+

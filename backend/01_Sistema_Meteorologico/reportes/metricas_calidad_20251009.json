@@ -1,0 +1,14 @@
+{
+  "metricas": [
+    {
+      "timestamp": "2025-10-09T23:02:20.686449",
+      "total_registros": 100,
+      "registros_validos": 100,
+      "registros_con_errores": 0,
+      "porcentaje_calidad": 100.0,
+      "puntuacion_promedio": 100.0,
+      "total_errores": 0,
+      "bases_disponibles": 2
+    }
+  ]
+}

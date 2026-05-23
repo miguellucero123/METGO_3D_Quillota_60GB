@@ -1,0 +1,23 @@
+{
+  "directorio_backup": "./backups",
+  "retencion_dias": 30,
+  "frecuencia": "diario",
+  "archivos_incluir": [
+    "data/",
+    "logs/",
+    "config/",
+    "*.db",
+    "*.json",
+    "*.py",
+    "requirements.txt",
+    "README.md"
+  ],
+  "excluir": [
+    "__pycache__/",
+    "*.pyc",
+    ".git/",
+    "node_modules/",
+    "venv/",
+    "env/"
+  ]
+}

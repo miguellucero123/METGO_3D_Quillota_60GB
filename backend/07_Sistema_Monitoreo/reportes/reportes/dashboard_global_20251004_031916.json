@@ -1,0 +1,425 @@
+{
+  "timestamp": "2025-10-04T03:19:16.651351",
+  "sistema": "METGO 3D - Dashboard Global",
+  "version": "2.0",
+  "estado_sistema": {
+    "modulos_activos": 22,
+    "modulos_totales": 22,
+    "notebooks_ejecutados": 0,
+    "datos_procesados": 0,
+    "errores": 0,
+    "ultima_sincronizacion": "2025-10-04T03:19:16.649335"
+  },
+  "modulos_sistema": {
+    "notebooks": {
+      "00_sistema_principal": {
+        "nombre": "Sistema Principal MIP Quillota",
+        "archivo": "00_Sistema_Principal_MIP_Quillota.ipynb",
+        "descripcion": "Sistema principal operativo",
+        "categoria": "core",
+        "estado": "activo"
+      },
+      "01_configuracion": {
+        "nombre": "Configuración e Imports",
+        "archivo": "01_Configuracion_e_imports.ipynb",
+        "descripcion": "Configuración y imports del sistema",
+        "categoria": "config",
+        "estado": "activo"
+      },
+      "02_procesamiento": {
+        "nombre": "Carga y Procesamiento de Datos",
+        "archivo": "02_Carga_y_Procesamiento_Datos.ipynb",
+        "descripcion": "Procesamiento de datos meteorológicos",
+        "categoria": "data",
+        "estado": "activo"
+      },
+      "03_analisis": {
+        "nombre": "Análisis Meteorológico",
+        "archivo": "03_Analisis_Meteorologico.ipynb",
+        "descripcion": "Análisis meteorológico avanzado",
+        "categoria": "analysis",
+        "estado": "activo"
+      },
+      "04_visualizaciones": {
+        "nombre": "Visualizaciones",
+        "archivo": "04_Visualizaciones.ipynb",
+        "descripcion": "Visualizaciones y gráficos",
+        "categoria": "visualization",
+        "estado": "activo"
+      },
+      "05_modelos_ml": {
+        "nombre": "Modelos de Machine Learning",
+        "archivo": "05_Modelos_ML.ipynb",
+        "descripcion": "Modelos de ML y predicciones",
+        "categoria": "ml",
+        "estado": "activo"
+      }
+    },
+    "modulos_avanzados": {
+      "ia_avanzada": {
+        "nombre": "IA Avanzada METGO",
+        "archivo": "ia_avanzada_metgo.py",
+        "descripcion": "Modelos de IA avanzada (LSTM, Transformer)",
+        "categoria": "ai",
+        "estado": "activo"
+      },
+      "sistema_iot": {
+        "nombre": "Sistema IoT METGO",
+        "archivo": "sistema_iot_metgo.py",
+        "descripcion": "Sistema IoT con sensores inteligentes",
+        "categoria": "iot",
+        "estado": "activo"
+      },
+      "analisis_avanzado": {
+        "nombre": "Análisis Avanzado METGO",
+        "archivo": "analisis_avanzado_metgo.py",
+        "descripcion": "Análisis avanzado de series temporales",
+        "categoria": "analysis",
+        "estado": "activo"
+      },
+      "visualizacion_3d": {
+        "nombre": "Visualización 3D METGO",
+        "archivo": "visualizacion_3d_metgo.py",
+        "descripcion": "Visualizaciones 3D e inmersivas",
+        "categoria": "visualization",
+        "estado": "activo"
+      },
+      "apis_avanzadas": {
+        "nombre": "APIs Avanzadas METGO",
+        "archivo": "apis_avanzadas_metgo.py",
+        "descripcion": "APIs avanzadas con microservicios",
+        "categoria": "api",
+        "estado": "activo"
+      }
+    },
+    "datos_satelitales": {
+      "imagenes_satelitales": {
+        "nombre": "Imágenes Satelitales",
+        "descripcion": "Procesamiento de imágenes satelitales",
+        "categoria": "satellite",
+        "estado": "activo",
+        "datos": "data/satelitales/imagenes/"
+      },
+      "metadatos_satelitales": {
+        "nombre": "Metadatos Satelitales",
+        "descripcion": "Metadatos de imágenes satelitales",
+        "categoria": "satellite",
+        "estado": "activo",
+        "datos": "data/satelitales/metadatos/"
+      },
+      "analisis_satelital": {
+        "nombre": "Análisis Satelital",
+        "descripcion": "Análisis de datos satelitales",
+        "categoria": "satellite",
+        "estado": "activo",
+        "datos": "data/satelitales/"
+      }
+    },
+    "sistemas_especializados": {
+      "monitoreo_avanzado": {
+        "nombre": "Monitoreo Avanzado",
+        "archivo": "monitoreo_avanzado_metgo.py",
+        "descripcion": "Sistema de monitoreo avanzado",
+        "categoria": "monitoring",
+        "estado": "activo"
+      },
+      "respaldos_automaticos": {
+        "nombre": "Respaldos Automáticos",
+        "archivo": "respaldos_automaticos_metgo.py",
+        "descripcion": "Sistema de respaldos automáticos",
+        "categoria": "backup",
+        "estado": "activo"
+      },
+      "optimizacion_rendimiento": {
+        "nombre": "Optimización de Rendimiento",
+        "archivo": "optimizacion_rendimiento_metgo.py",
+        "descripcion": "Optimización de rendimiento del sistema",
+        "categoria": "optimization",
+        "estado": "activo"
+      },
+      "escalabilidad": {
+        "nombre": "Escalabilidad",
+        "archivo": "escalabilidad_metgo.py",
+        "descripcion": "Sistema de escalabilidad",
+        "categoria": "scalability",
+        "estado": "activo"
+      }
+    },
+    "integracion_completa": {
+      "orquestador_avanzado": {
+        "nombre": "Orquestador Avanzado",
+        "archivo": "orquestador_metgo_avanzado.py",
+        "descripcion": "Orquestador principal del sistema",
+        "categoria": "orchestration",
+        "estado": "activo"
+      },
+      "pipeline_completo": {
+        "nombre": "Pipeline Completo",
+        "archivo": "pipeline_completo_metgo.py",
+        "descripcion": "Pipeline completo de datos",
+        "categoria": "pipeline",
+        "estado": "activo"
+      },
+      "configuracion_unificada": {
+        "nombre": "Configuración Unificada",
+        "archivo": "configuracion_unificada_metgo.py",
+        "descripcion": "Configuración unificada del sistema",
+        "categoria": "configuration",
+        "estado": "activo"
+      },
+      "sistema_unificado": {
+        "nombre": "Sistema Unificado",
+        "archivo": "sistema_unificado_metgo.py",
+        "descripcion": "Sistema unificado principal",
+        "categoria": "unified",
+        "estado": "activo"
+      }
+    }
+  },
+  "estado_modulos": {
+    "notebooks": {
+      "00_sistema_principal": {
+        "nombre": "Sistema Principal MIP Quillota",
+        "descripcion": "Sistema principal operativo",
+        "categoria": "core",
+        "estado": "activo",
+        "archivo": "00_Sistema_Principal_MIP_Quillota.ipynb",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "01_configuracion": {
+        "nombre": "Configuración e Imports",
+        "descripcion": "Configuración y imports del sistema",
+        "categoria": "config",
+        "estado": "activo",
+        "archivo": "01_Configuracion_e_imports.ipynb",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "02_procesamiento": {
+        "nombre": "Carga y Procesamiento de Datos",
+        "descripcion": "Procesamiento de datos meteorológicos",
+        "categoria": "data",
+        "estado": "activo",
+        "archivo": "02_Carga_y_Procesamiento_Datos.ipynb",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "03_analisis": {
+        "nombre": "Análisis Meteorológico",
+        "descripcion": "Análisis meteorológico avanzado",
+        "categoria": "analysis",
+        "estado": "activo",
+        "archivo": "03_Analisis_Meteorologico.ipynb",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "04_visualizaciones": {
+        "nombre": "Visualizaciones",
+        "descripcion": "Visualizaciones y gráficos",
+        "categoria": "visualization",
+        "estado": "activo",
+        "archivo": "04_Visualizaciones.ipynb",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "05_modelos_ml": {
+        "nombre": "Modelos de Machine Learning",
+        "descripcion": "Modelos de ML y predicciones",
+        "categoria": "ml",
+        "estado": "activo",
+        "archivo": "05_Modelos_ML.ipynb",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      }
+    },
+    "modulos_avanzados": {
+      "ia_avanzada": {
+        "nombre": "IA Avanzada METGO",
+        "descripcion": "Modelos de IA avanzada (LSTM, Transformer)",
+        "categoria": "ai",
+        "estado": "activo",
+        "archivo": "ia_avanzada_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "sistema_iot": {
+        "nombre": "Sistema IoT METGO",
+        "descripcion": "Sistema IoT con sensores inteligentes",
+        "categoria": "iot",
+        "estado": "activo",
+        "archivo": "sistema_iot_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "analisis_avanzado": {
+        "nombre": "Análisis Avanzado METGO",
+        "descripcion": "Análisis avanzado de series temporales",
+        "categoria": "analysis",
+        "estado": "activo",
+        "archivo": "analisis_avanzado_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "visualizacion_3d": {
+        "nombre": "Visualización 3D METGO",
+        "descripcion": "Visualizaciones 3D e inmersivas",
+        "categoria": "visualization",
+        "estado": "activo",
+        "archivo": "visualizacion_3d_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "apis_avanzadas": {
+        "nombre": "APIs Avanzadas METGO",
+        "descripcion": "APIs avanzadas con microservicios",
+        "categoria": "api",
+        "estado": "activo",
+        "archivo": "apis_avanzadas_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      }
+    },
+    "datos_satelitales": {
+      "imagenes_satelitales": {
+        "nombre": "Imágenes Satelitales",
+        "descripcion": "Procesamiento de imágenes satelitales",
+        "categoria": "satellite",
+        "estado": "activo",
+        "archivo": "",
+        "existe": false,
+        "datos": "data/satelitales/imagenes/",
+        "datos_existen": true
+      },
+      "metadatos_satelitales": {
+        "nombre": "Metadatos Satelitales",
+        "descripcion": "Metadatos de imágenes satelitales",
+        "categoria": "satellite",
+        "estado": "activo",
+        "archivo": "",
+        "existe": false,
+        "datos": "data/satelitales/metadatos/",
+        "datos_existen": true
+      },
+      "analisis_satelital": {
+        "nombre": "Análisis Satelital",
+        "descripcion": "Análisis de datos satelitales",
+        "categoria": "satellite",
+        "estado": "activo",
+        "archivo": "",
+        "existe": false,
+        "datos": "data/satelitales/",
+        "datos_existen": true
+      }
+    },
+    "sistemas_especializados": {
+      "monitoreo_avanzado": {
+        "nombre": "Monitoreo Avanzado",
+        "descripcion": "Sistema de monitoreo avanzado",
+        "categoria": "monitoring",
+        "estado": "activo",
+        "archivo": "monitoreo_avanzado_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "respaldos_automaticos": {
+        "nombre": "Respaldos Automáticos",
+        "descripcion": "Sistema de respaldos automáticos",
+        "categoria": "backup",
+        "estado": "activo",
+        "archivo": "respaldos_automaticos_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "optimizacion_rendimiento": {
+        "nombre": "Optimización de Rendimiento",
+        "descripcion": "Optimización de rendimiento del sistema",
+        "categoria": "optimization",
+        "estado": "activo",
+        "archivo": "optimizacion_rendimiento_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "escalabilidad": {
+        "nombre": "Escalabilidad",
+        "descripcion": "Sistema de escalabilidad",
+        "categoria": "scalability",
+        "estado": "activo",
+        "archivo": "escalabilidad_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      }
+    },
+    "integracion_completa": {
+      "orquestador_avanzado": {
+        "nombre": "Orquestador Avanzado",
+        "descripcion": "Orquestador principal del sistema",
+        "categoria": "orchestration",
+        "estado": "activo",
+        "archivo": "orquestador_metgo_avanzado.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "pipeline_completo": {
+        "nombre": "Pipeline Completo",
+        "descripcion": "Pipeline completo de datos",
+        "categoria": "pipeline",
+        "estado": "activo",
+        "archivo": "pipeline_completo_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "configuracion_unificada": {
+        "nombre": "Configuración Unificada",
+        "descripcion": "Configuración unificada del sistema",
+        "categoria": "configuration",
+        "estado": "activo",
+        "archivo": "configuracion_unificada_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      },
+      "sistema_unificado": {
+        "nombre": "Sistema Unificado",
+        "descripcion": "Sistema unificado principal",
+        "categoria": "unified",
+        "estado": "activo",
+        "archivo": "sistema_unificado_metgo.py",
+        "existe": true,
+        "datos": "",
+        "datos_existen": false
+      }
+    }
+  },
+  "resumen": {
+    "total_modulos": 22,
+    "modulos_activos": 22,
+    "porcentaje_activo": 100.0,
+    "categorias": 5,
+    "ultima_sincronizacion": "2025-10-04T03:19:16.649335"
+  },
+  "recomendaciones": [
+    "Verificar módulos faltantes",
+    "Ejecutar módulos críticos regularmente",
+    "Monitorear datos satelitales",
+    "Revisar errores de ejecución",
+    "Actualizar configuraciones de módulos"
+  ]
+}

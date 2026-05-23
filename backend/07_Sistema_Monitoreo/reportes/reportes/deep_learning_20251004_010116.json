@@ -1,0 +1,141 @@
+{
+  "timestamp": "2025-10-04T01:01:16.899769",
+  "sistema": "METGO 3D - Deep Learning Avanzado",
+  "version": "2.0",
+  "resultados": {
+    "exitoso": true,
+    "duracion": 267.23689007759094,
+    "modelos_entrenados": 4,
+    "modelos_fallidos": 0,
+    "modelos_con_error": 0,
+    "resultados": {
+      "LSTM": "exitoso",
+      "Transformer": "exitoso",
+      "CNN_1D": "exitoso",
+      "Ensemble": "exitoso"
+    },
+    "modelos_disponibles": [
+      "LSTM",
+      "Transformer",
+      "CNN_1D",
+      "Ensemble"
+    ],
+    "configuracion": {
+      "habilitar_tensorflow": true,
+      "habilitar_pytorch": false,
+      "habilitar_sklearn": true,
+      "epochs_default": 100,
+      "batch_size_default": 32,
+      "learning_rate_default": 0.001,
+      "validation_split": 0.2
+    }
+  },
+  "modelos": {
+    "LSTM_Avanzado": {
+      "tipo": "LSTM",
+      "entrenado": true,
+      "metricas": {
+        "train_loss": 0.9993895292282104,
+        "test_loss": 0.9540876746177673,
+        "train_mae": 0.7965326309204102,
+        "test_mae": 0.7839597463607788
+      },
+      "hiperparametros": {
+        "epochs": 16,
+        "batch_size": 32,
+        "learning_rate": 0.001,
+        "optimizer": "Adam"
+      }
+    },
+    "Transformer_Avanzado": {
+      "tipo": "Transformer",
+      "entrenado": true,
+      "metricas": {
+        "train_loss": 1.0000033378601074,
+        "test_loss": 0.9539299011230469,
+        "train_mae": 0.7968168258666992,
+        "test_mae": 0.7832137942314148
+      },
+      "hiperparametros": {
+        "epochs": 16,
+        "batch_size": 32,
+        "learning_rate": 0.001,
+        "optimizer": "Adam"
+      }
+    },
+    "CNN_1D_Avanzado": {
+      "tipo": "CNN_1D",
+      "entrenado": true,
+      "metricas": {
+        "train_loss": 0.9833571910858154,
+        "test_loss": 0.9608393907546997,
+        "train_mae": 0.7905285954475403,
+        "test_mae": 0.7847815155982971
+      },
+      "hiperparametros": {
+        "epochs": 12,
+        "batch_size": 32,
+        "learning_rate": 0.001,
+        "optimizer": "Adam"
+      }
+    },
+    "Ensemble_Avanzado": {
+      "tipo": "Ensemble",
+      "entrenado": true,
+      "metricas": {
+        "train_mse": 0.002970364357774294,
+        "test_mse": 0.004961456998261013,
+        "train_r2": 0.9970296356422257,
+        "test_r2": 0.9947865138485309
+      },
+      "hiperparametros": {
+        "MLP_1": {
+          "hidden_layers": [
+            100,
+            50
+          ],
+          "activation": "relu",
+          "solver": "adam"
+        },
+        "MLP_2": {
+          "hidden_layers": [
+            200,
+            100,
+            50
+          ],
+          "activation": "tanh",
+          "solver": "adam"
+        },
+        "MLP_3": {
+          "hidden_layers": [
+            150,
+            75
+          ],
+          "activation": "relu",
+          "solver": "lbfgs"
+        }
+      }
+    }
+  },
+  "configuracion": {
+    "habilitar_tensorflow": true,
+    "habilitar_pytorch": false,
+    "habilitar_sklearn": true,
+    "epochs_default": 100,
+    "batch_size_default": 32,
+    "learning_rate_default": 0.001,
+    "validation_split": 0.2
+  },
+  "recomendaciones": [
+    "Implementar transfer learning con modelos pre-entrenados",
+    "Agregar más datos de entrenamiento reales",
+    "Implementar early stopping y regularization",
+    "Optimizar hiperparámetros con GridSearch o RandomSearch",
+    "Implementar cross-validation para mejor evaluación",
+    "Agregar modelos de ensemble más sofisticados",
+    "Implementar modelos de attention mechanism",
+    "Agregar soporte para PyTorch",
+    "Implementar modelos de GAN para generación de datos",
+    "Agregar visualización de arquitecturas de modelos"
+  ]
+}

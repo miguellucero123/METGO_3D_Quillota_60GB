@@ -1,0 +1,273 @@
+{
+  "fecha_generacion": "2025-10-07T23:04:06.906772",
+  "estadisticas_generales": {
+    "total_registros": 10956,
+    "total_estaciones": 6,
+    "fecha_inicio": "2020-10-08 23:03:39.132346",
+    "fecha_fin": "2025-10-07 23:03:39.132346"
+  },
+  "estadisticas_por_estacion": [
+    {
+      "estacion": "colliguay",
+      "registros": 1826,
+      "temp_promedio": 11.468510405257394,
+      "prec_promedio": 0.7972617743702081,
+      "humedad_promedio": 82.84430449069004
+    },
+    {
+      "estacion": "hijuelas",
+      "registros": 1826,
+      "temp_promedio": 13.077053669222344,
+      "prec_promedio": 0.6985761226725081,
+      "humedad_promedio": 80.97957283680176
+    },
+    {
+      "estacion": "la_cruz",
+      "registros": 1826,
+      "temp_promedio": 13.411007667031763,
+      "prec_promedio": 0.6929353778751369,
+      "humedad_promedio": 80.07924424972619
+    },
+    {
+      "estacion": "nogueira",
+      "registros": 1826,
+      "temp_promedio": 13.218838992332968,
+      "prec_promedio": 0.7550383351588171,
+      "humedad_promedio": 80.37836801752464
+    },
+    {
+      "estacion": "quillota_centro",
+      "registros": 1826,
+      "temp_promedio": 15.978915662650602,
+      "prec_promedio": 0.786144578313253,
+      "humedad_promedio": 76.21286966046003
+    },
+    {
+      "estacion": "san_isidro",
+      "registros": 1826,
+      "temp_promedio": 17.738663745892662,
+      "prec_promedio": 0.6443044906900328,
+      "humedad_promedio": 72.88663745892661
+    }
+  ],
+  "eventos_extremos_recientes": [
+    {
+      "tipo_evento": "precipitacion_extremo_bajo",
+      "frecuencia": 1886,
+      "desviacion_promedio": 0.2984544008483563
+    },
+    {
+      "tipo_evento": "temperatura_promedio_extremo_alto",
+      "frecuencia": 256,
+      "desviacion_promedio": 1.7121171875
+    },
+    {
+      "tipo_evento": "temperatura_min_extremo_alto",
+      "frecuencia": 245,
+      "desviacion_promedio": 1.7352326530612245
+    },
+    {
+      "tipo_evento": "indice_frio_extremo_alto",
+      "frecuencia": 234,
+      "desviacion_promedio": 1.738017094017094
+    },
+    {
+      "tipo_evento": "indice_calor_extremo_alto",
+      "frecuencia": 233,
+      "desviacion_promedio": 1.7444721030042918
+    },
+    {
+      "tipo_evento": "humedad_relativa_extremo_alto",
+      "frecuencia": 212,
+      "desviacion_promedio": 1.3365943396226416
+    },
+    {
+      "tipo_evento": "temperatura_max_extremo_alto",
+      "frecuencia": 208,
+      "desviacion_promedio": 1.8210000000000002
+    },
+    {
+      "tipo_evento": "punto_rocio_extremo_alto",
+      "frecuencia": 205,
+      "desviacion_promedio": 1.8518146341463415
+    },
+    {
+      "tipo_evento": "nubosidad_extremo_alto",
+      "frecuencia": 173,
+      "desviacion_promedio": 1.4829653179190752
+    },
+    {
+      "tipo_evento": "humedad_relativa_extremo_bajo",
+      "frecuencia": 166,
+      "desviacion_promedio": 2.1546325301204816
+    }
+  ],
+  "tendencias_significativas": [
+    {
+      "estacion_meteorologica": "la_cruz",
+      "variable": "precipitacion",
+      "tendencia_anual": 0.8854,
+      "cambio_total": 0.936,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "quillota_centro",
+      "variable": "humedad_relativa",
+      "tendencia_anual": -0.7934,
+      "cambio_total": -13.823,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "san_isidro",
+      "variable": "precipitacion",
+      "tendencia_anual": 0.7842,
+      "cambio_total": 0.755,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "hijuelas",
+      "variable": "humedad_relativa",
+      "tendencia_anual": -0.7748,
+      "cambio_total": -12.577,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "nogueira",
+      "variable": "humedad_relativa",
+      "tendencia_anual": -0.7697,
+      "cambio_total": -13.919,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "quillota_centro",
+      "variable": "temperatura_promedio",
+      "tendencia_anual": 0.7522,
+      "cambio_total": 7.931,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "colliguay",
+      "variable": "temperatura_promedio",
+      "tendencia_anual": 0.75,
+      "cambio_total": 7.928,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "colliguay",
+      "variable": "humedad_relativa",
+      "tendencia_anual": -0.7473,
+      "cambio_total": -13.592,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "nogueira",
+      "variable": "temperatura_promedio",
+      "tendencia_anual": 0.7457,
+      "cambio_total": 8.059,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "la_cruz",
+      "variable": "humedad_relativa",
+      "tendencia_anual": -0.7405,
+      "cambio_total": -12.666,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "hijuelas",
+      "variable": "temperatura_promedio",
+      "tendencia_anual": 0.7401,
+      "cambio_total": 7.899,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "san_isidro",
+      "variable": "temperatura_promedio",
+      "tendencia_anual": 0.7395,
+      "cambio_total": 7.784,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "san_isidro",
+      "variable": "humedad_relativa",
+      "tendencia_anual": -0.7371,
+      "cambio_total": -14.404,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "la_cruz",
+      "variable": "temperatura_promedio",
+      "tendencia_anual": 0.728,
+      "cambio_total": 7.903,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "hijuelas",
+      "variable": "precipitacion",
+      "tendencia_anual": 0.5903,
+      "cambio_total": 0.478,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "colliguay",
+      "variable": "precipitacion",
+      "tendencia_anual": 0.5756,
+      "cambio_total": 0.307,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "nogueira",
+      "variable": "precipitacion",
+      "tendencia_anual": 0.5589,
+      "cambio_total": 0.289,
+      "significancia": 0.8
+    },
+    {
+      "estacion_meteorologica": "quillota_centro",
+      "variable": "precipitacion",
+      "tendencia_anual": 0.5004,
+      "cambio_total": 0.876,
+      "significancia": 0.8
+    }
+  ],
+  "calidad_datos": [
+    {
+      "estacion": "san_isidro",
+      "completitud_promedio": 100.0,
+      "variables_excelentes": 15
+    },
+    {
+      "estacion": "quillota_centro",
+      "completitud_promedio": 100.0,
+      "variables_excelentes": 15
+    },
+    {
+      "estacion": "nogueira",
+      "completitud_promedio": 100.0,
+      "variables_excelentes": 15
+    },
+    {
+      "estacion": "la_cruz",
+      "completitud_promedio": 100.0,
+      "variables_excelentes": 15
+    },
+    {
+      "estacion": "hijuelas",
+      "completitud_promedio": 100.0,
+      "variables_excelentes": 15
+    },
+    {
+      "estacion": "colliguay",
+      "completitud_promedio": 100.0,
+      "variables_excelentes": 15
+    }
+  ],
+  "resumen_ejecutivo": {
+    "periodo_analizado": "2020-10-08 23:03:39.132346 a 2025-10-07 23:03:39.132346",
+    "total_registros": 10956,
+    "total_estaciones": 6,
+    "completitud_promedio": 100.0,
+    "eventos_extremos_a\u00f1o": 10,
+    "tendencias_detectadas": 18
+  }
+}

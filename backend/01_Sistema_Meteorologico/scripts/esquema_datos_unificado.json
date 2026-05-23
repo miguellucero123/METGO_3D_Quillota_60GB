@@ -1,0 +1,123 @@
+{
+  "configuracion": {
+    "version": "1.0.0",
+    "fecha_creacion": "2025-01-09",
+    "ubicacion_default": "Quillota",
+    "coordenadas_default": {
+      "latitud": -32.8833,
+      "longitud": -71.25,
+      "elevacion": 120.0
+    },
+    "campos_requeridos": [
+      "timestamp",
+      "temperatura_promedio",
+      "humedad_relativa"
+    ],
+    "campos_opcionales": [
+      "temperatura_maxima",
+      "temperatura_minima",
+      "precipitacion_diaria",
+      "viento_velocidad",
+      "presion_atmosferica",
+      "cobertura_nubosa"
+    ]
+  },
+  "rangos_validos": {
+    "temperatura_maxima": [
+      -50,
+      50
+    ],
+    "temperatura_minima": [
+      -50,
+      50
+    ],
+    "temperatura_promedio": [
+      -50,
+      50
+    ],
+    "temperatura_sensacion_termica": [
+      -50,
+      50
+    ],
+    "precipitacion_diaria": [
+      0,
+      500
+    ],
+    "precipitacion_horaria": [
+      0,
+      100
+    ],
+    "precipitacion_acumulada": [
+      0,
+      10000
+    ],
+    "humedad_relativa": [
+      0,
+      100
+    ],
+    "punto_rocio": [
+      -50,
+      50
+    ],
+    "presion_atmosferica": [
+      850,
+      1100
+    ],
+    "viento_velocidad": [
+      0,
+      200
+    ],
+    "viento_rafagas_maximas": [
+      0,
+      300
+    ],
+    "cobertura_nubosa": [
+      0,
+      100
+    ],
+    "visibilidad": [
+      0,
+      50
+    ],
+    "indice_uv": [
+      0,
+      15
+    ],
+    "probabilidad_lluvia": [
+      0,
+      100
+    ]
+  },
+  "direcciones_viento": [
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW"
+  ],
+  "fuentes_datos": [
+    "openmeteo",
+    "openweathermap",
+    "accuweather",
+    "weatherapi",
+    "sensor_local",
+    "simulado",
+    "manual"
+  ],
+  "calidades_datos": [
+    "alta",
+    "media",
+    "baja"
+  ]
+}

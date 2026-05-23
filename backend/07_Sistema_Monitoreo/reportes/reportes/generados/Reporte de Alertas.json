@@ -1,0 +1,1319 @@
+{
+  "metadata": {
+    "nombre": "Reporte de Alertas",
+    "tipo_datos": "alertas",
+    "timestamp": "2025-10-04T01:14:00.610746",
+    "version": "2.0",
+    "generado_por": "METGO 3D - Sistema de Reportes Automáticos"
+  },
+  "datos": {
+    "alertas": [
+      {
+        "id": "alerta_1",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-27T01:14:00.603404",
+        "coordenadas": {
+          "lat": -32.99448801180469,
+          "lon": -71.20140978153105
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_2",
+        "tipo": "lluvia_intensa",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-10-01T01:14:00.603404",
+        "coordenadas": {
+          "lat": -32.844042024959755,
+          "lon": -71.32621846669305
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_3",
+        "tipo": "viento_fuerte",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-07T01:14:00.603404",
+        "coordenadas": {
+          "lat": -32.94043801657541,
+          "lon": -71.32570828377472
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_4",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-08T01:14:00.604401",
+        "coordenadas": {
+          "lat": -32.98458311203344,
+          "lon": -71.20187526674047
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_5",
+        "tipo": "viento_fuerte",
+        "severidad": "alta",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-10T01:14:00.604401",
+        "coordenadas": {
+          "lat": -32.871078083477734,
+          "lon": -71.28484356620925
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_6",
+        "tipo": "sequia",
+        "severidad": "critica",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-07T01:14:00.604401",
+        "coordenadas": {
+          "lat": -33.08597196157301,
+          "lon": -71.12135763884382
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_7",
+        "tipo": "sequia",
+        "severidad": "critica",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-20T01:14:00.604401",
+        "coordenadas": {
+          "lat": -32.788415714228094,
+          "lon": -71.0752149413961
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_8",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-27T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.927974147097316,
+          "lon": -71.08087583671448
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_9",
+        "tipo": "viento_fuerte",
+        "severidad": "media",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-17T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.86143616839461,
+          "lon": -71.14512389610513
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_10",
+        "tipo": "helada",
+        "severidad": "media",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-19T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.85695139597698,
+          "lon": -71.0691228883986
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_11",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-22T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.85089160306052,
+          "lon": -71.27180822804164
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_12",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-23T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.819669489165484,
+          "lon": -71.32397206685799
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_13",
+        "tipo": "lluvia_intensa",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-28T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.81707154863809,
+          "lon": -71.20918778374129
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_14",
+        "tipo": "sequia",
+        "severidad": "baja",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-10-02T01:14:00.604727",
+        "coordenadas": {
+          "lat": -33.040715528694406,
+          "lon": -71.16950470567751
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_15",
+        "tipo": "lluvia_intensa",
+        "severidad": "baja",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-10-04T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.976676284091205,
+          "lon": -71.1548791812346
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_16",
+        "tipo": "helada",
+        "severidad": "alta",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-25T01:14:00.604727",
+        "coordenadas": {
+          "lat": -33.021371702427224,
+          "lon": -71.26138062915267
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_17",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-05T01:14:00.604727",
+        "coordenadas": {
+          "lat": -32.853534955149165,
+          "lon": -71.33611157705876
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_18",
+        "tipo": "calor_extremo",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-28T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.96414936028932,
+          "lon": -71.28347570435845
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_19",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-14T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.85758831299437,
+          "lon": -71.20184871041369
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_20",
+        "tipo": "sequia",
+        "severidad": "alta",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-10T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.95350530938774,
+          "lon": -71.26606621465977
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_21",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-26T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.9703304954561,
+          "lon": -71.28396432196315
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_22",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-25T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.83800636734665,
+          "lon": -71.24990609083511
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_23",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-09T01:14:00.605752",
+        "coordenadas": {
+          "lat": -33.075177121529904,
+          "lon": -71.23595138754492
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_24",
+        "tipo": "lluvia_intensa",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-10-03T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.9274766023226,
+          "lon": -71.24171650851812
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_25",
+        "tipo": "lluvia_intensa",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-14T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.84931790358134,
+          "lon": -71.23403801499445
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_26",
+        "tipo": "lluvia_intensa",
+        "severidad": "critica",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-18T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.96348278433497,
+          "lon": -71.09489842810673
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_27",
+        "tipo": "helada",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-08T01:14:00.605752",
+        "coordenadas": {
+          "lat": -32.71263950463215,
+          "lon": -71.14594105843646
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_28",
+        "tipo": "lluvia_intensa",
+        "severidad": "alta",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-15T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.98953037137261,
+          "lon": -71.18594075693647
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_29",
+        "tipo": "helada",
+        "severidad": "alta",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-10T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.918974502576816,
+          "lon": -71.1776878201466
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_30",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-10-03T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.78325143922379,
+          "lon": -71.21805791377408
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_31",
+        "tipo": "helada",
+        "severidad": "alta",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-19T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.87242882003726,
+          "lon": -71.22272363529723
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_32",
+        "tipo": "viento_fuerte",
+        "severidad": "alta",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-27T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.817995168895024,
+          "lon": -71.12303125345373
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_33",
+        "tipo": "helada",
+        "severidad": "alta",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-06T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.98183817971257,
+          "lon": -71.34269404090685
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_34",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-10-04T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.883785694465104,
+          "lon": -71.27163233062659
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_35",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-19T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.907838811600286,
+          "lon": -71.30867361643575
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_36",
+        "tipo": "lluvia_intensa",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-08T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.88199981081221,
+          "lon": -71.08794659228427
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_37",
+        "tipo": "calor_extremo",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-19T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.99038924980611,
+          "lon": -71.18505275847568
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_38",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-07T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.835976237542646,
+          "lon": -71.24058289126569
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_39",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-14T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.94423733758844,
+          "lon": -71.314652109696
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_40",
+        "tipo": "helada",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-10-02T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.971685743620114,
+          "lon": -71.21792748940544
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_41",
+        "tipo": "lluvia_intensa",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-09T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.79605528423395,
+          "lon": -71.12668014559023
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_42",
+        "tipo": "sequia",
+        "severidad": "alta",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-10-02T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.8176202668836,
+          "lon": -71.3768900819374
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_43",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-10-04T01:14:00.606740",
+        "coordenadas": {
+          "lat": -32.89983096145536,
+          "lon": -71.30201751753324
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_44",
+        "tipo": "lluvia_intensa",
+        "severidad": "alta",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-10-03T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.86679772018906,
+          "lon": -71.31889289178294
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_45",
+        "tipo": "helada",
+        "severidad": "media",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-13T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.924753180538985,
+          "lon": -71.22528012874592
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_46",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-27T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.954830370926,
+          "lon": -71.16534022510653
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_47",
+        "tipo": "calor_extremo",
+        "severidad": "critica",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-05T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.668905591067464,
+          "lon": -71.1699080977682
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_48",
+        "tipo": "viento_fuerte",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-18T01:14:00.607767",
+        "coordenadas": {
+          "lat": -33.01409142996694,
+          "lon": -71.43235995495773
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_49",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-05T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.83280127210195,
+          "lon": -71.14672448058299
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_50",
+        "tipo": "sequia",
+        "severidad": "media",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-20T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.851523296756284,
+          "lon": -71.39452273071745
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_51",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-28T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.96206019103589,
+          "lon": -71.04093755878547
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_52",
+        "tipo": "viento_fuerte",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-30T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.917238629317815,
+          "lon": -71.3148270936522
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_53",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-19T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.88524421408995,
+          "lon": -71.3265591656561
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_54",
+        "tipo": "helada",
+        "severidad": "media",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-12T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.91573954475674,
+          "lon": -71.18083909993695
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_55",
+        "tipo": "lluvia_intensa",
+        "severidad": "media",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-11T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.98145086510479,
+          "lon": -71.18708965257368
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_56",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-15T01:14:00.607767",
+        "coordenadas": {
+          "lat": -33.07303769824886,
+          "lon": -71.10524592383226
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_57",
+        "tipo": "calor_extremo",
+        "severidad": "alta",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-30T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.769598258136654,
+          "lon": -71.18861098552259
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_58",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-23T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.855200813226496,
+          "lon": -71.29556995198206
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_59",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-09T01:14:00.607767",
+        "coordenadas": {
+          "lat": -33.007123085114834,
+          "lon": -71.31576513276511
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_60",
+        "tipo": "sequia",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-22T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.838435132594796,
+          "lon": -71.24117316836679
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_61",
+        "tipo": "helada",
+        "severidad": "critica",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-18T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.94482452157695,
+          "lon": -71.19502005328492
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_62",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-12T01:14:00.607767",
+        "coordenadas": {
+          "lat": -32.92409153527713,
+          "lon": -71.20713769440275
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_63",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-13T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.94226528566872,
+          "lon": -71.26313012231637
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_64",
+        "tipo": "lluvia_intensa",
+        "severidad": "critica",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-28T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.87294319155576,
+          "lon": -71.2065363985837
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_65",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-23T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.76280770782214,
+          "lon": -71.35296604692135
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_66",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-09T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.875719544180626,
+          "lon": -71.3010161711512
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_67",
+        "tipo": "calor_extremo",
+        "severidad": "alta",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-17T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.87429274130183,
+          "lon": -71.22502695641995
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_68",
+        "tipo": "sequia",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-08T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.93040383056183,
+          "lon": -71.21009500626424
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_69",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-18T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.949722744330444,
+          "lon": -71.09728886337518
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_70",
+        "tipo": "calor_extremo",
+        "severidad": "critica",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-25T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.91353242420763,
+          "lon": -71.23375628289902
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_71",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-26T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.799282884072156,
+          "lon": -71.1199657974931
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_72",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-11T01:14:00.608746",
+        "coordenadas": {
+          "lat": -33.139734198146066,
+          "lon": -71.11902741167061
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_73",
+        "tipo": "calor_extremo",
+        "severidad": "critica",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-06T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.91004006378834,
+          "lon": -71.243684111743
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_74",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-10-02T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.93049197412901,
+          "lon": -71.21157935221069
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_75",
+        "tipo": "helada",
+        "severidad": "media",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-14T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.97302363313613,
+          "lon": -71.08071700427492
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_76",
+        "tipo": "lluvia_intensa",
+        "severidad": "critica",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-19T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.89439319356295,
+          "lon": -71.13566908735189
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_77",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-27T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.7800399595982,
+          "lon": -71.4143131324996
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_78",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-13T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.710525237256576,
+          "lon": -71.38256013644157
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_79",
+        "tipo": "lluvia_intensa",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-16T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.80910369834705,
+          "lon": -71.08563413745703
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_80",
+        "tipo": "sequia",
+        "severidad": "alta",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-30T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.89066111157919,
+          "lon": -71.26152211889872
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_81",
+        "tipo": "helada",
+        "severidad": "alta",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-09T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.849207780144106,
+          "lon": -71.24194135068316
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_82",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-26T01:14:00.608746",
+        "coordenadas": {
+          "lat": -33.04274276587944,
+          "lon": -71.29323750229538
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_83",
+        "tipo": "helada",
+        "severidad": "baja",
+        "mensaje": "Alerta calor_extremo detectada",
+        "timestamp": "2025-09-29T01:14:00.608746",
+        "coordenadas": {
+          "lat": -32.86665704641968,
+          "lon": -71.15254443683946
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_84",
+        "tipo": "sequia",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-18T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.95726187694294,
+          "lon": -71.29822472783337
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_85",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-05T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.849705125714586,
+          "lon": -71.18385907127502
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_86",
+        "tipo": "sequia",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-13T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.87181385317861,
+          "lon": -71.0781737145267
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para viento_fuerte"
+      },
+      {
+        "id": "alerta_87",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-10T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.939625861146034,
+          "lon": -70.97937422087891
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_88",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-24T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.926665032677185,
+          "lon": -71.26753086386243
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_89",
+        "tipo": "sequia",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-16T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.91024068344446,
+          "lon": -71.1615457744204
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_90",
+        "tipo": "viento_fuerte",
+        "severidad": "media",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-16T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.786437151537264,
+          "lon": -71.16872672112767
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_91",
+        "tipo": "sequia",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-15T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.84489345510607,
+          "lon": -71.23656947480941
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_92",
+        "tipo": "calor_extremo",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-24T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.89559113065514,
+          "lon": -71.24083036547552
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_93",
+        "tipo": "viento_fuerte",
+        "severidad": "critica",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-11T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.78358847781022,
+          "lon": -71.25683187419072
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_94",
+        "tipo": "sequia",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-16T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.96484990732885,
+          "lon": -71.28920254932339
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_95",
+        "tipo": "calor_extremo",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-09T01:14:00.609749",
+        "coordenadas": {
+          "lat": -33.00514896412866,
+          "lon": -71.34933250252693
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_96",
+        "tipo": "helada",
+        "severidad": "media",
+        "mensaje": "Alerta lluvia_intensa detectada",
+        "timestamp": "2025-09-19T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.89453280496908,
+          "lon": -71.25539695995332
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      },
+      {
+        "id": "alerta_97",
+        "tipo": "lluvia_intensa",
+        "severidad": "baja",
+        "mensaje": "Alerta viento_fuerte detectada",
+        "timestamp": "2025-09-20T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.80333087774148,
+          "lon": -71.2263994488641
+        },
+        "impacto": "medio",
+        "accion_recomendada": "Acción recomendada para sequia"
+      },
+      {
+        "id": "alerta_98",
+        "tipo": "viento_fuerte",
+        "severidad": "alta",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-22T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.843278102959296,
+          "lon": -71.31175118938133
+        },
+        "impacto": "alto",
+        "accion_recomendada": "Acción recomendada para lluvia_intensa"
+      },
+      {
+        "id": "alerta_99",
+        "tipo": "viento_fuerte",
+        "severidad": "baja",
+        "mensaje": "Alerta sequia detectada",
+        "timestamp": "2025-09-09T01:14:00.609749",
+        "coordenadas": {
+          "lat": -33.00027684338251,
+          "lon": -71.39920915883877
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para calor_extremo"
+      },
+      {
+        "id": "alerta_100",
+        "tipo": "viento_fuerte",
+        "severidad": "media",
+        "mensaje": "Alerta helada detectada",
+        "timestamp": "2025-09-18T01:14:00.609749",
+        "coordenadas": {
+          "lat": -32.94795728842425,
+          "lon": -71.34145480036143
+        },
+        "impacto": "bajo",
+        "accion_recomendada": "Acción recomendada para helada"
+      }
+    ]
+  },
+  "metricas": {},
+  "observaciones": [
+    "Alto número de alertas - revisar condiciones generales",
+    "Datos procesados el 2025-10-04 01:14:00"
+  ],
+  "graficos": []
+}

@@ -1,0 +1,197 @@
+{
+  "timestamp": "2025-10-04T01:30:47.302113",
+  "sistema": "METGO 3D - Sistema de Riego Automatizado",
+  "version": "2.0",
+  "configuracion_sistema": {
+    "modo_automatico": true,
+    "intervalo_lectura": 300,
+    "umbral_humedad": 30,
+    "umbral_temperatura": 25,
+    "tiempo_riego_minimo": 10,
+    "tiempo_riego_maximo": 120,
+    "horario_riego_inicio": "06:00",
+    "horario_riego_fin": "18:00",
+    "dias_riego": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "notificaciones": true
+  },
+  "estadisticas": {
+    "sensores": {
+      "total": 3,
+      "activos": 3,
+      "inactivos": 0
+    },
+    "controladores": {
+      "total": 2,
+      "activos": 2,
+      "inactivos": 0
+    },
+    "programaciones": {
+      "total": 2,
+      "activas": 2
+    },
+    "riego_diario": {
+      "eventos": 0,
+      "minutos": 0,
+      "litros": 0
+    },
+    "riego_semanal": {
+      "eventos": 0,
+      "minutos": 0,
+      "litros": 0
+    },
+    "sistema": {
+      "activo": true,
+      "modo_manual": false,
+      "ultima_actualizacion": "2025-10-04T01:30:47.277664"
+    }
+  },
+  "condiciones_actuales": {
+    "debe_regar": false,
+    "duracion_minutos": 30,
+    "controladores": [],
+    "condiciones": {
+      "humedad_suelo": 47.32450533867702,
+      "temperatura_suelo": 20.337716380386667,
+      "presion_agua": 2.3844281125514675,
+      "temperatura_aire": 22.483570765056164,
+      "humedad_aire": 57.92603548243223,
+      "precipitacion": 1.9430656143020775,
+      "viento": 8.046059712816051
+    },
+    "timestamp": "2025-10-04T01:30:47.289046",
+    "razon": "Condiciones no favorables para riego"
+  },
+  "lecturas_sensores": {
+    "sensor_humedad_1": {
+      "valor": 50.48293096969181,
+      "unidad": "%",
+      "timestamp": "2025-10-04T01:30:47.289046",
+      "calidad": 0.9984954926080997
+    },
+    "sensor_temperatura_1": {
+      "valor": 21.105151109539577,
+      "unidad": "°C",
+      "timestamp": "2025-10-04T01:30:47.295143",
+      "calidad": 0.9606169555339138
+    },
+    "sensor_presion_1": {
+      "valor": 2.3380863432702212,
+      "unidad": "bar",
+      "timestamp": "2025-10-04T01:30:47.299109",
+      "calidad": 0.9762378215816119
+    }
+  },
+  "sensores": [
+    {
+      "id": "sensor_humedad_1",
+      "nombre": "Sensor de Humedad 1",
+      "tipo": "humedad_suelo",
+      "estado": "activo",
+      "valor": 50.48293096969181,
+      "unidad": "%",
+      "ultima_lectura": "2025-10-04T01:30:47.289046"
+    },
+    {
+      "id": "sensor_temperatura_1",
+      "nombre": "Sensor de Temperatura 1",
+      "tipo": "temperatura_suelo",
+      "estado": "activo",
+      "valor": 21.105151109539577,
+      "unidad": "°C",
+      "ultima_lectura": "2025-10-04T01:30:47.295143"
+    },
+    {
+      "id": "sensor_presion_1",
+      "nombre": "Sensor de Presión 1",
+      "tipo": "presion_agua",
+      "estado": "activo",
+      "valor": 2.3380863432702212,
+      "unidad": "bar",
+      "ultima_lectura": "2025-10-04T01:30:47.299109"
+    }
+  ],
+  "controladores": [
+    {
+      "id": "controlador_1",
+      "nombre": "Controlador Principal",
+      "tipo": "aspersion",
+      "estado": "activo",
+      "configuracion": {
+        "caudal_litros_minuto": 50,
+        "presion_trabajo": 2.5,
+        "radio_cobertura": 15,
+        "eficiencia": 0.85
+      }
+    },
+    {
+      "id": "controlador_2",
+      "nombre": "Controlador Secundario",
+      "tipo": "goteo",
+      "estado": "activo",
+      "configuracion": {
+        "caudal_litros_minuto": 20,
+        "presion_trabajo": 1.5,
+        "radio_cobertura": 5,
+        "eficiencia": 0.95
+      }
+    }
+  ],
+  "programaciones": [
+    {
+      "id": "programacion_1",
+      "nombre": "Riego Matutino",
+      "controlador_id": "controlador_1",
+      "horario_inicio": "06:00",
+      "duracion_minutos": 30,
+      "activa": true
+    },
+    {
+      "id": "programacion_2",
+      "nombre": "Riego Vespertino",
+      "controlador_id": "controlador_2",
+      "horario_inicio": "18:00",
+      "duracion_minutos": 45,
+      "activa": true
+    }
+  ],
+  "funcionalidades_implementadas": [
+    "Sistema de sensores inteligentes",
+    "Controladores de riego automatizados",
+    "Programación flexible de riego",
+    "Evaluación automática de condiciones",
+    "Base de datos SQLite para almacenamiento",
+    "Sistema de logging estructurado",
+    "Estadísticas en tiempo real",
+    "Simulación de riego",
+    "Gestión de eventos",
+    "Monitoreo continuo"
+  ],
+  "tecnologias_utilizadas": [
+    "SQLite para base de datos",
+    "NumPy para cálculos",
+    "Pandas para análisis de datos",
+    "Flask para API REST",
+    "Logging estructurado",
+    "Simulación de hardware"
+  ],
+  "recomendaciones": [
+    "Integrar con sensores reales de humedad",
+    "Implementar controladores físicos",
+    "Agregar sistema de alertas por email/SMS",
+    "Implementar programación por zonas",
+    "Agregar análisis de eficiencia hídrica",
+    "Implementar backup automático",
+    "Agregar interfaz web para monitoreo",
+    "Implementar machine learning para optimización",
+    "Agregar integración con pronósticos meteorológicos",
+    "Implementar sistema de mantenimiento predictivo"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "max_data_points": 1000,
+  "use_webgl": true,
+  "enable_animations": false,
+  "reduce_precision": true,
+  "cache_plots": true
+}

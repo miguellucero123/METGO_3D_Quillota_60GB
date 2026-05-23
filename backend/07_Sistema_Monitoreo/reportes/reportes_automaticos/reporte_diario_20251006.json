@@ -1,0 +1,81 @@
+{
+  "fecha_generacion": "2025-10-06T23:56:24.124564",
+  "titulo": "Reporte Diario METGO 3D - 06/10/2025",
+  "datos_estaciones": {
+    "Quillota_Centro": {
+      "temperatura_actual": 15.5,
+      "humedad_relativa": 65.0,
+      "velocidad_viento": 8.2,
+      "precipitacion": 0.0
+    },
+    "La_Cruz": {
+      "temperatura_actual": 14.2,
+      "humedad_relativa": 70.0,
+      "velocidad_viento": 12.5,
+      "precipitacion": 1.2
+    }
+  },
+  "predicciones_ml": {},
+  "alertas": {
+    "resumen_alertas": {
+      "criticas": 0,
+      "advertencia": 1,
+      "normales": 1
+    },
+    "estaciones_criticas": [],
+    "estaciones_advertencia": [
+      "La_Cruz"
+    ],
+    "estaciones_normales": [
+      "Quillota_Centro"
+    ]
+  },
+  "estadisticas": {
+    "total_estaciones": 2,
+    "temperaturas": [
+      15.5,
+      14.2
+    ],
+    "humedades": [
+      65.0,
+      70.0
+    ],
+    "vientos": [
+      8.2,
+      12.5
+    ],
+    "precipitaciones": [
+      0.0,
+      1.2
+    ],
+    "temperaturas_stats": {
+      "min": 14.2,
+      "max": 15.5,
+      "promedio": 14.85,
+      "mediana": 14.85,
+      "desviacion": 0.6500000000000004
+    },
+    "humedades_stats": {
+      "min": 65.0,
+      "max": 70.0,
+      "promedio": 67.5,
+      "mediana": 67.5,
+      "desviacion": 2.5
+    },
+    "vientos_stats": {
+      "min": 8.2,
+      "max": 12.5,
+      "promedio": 10.35,
+      "mediana": 10.35,
+      "desviacion": 2.1500000000000004
+    },
+    "precipitaciones_stats": {
+      "min": 0.0,
+      "max": 1.2,
+      "promedio": 0.6,
+      "mediana": 0.6,
+      "desviacion": 0.6
+    }
+  },
+  "resumen_ejecutivo": "\n            <p><strong>Monitoreo de 2 estaciones meteorológicas</strong> en el Valle de Quillota.</p>\n            <p><strong>Temperatura promedio:</strong> 14.8°C</p>\n            <p><strong>Alertas críticas:</strong> 0</p>\n            <p><strong>Alertas de advertencia:</strong> 1</p>\n            <p><strong>Estado general:</strong> ⚠️ ADVERTENCIA</p>\n            "
+}

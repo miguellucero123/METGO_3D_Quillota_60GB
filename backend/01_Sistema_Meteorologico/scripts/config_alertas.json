@@ -1,0 +1,68 @@
+{
+  "email": {
+    "habilitado": false,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "usuario": "tu_email@gmail.com",
+    "password": "tu_password_app",
+    "destinatarios": [
+      "admin@metgo3d.com",
+      "agricultor@quillota.cl"
+    ]
+  },
+  "sms": {
+    "habilitado": false,
+    "api_key": "tu_twilio_api_key",
+    "auth_token": "tu_twilio_auth_token",
+    "numero_origen": "+1234567890",
+    "servicio": "twilio",
+    "destinatarios": [
+      "+56912345678",
+      "+56987654321"
+    ]
+  },
+  "alertas": {
+    "calidad_datos_baja": true,
+    "errores_criticos": true,
+    "temperatura_extrema": true,
+    "precipitacion_intensa": true,
+    "viento_fuerte": true,
+    "humedad_critica": true,
+    "helada_detectada": true
+  },
+  "umbrales": {
+    "calidad_minima": 70.0,
+    "temperatura_maxima": 35.0,
+    "temperatura_minima": -2.0,
+    "precipitacion_intensa": 20.0,
+    "viento_fuerte": 25.0,
+    "humedad_baja": 30.0,
+    "humedad_alta": 85.0
+  },
+  "frecuencia": {
+    "max_alertas_por_hora": 5,
+    "cooldown_minutos": 30,
+    "horario_envio": {
+      "inicio": "06:00",
+      "fin": "22:00"
+    }
+  },
+  "plantillas": {
+    "email": {
+      "asunto": "[METGO 3D] {titulo}",
+      "saludo": "Estimado usuario del Sistema Meteorológico METGO 3D",
+      "despedida": "Este es un mensaje automático del sistema."
+    },
+    "sms": {
+      "formato": "{emoji} METGO 3D - {titulo}\n{mensaje}\nQuillota, Valparaíso\n{fecha}"
+    }
+  },
+  "integracion": {
+    "webhook_url": "",
+    "slack_webhook": "",
+    "telegram_bot_token": "",
+    "telegram_chat_id": ""
+  }
+}
+
+

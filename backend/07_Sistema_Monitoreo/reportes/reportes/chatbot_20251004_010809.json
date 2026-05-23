@@ -1,0 +1,129 @@
+{
+  "timestamp": "2025-10-04T01:08:09.496518",
+  "sistema": "METGO 3D - Chatbot Meteorológico",
+  "version": "2.0",
+  "configuracion_chatbot": {
+    "nombre": "METGO Assistant",
+    "version": "2.0",
+    "idioma": "es",
+    "personality": "amigable y profesional",
+    "contexto": "agrícola y meteorológico",
+    "respuestas_por_defecto": [
+      "No estoy seguro de entender tu consulta. ¿Podrías ser más específico?",
+      "Disculpa, no tengo información sobre eso. ¿Hay algo más en lo que pueda ayudarte?",
+      "Esa es una excelente pregunta. Déjame buscar esa información para ti.",
+      "Entiendo tu consulta. Te ayudo con eso."
+    ]
+  },
+  "intenciones_configuradas": [
+    {
+      "nombre": "saludo",
+      "palabras_clave": [
+        "hola",
+        "buenos días",
+        "buenas tardes",
+        "buenas noches",
+        "saludos"
+      ],
+      "accion": "saludo"
+    },
+    {
+      "nombre": "pronostico",
+      "palabras_clave": [
+        "pronóstico",
+        "tiempo",
+        "clima",
+        "lluvia",
+        "temperatura",
+        "precipitación"
+      ],
+      "accion": "obtener_pronostico"
+    },
+    {
+      "nombre": "recomendaciones",
+      "palabras_clave": [
+        "recomendación",
+        "consejo",
+        "qué hacer",
+        "sugerencia",
+        "ayuda"
+      ],
+      "accion": "generar_recomendaciones"
+    },
+    {
+      "nombre": "alertas",
+      "palabras_clave": [
+        "alerta",
+        "peligro",
+        "riesgo",
+        "helada",
+        "sequía",
+        "inundación"
+      ],
+      "accion": "obtener_alertas"
+    },
+    {
+      "nombre": "cultivos",
+      "palabras_clave": [
+        "cultivo",
+        "siembra",
+        "cosecha",
+        "riego",
+        "fertilización"
+      ],
+      "accion": "consejos_cultivos"
+    },
+    {
+      "nombre": "despedida",
+      "palabras_clave": [
+        "adiós",
+        "hasta luego",
+        "gracias",
+        "chao",
+        "nos vemos"
+      ],
+      "accion": "despedida"
+    }
+  ],
+  "estadisticas": {
+    "total_consultas": 1,
+    "consultas_por_tipo": {
+      "saludo": 1
+    },
+    "conversaciones_activas": 1,
+    "satisfaccion_promedio": 0,
+    "intenciones_configuradas": 6,
+    "timestamp": "2025-10-04T01:08:09.496518"
+  },
+  "funcionalidades_implementadas": [
+    "Procesamiento de lenguaje natural",
+    "Detección de intenciones",
+    "Generación de respuestas contextuales",
+    "Base de datos SQLite para almacenamiento",
+    "Sistema de logging estructurado",
+    "Gestión de conversaciones",
+    "Estadísticas de uso",
+    "Respuestas sintéticas meteorológicas",
+    "Recomendaciones agrícolas",
+    "Sistema de alertas"
+  ],
+  "tecnologias_utilizadas": [
+    "Flask para API REST",
+    "NLTK para procesamiento de lenguaje natural",
+    "Scikit-learn para clasificación de texto",
+    "SQLite para base de datos",
+    "JSON para intercambio de datos"
+  ],
+  "recomendaciones": [
+    "Implementar modelo de machine learning más avanzado",
+    "Agregar procesamiento de imágenes",
+    "Implementar análisis de sentimientos",
+    "Agregar soporte multiidioma",
+    "Implementar integración con APIs meteorológicas reales",
+    "Agregar memoria de contexto",
+    "Implementar aprendizaje automático",
+    "Agregar respuestas de voz",
+    "Implementar chatbot web",
+    "Agregar métricas de satisfacción del usuario"
+  ]
+}

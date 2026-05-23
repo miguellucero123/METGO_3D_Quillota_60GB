@@ -1,0 +1,83 @@
+[
+  {
+    "timestamp": "2025-10-09T23:28:38.402225",
+    "tipo": "calidad_datos_baja",
+    "severidad": "critica",
+    "titulo": "Calidad de Datos Crítica",
+    "mensaje": "La calidad de datos meteorológicos ha bajado a 45.0/100",
+    "detalles": {
+      "puntuacion": 45.0,
+      "registros_totales": 100,
+      "errores": {
+        "temperatura_fuera_rango": 15,
+        "humedad_invalida": 8
+      },
+      "timestamp": "2025-10-09T23:28:38.402225"
+    }
+  },
+  {
+    "timestamp": "2025-10-09T23:28:38.403231",
+    "tipo": "errores_criticos",
+    "severidad": "alta",
+    "titulo": "Múltiples Errores Detectados",
+    "mensaje": "Se han detectado 23 errores en los datos meteorológicos",
+    "detalles": {
+      "total_errores": 23,
+      "errores_detalle": {
+        "temperatura_fuera_rango": 15,
+        "humedad_invalida": 8
+      },
+      "timestamp": "2025-10-09T23:28:38.402225"
+    }
+  },
+  {
+    "timestamp": "2025-10-09T23:28:38.404583",
+    "tipo": "temperatura_extrema",
+    "severidad": "alta",
+    "titulo": "Temperatura Extrema Detectada",
+    "mensaje": "Temperatura máxima de 38.5°C detectada en Quillota",
+    "detalles": {
+      "temperatura_maxima": 38.5,
+      "temperatura_minima": 15.2,
+      "ubicacion": "Quillota, Valparaíso",
+      "timestamp": "2025-10-09T23:28:38.402225"
+    }
+  },
+  {
+    "timestamp": "2025-10-09T23:28:38.406184",
+    "tipo": "precipitacion_intensa",
+    "severidad": "alta",
+    "titulo": "Precipitación Intensa",
+    "mensaje": "Precipitación de 25.0 mm detectada",
+    "detalles": {
+      "precipitacion": 25.0,
+      "ubicacion": "Quillota, Valparaíso",
+      "timestamp": "2025-10-09T23:28:38.402225"
+    }
+  },
+  {
+    "timestamp": "2025-10-09T23:28:38.407187",
+    "tipo": "viento_fuerte",
+    "severidad": "media",
+    "titulo": "Viento Fuerte Detectado",
+    "mensaje": "Velocidad de viento de 30.0 km/h",
+    "detalles": {
+      "velocidad_viento": 30.0,
+      "direccion_viento": "N/A",
+      "ubicacion": "Quillota, Valparaíso",
+      "timestamp": "2025-10-09T23:28:38.402225"
+    }
+  },
+  {
+    "timestamp": "2025-10-09T23:28:38.411211",
+    "tipo": "humedad_baja",
+    "severidad": "media",
+    "titulo": "Humedad Muy Baja",
+    "mensaje": "Humedad relativa de 25.0% - Riesgo de sequía",
+    "detalles": {
+      "humedad_relativa": 25.0,
+      "ubicacion": "Quillota, Valparaíso",
+      "timestamp": "2025-10-09T23:28:38.402225"
+    }
+  }
+]

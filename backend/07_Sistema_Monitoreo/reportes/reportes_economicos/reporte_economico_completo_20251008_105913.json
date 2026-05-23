@@ -1,0 +1,373 @@
+{
+  "fecha_reporte": "2025-10-08T10:59:13.304639",
+  "analisis_cultivos": {
+    "palto": {
+      "analisis_id": "roi_e8df8c4d",
+      "cultivo_id": "palto",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 419.72,
+      "van_proyectado": 99894061.0,
+      "tir_proyectada": 15.0,
+      "payback_period": 4,
+      "ingresos_totales": 224000000.0,
+      "costos_totales": 43100000.0,
+      "beneficio_neto": 180900000.0,
+      "flujos_caja": [
+        -3866667.0,
+        -3866667.0,
+        -3866667.0,
+        18500000.0,
+        21500000.0,
+        24500000.0,
+        27500000.0,
+        30500000.0,
+        33500000.0,
+        36500000.0
+      ]
+    },
+    "uva": {
+      "analisis_id": "roi_7fd15c08",
+      "cultivo_id": "uva",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 141.38,
+      "van_proyectado": 90631201.0,
+      "tir_proyectada": 15.0,
+      "payback_period": 4,
+      "ingresos_totales": 280000000.0,
+      "costos_totales": 116000000.0,
+      "beneficio_neto": 164000000.0,
+      "flujos_caja": [
+        -10000000.0,
+        -10000000.0,
+        12000000.0,
+        16000000.0,
+        20000000.0,
+        24000000.0,
+        28000000.0,
+        28000000.0,
+        28000000.0,
+        28000000.0
+      ]
+    },
+    "citricos": {
+      "analisis_id": "roi_22164014",
+      "cultivo_id": "citricos",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 198.2,
+      "van_proyectado": 62291874.0,
+      "tir_proyectada": 15.0,
+      "payback_period": 5,
+      "ingresos_totales": 178920000.0,
+      "costos_totales": 60000000.0,
+      "beneficio_neto": 118920000.0,
+      "flujos_caja": [
+        -3000000.0,
+        -3000000.0,
+        -3000000.0,
+        -3000000.0,
+        15520000.0,
+        18040000.0,
+        20560000.0,
+        23080000.0,
+        25600000.0,
+        28120000.0
+      ]
+    },
+    "uva_vino": {
+      "analisis_id": "roi_4889c64e",
+      "cultivo_id": "uva_vino",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 167.56,
+      "van_proyectado": 71195662.0,
+      "tir_proyectada": 15.0,
+      "payback_period": 5,
+      "ingresos_totales": 216720000.0,
+      "costos_totales": 81000000.0,
+      "beneficio_neto": 135720000.0,
+      "flujos_caja": [
+        -6000000.0,
+        -6000000.0,
+        -6000000.0,
+        12240000.0,
+        15480000.0,
+        18720000.0,
+        21960000.0,
+        25200000.0,
+        28440000.0,
+        31680000.0
+      ]
+    }
+  },
+  "tendencias_precios": {
+    "palto": {
+      "cultivo_id": "palto",
+      "periodo_analisis": "12 meses",
+      "precio_promedio": 2490.41,
+      "precio_minimo": 2095.56,
+      "precio_maximo": 2748.32,
+      "volatilidad": 8.11,
+      "tendencia_porcentual": 0.8,
+      "clasificacion_tendencia": "Alcista moderada",
+      "precios_historicos": {
+        "fechas": [
+          "2024-10",
+          "2024-11",
+          "2024-12",
+          "2025-01",
+          "2025-02",
+          "2025-03",
+          "2025-04",
+          "2025-05",
+          "2025-06",
+          "2025-07",
+          "2025-08",
+          "2025-09"
+        ],
+        "precios": [
+          2095.564846633548,
+          2323.940076598662,
+          2256.5739493491,
+          2646.1231780368157,
+          2503.4985509233115,
+          2720.046710680506,
+          2748.3179915532605,
+          2677.8806017564684,
+          2658.1121349159152,
+          2551.0712656757996,
+          2383.4152606211073,
+          2320.4263419021154
+        ]
+      },
+      "recomendacion": "Mercado estable - Vender según planificación normal"
+    },
+    "uva": {
+      "cultivo_id": "uva",
+      "periodo_analisis": "12 meses",
+      "precio_promedio": 805.76,
+      "precio_minimo": 663.41,
+      "precio_maximo": 879.96,
+      "volatilidad": 8.89,
+      "tendencia_porcentual": -0.34,
+      "clasificacion_tendencia": "Estable",
+      "precios_historicos": {
+        "fechas": [
+          "2024-10",
+          "2024-11",
+          "2024-12",
+          "2025-01",
+          "2025-02",
+          "2025-03",
+          "2025-04",
+          "2025-05",
+          "2025-06",
+          "2025-07",
+          "2025-08",
+          "2025-09"
+        ],
+        "precios": [
+          663.4128257163629,
+          782.5913700722697,
+          856.4589511786766,
+          879.9636662197348,
+          874.927183565229,
+          859.8275130790688,
+          872.5108689662715,
+          857.9330193202201,
+          825.5653862876022,
+          706.893863306909,
+          734.6113853221945,
+          754.3679513402516
+        ]
+      },
+      "recomendacion": "Mercado estable - Vender según planificación normal"
+    },
+    "citricos": {
+      "cultivo_id": "citricos",
+      "periodo_analisis": "12 meses",
+      "precio_promedio": 588.69,
+      "precio_minimo": 510.79,
+      "precio_maximo": 663.47,
+      "volatilidad": 7.73,
+      "tendencia_porcentual": -0.06,
+      "clasificacion_tendencia": "Estable",
+      "precios_historicos": {
+        "fechas": [
+          "2024-10",
+          "2024-11",
+          "2024-12",
+          "2025-01",
+          "2025-02",
+          "2025-03",
+          "2025-04",
+          "2025-05",
+          "2025-06",
+          "2025-07",
+          "2025-08",
+          "2025-09"
+        ],
+        "precios": [
+          512.6493567246168,
+          545.1097989299257,
+          605.5432853645792,
+          599.7324451692676,
+          643.8840921344704,
+          663.4726739860706,
+          622.8926265528501,
+          614.5011318656259,
+          584.3482925193358,
+          587.8074441422194,
+          573.5368281794206,
+          510.7862418675326
+        ]
+      },
+      "recomendacion": "Mercado estable - Vender según planificación normal"
+    },
+    "uva_vino": {
+      "cultivo_id": "uva_vino",
+      "periodo_analisis": "12 meses",
+      "precio_promedio": 1197.56,
+      "precio_minimo": 1011.42,
+      "precio_maximo": 1449.1,
+      "volatilidad": 10.79,
+      "tendencia_porcentual": -0.54,
+      "clasificacion_tendencia": "Bajista moderada",
+      "precios_historicos": {
+        "fechas": [
+          "2024-10",
+          "2024-11",
+          "2024-12",
+          "2025-01",
+          "2025-02",
+          "2025-03",
+          "2025-04",
+          "2025-05",
+          "2025-06",
+          "2025-07",
+          "2025-08",
+          "2025-09"
+        ],
+        "precios": [
+          1055.2945021073406,
+          1146.5576477160837,
+          1183.772700503933,
+          1221.1151232646612,
+          1449.103496158182,
+          1317.366609510744,
+          1344.394801343742,
+          1305.2020695543688,
+          1037.6902000474972,
+          1171.9043032610082,
+          1011.4196291421455,
+          1126.9091524575506
+        ]
+      },
+      "recomendacion": "Mercado estable - Vender según planificación normal"
+    }
+  },
+  "optimizaciones": {
+    "palto": {
+      "optimizacion_id": "opt_aabd6b05",
+      "cultivo_id": "palto",
+      "area_hectareas": 1.0,
+      "tecnologias_aplicadas": [
+        "riego_inteligente",
+        "drones_monitoreo",
+        "ml_predicciones",
+        "sensores_iot"
+      ],
+      "ahorro_anual_estimado": 641250.0,
+      "incremento_rendimiento": 43.0,
+      "ingreso_adicional_anual": 8600000.0,
+      "costo_implementacion": 4300000.0,
+      "roi_tecnologia": 114.91,
+      "payback_tecnologia": 0.5,
+      "beneficio_neto_anual": 4941250.0
+    },
+    "uva": {
+      "optimizacion_id": "opt_25080944",
+      "cultivo_id": "uva",
+      "area_hectareas": 1.0,
+      "tecnologias_aplicadas": [
+        "riego_inteligente",
+        "drones_monitoreo",
+        "ml_predicciones",
+        "sensores_iot"
+      ],
+      "ahorro_anual_estimado": 1710000.0,
+      "incremento_rendimiento": 43.0,
+      "ingreso_adicional_anual": 8600000.0,
+      "costo_implementacion": 4300000.0,
+      "roi_tecnologia": 139.77,
+      "payback_tecnologia": 0.4,
+      "beneficio_neto_anual": 6010000.0
+    },
+    "citricos": {
+      "optimizacion_id": "opt_917c2b71",
+      "cultivo_id": "citricos",
+      "area_hectareas": 1.0,
+      "tecnologias_aplicadas": [
+        "riego_inteligente",
+        "drones_monitoreo",
+        "ml_predicciones",
+        "sensores_iot"
+      ],
+      "ahorro_anual_estimado": 1140000.0,
+      "incremento_rendimiento": 43.0,
+      "ingreso_adicional_anual": 9030000.0,
+      "costo_implementacion": 4300000.0,
+      "roi_tecnologia": 136.51,
+      "payback_tecnologia": 0.4,
+      "beneficio_neto_anual": 5870000.0
+    },
+    "uva_vino": {
+      "optimizacion_id": "opt_32215271",
+      "cultivo_id": "uva_vino",
+      "area_hectareas": 1.0,
+      "tecnologias_aplicadas": [
+        "riego_inteligente",
+        "drones_monitoreo",
+        "ml_predicciones",
+        "sensores_iot"
+      ],
+      "ahorro_anual_estimado": 1282500.0,
+      "incremento_rendimiento": 43.0,
+      "ingreso_adicional_anual": 7740000.0,
+      "costo_implementacion": 4300000.0,
+      "roi_tecnologia": 109.83,
+      "payback_tecnologia": 0.5,
+      "beneficio_neto_anual": 4722500.0
+    }
+  },
+  "visualizaciones": {
+    "roi_por_cultivo": "reportes_economicos\\analisis_roi\\roi_por_cultivo.html",
+    "tendencias_precios": "reportes_economicos\\tendencias\\tendencias_precios.html"
+  },
+  "resumen_ejecutivo": {
+    "mejor_cultivo_inversion": {
+      "cultivo": "palto",
+      "roi": 419.72,
+      "van": 99894061.0,
+      "tir": 15.0
+    },
+    "metricas_promedio": {
+      "roi_promedio": 231.71,
+      "van_promedio": 81003200.0
+    },
+    "recomendaciones_principales": [
+      "Mejor inversión: palto con ROI 419.72%",
+      "Implementar tecnologías de optimización para reducir costos",
+      "Monitorear tendencias de precios para optimizar ventas",
+      "Diversificar cultivos para reducir riesgos"
+    ],
+    "tecnologias_recomendadas": [
+      "riego_inteligente",
+      "drones_monitoreo",
+      "ml_predicciones",
+      "sensores_iot"
+    ]
+  }
+}

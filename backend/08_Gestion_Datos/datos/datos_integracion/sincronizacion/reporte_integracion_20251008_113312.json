@@ -1,0 +1,147 @@
+{
+  "fecha_reporte": "2025-10-08T11:33:12.124915",
+  "estado_sistemas": {
+    "erp_configurados": 3,
+    "gps_configurados": 3,
+    "dispositivos_gps_activos": 8,
+    "sensores_iot_activos": 4,
+    "mqtt_conectado": false
+  },
+  "actividad_24h": {},
+  "visualizaciones": {
+    "estado_sistemas": "datos_integracion\\sincronizacion\\estado_sistemas.html"
+  },
+  "configuraciones": {
+    "erp": {
+      "sap_agricola": {
+        "nombre": "SAP Agrícola",
+        "tipo": "ERP",
+        "protocolo": "RFC",
+        "endpoint": "http://sap-agricola.local:8000",
+        "modulos": [
+          "inventario",
+          "produccion",
+          "financiero",
+          "calidad"
+        ],
+        "autenticacion": "usuario_password",
+        "activo": true
+      },
+      "agvance": {
+        "nombre": "Agvance",
+        "tipo": "ERP_Agricola",
+        "protocolo": "REST",
+        "endpoint": "https://api.agvance.com",
+        "modulos": [
+          "cultivos",
+          "inventario",
+          "maquinaria",
+          "reportes"
+        ],
+        "autenticacion": "api_key",
+        "activo": true
+      },
+      "granular": {
+        "nombre": "Granular",
+        "tipo": "Plataforma_Digital",
+        "protocolo": "GraphQL",
+        "endpoint": "https://api.granular.ag",
+        "modulos": [
+          "datos_campo",
+          "analytics",
+          "maquinaria"
+        ],
+        "autenticacion": "oauth2",
+        "activo": true
+      }
+    },
+    "gps": {
+      "john_deere_operations_center": {
+        "nombre": "John Deere Operations Center",
+        "protocolo": "ISOXML",
+        "puerto": 8080,
+        "formato_datos": "ISOXML",
+        "dispositivos_soportados": [
+          "tractor",
+          "cosechadora",
+          "pulverizador"
+        ],
+        "activo": true
+      },
+      "cnh_agriculture": {
+        "nombre": "CNH Agriculture",
+        "protocolo": "ISOXML",
+        "puerto": 8081,
+        "formato_datos": "ISOXML",
+        "dispositivos_soportados": [
+          "tractor",
+          "cosechadora"
+        ],
+        "activo": true
+      },
+      "trimble_agriculture": {
+        "nombre": "Trimble Agriculture",
+        "protocolo": "NMEA",
+        "puerto": 8082,
+        "formato_datos": "NMEA",
+        "dispositivos_soportados": [
+          "tractor",
+          "pulverizador",
+          "sensor"
+        ],
+        "activo": true
+      }
+    },
+    "iot": {
+      "protocolos_soportados": [
+        "MQTT",
+        "HTTP",
+        "LoRaWAN",
+        "Modbus"
+      ],
+      "sensores_configurados": {
+        "humedad_suelo": {
+          "protocolo": "MQTT",
+          "topic": "sensores/humedad_suelo",
+          "frecuencia": 30,
+          "rango_valores": [
+            0,
+            100
+          ],
+          "unidad": "%"
+        },
+        "temperatura_ambiente": {
+          "protocolo": "MQTT",
+          "topic": "sensores/temperatura",
+          "frecuencia": 60,
+          "rango_valores": [
+            -10,
+            50
+          ],
+          "unidad": "°C"
+        },
+        "ph_suelo": {
+          "protocolo": "HTTP",
+          "endpoint": "http://sensores.local/ph",
+          "frecuencia": 300,
+          "rango_valores": [
+            0,
+            14
+          ],
+          "unidad": "pH"
+        },
+        "nivel_riego": {
+          "protocolo": "Modbus",
+          "direccion": "192.168.1.100",
+          "puerto": 502,
+          "frecuencia": 120,
+          "rango_valores": [
+            0,
+            100
+          ],
+          "unidad": "%"
+        }
+      }
+    }
+  }
+}

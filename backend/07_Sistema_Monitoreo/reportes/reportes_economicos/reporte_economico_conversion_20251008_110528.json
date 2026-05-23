@@ -1,0 +1,192 @@
+{
+  "fecha_reporte": "2025-10-08T11:05:28.725708",
+  "tasas_cambio": {
+    "USD": 895.3842290771021,
+    "EUR": 964.5015266110686,
+    "CLP": 1.0
+  },
+  "analisis_cultivos": {
+    "palto": {
+      "analisis_id": "roi_1efa9baa",
+      "cultivo_id": "palto",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 419.72,
+      "van_clp": 99894061.0,
+      "van_usd": 110380.96,
+      "van_eur": 101079.34,
+      "tir_proyectada": 15.0,
+      "payback_period": 4,
+      "ingresos_totales_clp": 224000000.0,
+      "ingresos_totales_usd": 247515.56,
+      "ingresos_totales_eur": 226657.83,
+      "costos_totales_clp": 43100000.0,
+      "costos_totales_usd": 47624.65,
+      "costos_totales_eur": 43611.4,
+      "beneficio_neto_clp": 180900000.0,
+      "beneficio_neto_usd": 199890.91,
+      "beneficio_neto_eur": 183046.44,
+      "flujos_caja_clp": [
+        -3866667.0,
+        -3866667.0,
+        -3866667.0,
+        18500000.0,
+        21500000.0,
+        24500000.0,
+        27500000.0,
+        30500000.0,
+        33500000.0,
+        36500000.0
+      ],
+      "tasas_cambio": {
+        "USD": 904.9936162823799,
+        "EUR": 988.2738119188429,
+        "CLP": 1.0
+      }
+    },
+    "uva": {
+      "analisis_id": "roi_80693b74",
+      "cultivo_id": "uva",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 141.38,
+      "van_clp": 90631201.0,
+      "van_usd": 101097.31,
+      "van_eur": 92038.77,
+      "tir_proyectada": 15.0,
+      "payback_period": 4,
+      "ingresos_totales_clp": 280000000.0,
+      "ingresos_totales_usd": 312334.47,
+      "ingresos_totales_eur": 284348.61,
+      "costos_totales_clp": 116000000.0,
+      "costos_totales_usd": 129395.71,
+      "costos_totales_eur": 117801.57,
+      "beneficio_neto_clp": 164000000.0,
+      "beneficio_neto_usd": 182938.76,
+      "beneficio_neto_eur": 166547.05,
+      "flujos_caja_clp": [
+        -10000000.0,
+        -10000000.0,
+        12000000.0,
+        16000000.0,
+        20000000.0,
+        24000000.0,
+        28000000.0,
+        28000000.0,
+        28000000.0,
+        28000000.0
+      ],
+      "tasas_cambio": {
+        "USD": 896.4748679060257,
+        "EUR": 984.7067515257256,
+        "CLP": 1.0
+      }
+    },
+    "citricos": {
+      "analisis_id": "roi_3c1b878d",
+      "cultivo_id": "citricos",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 198.2,
+      "van_clp": 62291874.0,
+      "van_usd": 69558.29,
+      "van_eur": 63885.85,
+      "tir_proyectada": 15.0,
+      "payback_period": 5,
+      "ingresos_totales_clp": 178920000.0,
+      "ingresos_totales_usd": 199791.21,
+      "ingresos_totales_eur": 183498.35,
+      "costos_totales_clp": 60000000.0,
+      "costos_totales_usd": 66999.06,
+      "costos_totales_eur": 61535.33,
+      "beneficio_neto_clp": 118920000.0,
+      "beneficio_neto_usd": 132792.14,
+      "beneficio_neto_eur": 121963.02,
+      "flujos_caja_clp": [
+        -3000000.0,
+        -3000000.0,
+        -3000000.0,
+        -3000000.0,
+        15520000.0,
+        18040000.0,
+        20560000.0,
+        23080000.0,
+        25600000.0,
+        28120000.0
+      ],
+      "tasas_cambio": {
+        "USD": 895.5349049411866,
+        "EUR": 975.049650684372,
+        "CLP": 1.0
+      }
+    },
+    "uva_vino": {
+      "analisis_id": "roi_233e33ff",
+      "cultivo_id": "uva_vino",
+      "area_hectareas": 1.0,
+      "horizonte_anos": 10,
+      "roi_proyectado": 167.56,
+      "van_clp": 71195662.0,
+      "van_usd": 79514.09,
+      "van_eur": 73816.02,
+      "tir_proyectada": 15.0,
+      "payback_period": 5,
+      "ingresos_totales_clp": 216720000.0,
+      "ingresos_totales_usd": 242041.34,
+      "ingresos_totales_eur": 224696.38,
+      "costos_totales_clp": 81000000.0,
+      "costos_totales_usd": 90463.96,
+      "costos_totales_eur": 83981.2,
+      "beneficio_neto_clp": 135720000.0,
+      "beneficio_neto_usd": 151577.38,
+      "beneficio_neto_eur": 140715.17,
+      "flujos_caja_clp": [
+        -6000000.0,
+        -6000000.0,
+        -6000000.0,
+        12240000.0,
+        15480000.0,
+        18720000.0,
+        21960000.0,
+        25200000.0,
+        28440000.0,
+        31680000.0
+      ],
+      "tasas_cambio": {
+        "USD": 895.3842290771021,
+        "EUR": 964.5015266110686,
+        "CLP": 1.0
+      }
+    }
+  },
+  "visualizaciones": {
+    "van_multimoneda": "reportes_economicos\\analisis_roi\\van_multimoneda.html",
+    "roi_por_cultivo": "reportes_economicos\\analisis_roi\\roi_por_cultivo.html"
+  },
+  "resumen_ejecutivo": {
+    "mejor_cultivo_inversion": {
+      "cultivo": "palto",
+      "roi": 419.72,
+      "van_clp": 99894061.0,
+      "van_usd": 110380.96,
+      "van_eur": 101079.34
+    },
+    "metricas_promedio": {
+      "roi_promedio": 231.71,
+      "van_clp_promedio": 81003200.0,
+      "van_usd_promedio": 90137.66,
+      "van_eur_promedio": 82705.0
+    },
+    "tasas_cambio_actuales": {
+      "USD": 895.3842290771021,
+      "EUR": 964.5015266110686,
+      "CLP": 1.0
+    },
+    "recomendaciones_principales": [
+      "Mejor inversión: palto con ROI 419.72%",
+      "VAN promedio: $81,003,200 CLP ($90,138 USD / €82,705 EUR)",
+      "Considerar diversificación para reducir riesgos cambiarios",
+      "Monitorear tasas de cambio para optimizar timing de inversiones"
+    ]
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "fecha_reporte": "2025-10-08T10:35:13.328970",
+  "region": "Valle de Casablanca",
+  "configuracion_region": {
+    "region": "Valle de Casablanca",
+    "provincia": "Valparaíso",
+    "comuna": "Casablanca",
+    "tipo_clima": "Mediterráneo con influencia costera",
+    "cultivo_principal": "Uva blanca para vino",
+    "variedades_principales": [
+      "Chardonnay",
+      "Sauvignon Blanc",
+      "Pinot Grigio",
+      "Viognier",
+      "Riesling",
+      "Gewürztraminer"
+    ],
+    "caracteristicas_climaticas": {
+      "brisas_marinas": true,
+      "humedad_relativa_alta": true,
+      "amplitud_termica_moderada": true,
+      "vientos_constantes": true,
+      "influencia_pacifico": true
+    }
+  },
+  "estadisticas_generales": {
+    "total_registros": 0,
+    "estaciones_activas": 0,
+    "periodo_analisis": "Último año",
+    "estadisticas_por_estacion": {}
+  },
+  "analisis_por_estacion": {
+    "casablanca_centro": {
+      "configuracion": {
+        "nombre": "Casablanca Centro",
+        "latitud": -33.3167,
+        "longitud": -71.4167,
+        "altitud": 230,
+        "tipo": "Estación principal",
+        "cultivo": "Uva blanca - Chardonnay",
+        "caracteristicas": "Zona central del valle",
+        "influencia_marina": "Media"
+      },
+      "metricas_recientes": {
+        "temperatura_promedio": 0,
+        "humedad_promedio": 0,
+        "velocidad_brisa_promedio": 0
+      },
+      "estado_fenologico_actual": "desconocido",
+      "registros_recientes": 0
+    },
+    "collihuay": {
+      "configuracion": {
+        "nombre": "Collihuay",
+        "latitud": -33.2833,
+        "longitud": -71.45,
+        "altitud": 180,
+        "tipo": "Zona costera",
+        "cultivo": "Uva blanca - Sauvignon Blanc",
+        "caracteristicas": "Fuerte influencia marina",
+        "influencia_marina": "Alta"
+      },
+      "metricas_recientes": {
+        "temperatura_promedio": 0,
+        "humedad_promedio": 0,
+        "velocidad_brisa_promedio": 0
+      },
+      "estado_fenologico_actual": "desconocido",
+      "registros_recientes": 0
+    },
+    "lagunillas": {
+      "configuracion": {
+        "nombre": "Lagunillas",
+        "latitud": -33.35,
+        "longitud": -71.3833,
+        "altitud": 280,
+        "tipo": "Zona interior",
+        "cultivo": "Uva blanca - Pinot Grigio",
+        "caracteristicas": "Menor influencia marina",
+        "influencia_marina": "Baja"
+      },
+      "metricas_recientes": {
+        "temperatura_promedio": 0,
+        "humedad_promedio": 0,
+        "velocidad_brisa_promedio": 0
+      },
+      "estado_fenologico_actual": "desconocido",
+      "registros_recientes": 0
+    },
+    "algarrobo": {
+      "configuracion": {
+        "nombre": "Algarrobo",
+        "latitud": -33.3667,
+        "longitud": -71.6667,
+        "altitud": 15,
+        "tipo": "Zona costera extrema",
+        "cultivo": "Uva blanca - Riesling",
+        "caracteristicas": "Máxima influencia marina",
+        "influencia_marina": "Muy Alta"
+      },
+      "metricas_recientes": {
+        "temperatura_promedio": 0,
+        "humedad_promedio": 0,
+        "velocidad_brisa_promedio": 0
+      },
+      "estado_fenologico_actual": "desconocido",
+      "registros_recientes": 0
+    },
+    "curacavi": {
+      "configuracion": {
+        "nombre": "Curacaví",
+        "latitud": -33.4167,
+        "longitud": -71.1333,
+        "altitud": 320,
+        "tipo": "Zona interior alta",
+        "cultivo": "Uva blanca - Viognier",
+        "caracteristicas": "Alta altitud, continental",
+        "influencia_marina": "Muy Baja"
+      },
+      "metricas_recientes": {
+        "temperatura_promedio": 0,
+        "humedad_promedio": 0,
+        "velocidad_brisa_promedio": 0
+      },
+      "estado_fenologico_actual": "desconocido",
+      "registros_recientes": 0
+    }
+  },
+  "analisis_brisas_marinas": {
+    "analisis_por_influencia_marina": {},
+    "conclusiones": []
+  },
+  "recomendaciones_consolidadas": {
+    "recomendaciones_por_categoria": {},
+    "recomendaciones_generales": [
+      "Aprovechar brisas marinas para control natural de enfermedades",
+      "Implementar riego deficitario controlado en zonas de menor influencia marina",
+      "Mantener sistemas de protección contra heladas tardías",
+      "Optimizar manejo de canopia según influencia marina",
+      "Aplicar fertilizaciones específicas para uva blanca"
+    ]
+  },
+  "visualizaciones": {
+    "distribucion_estaciones": "reportes_casablanca\\analisis_vinedos\\distribucion_estaciones.html"
+  },
+  "resumen_ejecutivo": {
+    "expansion_completada": true,
+    "region_expandida": "Valle de Casablanca",
+    "estaciones_configuradas": 5,
+    "cultivo_principal": "Uva blanca para vino",
+    "caracteristica_principal": "Influencia de brisas marinas",
+    "beneficios_principales": [
+      "Control natural de enfermedades por brisas marinas",
+      "Temperaturas moderadas por influencia costera",
+      "Menor riesgo de estrés hídrico",
+      "Condiciones óptimas para uva blanca"
+    ],
+    "desafios_identificados": [
+      "Protección contra heladas tardías",
+      "Manejo de humedad alta en zonas costeras",
+      "Optimización de riego según influencia marina"
+    ],
+    "recomendaciones_estrategicas": [
+      "Aprovechar microclimas creados por brisas marinas",
+      "Implementar sistemas de monitoreo específicos",
+      "Desarrollar protocolos de manejo diferenciados por zona"
+    ],
+    "estado_expansion": "Operativa y funcional"
+  }
+}

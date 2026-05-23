@@ -1,0 +1,30 @@
+{
+  "plotly": {
+    "config": {
+      "displayModeBar": false,
+      "staticPlot": true,
+      "responsive": true
+    },
+    "layout": {
+      "autosize": true,
+      "margin": {
+        "l": 0,
+        "r": 0,
+        "t": 0,
+        "b": 0
+      }
+    }
+  },
+  "pandas": {
+    "display": {
+      "max_columns": 10,
+      "max_rows": 100,
+      "width": 1000
+    }
+  },
+  "data_limits": {
+    "max_points_per_chart": 1000,
+    "max_columns_per_table": 20,
+    "max_rows_per_table": 1000
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "temperatura_max": {
+    "variable": "temperatura_max",
+    "mse": 1.3903010188356164,
+    "r2": 0.9780222378539757,
+    "modelo_path": "modelos_ml_quillota\\modelo_temperatura_max.joblib",
+    "features": [
+      "dia_año",
+      "hora",
+      "humedad",
+      "presion",
+      "viento_velocidad"
+    ]
+  },
+  "temperatura_min": {
+    "variable": "temperatura_min",
+    "mse": 1.2975034417808218,
+    "r2": 0.9794259940945073,
+    "modelo_path": "modelos_ml_quillota\\modelo_temperatura_min.joblib",
+    "features": [
+      "dia_año",
+      "hora",
+      "humedad",
+      "presion",
+      "viento_velocidad"
+    ]
+  },
+  "precipitacion": {
+    "variable": "precipitacion",
+    "mse": 0.8992522083333333,
+    "r2": -0.08957435784561518,
+    "modelo_path": "modelos_ml_quillota\\modelo_precipitacion.joblib",
+    "features": [
+      "dia_año",
+      "hora",
+      "humedad",
+      "presion",
+      "temperatura_max"
+    ]
+  },
+  "humedad": {
+    "variable": "humedad",
+    "mse": 250.38758787809576,
+    "r2": 0.007951609790295966,
+    "modelo_path": "modelos_ml_quillota\\modelo_humedad.joblib",
+    "features": [
+      "dia_año",
+      "hora",
+      "temperatura_max",
+      "temperatura_min",
+      "presion"
+    ]
+  },
+  "presion": {
+    "variable": "presion",
+    "mse": 1.0153618180836326,
+    "r2": 0.9798896053256371,
+    "modelo_path": "modelos_ml_quillota\\modelo_presion.joblib",
+    "features": [
+      "dia_año",
+      "hora",
+      "temperatura_max",
+      "temperatura_min",
+      "humedad"
+    ]
+  }
+}

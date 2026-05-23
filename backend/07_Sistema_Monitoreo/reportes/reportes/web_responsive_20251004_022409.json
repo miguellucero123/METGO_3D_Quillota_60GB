@@ -1,0 +1,108 @@
+{
+  "timestamp": "2025-10-04T02:24:09.976007",
+  "sistema": "METGO 3D - Aplicación Web Responsive",
+  "version": "2.0",
+  "configuracion_web": {
+    "titulo": "METGO 3D - Sistema Meteorológico Agrícola",
+    "version": "2.0",
+    "descripcion": "Sistema integral para análisis meteorológico agrícola",
+    "idioma": "es",
+    "timezone": "America/Santiago",
+    "tema": "agricola",
+    "colores": {
+      "primario": "#2E8B57",
+      "secundario": "#90EE90",
+      "accento": "#FFD700",
+      "texto": "#000000",
+      "fondo": "#F5F5F5"
+    }
+  },
+  "usuarios": [
+    {
+      "id": "admin_1",
+      "nombre": "Administrador METGO",
+      "email": "admin@metgo.cl",
+      "rol": "administrador",
+      "activo": true
+    },
+    {
+      "id": "agricultor_1",
+      "nombre": "Juan Pérez",
+      "email": "juan.perez@agricultor.cl",
+      "rol": "agricultor",
+      "activo": true
+    },
+    {
+      "id": "tecnico_1",
+      "nombre": "María González",
+      "email": "maria.gonzalez@tecnico.cl",
+      "rol": "tecnico",
+      "activo": true
+    }
+  ],
+  "datos_dashboard": {
+    "timestamp": "2025-10-04T02:24:09.976007",
+    "metricas": {
+      "temperatura_actual": 23.493428306022466,
+      "humedad_actual": 63.61735698828815,
+      "presion_actual": 1016.2384426905035,
+      "viento_actual": 12.569089569224076,
+      "humedad_suelo": 43.82923312638332,
+      "ndvi": 0.638293152152541,
+      "evi": 0.46737638446522173,
+      "consumo_agua_diario": 165.34869458305818
+    },
+    "alertas": [
+      {
+        "id": "alerta_1",
+        "tipo": "info",
+        "mensaje": "Temperatura dentro del rango normal",
+        "timestamp": "2025-10-04T02:24:09.976007"
+      },
+      {
+        "id": "alerta_2",
+        "tipo": "warning",
+        "mensaje": "Humedad del suelo baja en sector norte",
+        "timestamp": "2025-10-04T02:24:09.976007"
+      }
+    ],
+    "estado_sistema": {
+      "sensores_activos": 8,
+      "controladores_activos": 3,
+      "programaciones_activas": 5,
+      "ultima_actualizacion": "2025-10-04T02:24:09.976007"
+    }
+  },
+  "funcionalidades_implementadas": [
+    "Aplicación web responsive",
+    "Sistema de autenticación",
+    "Dashboard interactivo",
+    "API REST para datos",
+    "Base de datos SQLite",
+    "Sistema de logging",
+    "Gestión de usuarios",
+    "Sesiones de usuario",
+    "Métricas en tiempo real",
+    "Sistema de alertas"
+  ],
+  "tecnologias_utilizadas": [
+    "Flask para aplicación web",
+    "HTML5 y CSS3 responsive",
+    "JavaScript para interactividad",
+    "SQLite para base de datos",
+    "Sesiones de usuario",
+    "API REST"
+  ],
+  "recomendaciones": [
+    "Implementar React/Vue/Angular para frontend",
+    "Agregar autenticación JWT",
+    "Implementar WebSockets para tiempo real",
+    "Agregar PWA (Progressive Web App)",
+    "Implementar testing automatizado",
+    "Agregar internacionalización",
+    "Implementar cache con Redis",
+    "Agregar CDN para assets",
+    "Implementar monitoreo de performance",
+    "Agregar analytics de uso"
+  ]
+}

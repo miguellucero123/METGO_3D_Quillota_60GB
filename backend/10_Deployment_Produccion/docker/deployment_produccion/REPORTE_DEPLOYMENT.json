@@ -1,0 +1,68 @@
+{
+  "fecha_deployment": "2025-10-07T11:10:45.206632",
+  "version": "1.0.0",
+  "sistema": "METGO 3D Quillota",
+  "componentes_desplegados": [
+    "Dashboard Principal (puerto 8501)",
+    "Dashboard Agrícola Avanzado (puerto 8510)",
+    "Sistema de Monitoreo (puerto 8502)",
+    "Sistema de Backup Automático",
+    "Scripts de Deployment",
+    "Configuración Docker"
+  ],
+  "archivos_creados": [
+    "backup\\backup_automatico.py",
+    "config\\backup_config.json",
+    "config\\monitoreo_config.json",
+    "docker\\docker-compose.yml",
+    "docker\\Dockerfile",
+    "docs\\GUIA_BACKUP.md",
+    "docs\\GUIA_DEPLOYMENT.md",
+    "docs\\GUIA_MONITOREO.md",
+    "monitoring\\monitoreo_produccion.py",
+    "scripts\\deploy_docker.py",
+    "scripts\\iniciar_produccion.bat",
+    "scripts\\iniciar_produccion.py",
+    "scripts\\iniciar_produccion.sh",
+    "scripts\\parar_produccion.bat",
+    "scripts\\parar_produccion.py",
+    "scripts\\reiniciar_produccion.py",
+    "scripts\\verificar_estado.py"
+  ],
+  "servicios_disponibles": [
+    "http://localhost:8501 - Dashboard Principal",
+    "http://localhost:8510 - Dashboard Agrícola",
+    "http://localhost:8502 - Monitoreo"
+  ],
+  "comandos_principales": [
+    "python scripts/iniciar_produccion.py - Iniciar sistema",
+    "python scripts/parar_produccion.py - Detener sistema",
+    "python scripts/verificar_estado.py - Verificar estado",
+    "python monitoring/monitoreo_produccion.py - Monitoreo continuo",
+    "python backup/backup_automatico.py - Backup manual"
+  ],
+  "configuracion": {
+    "servidor": {
+      "host": "localhost",
+      "puerto_principal": 8501,
+      "puerto_agricola": 8510,
+      "puerto_monitoreo": 8502
+    },
+    "docker": {
+      "imagen_base": "python:3.11-slim",
+      "puerto_exposicion": "8501:8501",
+      "volumen_datos": "./data:/app/data",
+      "volumen_logs": "./logs:/app/logs"
+    },
+    "backup": {
+      "frecuencia": "diario",
+      "retencion_dias": 30,
+      "directorio": "./backups"
+    },
+    "monitoreo": {
+      "intervalo_verificacion": 300,
+      "umbral_memoria": 80,
+      "umbral_cpu": 80
+    }
+  }
+}

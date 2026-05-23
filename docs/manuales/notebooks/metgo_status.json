@@ -1,0 +1,9 @@
+{
+  "ultima_ejecucion": "2025-08-25T01:24:58.610502",
+  "fecha_sistema": "2025-08-25",
+  "fecha_corregida": "2024-08-25",
+  "modo_conexion": "postgresql",
+  "estaciones_configuradas": 5,
+  "cultivos_configurados": 4,
+  "registros_totales": 1320
+}

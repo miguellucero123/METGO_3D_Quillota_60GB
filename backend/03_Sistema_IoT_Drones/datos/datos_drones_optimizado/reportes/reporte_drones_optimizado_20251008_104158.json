@@ -1,0 +1,124 @@
+{
+  "fecha_reporte": "2025-10-08T10:41:58.923665",
+  "estadisticas_generales": {
+    "total_vuelos": 3,
+    "tipos_cultivo_monitoreados": 3,
+    "drones_disponibles": 3
+  },
+  "estadisticas_por_drone": {
+    "dji_air_2s": {
+      "cantidad_vuelos": 1,
+      "duracion_promedio": 8.0,
+      "fotos_promedio": 80.0
+    },
+    "dji_mini_3": {
+      "cantidad_vuelos": 1,
+      "duracion_promedio": 6.0,
+      "fotos_promedio": 50.0
+    },
+    "dji_phantom_4": {
+      "cantidad_vuelos": 1,
+      "duracion_promedio": 6.0,
+      "fotos_promedio": 120.0
+    }
+  },
+  "estadisticas_por_cultivo": {
+    "citricos": {
+      "cantidad_vuelos": 1,
+      "area_promedio": 12.0
+    },
+    "palto": {
+      "cantidad_vuelos": 1,
+      "area_promedio": 5.0
+    },
+    "uva": {
+      "cantidad_vuelos": 1,
+      "area_promedio": 8.0
+    }
+  },
+  "analisis_recientes": [
+    {
+      "cultivo_tipo": "citricos",
+      "ndvi_promedio": 0.675,
+      "salud_general": "Buena",
+      "areas_problema": 2
+    },
+    {
+      "cultivo_tipo": "uva",
+      "ndvi_promedio": 0.625,
+      "salud_general": "Buena",
+      "areas_problema": 1
+    },
+    {
+      "cultivo_tipo": "palto",
+      "ndvi_promedio": 0.725,
+      "salud_general": "Excelente",
+      "areas_problema": 1
+    }
+  ],
+  "visualizaciones": {
+    "vuelos_por_drone": "datos_drones_optimizado\\reportes\\vuelos_por_drone.html",
+    "salud_por_cultivo": "datos_drones_optimizado\\reportes\\salud_por_cultivo.html"
+  },
+  "configuracion_drones": {
+    "dji_mini_3": {
+      "nombre": "DJI Mini 3",
+      "autonomia": 25,
+      "alcance": 5,
+      "resolucion": "4K",
+      "altura_vuelo": 100,
+      "cobertura_hectareas": 20
+    },
+    "dji_air_2s": {
+      "nombre": "DJI Air 2S",
+      "autonomia": 31,
+      "alcance": 12,
+      "resolucion": "5.4K",
+      "altura_vuelo": 120,
+      "cobertura_hectareas": 30
+    },
+    "dji_phantom_4": {
+      "nombre": "DJI Phantom 4",
+      "autonomia": 28,
+      "alcance": 7,
+      "resolucion": "4K",
+      "altura_vuelo": 150,
+      "cobertura_hectareas": 50
+    }
+  },
+  "configuracion_cultivos": {
+    "palto": {
+      "nombre": "Palto (Aguacate)",
+      "densidad_plantas_hectarea": 200,
+      "altura_promedio": 8,
+      "distancia_entre_filas": 6,
+      "frecuencia_monitoreo": 15,
+      "indices_relevantes": [
+        "NDVI",
+        "NDWI"
+      ]
+    },
+    "uva": {
+      "nombre": "Uva de Mesa",
+      "densidad_plantas_hectarea": 2500,
+      "altura_promedio": 2,
+      "distancia_entre_filas": 3,
+      "frecuencia_monitoreo": 10,
+      "indices_relevantes": [
+        "NDVI",
+        "SAVI"
+      ]
+    },
+    "citricos": {
+      "nombre": "Cítricos",
+      "densidad_plantas_hectarea": 400,
+      "altura_promedio": 4,
+      "distancia_entre_filas": 5,
+      "frecuencia_monitoreo": 20,
+      "indices_relevantes": [
+        "NDVI",
+        "GCI"
+      ]
+    }
+  }
+}

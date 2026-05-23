@@ -1,0 +1,7 @@
+{
+  "max_workers": 4,
+  "use_threading": true,
+  "use_multiprocessing": false,
+  "batch_size": 100,
+  "timeout": 30
+}

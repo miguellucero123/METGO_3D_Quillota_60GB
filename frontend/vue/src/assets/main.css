@@ -1,0 +1,257 @@
+/* METGO — Design system (light green, minimal, professional) */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  /* Palette — sage / light green */
+  --color-primary: #3d6b52;
+  --color-primary-hover: #325a45;
+  --color-primary-muted: #e8f2eb;
+  --color-primary-subtle: #f4faf6;
+  --color-accent: #5a9b72;
+  --color-accent-light: #c5e0ce;
+
+  --color-bg: #f5f9f6;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-border: #d8e8dc;
+  --color-border-strong: #b8d4c0;
+
+  --color-text: #1a2e22;
+  --color-text-secondary: #3d5248;
+  --color-muted: #6b7f74;
+
+  --color-success: #2d6a4f;
+  --color-success-bg: #d8f3dc;
+  --color-warning: #9a6b2e;
+  --color-warning-bg: #faf3e0;
+  --color-danger: #9b3d3d;
+  --color-danger-bg: #fce8e8;
+  --color-info: #3d6b52;
+  --color-info-bg: #e8f2eb;
+
+  /* Legacy aliases (compat) */
+  --metgo-primary: var(--color-primary);
+  --metgo-secondary: var(--color-accent);
+  --metgo-bg: var(--color-bg);
+  --metgo-card: var(--color-surface);
+  --metgo-text: var(--color-text);
+  --metgo-muted: var(--color-muted);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(26, 46, 34, 0.04);
+  --shadow-md: 0 4px 16px rgba(26, 46, 34, 0.06);
+  --shadow-lg: 0 12px 40px rgba(26, 46, 34, 0.08);
+  --metgo-radius: var(--radius-lg);
+  --metgo-shadow: var(--shadow-md);
+
+  --font-sans: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-main {
+  flex: 1;
+  padding: var(--space-lg);
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+
+/* ——— UI primitives ——— */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+.card-grid--wide {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.page-header {
+  margin-bottom: var(--space-lg);
+}
+
+.page-title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  margin-top: var(--space-xs);
+}
+
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: var(--color-primary);
+  color: #fff;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border-strong);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--color-primary-muted);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.badge--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.badge--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.badge--neutral {
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-primary-subtle);
+}
+
+.data-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.data-table tbody tr:hover {
+  background: var(--color-primary-subtle);
+}
+
+.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+@media (max-width: 960px) {
+  .layout-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.muted {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.skeleton {
+  color: var(--color-muted);
+  padding: var(--space-xl);
+  text-align: center;
+}

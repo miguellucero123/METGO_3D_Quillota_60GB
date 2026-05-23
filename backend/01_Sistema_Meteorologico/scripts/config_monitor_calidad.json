@@ -1,0 +1,34 @@
+{
+  "intervalo_monitoreo_segundos": 300,
+  "umbrales_alertas": {
+    "calidad_minima": 80.0,
+    "disponibilidad_minima": 95.0,
+    "latencia_maxima": 30.0,
+    "errores_maximos_por_hora": 10,
+    "campos_faltantes_maximos": 5
+  },
+  "fuentes_datos": [
+    "openmeteo",
+    "openweathermap",
+    "sensor_local",
+    "simulado"
+  ],
+  "campos_criticos": [
+    "temperatura_promedio",
+    "humedad_relativa",
+    "precipitacion_diaria",
+    "timestamp"
+  ],
+  "base_datos": "scripts/datos_meteorologicos.db",
+  "retencion_metricas_dias": 30,
+  "retencion_alertas_dias": 7,
+  "usar_validador_flexible": true,
+  "crear_reportes_automaticos": true,
+  "notificaciones": {
+    "habilitadas": false,
+    "email": "",
+    "telefono": ""
+  }
+}
+
+

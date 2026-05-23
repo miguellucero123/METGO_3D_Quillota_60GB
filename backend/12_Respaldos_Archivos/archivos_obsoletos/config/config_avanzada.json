@@ -1,0 +1,43 @@
+{
+  "sistema": {
+    "nombre": "METGO 3D",
+    "version": "2.0.0",
+    "entorno": "produccion",
+    "debug": false
+  },
+  "base_datos": {
+    "tipo": "postgresql",
+    "host": "localhost",
+    "puerto": 5432,
+    "nombre": "metgo_3d",
+    "usuario": "metgo_user",
+    "password": "metgo_pass"
+  },
+  "redis": {
+    "host": "localhost",
+    "puerto": 6379,
+    "db": 0
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "puerto": 8000,
+    "workers": 4
+  },
+  "streamlit": {
+    "puerto": 8501,
+    "host": "localhost"
+  },
+  "monitoreo": {
+    "prometheus_puerto": 9090,
+    "grafana_puerto": 3000,
+    "log_level": "INFO"
+  },
+  "seguridad": {
+    "secret_key": "metgo_secret_key_2025",
+    "jwt_expire": 3600,
+    "cors_origins": [
+      "http://localhost:8501",
+      "http://localhost:3000"
+    ]
+  }
+}

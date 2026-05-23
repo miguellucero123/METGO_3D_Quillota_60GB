@@ -1,0 +1,345 @@
+{
+  "timestamp": "2025-10-03T15:48:33.286754",
+  "sistema": "METGO 3D - Pruebas Finales",
+  "version": "2.0",
+  "resultados": {
+    "modulos": {
+      "orquestador_metgo_avanzado": {
+        "modulo": "orquestador_metgo_avanzado",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "APIAvanzadaMETGO",
+            "AnalisisAvanzadoMETGO",
+            "IAAvanzadaMETGO",
+            "SistemaIoTMETGO",
+            "Visualizacion3DMETGO"
+          ]
+        }
+      },
+      "configuracion_unificada_metgo": {
+        "modulo": "configuracion_unificada_metgo",
+        "exitoso": false,
+        "error": "Error importando módulo: No module named 'yaml'",
+        "duracion": 0,
+        "detalles": {}
+      },
+      "pipeline_completo_metgo": {
+        "modulo": "pipeline_completo_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "PipelineCompletoMETGO"
+          ]
+        }
+      },
+      "dashboard_unificado_metgo": {
+        "modulo": "dashboard_unificado_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "DashboardUnificadoMETGO"
+          ]
+        }
+      },
+      "monitoreo_avanzado_metgo": {
+        "modulo": "monitoreo_avanzado_metgo",
+        "exitoso": false,
+        "error": "Error importando módulo: No module named 'psutil'",
+        "duracion": 0,
+        "detalles": {}
+      },
+      "respaldos_automaticos_metgo": {
+        "modulo": "respaldos_automaticos_metgo",
+        "exitoso": false,
+        "error": "Error importando módulo: cannot import name 'MimeText' from 'email.mime.text' (C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\text.py)",
+        "duracion": 0,
+        "detalles": {}
+      },
+      "ia_avanzada_metgo": {
+        "modulo": "ia_avanzada_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "IAAvanzadaMETGO"
+          ]
+        }
+      },
+      "sistema_iot_metgo": {
+        "modulo": "sistema_iot_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "SistemaIoTMETGO"
+          ]
+        }
+      },
+      "analisis_avanzado_metgo": {
+        "modulo": "analisis_avanzado_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "AnalisisAvanzadoMETGO"
+          ]
+        }
+      },
+      "visualizacion_3d_metgo": {
+        "modulo": "visualizacion_3d_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "Visualizacion3DMETGO"
+          ]
+        }
+      },
+      "apis_avanzadas_metgo": {
+        "modulo": "apis_avanzadas_metgo",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "importacion": "exitoso",
+          "main": "disponible",
+          "clases": [
+            "APIAvanzadaMETGO"
+          ]
+        }
+      },
+      "optimizacion_rendimiento_metgo": {
+        "modulo": "optimizacion_rendimiento_metgo",
+        "exitoso": false,
+        "error": "Error importando módulo: No module named 'psutil'",
+        "duracion": 0,
+        "detalles": {}
+      },
+      "escalabilidad_metgo": {
+        "modulo": "escalabilidad_metgo",
+        "exitoso": false,
+        "error": "Error importando módulo: No module named 'psutil'",
+        "duracion": 0,
+        "detalles": {}
+      },
+      "deployment_produccion_metgo": {
+        "modulo": "deployment_produccion_metgo",
+        "exitoso": false,
+        "error": "Error importando módulo: No module named 'docker'",
+        "duracion": 0,
+        "detalles": {}
+      }
+    },
+    "notebooks": {
+      "00_Sistema_Principal_MIP_Quillota.ipynb": {
+        "notebook": "00_Sistema_Principal_MIP_Quillota.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "tamaño_bytes": 348543,
+          "formato": "valido"
+        }
+      },
+      "01_Configuracion_e_imports.ipynb": {
+        "notebook": "01_Configuracion_e_imports.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "tamaño_bytes": 71786,
+          "formato": "valido"
+        }
+      },
+      "02_Carga_y_Procesamiento_Datos.ipynb": {
+        "notebook": "02_Carga_y_Procesamiento_Datos.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "tamaño_bytes": 329532,
+          "formato": "valido"
+        }
+      },
+      "03_Analisis_Meteorologico.ipynb": {
+        "notebook": "03_Analisis_Meteorologico.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.031110525131225586,
+        "detalles": {
+          "tamaño_bytes": 1835475,
+          "formato": "valido"
+        }
+      },
+      "04_Visualizaciones.ipynb": {
+        "notebook": "04_Visualizaciones.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.02983713150024414,
+        "detalles": {
+          "tamaño_bytes": 3536514,
+          "formato": "valido"
+        }
+      },
+      "05_Modelos_ML.ipynb": {
+        "notebook": "05_Modelos_ML.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0010383129119873047,
+        "detalles": {
+          "tamaño_bytes": 528531,
+          "formato": "valido"
+        }
+      },
+      "11_Monitoreo_Tiempo_Real.ipynb": {
+        "notebook": "11_Monitoreo_Tiempo_Real.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "tamaño_bytes": 10975,
+          "formato": "valido"
+        }
+      },
+      "12_Respaldos_Automaticos.ipynb": {
+        "notebook": "12_Respaldos_Automaticos.ipynb",
+        "exitoso": true,
+        "error": null,
+        "duracion": 0.0,
+        "detalles": {
+          "tamaño_bytes": 1664,
+          "formato": "valido"
+        }
+      }
+    },
+    "configuracion": {
+      "tipo": "configuracion",
+      "exitoso": true,
+      "error": null,
+      "duracion": 0.0,
+      "detalles": {
+        "config/config.yaml": "valido (3188 bytes)",
+        "requirements.txt": "valido (837 bytes)",
+        "Dockerfile": "valido (1709 bytes)",
+        "docker-compose.yml": "valido (5073 bytes)",
+        ".gitignore": "valido (1779 bytes)",
+        "README.md": "valido (10536 bytes)",
+        "LICENSE": "valido (1130 bytes)",
+        "archivos_encontrados": 7,
+        "archivos_validos": 7,
+        "total_archivos": 7
+      }
+    },
+    "documentacion": {
+      "tipo": "documentacion",
+      "exitoso": true,
+      "error": null,
+      "duracion": 0.0,
+      "detalles": {
+        "docs/README.md": "valido (13077 bytes)",
+        "docs/guia_usuario.md": "valido (13228 bytes)",
+        "docs/guia_instalacion.md": "valido (18486 bytes)",
+        "docs/guia_api.md": "valido (24379 bytes)",
+        "docs/guia_configuracion.md": "valido (16184 bytes)",
+        "docs/troubleshooting.md": "valido (15709 bytes)",
+        "archivos_encontrados": 6,
+        "archivos_validos": 6,
+        "total_archivos": 6
+      }
+    },
+    "tests": {
+      "tipo": "tests",
+      "exitoso": true,
+      "error": null,
+      "duracion": 0.0,
+      "detalles": {
+        "tests/test_ia_avanzada.py": "valido (13786 bytes)",
+        "tests/test_sistema_iot.py": "valido (17926 bytes)",
+        "tests/test_integracion_completa.py": "valido (20638 bytes)",
+        "tests/test_rendimiento.py": "valido (35430 bytes)",
+        "tests/runner_tests.py": "valido (13616 bytes)",
+        "archivos_encontrados": 5,
+        "archivos_validos": 5,
+        "total_archivos": 5
+      }
+    },
+    "resumen": {
+      "inicio": "2025-10-03T15:47:07.685474",
+      "pruebas_ejecutadas": 50,
+      "pruebas_exitosas": 38,
+      "pruebas_fallidas": 12,
+      "errores": [
+        "Modulo configuracion_unificada_metgo: Error importando módulo: No module named 'yaml'",
+        "Modulo monitoreo_avanzado_metgo: Error importando módulo: No module named 'psutil'",
+        "Modulo respaldos_automaticos_metgo: Error importando módulo: cannot import name 'MimeText' from 'email.mime.text' (C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\text.py)",
+        "Modulo optimizacion_rendimiento_metgo: Error importando módulo: No module named 'psutil'",
+        "Modulo escalabilidad_metgo: Error importando módulo: No module named 'psutil'",
+        "Modulo deployment_produccion_metgo: Error importando módulo: No module named 'docker'",
+        "Modulo configuracion_unificada_metgo: Error importando módulo: No module named 'yaml'",
+        "Modulo monitoreo_avanzado_metgo: Error importando módulo: No module named 'psutil'",
+        "Modulo respaldos_automaticos_metgo: Error importando módulo: cannot import name 'MimeText' from 'email.mime.text' (C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\text.py)",
+        "Modulo optimizacion_rendimiento_metgo: Error importando módulo: No module named 'psutil'",
+        "Modulo escalabilidad_metgo: Error importando módulo: No module named 'psutil'",
+        "Modulo deployment_produccion_metgo: Error importando módulo: No module named 'docker'"
+      ],
+      "detalles": {},
+      "fin": "2025-10-03T15:48:33.286754",
+      "duracion_total": 0.06783008575439453,
+      "tasa_exito": 76.0
+    },
+    "exitoso": false
+  },
+  "resumen": {
+    "pruebas_ejecutadas": 50,
+    "pruebas_exitosas": 38,
+    "pruebas_fallidas": 12,
+    "tasa_exito": 76.0,
+    "duracion_total": 0.06783008575439453,
+    "errores": [
+      "Modulo configuracion_unificada_metgo: Error importando módulo: No module named 'yaml'",
+      "Modulo monitoreo_avanzado_metgo: Error importando módulo: No module named 'psutil'",
+      "Modulo respaldos_automaticos_metgo: Error importando módulo: cannot import name 'MimeText' from 'email.mime.text' (C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\text.py)",
+      "Modulo optimizacion_rendimiento_metgo: Error importando módulo: No module named 'psutil'",
+      "Modulo escalabilidad_metgo: Error importando módulo: No module named 'psutil'",
+      "Modulo deployment_produccion_metgo: Error importando módulo: No module named 'docker'",
+      "Modulo configuracion_unificada_metgo: Error importando módulo: No module named 'yaml'",
+      "Modulo monitoreo_avanzado_metgo: Error importando módulo: No module named 'psutil'",
+      "Modulo respaldos_automaticos_metgo: Error importando módulo: cannot import name 'MimeText' from 'email.mime.text' (C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\text.py)",
+      "Modulo optimizacion_rendimiento_metgo: Error importando módulo: No module named 'psutil'",
+      "Modulo escalabilidad_metgo: Error importando módulo: No module named 'psutil'",
+      "Modulo deployment_produccion_metgo: Error importando módulo: No module named 'docker'"
+    ]
+  },
+  "recomendaciones": [
+    "Verificar módulos con errores",
+    "Completar documentación faltante",
+    "Ejecutar tests unitarios",
+    "Validar configuración",
+    "Probar deployment en entorno de testing"
+  ]
+}

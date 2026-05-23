@@ -1,0 +1,184 @@
+{
+  "timestamp": "2025-10-04T02:57:49.377964",
+  "sistema": "METGO 3D - Dashboard Integrado de Notebooks",
+  "version": "2.0",
+  "estadisticas": {
+    "total_notebooks": 16,
+    "notebooks_existentes": 16,
+    "notebooks_faltantes": 0,
+    "porcentaje_completitud": 100.0,
+    "total_ejecuciones": 0,
+    "ejecuciones_exitosas": 0,
+    "duracion_promedio": 0
+  },
+  "notebooks": {
+    "00_sistema_principal": {
+      "nombre": "Sistema Principal MIP Quillota",
+      "archivo": "00_Sistema_Principal_MIP_Quillota.ipynb",
+      "existe": true,
+      "tamaño": 348543,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:17:55.702639",
+      "categoria": "core",
+      "descripcion": "Sistema principal operativo"
+    },
+    "01_configuracion": {
+      "nombre": "Configuración e Imports",
+      "archivo": "01_Configuracion_e_imports.ipynb",
+      "existe": true,
+      "tamaño": 71786,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:22.838615",
+      "categoria": "config",
+      "descripcion": "Configuración y imports del sistema"
+    },
+    "02_procesamiento": {
+      "nombre": "Carga y Procesamiento de Datos",
+      "archivo": "02_Carga_y_Procesamiento_Datos.ipynb",
+      "existe": true,
+      "tamaño": 329532,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:24.131131",
+      "categoria": "data",
+      "descripcion": "Procesamiento de datos meteorológicos"
+    },
+    "03_analisis": {
+      "nombre": "Análisis Meteorológico",
+      "archivo": "03_Analisis_Meteorologico.ipynb",
+      "existe": true,
+      "tamaño": 1835475,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:25.713926",
+      "categoria": "analysis",
+      "descripcion": "Análisis meteorológico avanzado"
+    },
+    "04_visualizaciones": {
+      "nombre": "Visualizaciones",
+      "archivo": "04_Visualizaciones.ipynb",
+      "existe": true,
+      "tamaño": 3536514,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:34.839083",
+      "categoria": "visualization",
+      "descripcion": "Visualizaciones y gráficos"
+    },
+    "05_modelos_ml": {
+      "nombre": "Modelos de Machine Learning",
+      "archivo": "05_Modelos_ML.ipynb",
+      "existe": true,
+      "tamaño": 528531,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:42.992735",
+      "categoria": "ml",
+      "descripcion": "Modelos de ML y predicciones"
+    },
+    "06_dashboard": {
+      "nombre": "Dashboard Interactivo",
+      "archivo": "06_Dashboard_Interactivo.ipynb",
+      "existe": true,
+      "tamaño": 62364,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-04T02:48:37.931046",
+      "categoria": "dashboard",
+      "descripcion": "Dashboard interactivo con Streamlit"
+    },
+    "07_reportes": {
+      "nombre": "Reportes Automáticos",
+      "archivo": "07_Reportes_Automaticos.ipynb",
+      "existe": true,
+      "tamaño": 48381,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:48.067706",
+      "categoria": "reports",
+      "descripcion": "Generación de reportes automáticos"
+    },
+    "08_apis": {
+      "nombre": "APIs Externas",
+      "archivo": "08_APIs_Externas.ipynb",
+      "existe": true,
+      "tamaño": 43366,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:51.284984",
+      "categoria": "api",
+      "descripcion": "Integración con APIs externas"
+    },
+    "09_testing": {
+      "nombre": "Testing y Validación",
+      "archivo": "09_Testing_Validacion.ipynb",
+      "existe": true,
+      "tamaño": 43791,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:53.842198",
+      "categoria": "testing",
+      "descripcion": "Testing y validación del sistema"
+    },
+    "10_deployment": {
+      "nombre": "Deployment en Producción",
+      "archivo": "10_Deployment_Produccion.ipynb",
+      "existe": true,
+      "tamaño": 49771,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T01:18:57.923947",
+      "categoria": "deployment",
+      "descripcion": "Deployment y producción"
+    },
+    "11_monitoreo": {
+      "nombre": "Monitoreo en Tiempo Real",
+      "archivo": "11_Monitoreo_Tiempo_Real.ipynb",
+      "existe": true,
+      "tamaño": 10975,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T13:57:08.544638",
+      "categoria": "monitoring",
+      "descripcion": "Monitoreo en tiempo real"
+    },
+    "12_respaldos": {
+      "nombre": "Respaldos Automáticos",
+      "archivo": "12_Respaldos_Automaticos.ipynb",
+      "existe": true,
+      "tamaño": 1664,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T13:57:10.502531",
+      "categoria": "backup",
+      "descripcion": "Sistema de respaldos automáticos"
+    },
+    "13_optimizacion": {
+      "nombre": "Optimización y Mantenimiento",
+      "archivo": "13_Optimizacion_Mantenimiento.ipynb",
+      "existe": true,
+      "tamaño": 1388,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T10:29:30.839667",
+      "categoria": "optimization",
+      "descripcion": "Optimización y mantenimiento"
+    },
+    "14_reportes_avanzados": {
+      "nombre": "Reportes Avanzados",
+      "archivo": "14_Reportes_Avanzados.ipynb",
+      "existe": true,
+      "tamaño": 1352,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T10:29:30.845752",
+      "categoria": "advanced_reports",
+      "descripcion": "Reportes avanzados y análisis"
+    },
+    "15_apis_externas": {
+      "nombre": "Integración APIs Externas",
+      "archivo": "15_Integracion_APIs_Externas.ipynb",
+      "existe": true,
+      "tamaño": 1388,
+      "formato": "valido",
+      "ultima_modificacion": "2025-10-03T10:29:30.846662",
+      "categoria": "external_apis",
+      "descripcion": "Integración avanzada con APIs"
+    }
+  },
+  "resultados": {},
+  "recomendaciones": [
+    "Verificar notebooks faltantes",
+    "Ejecutar notebooks críticos regularmente",
+    "Monitorear duración de ejecuciones",
+    "Revisar errores de ejecución",
+    "Actualizar notebooks desactualizados"
+  ]
+}

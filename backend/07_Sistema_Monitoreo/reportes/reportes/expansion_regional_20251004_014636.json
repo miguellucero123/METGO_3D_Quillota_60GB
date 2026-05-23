@@ -1,0 +1,757 @@
+{
+  "timestamp": "2025-10-04T01:46:36.058875",
+  "sistema": "METGO 3D - Expansión Regional",
+  "version": "2.0",
+  "configuracion_regional": {
+    "region_principal": "Valparaíso",
+    "regiones_objetivo": [
+      "Metropolitana",
+      "O'Higgins",
+      "Maule",
+      "Biobío",
+      "La Araucanía"
+    ],
+    "expansion_prioritaria": true,
+    "sincronizacion_datos": true,
+    "analisis_comparativo": true
+  },
+  "regiones": [
+    {
+      "id": "region_05",
+      "nombre": "Valparaíso",
+      "codigo": "V",
+      "capital": "Valparaíso",
+      "coordenadas": [
+        -33.0458,
+        -71.6197
+      ],
+      "superficie": 16396.1,
+      "poblacion": 1815902,
+      "clima": "Mediterráneo",
+      "cultivos_principales": [
+        "Palta",
+        "Cítricos",
+        "Vid",
+        "Hortalizas"
+      ]
+    },
+    {
+      "id": "region_13",
+      "nombre": "Metropolitana",
+      "codigo": "RM",
+      "capital": "Santiago",
+      "coordenadas": [
+        -33.4489,
+        -70.6693
+      ],
+      "superficie": 15403.2,
+      "poblacion": 7112808,
+      "clima": "Mediterráneo continental",
+      "cultivos_principales": [
+        "Vid",
+        "Frutales",
+        "Hortalizas",
+        "Cereales"
+      ]
+    },
+    {
+      "id": "region_06",
+      "nombre": "O'Higgins",
+      "codigo": "VI",
+      "capital": "Rancagua",
+      "coordenadas": [
+        -34.1708,
+        -70.7444
+      ],
+      "superficie": 16387.0,
+      "poblacion": 914555,
+      "clima": "Mediterráneo",
+      "cultivos_principales": [
+        "Vid",
+        "Frutales",
+        "Cereales",
+        "Hortalizas"
+      ]
+    },
+    {
+      "id": "region_07",
+      "nombre": "Maule",
+      "codigo": "VII",
+      "capital": "Talca",
+      "coordenadas": [
+        -35.4264,
+        -71.6554
+      ],
+      "superficie": 30296.1,
+      "poblacion": 1044950,
+      "clima": "Mediterráneo",
+      "cultivos_principales": [
+        "Vid",
+        "Frutales",
+        "Cereales",
+        "Forestal"
+      ]
+    },
+    {
+      "id": "region_08",
+      "nombre": "Biobío",
+      "codigo": "VIII",
+      "capital": "Concepción",
+      "coordenadas": [
+        -36.8201,
+        -73.0444
+      ],
+      "superficie": 23890.2,
+      "poblacion": 1556805,
+      "clima": "Mediterráneo oceánico",
+      "cultivos_principales": [
+        "Forestal",
+        "Cereales",
+        "Hortalizas",
+        "Frutales"
+      ]
+    },
+    {
+      "id": "region_09",
+      "nombre": "La Araucanía",
+      "codigo": "IX",
+      "capital": "Temuco",
+      "coordenadas": [
+        -38.7359,
+        -72.5904
+      ],
+      "superficie": 31842.3,
+      "poblacion": 957224,
+      "clima": "Templado oceánico",
+      "cultivos_principales": [
+        "Forestal",
+        "Cereales",
+        "Hortalizas",
+        "Frutales"
+      ]
+    }
+  ],
+  "estaciones": [
+    {
+      "id": "estacion_valparaiso",
+      "nombre": "Estación Valparaíso",
+      "region_id": "region_05",
+      "coordenadas": [
+        -33.0458,
+        -71.6197
+      ],
+      "altitud": 10,
+      "activa": true,
+      "sensores": [
+        "temperatura",
+        "humedad",
+        "precipitacion",
+        "viento",
+        "presion"
+      ]
+    },
+    {
+      "id": "estacion_santiago",
+      "nombre": "Estación Santiago",
+      "region_id": "region_13",
+      "coordenadas": [
+        -33.4489,
+        -70.6693
+      ],
+      "altitud": 520,
+      "activa": true,
+      "sensores": [
+        "temperatura",
+        "humedad",
+        "precipitacion",
+        "viento",
+        "presion"
+      ]
+    },
+    {
+      "id": "estacion_rancagua",
+      "nombre": "Estación Rancagua",
+      "region_id": "region_06",
+      "coordenadas": [
+        -34.1708,
+        -70.7444
+      ],
+      "altitud": 572,
+      "activa": true,
+      "sensores": [
+        "temperatura",
+        "humedad",
+        "precipitacion",
+        "viento",
+        "presion"
+      ]
+    },
+    {
+      "id": "estacion_talca",
+      "nombre": "Estación Talca",
+      "region_id": "region_07",
+      "coordenadas": [
+        -35.4264,
+        -71.6554
+      ],
+      "altitud": 102,
+      "activa": true,
+      "sensores": [
+        "temperatura",
+        "humedad",
+        "precipitacion",
+        "viento",
+        "presion"
+      ]
+    },
+    {
+      "id": "estacion_concepcion",
+      "nombre": "Estación Concepción",
+      "region_id": "region_08",
+      "coordenadas": [
+        -36.8201,
+        -73.0444
+      ],
+      "altitud": 12,
+      "activa": true,
+      "sensores": [
+        "temperatura",
+        "humedad",
+        "precipitacion",
+        "viento",
+        "presion"
+      ]
+    },
+    {
+      "id": "estacion_temuco",
+      "nombre": "Estación Temuco",
+      "region_id": "region_09",
+      "coordenadas": [
+        -38.7359,
+        -72.5904
+      ],
+      "altitud": 114,
+      "activa": true,
+      "sensores": [
+        "temperatura",
+        "humedad",
+        "precipitacion",
+        "viento",
+        "presion"
+      ]
+    }
+  ],
+  "cultivos": [
+    {
+      "id": "cultivo_vid_valparaiso",
+      "nombre": "Vid de Mesa",
+      "region_id": "region_05",
+      "temporada_siembra": "septiembre",
+      "temporada_cosecha": "febrero-marzo",
+      "rendimiento_promedio": 15.5
+    },
+    {
+      "id": "cultivo_palta_valparaiso",
+      "nombre": "Palta Hass",
+      "region_id": "region_05",
+      "temporada_siembra": "agosto",
+      "temporada_cosecha": "mayo-septiembre",
+      "rendimiento_promedio": 12.0
+    },
+    {
+      "id": "cultivo_vid_santiago",
+      "nombre": "Vid para Vino",
+      "region_id": "region_13",
+      "temporada_siembra": "septiembre",
+      "temporada_cosecha": "marzo-abril",
+      "rendimiento_promedio": 8.5
+    },
+    {
+      "id": "cultivo_maiz_ohiggins",
+      "nombre": "Maíz",
+      "region_id": "region_06",
+      "temporada_siembra": "septiembre",
+      "temporada_cosecha": "marzo-abril",
+      "rendimiento_promedio": 10.0
+    },
+    {
+      "id": "cultivo_forestal_maule",
+      "nombre": "Pino Radiata",
+      "region_id": "region_07",
+      "temporada_siembra": "junio",
+      "temporada_cosecha": "15-20 años",
+      "rendimiento_promedio": 25.0
+    },
+    {
+      "id": "cultivo_trigo_biobio",
+      "nombre": "Trigo",
+      "region_id": "region_08",
+      "temporada_siembra": "mayo",
+      "temporada_cosecha": "diciembre-enero",
+      "rendimiento_promedio": 6.5
+    }
+  ],
+  "datos_meteorologicos_actuales": {
+    "estacion_valparaiso": {
+      "estacion_id": "estacion_valparaiso",
+      "region_id": "region_05",
+      "timestamp": "2025-10-04T01:46:36.020938",
+      "temperatura": 18.322150391749116,
+      "humedad": 54.39673746153052,
+      "precipitacion": 2.4661845360626407,
+      "viento": 3.3767672576236976,
+      "presion": 1022.4081208831175,
+      "radiacion": 332.26525276022863,
+      "calidad_datos": 0.95
+    },
+    "estacion_santiago": {
+      "estacion_id": "estacion_santiago",
+      "region_id": "region_13",
+      "timestamp": "2025-10-04T01:46:36.036731",
+      "temperatura": 11.217543946830467,
+      "humedad": 62.34794812108893,
+      "precipitacion": 2.7387074295920564,
+      "viento": 5.573659023248,
+      "presion": 1024.9760521825874,
+      "radiacion": 241.84783208264486,
+      "calidad_datos": 0.98
+    },
+    "estacion_rancagua": {
+      "estacion_id": "estacion_rancagua",
+      "region_id": "region_06",
+      "timestamp": "2025-10-04T01:46:36.042925",
+      "temperatura": 17.100770903943687,
+      "humedad": 47.10815335193772,
+      "precipitacion": 3.943283282538144,
+      "viento": 7.490015781748205,
+      "presion": 1021.4316724888766,
+      "radiacion": 278.1179170985223,
+      "calidad_datos": 0.92
+    },
+    "estacion_talca": {
+      "estacion_id": "estacion_talca",
+      "region_id": "region_07",
+      "timestamp": "2025-10-04T01:46:36.042925",
+      "temperatura": 18.172125757798383,
+      "humedad": 88.03017686450663,
+      "precipitacion": 0.9779231866418102,
+      "viento": 11.251455008076583,
+      "presion": 1005.8775267913164,
+      "radiacion": 210.0380401388441,
+      "calidad_datos": 0.9
+    },
+    "estacion_concepcion": {
+      "estacion_id": "estacion_concepcion",
+      "region_id": "region_08",
+      "timestamp": "2025-10-04T01:46:36.042925",
+      "temperatura": 10.756187609245826,
+      "humedad": 78.84897432823867,
+      "precipitacion": 2.3536250304566613,
+      "viento": -4.194246997326381,
+      "presion": 1013.7065582258932,
+      "radiacion": 248.2018215263731,
+      "calidad_datos": 0.88
+    },
+    "estacion_temuco": {
+      "estacion_id": "estacion_temuco",
+      "region_id": "region_09",
+      "timestamp": "2025-10-04T01:46:36.058875",
+      "temperatura": 8.15576431104909,
+      "humedad": 51.24982918912205,
+      "precipitacion": 4.313259570913466,
+      "viento": 6.62335056736608,
+      "presion": 1009.6724022215113,
+      "radiacion": 386.3184833581574,
+      "calidad_datos": 0.85
+    }
+  },
+  "analisis_comparativo": {
+    "timestamp": "2025-10-04T01:46:36.020938",
+    "regiones_analizadas": 6,
+    "analisis_por_region": {
+      "region_05": {
+        "region": "Valparaíso",
+        "capital": "Valparaíso",
+        "clima": "Mediterráneo",
+        "estaciones_activas": 1,
+        "temperatura_promedio": 18.322150391749116,
+        "humedad_promedio": 54.39673746153052,
+        "precipitacion_promedio": 2.4661845360626407,
+        "cultivos_principales": [
+          "Palta",
+          "Cítricos",
+          "Vid",
+          "Hortalizas"
+        ],
+        "superficie": 16396.1,
+        "poblacion": 1815902
+      },
+      "region_13": {
+        "region": "Metropolitana",
+        "capital": "Santiago",
+        "clima": "Mediterráneo continental",
+        "estaciones_activas": 1,
+        "temperatura_promedio": 11.217543946830467,
+        "humedad_promedio": 62.34794812108893,
+        "precipitacion_promedio": 2.7387074295920564,
+        "cultivos_principales": [
+          "Vid",
+          "Frutales",
+          "Hortalizas",
+          "Cereales"
+        ],
+        "superficie": 15403.2,
+        "poblacion": 7112808
+      },
+      "region_06": {
+        "region": "O'Higgins",
+        "capital": "Rancagua",
+        "clima": "Mediterráneo",
+        "estaciones_activas": 1,
+        "temperatura_promedio": 17.100770903943687,
+        "humedad_promedio": 47.10815335193772,
+        "precipitacion_promedio": 3.943283282538144,
+        "cultivos_principales": [
+          "Vid",
+          "Frutales",
+          "Cereales",
+          "Hortalizas"
+        ],
+        "superficie": 16387.0,
+        "poblacion": 914555
+      },
+      "region_07": {
+        "region": "Maule",
+        "capital": "Talca",
+        "clima": "Mediterráneo",
+        "estaciones_activas": 1,
+        "temperatura_promedio": 18.172125757798383,
+        "humedad_promedio": 88.03017686450663,
+        "precipitacion_promedio": 0.9779231866418102,
+        "cultivos_principales": [
+          "Vid",
+          "Frutales",
+          "Cereales",
+          "Forestal"
+        ],
+        "superficie": 30296.1,
+        "poblacion": 1044950
+      },
+      "region_08": {
+        "region": "Biobío",
+        "capital": "Concepción",
+        "clima": "Mediterráneo oceánico",
+        "estaciones_activas": 1,
+        "temperatura_promedio": 10.756187609245826,
+        "humedad_promedio": 78.84897432823867,
+        "precipitacion_promedio": 2.3536250304566613,
+        "cultivos_principales": [
+          "Forestal",
+          "Cereales",
+          "Hortalizas",
+          "Frutales"
+        ],
+        "superficie": 23890.2,
+        "poblacion": 1556805
+      },
+      "region_09": {
+        "region": "La Araucanía",
+        "capital": "Temuco",
+        "clima": "Templado oceánico",
+        "estaciones_activas": 1,
+        "temperatura_promedio": 8.15576431104909,
+        "humedad_promedio": 51.24982918912205,
+        "precipitacion_promedio": 4.313259570913466,
+        "cultivos_principales": [
+          "Forestal",
+          "Cereales",
+          "Hortalizas",
+          "Frutales"
+        ],
+        "superficie": 31842.3,
+        "poblacion": 957224
+      }
+    },
+    "ranking_temperatura": [
+      [
+        "region_05",
+        {
+          "region": "Valparaíso",
+          "capital": "Valparaíso",
+          "clima": "Mediterráneo",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 18.322150391749116,
+          "humedad_promedio": 54.39673746153052,
+          "precipitacion_promedio": 2.4661845360626407,
+          "cultivos_principales": [
+            "Palta",
+            "Cítricos",
+            "Vid",
+            "Hortalizas"
+          ],
+          "superficie": 16396.1,
+          "poblacion": 1815902
+        }
+      ],
+      [
+        "region_07",
+        {
+          "region": "Maule",
+          "capital": "Talca",
+          "clima": "Mediterráneo",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 18.172125757798383,
+          "humedad_promedio": 88.03017686450663,
+          "precipitacion_promedio": 0.9779231866418102,
+          "cultivos_principales": [
+            "Vid",
+            "Frutales",
+            "Cereales",
+            "Forestal"
+          ],
+          "superficie": 30296.1,
+          "poblacion": 1044950
+        }
+      ],
+      [
+        "region_06",
+        {
+          "region": "O'Higgins",
+          "capital": "Rancagua",
+          "clima": "Mediterráneo",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 17.100770903943687,
+          "humedad_promedio": 47.10815335193772,
+          "precipitacion_promedio": 3.943283282538144,
+          "cultivos_principales": [
+            "Vid",
+            "Frutales",
+            "Cereales",
+            "Hortalizas"
+          ],
+          "superficie": 16387.0,
+          "poblacion": 914555
+        }
+      ],
+      [
+        "region_13",
+        {
+          "region": "Metropolitana",
+          "capital": "Santiago",
+          "clima": "Mediterráneo continental",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 11.217543946830467,
+          "humedad_promedio": 62.34794812108893,
+          "precipitacion_promedio": 2.7387074295920564,
+          "cultivos_principales": [
+            "Vid",
+            "Frutales",
+            "Hortalizas",
+            "Cereales"
+          ],
+          "superficie": 15403.2,
+          "poblacion": 7112808
+        }
+      ],
+      [
+        "region_08",
+        {
+          "region": "Biobío",
+          "capital": "Concepción",
+          "clima": "Mediterráneo oceánico",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 10.756187609245826,
+          "humedad_promedio": 78.84897432823867,
+          "precipitacion_promedio": 2.3536250304566613,
+          "cultivos_principales": [
+            "Forestal",
+            "Cereales",
+            "Hortalizas",
+            "Frutales"
+          ],
+          "superficie": 23890.2,
+          "poblacion": 1556805
+        }
+      ],
+      [
+        "region_09",
+        {
+          "region": "La Araucanía",
+          "capital": "Temuco",
+          "clima": "Templado oceánico",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 8.15576431104909,
+          "humedad_promedio": 51.24982918912205,
+          "precipitacion_promedio": 4.313259570913466,
+          "cultivos_principales": [
+            "Forestal",
+            "Cereales",
+            "Hortalizas",
+            "Frutales"
+          ],
+          "superficie": 31842.3,
+          "poblacion": 957224
+        }
+      ]
+    ],
+    "ranking_precipitacion": [
+      [
+        "region_09",
+        {
+          "region": "La Araucanía",
+          "capital": "Temuco",
+          "clima": "Templado oceánico",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 8.15576431104909,
+          "humedad_promedio": 51.24982918912205,
+          "precipitacion_promedio": 4.313259570913466,
+          "cultivos_principales": [
+            "Forestal",
+            "Cereales",
+            "Hortalizas",
+            "Frutales"
+          ],
+          "superficie": 31842.3,
+          "poblacion": 957224
+        }
+      ],
+      [
+        "region_06",
+        {
+          "region": "O'Higgins",
+          "capital": "Rancagua",
+          "clima": "Mediterráneo",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 17.100770903943687,
+          "humedad_promedio": 47.10815335193772,
+          "precipitacion_promedio": 3.943283282538144,
+          "cultivos_principales": [
+            "Vid",
+            "Frutales",
+            "Cereales",
+            "Hortalizas"
+          ],
+          "superficie": 16387.0,
+          "poblacion": 914555
+        }
+      ],
+      [
+        "region_13",
+        {
+          "region": "Metropolitana",
+          "capital": "Santiago",
+          "clima": "Mediterráneo continental",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 11.217543946830467,
+          "humedad_promedio": 62.34794812108893,
+          "precipitacion_promedio": 2.7387074295920564,
+          "cultivos_principales": [
+            "Vid",
+            "Frutales",
+            "Hortalizas",
+            "Cereales"
+          ],
+          "superficie": 15403.2,
+          "poblacion": 7112808
+        }
+      ],
+      [
+        "region_05",
+        {
+          "region": "Valparaíso",
+          "capital": "Valparaíso",
+          "clima": "Mediterráneo",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 18.322150391749116,
+          "humedad_promedio": 54.39673746153052,
+          "precipitacion_promedio": 2.4661845360626407,
+          "cultivos_principales": [
+            "Palta",
+            "Cítricos",
+            "Vid",
+            "Hortalizas"
+          ],
+          "superficie": 16396.1,
+          "poblacion": 1815902
+        }
+      ],
+      [
+        "region_08",
+        {
+          "region": "Biobío",
+          "capital": "Concepción",
+          "clima": "Mediterráneo oceánico",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 10.756187609245826,
+          "humedad_promedio": 78.84897432823867,
+          "precipitacion_promedio": 2.3536250304566613,
+          "cultivos_principales": [
+            "Forestal",
+            "Cereales",
+            "Hortalizas",
+            "Frutales"
+          ],
+          "superficie": 23890.2,
+          "poblacion": 1556805
+        }
+      ],
+      [
+        "region_07",
+        {
+          "region": "Maule",
+          "capital": "Talca",
+          "clima": "Mediterráneo",
+          "estaciones_activas": 1,
+          "temperatura_promedio": 18.172125757798383,
+          "humedad_promedio": 88.03017686450663,
+          "precipitacion_promedio": 0.9779231866418102,
+          "cultivos_principales": [
+            "Vid",
+            "Frutales",
+            "Cereales",
+            "Forestal"
+          ],
+          "superficie": 30296.1,
+          "poblacion": 1044950
+        }
+      ]
+    ],
+    "resumen": {
+      "region_mas_calida": "region_05",
+      "region_mas_fria": "region_09",
+      "region_mas_lluviosa": "region_09",
+      "region_mas_seca": "region_07"
+    }
+  },
+  "funcionalidades_implementadas": [
+    "Expansión a 6 regiones de Chile",
+    "Estaciones meteorológicas regionales",
+    "Cultivos específicos por región",
+    "Análisis comparativo regional",
+    "Base de datos SQLite regional",
+    "Generación de datos sintéticos",
+    "Sistema de logging estructurado",
+    "Configuración por región",
+    "Análisis climático comparativo",
+    "Ranking de condiciones meteorológicas"
+  ],
+  "tecnologias_utilizadas": [
+    "SQLite para base de datos regional",
+    "NumPy para análisis estadístico",
+    "Pandas para manejo de datos",
+    "Logging estructurado",
+    "Configuración por región"
+  ],
+  "recomendaciones": [
+    "Integrar con estaciones meteorológicas reales",
+    "Implementar pronósticos regionales",
+    "Agregar análisis de tendencias climáticas",
+    "Implementar alertas regionales",
+    "Agregar mapas interactivos",
+    "Implementar sincronización en tiempo real",
+    "Agregar análisis de impacto agrícola",
+    "Implementar recomendaciones por región",
+    "Agregar métricas de rendimiento",
+    "Implementar sistema de notificaciones regional"
+  ]
+}

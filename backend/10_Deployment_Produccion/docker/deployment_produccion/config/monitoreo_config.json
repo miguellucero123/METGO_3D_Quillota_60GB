@@ -1,0 +1,32 @@
+{
+  "intervalo_verificacion": 300,
+  "umbral_memoria": 80,
+  "umbral_cpu": 80,
+  "alertas_email": false,
+  "servicios": [
+    {
+      "nombre": "Dashboard Principal",
+      "url": "http://localhost:8501"
+    },
+    {
+      "nombre": "Dashboard Agr\u00edcola",
+      "url": "http://localhost:8510"
+    },
+    {
+      "nombre": "Sistema de Monitoreo",
+      "url": "http://localhost:8502"
+    }
+  ],
+  "notificaciones": {
+    "email": {
+      "activo": false,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "metgo.quillota@gmail.com",
+      "password": "app_password_aqui",
+      "to_emails": [
+        "admin@metgo.cl"
+      ]
+    }
+  }
+}

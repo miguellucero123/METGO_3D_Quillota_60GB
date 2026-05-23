@@ -1,5 +1,5 @@
-# Streamlit
-.streamlit/
+# Streamlit (secrets locales; config.toml puede versionarse si no tiene claves)
+.streamlit/secrets.toml
 
 # Python
 __pycache__/
@@ -12,17 +12,46 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env
+!.env.example
+.env.local
+**/.env
+!**/.env.example
+.streamlit/secrets.toml
 
-# Data
+# Node / Vue
+node_modules/
+frontend/vue/dist/
+frontend/vue/.vite/
+04_Dashboards_Unificados/
+
+# Data (runtime + compatibilidad raíz)
 data/
+logs/
+backend/08_Gestion_Datos/datos_runtime/
+backend/08_Gestion_Datos/logs_runtime/
+08_Gestion_Datos/datos_runtime/
+08_Gestion_Datos/logs_runtime/
 *.db
-*.csv
-*.json
 
 # Logs
-logs/
 *.log
+
+# Respaldos locales pesados (no subir a GitHub)
+backend/12_Respaldos_Archivos/backups/
+12_Respaldos_Archivos/backups/
+respaldo_*/
+respaldo_*/
+
+# Modelos ML pesados (opcional: quitar si quiere versionar .joblib pequeños)
+*.h5
+*.h5.backup
 
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp

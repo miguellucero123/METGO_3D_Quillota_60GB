@@ -1,0 +1,1017 @@
+{
+  "timestamp": "2025-10-04T01:04:18.676413",
+  "sistema": "METGO 3D - Datos Satelitales",
+  "version": "2.0",
+  "configuracion_satelites": {
+    "landsat_8": {
+      "nombre": "Landsat 8",
+      "resolucion": 30,
+      "bandas": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7"
+      ],
+      "frecuencia": 16,
+      "habilitado": true
+    },
+    "sentinel_2": {
+      "nombre": "Sentinel-2",
+      "resolucion": 10,
+      "bandas": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B09",
+        "B10",
+        "B11",
+        "B12"
+      ],
+      "frecuencia": 5,
+      "habilitado": true
+    },
+    "modis": {
+      "nombre": "MODIS",
+      "resolucion": 250,
+      "bandas": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07"
+      ],
+      "frecuencia": 1,
+      "habilitado": true
+    }
+  },
+  "configuracion_apis": {
+    "nasa_earthdata": {
+      "base_url": "https://e4ftl01.cr.usgs.gov",
+      "usuario": "metgo_user",
+      "password": "metgo_pass",
+      "habilitado": true
+    },
+    "sentinel_hub": {
+      "base_url": "https://services.sentinel-hub.com",
+      "api_key": "demo_key",
+      "habilitado": true
+    },
+    "landsat": {
+      "base_url": "https://earthengine.googleapis.com",
+      "api_key": "demo_key",
+      "habilitado": true
+    },
+    "modis": {
+      "base_url": "https://e4ftl01.cr.usgs.gov",
+      "habilitado": true
+    }
+  },
+  "coordenadas_quillota": {
+    "lat": -32.8833,
+    "lon": -71.2333,
+    "bbox": [
+      -71.5,
+      -33.0,
+      -71.0,
+      -32.7
+    ]
+  },
+  "estadisticas": {
+    "total_datos": 50,
+    "total_imagenes": 0,
+    "tipos_datos": [
+      "SAVI",
+      "Humedad",
+      "Precipitacion",
+      "NDVI",
+      "EVI",
+      "Temperatura",
+      "NDWI"
+    ],
+    "fuentes_datos": [
+      "Landsat-8",
+      "MODIS",
+      "NOAA",
+      "Sentinel-2"
+    ],
+    "tipos_imagenes": []
+  },
+  "datos_satelitales": [
+    {
+      "id": "sintetico_1",
+      "tipo": "Temperatura",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-24T01:04:18.633431",
+      "coordenadas": [
+        -32.83362858469888,
+        -71.24712643011712
+      ],
+      "datos": {
+        "valor": 13.1,
+        "unidad": "Celsius",
+        "interpretacion": "Temperatura de superficie"
+      },
+      "calidad": 0.8116167224336399
+    },
+    {
+      "id": "sintetico_2",
+      "tipo": "NDWI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-14T01:04:18.633431",
+      "coordenadas": [
+        -32.90671369569492,
+        -71.19404202495976
+      ],
+      "datos": {
+        "valor": 0.007081533306944082,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.9664885281600843
+    },
+    {
+      "id": "sintetico_3",
+      "tipo": "NDWI",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-09-23T01:04:18.633431",
+      "coordenadas": [
+        -32.92964176928125,
+        -71.27987297535702
+      ],
+      "datos": {
+        "valor": 0,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8093331326427231
+    },
+    {
+      "id": "sintetico_4",
+      "tipo": "EVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-10T01:04:18.633431",
+      "coordenadas": [
+        -32.822955877496184,
+        -71.21905353976133
+      ],
+      "datos": {
+        "valor": 0.19480217236586012,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion mejorada"
+      },
+      "calidad": 0.9215089703802877
+    },
+    {
+      "id": "sintetico_5",
+      "tipo": "SAVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-15T01:04:18.633431",
+      "coordenadas": [
+        -32.94336386899188,
+        -71.26246937497933
+      ],
+      "datos": {
+        "valor": 0.4397685715438032,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.9666389823472329
+    },
+    {
+      "id": "sintetico_6",
+      "tipo": "Humedad",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-10-03T01:04:18.633431",
+      "coordenadas": [
+        -32.725214941396096,
+        -71.15104550878968
+      ],
+      "datos": {
+        "valor": 35.6,
+        "unidad": "Porcentaje",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8415883325736379
+    },
+    {
+      "id": "sintetico_7",
+      "tipo": "Humedad",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-27T01:04:18.633431",
+      "coordenadas": [
+        -32.80945334200046,
+        -71.216163171881
+      ],
+      "datos": {
+        "valor": 71.3,
+        "unidad": "Porcentaje",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.9689067697356304
+    },
+    {
+      "id": "sintetico_8",
+      "tipo": "SAVI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-10T01:04:18.633431",
+      "coordenadas": [
+        -32.880749933191865,
+        -70.9992253665897
+      ],
+      "datos": {
+        "valor": 0.46419703740347384,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.9085392166316497
+    },
+    {
+      "id": "sintetico_9",
+      "tipo": "EVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-10-02T01:04:18.633431",
+      "coordenadas": [
+        -32.82508772052869,
+        -71.14452515404066
+      ],
+      "datos": {
+        "valor": 0.3047660388816442,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion mejorada"
+      },
+      "calidad": 0.9302154051003889
+    },
+    {
+      "id": "sintetico_10",
+      "tipo": "Precipitacion",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-19T01:04:18.633431",
+      "coordenadas": [
+        -32.865939793633515,
+        -71.38411532895475
+      ],
+      "datos": {
+        "valor": 5.5,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.9331844713234994
+    },
+    {
+      "id": "sintetico_11",
+      "tipo": "Humedad",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-20T01:04:18.634431",
+      "coordenadas": [
+        -32.773335302421515,
+        -71.43774230218199
+      ],
+      "datos": {
+        "valor": 81.4,
+        "unidad": "Porcentaje",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.9521570097233796
+    },
+    {
+      "id": "sintetico_12",
+      "tipo": "SAVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-25T01:04:18.634431",
+      "coordenadas": [
+        -33.145274510408974,
+        -71.15110974956248
+      ],
+      "datos": {
+        "valor": 0.2800978156221189,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.8950740446364224
+    },
+    {
+      "id": "sintetico_13",
+      "tipo": "Precipitacion",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-22T01:04:18.634431",
+      "coordenadas": [
+        -32.89464212513464,
+        -71.25526718878375
+      ],
+      "datos": {
+        "valor": 1.1,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.9885707141115962
+    },
+    {
+      "id": "sintetico_14",
+      "tipo": "Temperatura",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-09-25T01:04:18.634431",
+      "coordenadas": [
+        -32.84758874284882,
+        -71.16280186886672
+      ],
+      "datos": {
+        "valor": 17.9,
+        "unidad": "Celsius",
+        "interpretacion": "Temperatura de superficie"
+      },
+      "calidad": 0.9266807513020847
+    },
+    {
+      "id": "sintetico_15",
+      "tipo": "Humedad",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-05T01:04:18.634431",
+      "coordenadas": [
+        -32.9362760203767,
+        -71.18197325668866
+      ],
+      "datos": {
+        "valor": 44.5,
+        "unidad": "Porcentaje",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.871259567615395
+    },
+    {
+      "id": "sintetico_16",
+      "tipo": "SAVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-10T01:04:18.634431",
+      "coordenadas": [
+        -32.919277814529195,
+        -71.14830787959376
+      ],
+      "datos": {
+        "valor": 0,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.9721461166512687
+    },
+    {
+      "id": "sintetico_17",
+      "tipo": "NDWI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-16T01:04:18.634431",
+      "coordenadas": [
+        -33.02483707420504,
+        -71.27536453227654
+      ],
+      "datos": {
+        "valor": 0.033393937976957125,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8437528439146141
+    },
+    {
+      "id": "sintetico_18",
+      "tipo": "SAVI",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-09-15T01:04:18.634431",
+      "coordenadas": [
+        -32.93467874915082,
+        -71.20754496092772
+      ],
+      "datos": {
+        "valor": 0.23511081684676655,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.9392608545679577
+    },
+    {
+      "id": "sintetico_19",
+      "tipo": "NDVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-10-04T01:04:18.634431",
+      "coordenadas": [
+        -32.9274766023226,
+        -71.24171650851812
+      ],
+      "datos": {
+        "valor": 0.3676045317750283,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion moderada"
+      },
+      "calidad": 0.8895566329146184
+    },
+    {
+      "id": "sintetico_20",
+      "tipo": "Precipitacion",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-09-18T01:04:18.634431",
+      "coordenadas": [
+        -32.68584288030465,
+        -71.25473244832563
+      ],
+      "datos": {
+        "valor": 2.3,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.926461166118716
+    },
+    {
+      "id": "sintetico_21",
+      "tipo": "SAVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-26T01:04:18.634431",
+      "coordenadas": [
+        -32.95221942104642,
+        -71.18205762676284
+      ],
+      "datos": {
+        "valor": 0.3586977382484872,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.8373037020799708
+    },
+    {
+      "id": "sintetico_22",
+      "tipo": "NDWI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-16T01:04:18.634431",
+      "coordenadas": [
+        -32.71263950463215,
+        -71.14594105843646
+      ],
+      "datos": {
+        "valor": 0.04638398998209778,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8192353102182842
+    },
+    {
+      "id": "sintetico_23",
+      "tipo": "NDVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-27T01:04:18.634431",
+      "coordenadas": [
+        -32.77364711435051,
+        -71.19049871590106
+      ],
+      "datos": {
+        "valor": 0,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion escasa"
+      },
+      "calidad": 0.8682132702100518
+    },
+    {
+      "id": "sintetico_24",
+      "tipo": "NDVI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-09T01:04:18.634431",
+      "coordenadas": [
+        -32.80194827826303,
+        -71.3563864316434
+      ],
+      "datos": {
+        "valor": 0,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion escasa"
+      },
+      "calidad": 0.8186205535611799
+    },
+    {
+      "id": "sintetico_25",
+      "tipo": "EVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-26T01:04:18.634431",
+      "coordenadas": [
+        -32.86483661414677,
+        -71.24799453929204
+      ],
+      "datos": {
+        "valor": 0.227093446061033,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion mejorada"
+      },
+      "calidad": 0.9451911357740479
+    },
+    {
+      "id": "sintetico_26",
+      "tipo": "SAVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-11T01:04:18.634431",
+      "coordenadas": [
+        -32.85825071496541,
+        -71.1986551790503
+      ],
+      "datos": {
+        "valor": 0.4207995572989802,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.8744565533123486
+    },
+    {
+      "id": "sintetico_27",
+      "tipo": "Temperatura",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-10-02T01:04:18.634431",
+      "coordenadas": [
+        -32.704440614267455,
+        -71.24759909347075
+      ],
+      "datos": {
+        "valor": -0.5,
+        "unidad": "Celsius",
+        "interpretacion": "Temperatura de superficie"
+      },
+      "calidad": 0.8351850505354691
+    },
+    {
+      "id": "sintetico_28",
+      "tipo": "Precipitacion",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-27T01:04:18.634431",
+      "coordenadas": [
+        -32.92955268602017,
+        -71.34454973543295
+      ],
+      "datos": {
+        "valor": 5.4,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.9136617206670944
+    },
+    {
+      "id": "sintetico_29",
+      "tipo": "Humedad",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-09-05T01:04:18.634431",
+      "coordenadas": [
+        -33.01515701607581,
+        -71.16126127579618
+      ],
+      "datos": {
+        "valor": 77.6,
+        "unidad": "Porcentaje",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.9262277251994526
+    },
+    {
+      "id": "sintetico_30",
+      "tipo": "Temperatura",
+      "fuente": "NOAA",
+      "timestamp": "2025-10-04T01:04:18.634431",
+      "coordenadas": [
+        -32.90725945081938,
+        -70.95985778409383
+      ],
+      "datos": {
+        "valor": 15.8,
+        "unidad": "Celsius",
+        "interpretacion": "Temperatura de superficie"
+      },
+      "calidad": 0.9444904230523011
+    },
+    {
+      "id": "sintetico_31",
+      "tipo": "SAVI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-18T01:04:18.634431",
+      "coordenadas": [
+        -32.87910199355299,
+        -71.24702718170978
+      ],
+      "datos": {
+        "valor": 0,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.9766988044532519
+    },
+    {
+      "id": "sintetico_32",
+      "tipo": "Precipitacion",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-14T01:04:18.634431",
+      "coordenadas": [
+        -32.9076134460407,
+        -71.24571323888817
+      ],
+      "datos": {
+        "valor": 19.6,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.8150692512012256
+    },
+    {
+      "id": "sintetico_33",
+      "tipo": "NDWI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-10-02T01:04:18.634431",
+      "coordenadas": [
+        -32.80926591820523,
+        -71.29423733758844
+      ],
+      "datos": {
+        "valor": 0.018647890303997675,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8789382933618946
+    },
+    {
+      "id": "sintetico_34",
+      "tipo": "NDWI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-12T01:04:18.634431",
+      "coordenadas": [
+        -32.8197887449098,
+        -71.34132008700405
+      ],
+      "datos": {
+        "valor": 0.20574235088623763,
+        "unidad": "adimensional",
+        "interpretacion": "Agua presente"
+      },
+      "calidad": 0.9481537235508409
+    },
+    {
+      "id": "sintetico_35",
+      "tipo": "NDWI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-06T01:04:18.635430",
+      "coordenadas": [
+        -32.87816391405204,
+        -71.32920080964267
+      ],
+      "datos": {
+        "valor": 0.23820046041719434,
+        "unidad": "adimensional",
+        "interpretacion": "Agua presente"
+      },
+      "calidad": 0.8839561712892554
+    },
+    {
+      "id": "sintetico_36",
+      "tipo": "NDVI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-28T01:04:18.635430",
+      "coordenadas": [
+        -32.95659511350437,
+        -71.2137653527453
+      ],
+      "datos": {
+        "valor": 0.4141781021386334,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion moderada"
+      },
+      "calidad": 0.9403933754515408
+    },
+    {
+      "id": "sintetico_37",
+      "tipo": "EVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-13T01:04:18.635430",
+      "coordenadas": [
+        -32.76974343598194,
+        -71.38935570724372
+      ],
+      "datos": {
+        "valor": 0.5000522133659155,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion mejorada"
+      },
+      "calidad": 0.8310083233455489
+    },
+    {
+      "id": "sintetico_38",
+      "tipo": "SAVI",
+      "fuente": "Sentinel-2",
+      "timestamp": "2025-09-18T01:04:18.635430",
+      "coordenadas": [
+        -32.86831662836604,
+        -71.21920926319287
+      ],
+      "datos": {
+        "valor": 0.1556136268421133,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.825412102530377
+    },
+    {
+      "id": "sintetico_39",
+      "tipo": "Humedad",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-15T01:04:18.635430",
+      "coordenadas": [
+        -32.77440494030326,
+        -71.11226013668633
+      ],
+      "datos": {
+        "valor": 57.0,
+        "unidad": "Porcentaje",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.9399024421534388
+    },
+    {
+      "id": "sintetico_40",
+      "tipo": "Precipitacion",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-18T01:04:18.635430",
+      "coordenadas": [
+        -33.085814258665756,
+        -71.21465456852306
+      ],
+      "datos": {
+        "valor": 2.9,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.8156912762684533
+    },
+    {
+      "id": "sintetico_41",
+      "tipo": "NDWI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-09T01:04:18.635430",
+      "coordenadas": [
+        -32.96048190777567,
+        -71.06716982693918
+      ],
+      "datos": {
+        "valor": 0,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8187746580162584
+    },
+    {
+      "id": "sintetico_42",
+      "tipo": "Temperatura",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-13T01:04:18.635430",
+      "coordenadas": [
+        -32.91761290641041,
+        -71.19557037345396
+      ],
+      "datos": {
+        "valor": 28.2,
+        "unidad": "Celsius",
+        "interpretacion": "Temperatura de superficie"
+      },
+      "calidad": 0.8095432255383298
+    },
+    {
+      "id": "sintetico_43",
+      "tipo": "NDWI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-09T01:04:18.635430",
+      "coordenadas": [
+        -32.907039196120664,
+        -71.04609943195277
+      ],
+      "datos": {
+        "valor": 0.045074709263569816,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8929347625879224
+    },
+    {
+      "id": "sintetico_44",
+      "tipo": "SAVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-10-03T01:04:18.635430",
+      "coordenadas": [
+        -32.77362037455586,
+        -71.07899323481409
+      ],
+      "datos": {
+        "valor": 0.5146527614302474,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.803060908058077
+    },
+    {
+      "id": "sintetico_45",
+      "tipo": "SAVI",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-22T01:04:18.635430",
+      "coordenadas": [
+        -32.5645966661927,
+        -71.2248836478992
+      ],
+      "datos": {
+        "valor": 0.289811939114694,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion ajustada al suelo"
+      },
+      "calidad": 0.8053022621083245
+    },
+    {
+      "id": "sintetico_46",
+      "tipo": "NDVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-09-07T01:04:18.635430",
+      "coordenadas": [
+        -32.94332168771588,
+        -71.42303769824886
+      ],
+      "datos": {
+        "valor": 0.5561081523354927,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion saludable"
+      },
+      "calidad": 0.9622408353472006
+    },
+    {
+      "id": "sintetico_47",
+      "tipo": "NDWI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-27T01:04:18.635430",
+      "coordenadas": [
+        -32.769598258136654,
+        -71.18861098552259
+      ],
+      "datos": {
+        "valor": 0.12809918677350327,
+        "unidad": "adimensional",
+        "interpretacion": "Humedad del suelo"
+      },
+      "calidad": 0.8142377296920459
+    },
+    {
+      "id": "sintetico_48",
+      "tipo": "NDVI",
+      "fuente": "MODIS",
+      "timestamp": "2025-09-16T01:04:18.635430",
+      "coordenadas": [
+        -32.94556995198206,
+        -71.34579517378329
+      ],
+      "datos": {
+        "valor": 0.5563840760628403,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion saludable"
+      },
+      "calidad": 0.8236329655243313
+    },
+    {
+      "id": "sintetico_49",
+      "tipo": "NDVI",
+      "fuente": "Landsat-8",
+      "timestamp": "2025-10-01T01:04:18.635430",
+      "coordenadas": [
+        -32.793340012456675,
+        -71.20257004791235
+      ],
+      "datos": {
+        "valor": 0.31014879177105326,
+        "unidad": "adimensional",
+        "interpretacion": "Vegetacion moderada"
+      },
+      "calidad": 0.8846941884616237
+    },
+    {
+      "id": "sintetico_50",
+      "tipo": "Precipitacion",
+      "fuente": "NOAA",
+      "timestamp": "2025-09-18T01:04:18.635430",
+      "coordenadas": [
+        -32.83384001081183,
+        -71.29482452157694
+      ],
+      "datos": {
+        "valor": 2.1,
+        "unidad": "mm",
+        "interpretacion": "Precipitacion acumulada"
+      },
+      "calidad": 0.9861514651207131
+    }
+  ],
+  "imagenes_satelitales": [],
+  "indices_espectrales": {},
+  "tendencias_temporales": {
+    "Temperatura": {
+      "valor_medio": 14.9,
+      "valor_std": 9.242294087508792,
+      "valor_min": -0.5,
+      "valor_max": 28.2,
+      "tendencia": -2.4799999999999995,
+      "n_datos": 5,
+      "fecha_inicio": "2025-09-13T01:04:18.635430",
+      "fecha_fin": "2025-10-04T01:04:18.634431"
+    },
+    "NDWI": {
+      "valor_medio": 0.07226240589105018,
+      "valor_std": 0.08304003483488791,
+      "valor_min": 0.0,
+      "valor_max": 0.23820046041719434,
+      "tendencia": -0.021955257011319666,
+      "n_datos": 10,
+      "fecha_inicio": "2025-09-06T01:04:18.635430",
+      "fecha_fin": "2025-10-02T01:04:18.634431"
+    },
+    "EVI": {
+      "valor_medio": 0.30667846766861323,
+      "valor_std": 0.11858240175487467,
+      "valor_min": 0.19480217236586012,
+      "valor_max": 0.5000522133659155,
+      "tendencia": 0.027490966628946026,
+      "n_datos": 4,
+      "fecha_inicio": "2025-09-10T01:04:18.633431",
+      "fecha_fin": "2025-10-02T01:04:18.633431"
+    },
+    "SAVI": {
+      "valor_medio": 0.28715907857733497,
+      "valor_std": 0.16904916677781373,
+      "valor_min": 0.0,
+      "valor_max": 0.5146527614302474,
+      "tendencia": 0.00458688400243396,
+      "n_datos": 11,
+      "fecha_inicio": "2025-09-10T01:04:18.633431",
+      "fecha_fin": "2025-10-03T01:04:18.635430"
+    },
+    "Humedad": {
+      "valor_medio": 61.23333333333334,
+      "valor_std": 16.98476441468124,
+      "valor_min": 35.6,
+      "valor_max": 81.4,
+      "tendencia": -1.4833333333333332,
+      "n_datos": 6,
+      "fecha_inicio": "2025-09-05T01:04:18.634431",
+      "fecha_fin": "2025-10-03T01:04:18.633431"
+    },
+    "Precipitacion": {
+      "valor_medio": 5.557142857142858,
+      "valor_std": 5.936775734559037,
+      "valor_min": 1.1,
+      "valor_max": 19.6,
+      "tendencia": -2.028571428571429,
+      "n_datos": 7,
+      "fecha_inicio": "2025-09-14T01:04:18.634431",
+      "fecha_fin": "2025-09-27T01:04:18.634431"
+    },
+    "NDVI": {
+      "valor_medio": 0.31491766486900685,
+      "valor_std": 0.21629227341532944,
+      "valor_min": 0.0,
+      "valor_max": 0.5563840760628403,
+      "tendencia": -0.02692908865149492,
+      "n_datos": 7,
+      "fecha_inicio": "2025-09-07T01:04:18.635430",
+      "fecha_fin": "2025-10-04T01:04:18.634431"
+    }
+  },
+  "mapa_satelital": "data/satelitales/mapa_satelital.html",
+  "funcionalidades_implementadas": [
+    "Generación de datos satelitales sintéticos",
+    "Generación de imágenes satelitales sintéticas",
+    "Cálculo de índices espectrales",
+    "Creación de mapas interactivos",
+    "Análisis de tendencias temporales",
+    "Base de datos SQLite para almacenamiento",
+    "Sistema de logging estructurado",
+    "Configuración de múltiples satélites",
+    "Integración con APIs de datos satelitales"
+  ],
+  "tecnologias_utilizadas": [
+    "Requests para APIs",
+    "Rasterio para datos geoespaciales",
+    "Folium para mapas interactivos",
+    "SQLite para base de datos",
+    "NumPy para cálculos numéricos",
+    "Pandas para análisis de datos"
+  ],
+  "recomendaciones": [
+    "Integrar con APIs reales de NASA Earthdata",
+    "Implementar descarga automática de imágenes",
+    "Agregar procesamiento de imágenes con OpenCV",
+    "Implementar análisis de cambio temporal",
+    "Agregar clasificación de cultivos",
+    "Implementar detección de anomalías",
+    "Agregar exportación a formatos geoespaciales",
+    "Implementar visualización 3D",
+    "Agregar análisis de calidad de datos",
+    "Implementar alertas automáticas"
+  ]
+}
