@@ -121,7 +121,7 @@ with tab_cat:
         nombre = f"{icon} {m.get('nombre', m.get('id'))}"
         color = PRIMARY if tipo == "vue" else ACCENT
         url = ""
-        if tipo == "streamlit" and puerto:
+        if tipo == "streamlit" and puerto and not is_streamlit_cloud():
             url = f"http://127.0.0.1:{puerto}"
         with cols[i % 3]:
             st.markdown(
@@ -179,8 +179,10 @@ with tab_srv:
                         streamlit_launcher.detener(sid)
                         st.rerun()
                 with b2:
-                    url = s.get("url", f"http://127.0.0.1:{s.get('puerto')}")
-                    st.link_button("↗ Abrir", url)
+                    if s.get("estado") == "solo_local" or is_streamlit_cloud():
+                        st.caption("Solo en PC local")
+                    elif s.get("url"):
+                        st.link_button("↗ Abrir", s["url"])
         st.divider()
 
     st.markdown("---")

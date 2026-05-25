@@ -19,13 +19,25 @@ const IconComp = computed(() => {
   return icons[key] || icons.Box
 })
 
+const esSitioPublico =
+  typeof window !== 'undefined' &&
+  !['localhost', '127.0.0.1'].includes(window.location.hostname)
+
+function esUrlLocal(url) {
+  return /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/i.test(url || '')
+}
+
 function abrir() {
   const m = props.modulo
   if (m.tipo_acceso === 'vue' && m.ruta_vue) {
     router.push(m.ruta_vue)
     return
   }
+  if (m.solo_local || (esSitioPublico && m.puerto)) {
+    return
+  }
   if (m.tipo_acceso === 'streamlit' && m.url_streamlit) {
+    if (esSitioPublico && esUrlLocal(m.url_streamlit)) return
     window.open(m.url_streamlit, '_blank', 'noopener,noreferrer')
   }
 }
@@ -47,7 +59,8 @@ function abrir() {
     </ul>
     <div class="module-card__foot">
       <span class="module-card__type">{{ modulo.tipo_acceso }}</span>
-      <span v-if="modulo.puerto" class="module-card__port">:{{ modulo.puerto }}</span>
+      <span v-if="modulo.solo_local" class="module-card__port">solo PC</span>
+      <span v-else-if="modulo.puerto" class="module-card__port">:{{ modulo.puerto }}</span>
       <component
         :is="modulo.tipo_acceso === 'streamlit' ? ExternalLink : ArrowRight"
         class="module-card__arrow"

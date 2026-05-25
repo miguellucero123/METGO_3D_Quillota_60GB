@@ -312,7 +312,13 @@ def streamlit_host() -> str:
 def enriquecer_modulo(mod: dict[str, Any]) -> dict[str, Any]:
     m = dict(mod)
     if m.get("tipo_acceso") == "streamlit" and m.get("puerto"):
-        m["url_streamlit"] = f"{streamlit_host()}:{m['puerto']}"
+        from api_rest.streamlit_launcher import _api_en_nube
+
+        if _api_en_nube():
+            m["url_streamlit"] = None
+            m["solo_local"] = True
+        else:
+            m["url_streamlit"] = f"{streamlit_host()}:{m['puerto']}"
     return m
 
 

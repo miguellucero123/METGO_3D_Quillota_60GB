@@ -84,6 +84,10 @@ function abrir(url) {
 }
 
 onMounted(() => {
+  if (esSitioPublico) {
+    tab.value = 'vue'
+    return
+  }
   refrescar()
   pollTimer = setInterval(refrescar, 8000)
 })
@@ -103,7 +107,12 @@ onUnmounted(() => clearInterval(pollTimer))
       <button type="button" :class="{ active: tab === 'vue' }" @click="tab = 'vue'">
         <Layers /> App Vue (siempre activa)
       </button>
-      <button type="button" :class="{ active: tab === 'streamlit' }" @click="tab = 'streamlit'">
+      <button
+        v-if="!esSitioPublico"
+        type="button"
+        :class="{ active: tab === 'streamlit' }"
+        @click="tab = 'streamlit'"
+      >
         <Server /> Streamlit (bajo demanda)
       </button>
     </div>
@@ -129,11 +138,7 @@ onUnmounted(() => clearInterval(pollTimer))
       </SectionCard>
     </div>
 
-    <div v-else class="tab-panel">
-      <p v-if="esSitioPublico" class="banner banner--warn">
-        En producción (Netlify) no se pueden abrir puertos locales como :8506. La API en Render no
-        ejecuta Streamlit en su navegador. Use la pestaña <strong>App Vue</strong> o instale METGO en su PC.
-      </p>
+    <div v-else-if="!esSitioPublico" class="tab-panel">
       <SectionCard
         title="Dashboards Streamlit"
         subtitle="Solo en PC local con API en :8080; cada módulo usa su puerto"
@@ -192,6 +197,13 @@ onUnmounted(() => clearInterval(pollTimer))
           a Vue para reducir puertos.
         </p>
       </div>
+    </div>
+
+    <div v-else class="tab-panel">
+      <p class="banner banner--warn">
+        Los dashboards Streamlit (puertos 8501, 8502, …) solo funcionan en su PC con METGO local.
+        En producción use la pestaña <strong>App Vue</strong>.
+      </p>
     </div>
   </div>
 </template>
