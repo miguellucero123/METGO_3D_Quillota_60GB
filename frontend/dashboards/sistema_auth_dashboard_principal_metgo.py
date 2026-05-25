@@ -39,6 +39,7 @@ from metgo_streamlit_theme import (
     is_streamlit_cloud,
     module_card_html,
 )
+from metgo_vue_embed import show_vue_fullscreen_on_cloud
 
 # Configurar página optimizada para móviles
 st.set_page_config(
@@ -50,15 +51,10 @@ st.set_page_config(
 
 inject_theme()
 
-# Aviso: esta pantalla NO es la app Vue (iconos Lucide + Centro de servicios)
-if is_streamlit_cloud():
-    st.error(
-        "Está en el **panel Streamlit antiguo** (login lateral). "
-        "Los iconos y el Centro de servicios con Iniciar/Detener están en la **app Vue**, "
-        "no en esta página. En el menú lateral abra **「0」 Catalogo y servicios** "
-        "o ejecute el proyecto en su PC (ver abajo)."
-    )
-else:
+# Cloud + METGO_VUE_URL → solo Vue (Netlify), no el panel legacy
+show_vue_fullscreen_on_cloud("/servicios", height=920)
+
+if not is_streamlit_cloud():
     st.warning(
         "Panel Streamlit **legacy**. La interfaz con iconos está en **Vue**: "
         "[http://127.0.0.1:5173](http://127.0.0.1:5173) → Centro de servicios "

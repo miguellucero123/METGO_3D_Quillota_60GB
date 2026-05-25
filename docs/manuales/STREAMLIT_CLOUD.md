@@ -6,7 +6,7 @@ En **share.streamlit.io** → tu app → Settings:
 
 | Campo | Valor |
 |-------|--------|
-| **Main file path** | `streamlit_app.py` |
+| **Main file path** | `streamlit_app.py` (**obligatorio**; si usa `sistema_auth_dashboard_principal_metgo.py` verá el panel antiguo) |
 
 `streamlit_app.py` es la **página de inicio**. Las vistas están en `pages/`:
 

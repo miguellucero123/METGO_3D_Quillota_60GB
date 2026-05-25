@@ -113,3 +113,18 @@ def vue_url_config_hint() -> None:
     st.warning(
         "Configure `METGO_VUE_URL` en Secrets de Streamlit Cloud para ver Vue aquí."
     )
+
+
+def show_vue_fullscreen_on_cloud(
+    path: str = "/servicios",
+    *,
+    height: int = 900,
+) -> None:
+    """
+    En Streamlit Cloud, si METGO_VUE_URL existe, muestra Vue a pantalla completa y
+    detiene el resto del script (evita el panel legacy con graficas).
+    """
+    if not is_streamlit_cloud() or not get_vue_base_url():
+        return
+    render_vue_iframe(path, height=height)
+    st.stop()

@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Entrypoint Streamlit Cloud — inicio METGO 3D (layout por capas).
+Entrypoint Streamlit Cloud — METGO 3D.
 
-Use el menú lateral (pages/) para:
-  - Catálogo y servicios (como Vue: iconos + Iniciar)
-  - Resumen público (site-web)
-  - Panel operadores (legacy)
+Con METGO_VUE_URL en Secrets muestra la UI Vue (Netlify) a pantalla completa.
+Main file en Cloud debe ser: streamlit_app.py
 """
 
 from __future__ import annotations
@@ -14,29 +12,27 @@ from __future__ import annotations
 import streamlit as st
 
 from metgo_streamlit_bootstrap import bootstrap
-from metgo_streamlit_theme import inject_theme
-from metgo_vue_embed import get_vue_base_url
+from metgo_streamlit_theme import inject_theme, is_streamlit_cloud
+from metgo_vue_embed import get_vue_base_url, render_vue_iframe, show_vue_fullscreen_on_cloud
+
+st.set_page_config(
+    page_title="METGO 3D — Quillota",
+    page_icon="🌤️",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 bootstrap("01_meteo", "05_api_rest", "07_monitoreo")
 inject_theme()
 
+# Cloud: pantalla Vue por defecto (no la home con tablas legacy)
+show_vue_fullscreen_on_cloud("/servicios", height=920)
+
 _vue_url = get_vue_base_url()
 if _vue_url:
-    st.success(f"Interfaz Vue (Netlify) configurada: `{_vue_url}`")
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("Abrir Panel Vue embebido", type="primary", use_container_width=True):
-            st.switch_page("pages/3_Panel_Vue_embebido.py")
-    with c2:
-        st.link_button(
-            "Abrir Vue en pestaña nueva",
-            f"{_vue_url}/servicios",
-            use_container_width=True,
-        )
-    st.warning(
-        "Si ve el panel antiguo con emojis y graficas, no use **Panel operadores**; "
-        "use **Panel Vue embebido** en el menu lateral."
-    )
+    st.link_button("Abrir Vue en pestaña nueva", f"{_vue_url}/servicios")
+    render_vue_iframe("/servicios", height=920)
+    st.stop()
 
 st.markdown(
     '<div class="main-header"><h1 style="margin:0;color:white;">METGO 3D — Sistema Integrado Quillota</h1></div>',
@@ -44,22 +40,22 @@ st.markdown(
 )
 st.caption("Layout v4 · backend · frontend · site-web")
 
+st.error(
+    "**Streamlit Cloud:** agregue en Secrets: "
+    '`METGO_VUE_URL = "https://metgo3d.netlify.app"` y pulse Reboot.'
+)
+
 st.markdown(
     """
-Elige una vista en el **menú lateral**:
+| Página (menú lateral) | Uso |
+|------------------------|-----|
+| **Panel Vue embebido** | Vue en iframe (requiere secret) |
+| **Catálogo y servicios** | Versión Python |
+| **Panel operadores** | Legacy (gráficas antiguas) |
 
-| Página | Descripción |
-|--------|-------------|
-| **Catálogo y servicios** | Iconos (emoji), Iniciar/Detener en Python |
-| **Panel Vue embebido** | Misma UI Vue en iframe (requiere `METGO_VUE_URL` en Cloud) |
-| **Resumen público** | OpenMeteo, sin login (`site-web/`) |
-| **Panel operadores** | Vista anterior con tarjetas HTML |
-
-**Vue en produccion:** https://metgo3d.netlify.app — Secret `METGO_VUE_URL` + menu **Panel Vue embebido**
+**Main file** debe ser `streamlit_app.py` (Settings → General).
 """
 )
 
-st.info(
-    "Si no ve estas opciones en el menú, en Streamlit Cloud confirme "
-    "**Main file** = `streamlit_app.py` y pulse **Reboot app** tras el último push a GitHub."
-)
+if not is_streamlit_cloud():
+    st.info("Local: `streamlit run streamlit_app.py` o Vue en http://127.0.0.1:5173")
