@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { Leaf, LogIn } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useMetgoStore } from '@/stores/metgo'
+import { wakeApi } from '@/api/metgoApi'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -18,6 +19,12 @@ async function onSubmit() {
   error.value = ''
   cargando.value = true
   try {
+    try {
+      await wakeApi()
+    } catch (e) {
+      error.value = e.message ?? 'No se pudo contactar la API. Reintente en un minuto.'
+      return
+    }
     await auth.login(username.value.trim(), password.value)
     await metgo.inicializar()
     router.push('/')
@@ -39,6 +46,9 @@ async function onSubmit() {
         <h1>METGO</h1>
         <p class="login-tagline">Monitoreo meteorológico y agrícola</p>
         <p class="login-region">Quillota · Región de Valparaíso</p>
+        <p class="login-hint muted">
+          Demo: <strong>admin</strong> / <strong>admin123</strong> · La API puede tardar ~1 min al despertar (Render).
+        </p>
       </div>
 
       <form class="login-form" @submit.prevent="onSubmit">

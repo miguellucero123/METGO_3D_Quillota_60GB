@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { login as apiLogin } from '@/api/metgoApi'
+import { login as apiLogin, fetchMe } from '@/api/metgoApi'
 
 const TOKEN_KEY = 'metgo_access_token'
 const USER_KEY = 'metgo_user'
@@ -35,6 +35,20 @@ export const useAuthStore = defineStore('auth', () => {
     clearSession()
   }
 
+  /** Valida JWT guardado; si expiró, limpia sesión. */
+  async function ensureValidSession() {
+    if (!token.value) return false
+    try {
+      const me = await fetchMe()
+      user.value = me
+      localStorage.setItem(USER_KEY, JSON.stringify(me))
+      return true
+    } catch {
+      clearSession()
+      return false
+    }
+  }
+
   return {
     token,
     user,
@@ -42,5 +56,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     clearSession,
+    ensureValidSession,
   }
 })

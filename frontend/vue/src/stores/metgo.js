@@ -35,6 +35,11 @@ export const useMetgoStore = defineStore('metgo', () => {
   }
 
   async function inicializar() {
+    const token = localStorage.getItem('metgo_access_token')
+    if (!token) {
+      apiOnline.value = false
+      return
+    }
     try {
       const health = await fetchHealth()
       apiOnline.value = health.status === 'ok' || health.status === 'degraded'

@@ -2,9 +2,21 @@ import axios from 'axios'
 
 const TOKEN_KEY = 'metgo_access_token'
 
+/** API en Render; en Netlify el proxy /api suele dar 504 si el servicio está dormido (>26 s). */
+const RENDER_API_BASE = 'https://metgo-api.onrender.com/api'
+
+function resolveApiBaseURL() {
+  const fromEnv = import.meta.env.VITE_METGO_API
+  if (fromEnv) return fromEnv
+  if (typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')) {
+    return RENDER_API_BASE
+  }
+  return '/api'
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_METGO_API ?? '/api',
-  timeout: 30000,
+  baseURL: resolveApiBaseURL(),
+  timeout: 90000,
 })
 
 api.interceptors.request.use((config) => {
@@ -25,7 +37,8 @@ export function setUnauthorizedHandler(handler) {
 api.interceptors.response.use(
   (r) => r,
   (err) => {
-    if (err.response?.status === 401) {
+    const status = err.response?.status
+    if (status === 401) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem('metgo_user')
       if (onUnauthorized) {
@@ -34,13 +47,23 @@ api.interceptors.response.use(
         window.location.assign('/login')
       }
     }
-    const msg =
+    let msg =
       err.response?.data?.error ??
       err.message ??
       'Error de conexion con la API METGO'
+    if (status === 504 || err.code === 'ECONNABORTED') {
+      msg =
+        'La API en Render está iniciando o tardó demasiado (plan gratuito). ' +
+        'Espere 60 s, abra https://metgo-api.onrender.com/api/health en otra pestaña y vuelva a intentar.'
+    }
     return Promise.reject(new Error(msg))
   }
 )
+
+/** Despierta el servicio en Render antes del login (cold start). */
+export async function wakeApi() {
+  await api.get('/health', { timeout: 120000 })
+}
 
 export async function login(username, password) {
   const { data } = await api.post('/auth/login', { username, password })

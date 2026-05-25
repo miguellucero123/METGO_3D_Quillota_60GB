@@ -57,13 +57,20 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
-  if (!to.meta.public && !auth.isAuthenticated) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+  if (!to.meta.public) {
+    if (!auth.isAuthenticated) {
+      return { name: 'login', query: { redirect: to.fullPath } }
+    }
+    const ok = await auth.ensureValidSession()
+    if (!ok) {
+      return { name: 'login', query: { redirect: to.fullPath } }
+    }
   }
   if (to.name === 'login' && auth.isAuthenticated) {
-    return { name: 'dashboard' }
+    const ok = await auth.ensureValidSession()
+    if (ok) return { name: 'dashboard' }
   }
 })
 
