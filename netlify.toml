@@ -9,7 +9,14 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# Vue Router (history mode): todas las rutas → index.html
+# API Flask en Render (antes del catch-all SPA; si no, /api/* devuelve index.html → 404)
+[[redirects]]
+  from = "/api/*"
+  to = "https://metgo-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Vue Router (history mode)
 [[redirects]]
   from = "/*"
   to = "/index.html"

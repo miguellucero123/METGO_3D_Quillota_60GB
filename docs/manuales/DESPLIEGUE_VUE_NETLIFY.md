@@ -78,19 +78,27 @@ Si en la consola del navegador aparece:
 
 `form detection precheck` → extensión del navegador (gestor de contraseñas); ignorar.
 
-**Solución:**
+**Solución A (recomendada, sin rebuild):** el `netlify.toml` del repo incluye proxy:
 
-1. Despliegue la API (Render con [`render.yaml`](../../render.yaml) en la raíz del repo, o Railway).
-2. En Netlify → **Environment variables** → Production:
+`/api/*` → `https://metgo-api.onrender.com/api/*`
 
-   ```env
-   VITE_METGO_API=https://metgo-api.onrender.com/api
-   ```
+Haga push a GitHub y **Trigger deploy** en Netlify. Vue puede seguir con `VITE_METGO_API=/api`.
 
-   (use la URL real que le asigne Render, terminando en `/api`).
+**Solución B:** variable en Netlify → Production:
 
-3. **Trigger deploy** en Netlify (rebuild obligatorio: la URL va dentro del JS compilado).
-4. En el servidor API, `METGO_CORS_ORIGINS` debe incluir `https://metgo3d.netlify.app`.
+```env
+VITE_METGO_API=https://metgo-api.onrender.com/api
+```
+
+y **Trigger deploy** (rebuild).
+
+**Credenciales por defecto** (si no definió `METGO_PASSWORD_*` en Render):
+
+| Usuario | Contraseña |
+|---------|------------|
+| `admin` | `admin123` |
+| `user` | `user123` |
+| `metgo` | `metgo2025` |
 
 Prueba API: `https://SU-API.onrender.com/api/health` debe responder JSON.
 
