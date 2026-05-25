@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as icons from 'lucide-vue-next'
-import { ExternalLink, ArrowRight } from 'lucide-vue-next'
+import { ExternalLink, ArrowRight, Cloud, Layers, Monitor } from 'lucide-vue-next'
 
 const props = defineProps({
   modulo: { type: Object, required: true },
@@ -23,28 +23,58 @@ const esSitioPublico =
   typeof window !== 'undefined' &&
   !['localhost', '127.0.0.1'].includes(window.location.hostname)
 
+const textoUtilidad = computed(
+  () => props.modulo.utilidad || props.modulo.descripcion || ''
+)
+
 function esUrlLocal(url) {
   return /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/i.test(url || '')
 }
 
-function abrir() {
+function abrirStreamlit(url) {
+  if (!url) return
+  if (esSitioPublico && esUrlLocal(url)) return
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+function onCardClick() {
   const m = props.modulo
   if (m.tipo_acceso === 'vue' && m.ruta_vue) {
     router.push(m.ruta_vue)
     return
   }
-  if (m.solo_local || (esSitioPublico && m.puerto)) {
-    return
+  if (m.tipo_acceso === 'streamlit') {
+    if (m.url_nube && esSitioPublico) {
+      abrirStreamlit(m.url_nube)
+      return
+    }
+    if (m.url_streamlit && !esSitioPublico && !m.solo_local) {
+      abrirStreamlit(m.url_streamlit)
+    }
   }
-  if (m.tipo_acceso === 'streamlit' && m.url_streamlit) {
-    if (esSitioPublico && esUrlLocal(m.url_streamlit)) return
-    window.open(m.url_streamlit, '_blank', 'noopener,noreferrer')
+}
+
+function irVue(e) {
+  e.stopPropagation()
+  if (props.modulo.ruta_vue_alternativa) {
+    router.push(props.modulo.ruta_vue_alternativa)
   }
+}
+
+function abrirNube(e) {
+  e.stopPropagation()
+  const url = props.modulo.url_nube || props.modulo.url_streamlit
+  if (url) abrirStreamlit(url)
+}
+
+function abrirVisor(e) {
+  e.stopPropagation()
+  router.push({ name: 'puertos', query: { id: props.modulo.id } })
 }
 </script>
 
 <template>
-  <article class="module-card" @click="abrir">
+  <article class="module-card" @click="onCardClick">
     <div class="module-card__head">
       <span class="module-card__icon">
         <component :is="IconComp" />
@@ -52,15 +82,46 @@ function abrir() {
       <span class="module-card__badge">{{ modulo.modulo_num }}</span>
     </div>
     <h4 class="module-card__title">{{ modulo.nombre }}</h4>
-    <p class="module-card__desc">{{ modulo.descripcion }}</p>
+    <p class="module-card__desc">{{ textoUtilidad }}</p>
     <ul v-if="modulo.atributos?.length" class="module-card__attrs">
       <li v-for="a in modulo.atributos.slice(0, 4)" :key="a">{{ a }}</li>
       <li v-if="modulo.atributos.length > 4">+{{ modulo.atributos.length - 4 }} más</li>
     </ul>
     <div class="module-card__foot">
       <span class="module-card__type">{{ modulo.tipo_acceso }}</span>
-      <span v-if="modulo.solo_local" class="module-card__port">solo PC</span>
-      <span v-else-if="modulo.puerto" class="module-card__port">:{{ modulo.puerto }}</span>
+      <span v-if="modulo.puerto" class="module-card__port" :title="modulo.utilidad">
+        :{{ modulo.puerto }}
+      </span>
+      <span v-else-if="modulo.solo_local" class="module-card__port">solo PC</span>
+      <div class="module-card__actions" @click.stop>
+        <button
+          v-if="modulo.ruta_vue_alternativa"
+          type="button"
+          class="module-card__mini"
+          title="Equivalente en Vue"
+          @click="irVue"
+        >
+          <Layers />
+        </button>
+        <button
+          v-if="modulo.tipo_acceso === 'streamlit'"
+          type="button"
+          class="module-card__mini"
+          title="Visor integrado"
+          @click="abrirVisor"
+        >
+          <Monitor />
+        </button>
+        <button
+          v-if="modulo.url_nube || (modulo.acceso_nube && modulo.url_streamlit)"
+          type="button"
+          class="module-card__mini"
+          title="Portal en la nube"
+          @click="abrirNube"
+        >
+          <Cloud />
+        </button>
+      </div>
       <component
         :is="modulo.tipo_acceso === 'streamlit' ? ExternalLink : ArrowRight"
         class="module-card__arrow"
@@ -153,10 +214,31 @@ function abrir() {
   letter-spacing: 0.03em;
 }
 
+.module-card__actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+  margin-right: 0.25rem;
+}
+
+.module-card__mini {
+  border: none;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  padding: 0.2rem 0.35rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+}
+
+.module-card__mini :deep(svg) {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
 .module-card__arrow {
   width: 0.9rem;
   height: 0.9rem;
-  margin-left: auto;
   color: var(--color-primary);
 }
 </style>

@@ -30,8 +30,11 @@ _apis = metgo_paths.MODULE_PATHS["05_api_rest"]
 if _apis and str(_apis) not in sys.path:
     sys.path.insert(0, str(_apis))
 
+import os
+
 import streamlit as st
 from api_rest import catalog, streamlit_launcher
+from api_rest.streamlit_launcher import _api_en_nube
 from metgo_streamlit_bootstrap import bootstrap
 from metgo_streamlit_theme import (
     ACCENT,
@@ -78,11 +81,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if is_streamlit_cloud():
+en_nube = _api_en_nube() or is_streamlit_cloud()
+if en_nube:
     st.info(
-        "En **Streamlit Cloud** ve el catálogo y la lista de servicios. "
-        "Los botones **Iniciar / Detener** solo funcionan en su PC con "
-        "`iniciar_metgo_desarrollo.bat` + Vue en http://127.0.0.1:5173 → **Centro de servicios**."
+        "Modo **nube**: cada puerto (8501–8513) indica qué hace el módulo en su PC. "
+        "Use **Activar en nube** para volver al portal con el módulo seleccionado, "
+        "o **Ver en Vue** cuando exista equivalente. **Iniciar PC** solo en desarrollo local."
     )
 else:
     st.success(
@@ -113,7 +117,7 @@ with tab_cat:
     for i, m in enumerate(mods):
         icon = ICON_EMOJI.get(m.get("icono", "box"), "📦")
         puerto = m.get("puerto", "")
-        desc = m.get("descripcion", "")
+        desc = m.get("utilidad") or m.get("descripcion", "")
         tipo = m.get("tipo_acceso", "")
         attrs = ", ".join((m.get("atributos") or [])[:3])
         if attrs:
@@ -155,6 +159,8 @@ with tab_srv:
         with col_a:
             st.markdown(f"**{icon} {s.get('nombre', s.get('id'))}**")
             st.caption(f"Módulo {s.get('modulo_num')} · puerto **{s.get('puerto')}**")
+            if s.get("utilidad"):
+                st.caption(s["utilidad"])
         with col_b:
             estado = s.get("estado", "detenido")
             st.markdown(
@@ -164,25 +170,37 @@ with tab_srv:
             )
         with col_c:
             sid = s["id"]
-            if estado != "corriendo":
-                if st.button("▶ Iniciar", key=f"start_{sid}", disabled=is_streamlit_cloud()):
+            if s.get("ruta_vue_alternativa"):
+                vue_base = os.getenv("METGO_VUE_URL", "https://metgo3d.netlify.app").rstrip("/")
+                st.link_button(
+                    "Vue",
+                    f"{vue_base}{s['ruta_vue_alternativa']}",
+                    key=f"vue_{sid}",
+                )
+            visor = s.get("url_visor") or s.get("url_embed")
+            if visor:
+                st.link_button("👁 Visor", visor, key=f"visor_{sid}")
+            elif estado == "disponible_nube" and s.get("url"):
+                st.link_button("☁ Nube", s["url"], key=f"cloud_{sid}")
+            if estado != "corriendo" and not _api_en_nube():
+                if st.button("▶ PC", key=f"start_{sid}", disabled=is_streamlit_cloud()):
                     r = streamlit_launcher.iniciar(sid)
                     if r.get("ok"):
                         st.toast(r.get("mensaje", "Iniciado"))
                     else:
                         st.error(r.get("error", "Error"))
                     st.rerun()
-            else:
+            elif estado == "corriendo" and not _api_en_nube():
                 b1, b2 = st.columns(2)
                 with b1:
                     if st.button("■ Detener", key=f"stop_{sid}"):
                         streamlit_launcher.detener(sid)
                         st.rerun()
                 with b2:
-                    if s.get("estado") == "solo_local" or is_streamlit_cloud():
-                        st.caption("Solo en PC local")
-                    elif s.get("url"):
+                    if s.get("url"):
                         st.link_button("↗ Abrir", s["url"])
+            elif _api_en_nube() and estado != "disponible_nube":
+                st.caption("Configure METGO_STREAMLIT_CLOUD_URL en la API")
         st.divider()
 
     st.markdown("---")

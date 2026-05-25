@@ -41,7 +41,8 @@ if exist "backend\12_Respaldos_Archivos\backups" (
 )
 
 echo.
-echo Siguiente paso:
-echo   publicar_github.bat "Reorganizacion: backend, frontend, site-web, docs"
+echo Siguiente paso (manual):
+echo   docs\manuales\SUBIR_GITHUB_MANUAL.md
+echo   SUBIR_GITHUB_MANUAL.bat
 echo.
 pause

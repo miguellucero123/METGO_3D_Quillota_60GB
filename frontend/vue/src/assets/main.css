@@ -255,3 +255,8 @@ body {
   padding: var(--space-xl);
   text-align: center;
 }
+
+/* Vista embebida en iframe de Streamlit */
+.app-shell--embed .app-main {
+  padding: var(--space-md);
+}

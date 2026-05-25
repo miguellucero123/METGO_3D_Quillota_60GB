@@ -74,7 +74,10 @@ git status --porcelain | findstr /i "\.env" >nul && (
 echo.
 
 echo ======================================================================
-echo  Siguiente paso: publicar_github.bat
-echo  Documentación: docs\manuales\PUBLICAR_GITHUB.md
+echo  Subir a GitHub (MANUAL — recomendado):
+echo    docs\manuales\SUBIR_GITHUB_MANUAL.md
+echo    SUBIR_GITHUB_MANUAL.bat (raiz del repo)
+echo    COMANDOS_GIT_MANUAL.txt (esta carpeta)
+echo  Opcional automatico: publicar_github.bat
 echo ======================================================================
 pause

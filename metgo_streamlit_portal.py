@@ -28,9 +28,37 @@ def _api_health_url() -> str:
     return f"{base.rstrip('/')}/api/health"
 
 
+def _mostrar_modulo_activado() -> None:
+    """Si la URL trae ?activar=id (desde Vue/API), muestra utilidad del puerto/módulo."""
+    try:
+        from api_rest import catalog
+    except ImportError:
+        return
+    activar = st.query_params.get("activar")
+    if not activar:
+        return
+    m = catalog.obtener_modulo(str(activar))
+    if not m:
+        st.warning(f"Módulo «{activar}» no encontrado en el catálogo.")
+        return
+    puerto = m.get("puerto", "—")
+    util = m.get("utilidad") or m.get("descripcion", "")
+    st.info(
+        f"**{m.get('nombre')}** · puerto local **:{puerto}** · {util}\n\n"
+        "En la nube este portal no levanta el proceso en ese puerto; use la app Vue o "
+        "ejecute METGO en su PC para el dashboard Plotly completo."
+    )
+    if m.get("ruta_vue_alternativa"):
+        vue = _vue_url().rstrip("/") + m["ruta_vue_alternativa"]
+        st.link_button("Abrir equivalente en Vue", vue, use_container_width=False)
+    if st.button("Ir a catálogo y servicios", type="secondary"):
+        st.switch_page("pages/0_Catalogo_y_servicios.py")
+
+
 def render_inicio_page() -> None:
     """Portal de acceso: enlaces a la SPA Vue (index) y al resto del ecosistema."""
     inject_theme()
+    _mostrar_modulo_activado()
     vue = _vue_url()
     vue_index = vue.rstrip("/") + "/"
     vue_login = vue.rstrip("/") + "/login"

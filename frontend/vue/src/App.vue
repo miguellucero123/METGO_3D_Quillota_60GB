@@ -12,6 +12,10 @@ const store = useMetgoStore()
 
 const isLoginPage = computed(() => route.name === 'login')
 
+const isEmbedded = computed(
+  () => route.query.embed === '1' || (typeof window !== 'undefined' && window.self !== window.top),
+)
+
 onMounted(() => {
   if (auth.isAuthenticated) {
     store.inicializar()
@@ -23,7 +27,7 @@ onMounted(() => {
   <div v-if="isLoginPage" class="app-login">
     <RouterView />
   </div>
-  <div v-else class="app-shell">
+  <div v-else class="app-shell" :class="{ 'app-shell--embed': isEmbedded }">
     <MetgoHeader />
     <div class="app-body">
       <MetgoSidebar />

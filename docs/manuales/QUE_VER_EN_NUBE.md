@@ -4,76 +4,76 @@
 
 **Netlify y Render no replican los puertos 8501, 8502, 8506… de tu PC.**
 
-En local, cada dashboard Streamlit es **otro proceso** en **otro puerto**. En la nube eso no existe así: hay **URLs HTTPS distintas**, no `:8506` en el mismo servidor.
+En local, cada dashboard Streamlit es **otro proceso** en **otro puerto**. En la nube el número de puerto es una **etiqueta de utilidad** (qué hace ese módulo), no un servidor escuchando en `:8506`.
 
-## Qué tienes hoy desplegado
+## Qué tienes desplegado
 
 | Servicio | URL | Qué hace |
 |----------|-----|----------|
-| **Netlify** | https://metgo3d.netlify.app | App **Vue** (login, meteo, agrícola, alertas, catálogo) |
-| **Render `metgo-api`** | https://metgo-api.onrender.com | **API REST** (datos, JWT, login) |
-| **Streamlit Cloud** (opcional) | https://metgo3d.streamlit.app | Portal + iframe a Vue |
+| **Netlify** | https://metgo3d.netlify.app | App **Vue** (login, meteo, agrícola, alertas, **Centro de servicios**) |
+| **Render `metgo-api`** | https://metgo-api.onrender.com | **API REST** (catálogo, estados de puertos, login) |
+| **Render `metgo-streamlit`** | https://metgo-streamlit.onrender.com | **Portal** Streamlit (catálogo, `?activar=modulo`) |
+| **Streamlit Cloud** (opcional) | https://metgo3d.streamlit.app | Mismo portal multipágina |
 
-Vue en Netlify **ya usa** la API en Render. Eso **sí** es “ver METGO en la nube”.
+## Visor de puertos (recomendado)
+
+En **https://metgo3d.netlify.app/puertos**:
+
+- Lista **8501–8513** con utilidad de cada uno.
+- **Iframe integrado**: carga el dashboard desde Render (`Visor_de_puerto`) sin usar `127.0.0.1`.
+- Detalle técnico: `docs/manuales/VISOR_PUERTOS.md`.
+
+## Centro de servicios (Vue)
+
+En **https://metgo3d.netlify.app/servicios** verá:
+
+- Cada módulo con **puerto**, **utilidad** y estado.
+- **Ver en visor** → abre `/puertos?id=...` con iframe.
+- **Ver en Vue** → meteo, agricultura, alertas sin Streamlit.
+- **Iniciar PC** → solo en local.
+
+La API en Render debe tener `METGO_STREAMLIT_CLOUD_URL=https://metgo-streamlit.onrender.com` (ya en `render.yaml`).
 
 ## Qué NO hace la nube hoy
 
-| En tu PC | En Netlify/Render |
-|----------|-------------------|
-| `http://127.0.0.1:8501` dashboard principal | No existe ese puerto en internet |
-| `http://127.0.0.1:8506` visualizaciones | Idem |
-| Botón **Iniciar** en Centro de servicios | Solo arranca procesos **en el servidor**; en Render free **no** hay 13 Streamlit |
-
-Por eso ves el mensaje: *use App Vue o instale METGO en su PC*.
+| En tu PC | En Netlify |
+|----------|------------|
+| Proceso real en `:8506` con Plotly completo | No (salvo que despliegue esa app aparte) |
+| Trece Streamlit simultáneos | Un portal + Vue |
 
 ## Qué debes hacer según tu objetivo
 
-### A) Quiero usar METGO desde cualquier lugar (recomendado)
+### A) Usar METGO desde cualquier lugar (recomendado)
 
-1. Abre **https://metgo3d.netlify.app**
-2. Login: `admin` / `admin123`
-3. Use **Meteorología**, **Agricultura**, **Alertas** (todo vía API en Render).
+1. https://metgo3d.netlify.app → login `admin` / `admin123`
+2. **Centro de servicios** o **Catálogo** → **Ver en Vue**
 
-No necesita puertos 850x en la nube.
+### B) Ver utilidad de cada puerto en la interfaz
 
-### B) Quiero el portal Streamlit en la nube
+1. **Servicios** en Vue (lista con descripción por módulo).
+2. O portal Render / Streamlit Cloud → página **Catálogo y servicios**.
 
-1. Cuenta **Streamlit Cloud** → app con `streamlit_app.py` (ya configurado).
-2. Secret: `METGO_VUE_URL = "https://metgo3d.netlify.app"`
-3. Opcional: segundo servicio **Render `metgo-streamlit`** (ver `render.yaml`) → URL tipo `https://metgo-streamlit.onrender.com`
+### C) Dashboard Streamlit Plotly completo en internet
 
-Sigue siendo **un** portal, no trece puertos.
+Desplegar **cada** `.py` como app separada en Streamlit Cloud o Render, o migrar pantallas a Vue.
 
-### C) Quiero cada dashboard Streamlit (8502, 8506…) en internet
-
-Hay que **desplegar cada uno aparte** (no un solo Netlify):
-
-| Opción | Esfuerzo | Coste |
-|--------|----------|-------|
-| **Varias apps en Streamlit Cloud** (una por `.py`) | Alto (muchas apps) | Gratis limitado |
-| **Varios servicios en Render** (uno por dashboard) | Muy alto | Varios “free” con cold start |
-| **Migrar pantallas a Vue** (ya empezado) | Medio | Netlify + 1 API Render |
-
-No hay un botón mágico en Netlify para “abrir :8506 en la nube”.
-
-### D) Quiero desarrollar en PC con todos los puertos
+### D) Desarrollo local con todos los puertos
 
 ```bat
 backend\10_Deployment_Produccion\scripts\iniciar_metgo_desarrollo.bat
 ```
 
-- Vue: http://127.0.0.1:5173  
+- Vue: http://127.0.0.1:5173/servicios  
 - API: :8080  
-- Streamlit bajo demanda: 8501–8513 (Centro de servicios, pestaña Streamlit, **solo local**)
+- **Iniciar PC** en cada fila → puertos 8501–8513
 
-## Checklist rápido
+## Checklist
 
-- [ ] Netlify **Published** (último push)
-- [ ] Render **metgo-api** Live → `/api/health` OK
-- [ ] Login en Netlify OK (tras despertar API ~1 min)
-- [ ] No pulsar **Abrir :8501** desde Netlify (no funcionará)
-- [ ] Streamlit Cloud: `streamlit_app.py` + secret `METGO_VUE_URL`
+- [ ] Render **metgo-api** Live + variable `METGO_STREAMLIT_CLOUD_URL`
+- [ ] Render **metgo-streamlit** Live (opcional, portal)
+- [ ] Netlify publicado (último push)
+- [ ] En Netlify: **Activar en nube**, no esperar que `:8506` abra en el navegador remoto
 
-## Resumen en una frase
+## Resumen
 
-**Netlify = cara moderna (Vue). Render = cerebro (API). Los puertos 850x = taller en tu computador**, salvo que despliegue cada dashboard Streamlit como **otra app** en Streamlit Cloud o Render.
+**Netlify = Vue + catálogo de puertos con utilidad. Render API = estados y enlaces. Puertos 850x = procesos en tu PC**; en nube se sustituyen por Vue y el portal `metgo-streamlit.onrender.com`.

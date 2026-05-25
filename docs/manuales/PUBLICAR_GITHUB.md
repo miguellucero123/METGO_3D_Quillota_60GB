@@ -1,6 +1,20 @@
 # Publicar cambios en GitHub (METGO)
 
-Scripts en `backend/10_Deployment_Produccion/scripts/` para revisar el estado y subir cambios **sin usar la terminal manualmente** si prefiere doble clic.
+## Recomendado: subida manual
+
+**Guía principal:** [`SUBIR_GITHUB_MANUAL.md`](SUBIR_GITHUB_MANUAL.md)
+
+**Doble clic en la raíz:** `SUBIR_GITHUB_MANUAL.bat` (muestra los comandos para copiar).
+
+**Lista en texto:** `backend/10_Deployment_Produccion/scripts/COMANDOS_GIT_MANUAL.txt`
+
+Usted ejecuta `git add`, `git commit` y `git push` en su terminal.
+
+---
+
+## Scripts automáticos (opcional)
+
+Si prefiere asistencia con `.bat`: carpeta `backend/10_Deployment_Produccion/scripts/` (`publicar_github.bat`, `1_preparar_staging_github.bat`, etc.).
 
 ---
 
@@ -54,7 +68,7 @@ Quita restos de `04_Dashboards_Unificados/` y muestra un resumen antes de public
 
 ---
 
-## 4. Subir cambios (commit + push)
+## 4. Subir cambios (commit + push en un solo script automático)
 
 ### Opción A — `.bat` con mensaje
 
@@ -72,7 +86,7 @@ Sin argumento, pedirá el mensaje de commit y confirmación **S/N** antes de sub
 
 ---
 
-## 5. Qué NO se sube (`.gitignore`)
+## 6. Qué NO se sube (`.gitignore`)
 
 - `.env` y secretos
 - `node_modules/`, `frontend/vue/dist/` (si está ignorado)
@@ -83,7 +97,7 @@ Los scripts **bloquean** el push si detectan `.env` en el área de staging.
 
 ---
 
-## 6. Streamlit Cloud (después del push)
+## 7. Streamlit Cloud (después del push)
 
 - **Main file en GitHub:** `streamlit_app.py` (raíz del repo)
 - **Secrets:** `METGO_PASSWORD_ADMIN`, `METGO_PASSWORD_USER`, `METGO_PASSWORD_METGO`
@@ -93,7 +107,7 @@ Guía detallada: [`STREAMLIT_CLOUD.md`](STREAMLIT_CLOUD.md)
 
 ---
 
-## 7. Comandos Git manuales (referencia)
+## 8. Comandos Git manuales (referencia)
 
 ```bash
 cd D:\METGO_3D_Quillota_60GB
@@ -106,7 +120,7 @@ git push -u origin main
 
 ---
 
-## 8. Problemas frecuentes
+## 9. Problemas frecuentes
 
 ### Muchas líneas `deleted: respaldo_20251011_022103/...`
 
@@ -146,7 +160,7 @@ git rm --cached .env
 
 ---
 
-## 9. Orden recomendado tras reorganizar carpetas
+## 10. Orden recomendado tras reorganizar carpetas
 
 1. `revisar_estado_git.bat`
 2. Cerrar procesos que bloqueen archivos (Vue `npm run dev`, notebooks)

@@ -1,0 +1,7 @@
+feat: Visor de puertos integrado, utilidad por modulo y despliegue nube
+
+- Vue /puertos con iframe (embed) y API GET .../visor
+- Streamlit pages/4_Visor_de_puerto.py y metgo_dashboard_loader.py
+- Centro de servicios: ver en visor, activar nube, utilidad 8501-8513
+- METGO_STREAMLIT_CLOUD_URL en render.yaml
+- Docs VISOR_PUERTOS.md y QUE_VER_EN_NUBE.md

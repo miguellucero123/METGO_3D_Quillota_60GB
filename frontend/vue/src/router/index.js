@@ -50,6 +50,12 @@ const routes = [
     component: () => import('@/views/ServiciosView.vue'),
     meta: { title: 'Centro de servicios' },
   },
+  {
+    path: '/puertos',
+    name: 'puertos',
+    component: () => import('@/views/PuertosView.vue'),
+    meta: { title: 'Visor de puertos' },
+  },
 ]
 
 const router = createRouter({

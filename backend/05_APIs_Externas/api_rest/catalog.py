@@ -106,10 +106,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "Dashboard completo con gráficos, selector de análisis y navegación legacy.",
+        "utilidad": "Menú central legacy: gráficos, selector de análisis y acceso a sub-dashboards.",
         "tipo_acceso": "streamlit",
         "script": "streamlit_app.py",
         "puerto": 8501,
         "icono": "monitor",
+        "ruta_vue_alternativa": "/",
     },
     {
         "id": "meteo_streamlit",
@@ -117,10 +119,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "01",
         "descripcion": "Dashboard meteorológico avanzado con visualizaciones Plotly.",
+        "utilidad": "Series históricas, pronóstico multi-variable y gráficos Plotly por estación.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_meteorologico_profesional.py",
         "puerto": 8502,
         "icono": "thermometer",
+        "ruta_vue_alternativa": "/meteo",
     },
     {
         "id": "agricola_streamlit",
@@ -128,10 +132,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "02",
         "descripcion": "Riego, plagas, heladas y recomendaciones agrícolas avanzadas.",
+        "utilidad": "Riego, heladas, plagas y recomendaciones detalladas por cultivo y zona.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_agricola_inteligente.py",
         "puerto": 8503,
         "icono": "sprout",
+        "ruta_vue_alternativa": "/agricola",
     },
     {
         "id": "monitoreo_streamlit",
@@ -139,10 +145,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "07",
         "descripcion": "Monitoreo continuo y métricas operativas.",
+        "utilidad": "Métricas en vivo, latencia de sensores y estado operativo del sistema.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_monitoreo_tiempo_real.py",
         "puerto": 8504,
         "icono": "activity",
+        "ruta_vue_alternativa": "/monitoreo",
     },
     {
         "id": "ml_streamlit",
@@ -150,6 +158,7 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "06",
         "descripcion": "Modelos predictivos y análisis ML del sistema.",
+        "utilidad": "Entrenamiento, métricas de modelos y predicciones ML sobre variables meteo.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_ia_ml_avanzado.py",
         "puerto": 8505,
@@ -161,6 +170,7 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "Gráficos avanzados y comparativos multi-estación.",
+        "utilidad": "Mapas de calor, correlaciones y comparativos Plotly entre estaciones del valle.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_visualizaciones_avanzadas.py",
         "puerto": 8506,
@@ -172,6 +182,7 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "KPIs y métricas consolidadas del sistema.",
+        "utilidad": "KPIs consolidados: temperatura media, alertas activas y resumen multi-estación.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_global_metricas.py",
         "puerto": 8507,
@@ -183,10 +194,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "02",
         "descripcion": "Mapas de precisión, suelos y manejo por zonas.",
+        "utilidad": "Zonificación, suelos y manejo diferenciado por parcela en el valle.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_agricultura_precision.py",
         "puerto": 8508,
         "icono": "map",
+        "ruta_vue_alternativa": "/agricola",
     },
     {
         "id": "analisis_comparativo",
@@ -194,10 +207,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "Comparación entre estaciones y períodos.",
+        "utilidad": "Compara Quillota, Hijuelas, Limache, etc. en el mismo período o temporada.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_analisis_comparativo.py",
         "puerto": 8509,
         "icono": "git-compare",
+        "ruta_vue_alternativa": "/meteo",
     },
     {
         "id": "alertas_streamlit",
@@ -205,10 +220,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "07",
         "descripcion": "Configuración y historial de alertas.",
+        "utilidad": "Umbrales, historial y configuración de alertas automáticas por variable.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_alertas_automaticas.py",
         "puerto": 8510,
         "icono": "shield-alert",
+        "ruta_vue_alternativa": "/monitoreo",
     },
     {
         "id": "simple",
@@ -216,10 +233,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "Vista ligera para consultas rápidas.",
+        "utilidad": "Consulta rápida sin gráficos pesados; ideal en terreno o conexión lenta.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_simple_optimizado.py",
         "puerto": 8511,
         "icono": "minimize-2",
+        "ruta_vue_alternativa": "/",
     },
     {
         "id": "unificado",
@@ -227,10 +246,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "Vista unificada diferenciada por rol.",
+        "utilidad": "Una sola pantalla con vistas distintas para operador, agrónomo y administrador.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_unificado_diferenciado.py",
         "puerto": 8512,
         "icono": "layers",
+        "ruta_vue_alternativa": "/",
     },
     {
         "id": "mobile",
@@ -238,10 +259,12 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "categoria": "streamlit",
         "modulo_num": "04",
         "descripcion": "Interfaz optimizada para dispositivos móviles.",
+        "utilidad": "Layout compacto para celular; mismos datos con menos scroll y gráficos táctiles.",
         "tipo_acceso": "streamlit",
         "script": "frontend/dashboards/dashboard_mobile_optimizado.py",
         "puerto": 8513,
         "icono": "smartphone",
+        "ruta_vue_alternativa": "/",
     },
     {
         "id": "iot",
@@ -309,16 +332,56 @@ def streamlit_host() -> str:
     return os.getenv("METGO_STREAMLIT_HOST", "http://127.0.0.1").rstrip("/")
 
 
+def streamlit_cloud_base() -> str | None:
+    """URL del portal Streamlit en Render/Cloud (una app, no 13 puertos)."""
+    url = (
+        os.getenv("METGO_STREAMLIT_CLOUD_URL")
+        or os.getenv("METGO_STREAMLIT_PORTAL_URL")
+        or ""
+    ).strip().rstrip("/")
+    return url or None
+
+
 def enriquecer_modulo(mod: dict[str, Any]) -> dict[str, Any]:
     m = dict(mod)
-    if m.get("tipo_acceso") == "streamlit" and m.get("puerto"):
-        from api_rest.streamlit_launcher import _api_en_nube
+    if m.get("tipo_acceso") != "streamlit" or not m.get("puerto"):
+        return m
 
-        if _api_en_nube():
-            m["url_streamlit"] = None
-            m["solo_local"] = True
+    m["utilidad"] = m.get("utilidad") or m.get("descripcion", "")
+    puerto = m["puerto"]
+    m["puerto_etiqueta"] = f":{puerto}"
+    m["url_local"] = f"http://127.0.0.1:{puerto}"
+
+    from api_rest.streamlit_launcher import _api_en_nube
+
+    nube = streamlit_cloud_base()
+    try:
+        from metgo_dashboard_loader import url_visor
+
+        visor = url_visor(nube, m["id"]) if nube else None
+    except ImportError:
+        visor = f"{nube}/Visor_de_puerto?id={m['id']}&embed=true" if nube else None
+
+    if _api_en_nube():
+        if nube:
+            m["url_visor"] = visor
+            m["url_embed"] = visor
+            m["url_streamlit"] = visor or f"{nube}/?activar={m['id']}"
+            m["url_nube"] = f"{nube}/?activar={m['id']}"
+            m["solo_local"] = False
+            m["acceso_nube"] = True
         else:
-            m["url_streamlit"] = f"{streamlit_host()}:{m['puerto']}"
+            m["url_streamlit"] = None
+            m["url_nube"] = None
+            m["solo_local"] = True
+            m["acceso_nube"] = False
+    else:
+        m["url_streamlit"] = f"{streamlit_host()}:{puerto}"
+        m["url_visor"] = visor
+        m["url_embed"] = f"http://127.0.0.1:{puerto}/?embed=true"
+        m["url_nube"] = visor or (f"{nube}/?activar={m['id']}" if nube else None)
+        m["solo_local"] = False
+        m["acceso_nube"] = bool(nube)
     return m
 
 

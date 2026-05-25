@@ -8,10 +8,12 @@ import {
   Server,
   Grid3x3,
   Settings,
+  Monitor,
 } from 'lucide-vue-next'
 
 const links = [
   { to: '/', label: 'Panel general', icon: LayoutDashboard },
+  { to: '/puertos', label: 'Visor de puertos', icon: Monitor },
   { to: '/servicios', label: 'Centro de servicios', icon: Server },
   { to: '/meteo', label: 'Meteorología', icon: CloudSun },
   { to: '/agricola', label: 'Gestión agrícola', icon: Sprout },

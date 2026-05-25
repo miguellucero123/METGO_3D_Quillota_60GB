@@ -58,4 +58,12 @@ El proxy de Vite redirige `/api` → `http://localhost:8080`.
 | MonitoreoView | `GET /api/alertas` |
 | AgricolaView | `GET /api/agricola/{id}` |
 
-Documentación API: `11_Documentacion/manuales/API_REST.md`
+Documentación API: `docs/manuales/API_REST.md`
+
+## Despliegue en Netlify
+
+1. Conectar el repo en [Netlify](https://www.netlify.com) (el `netlify.toml` de la **raíz del repo** ya define `base = frontend/vue`).
+2. Variable **Production**: `VITE_METGO_API=https://su-api-publica.com/api`
+3. Tras el deploy, en Streamlit Cloud Secrets: `METGO_VUE_URL = "https://su-sitio.netlify.app"`
+
+Guía completa: [`../../docs/manuales/DESPLIEGUE_VUE_NETLIFY.md`](../../docs/manuales/DESPLIEGUE_VUE_NETLIFY.md)

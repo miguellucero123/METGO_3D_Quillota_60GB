@@ -157,3 +157,9 @@ export async function detenerTodosStreamlit() {
   const { data } = await api.post('/servicios/streamlit/detener-todos')
   return data
 }
+
+/** URL embed del Visor de Puertos (iframe en /puertos). */
+export async function fetchVisorPuerto(moduloId) {
+  const { data } = await api.get(`/servicios/streamlit/${moduloId}/visor`)
+  return data
+}

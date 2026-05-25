@@ -169,6 +169,11 @@ def create_app() -> Flask:
     def servicios_streamlit_detener_todos():
         return jsonify(streamlit_launcher.detener_todos())
 
+    @app.get("/api/servicios/streamlit/<modulo_id>/visor")
+    @auth_required
+    def servicios_streamlit_visor(modulo_id: str):
+        return jsonify(streamlit_launcher.url_visor_modulo(modulo_id))
+
     return app
 
 
