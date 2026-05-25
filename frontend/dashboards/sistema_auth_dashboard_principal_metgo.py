@@ -20,236 +20,35 @@ try:
 except ImportError:
     DATOS_REALES_DISPONIBLES = False
 import os
+import sys
+from pathlib import Path
+
+_root = Path(__file__).resolve()
+for _p in _root.parents:
+    if (_p / "metgo_paths.py").exists():
+        if str(_p) not in sys.path:
+            sys.path.insert(0, str(_p))
+        break
+
+from metgo_streamlit_theme import (
+    ACCENT,
+    MODULE_COLORS as MC,
+    PRIMARY,
+    PRIMARY_HOVER,
+    inject_theme,
+    is_streamlit_cloud,
+    module_card_html,
+)
 
 # Configurar página optimizada para móviles
 st.set_page_config(
-    page_title="🌤️ Sistema METGO - Dashboard Principal",
+    page_title="METGO 3D — Panel operadores",
     page_icon="🌤️",
     layout="wide",
-    initial_sidebar_state="collapsed"  # Colapsado para móviles
+    initial_sidebar_state="collapsed",
 )
 
-# CSS personalizado para diseño móvil profesional
-st.markdown("""
-<style>
-    /* Diseño móvil profesional */
-    .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem 1rem;
-        border-radius: 15px;
-        margin-bottom: 2rem;
-        text-align: center;
-        color: white;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    }
-    
-    .metric-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        margin: 0.5rem 0;
-        border-left: 4px solid #667eea;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    }
-    
-    .metric-number {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #2c3e50;
-        margin: 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .metric-label {
-        color: #7f8c8d;
-        font-size: 0.9rem;
-        margin: 0.5rem 0;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .metric-change {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 15px;
-        font-weight: bold;
-        display: inline-block;
-        margin-top: 0.5rem;
-    }
-    
-    .metric-positive {
-        background: linear-gradient(135deg, #00b894, #00a085);
-        color: white;
-    }
-    
-    .metric-negative {
-        background: linear-gradient(135deg, #e17055, #d63031);
-        color: white;
-    }
-    
-    .metric-neutral {
-        background: linear-gradient(135deg, #74b9ff, #0984e3);
-        color: white;
-    }
-    
-    .chart-container {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        margin: 1rem 0;
-        border: 1px solid #e9ecef;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #2c3e50;
-        margin: 2rem 0 1rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 3px solid #667eea;
-        display: inline-block;
-    }
-    
-    .dashboard-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        margin: 1.5rem 0;
-        border: 2px solid transparent;
-        background-clip: padding-box;
-        position: relative;
-        overflow: hidden;
-        transition: transform 0.3s ease;
-    }
-    
-    .dashboard-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
-    }
-    
-    .dashboard-card:hover {
-        transform: translateY(-3px);
-    }
-    
-    .alert-card {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin: 1rem 0;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-    
-    .success-card {
-        background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin: 1rem 0;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-    
-    .info-card {
-        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin: 1rem 0;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-        .main-header {
-            padding: 1.5rem 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .metric-card {
-            padding: 1rem;
-            margin: 0.25rem 0;
-        }
-        
-        .metric-number {
-            font-size: 1.5rem;
-        }
-        
-        .chart-container {
-            padding: 1rem;
-            margin: 0.5rem 0;
-        }
-        
-        .dashboard-card {
-            padding: 1.5rem;
-            margin: 1rem 0;
-        }
-        
-        .section-title {
-            font-size: 1.3rem;
-        }
-    }
-    
-    /* Animaciones suaves */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .metric-card, .chart-container, .dashboard-card {
-        animation: fadeInUp 0.6s ease-out;
-    }
-    
-    /* Scroll suave */
-    html {
-        scroll-behavior: smooth;
-    }
-    
-    /* Mejorar contraste para accesibilidad */
-    .stSelectbox > div > div {
-        background-color: white;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-    
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-</style>
-""", unsafe_allow_html=True)
+inject_theme()
 
 # Funciones para generar datos meteorológicos
 def generar_datos_meteorologicos(estacion="Quillota", fecha_inicio=None, fecha_fin=None, tipo_analisis="Histórico"):
@@ -961,15 +760,13 @@ def mostrar_dashboard_principal():
         key="dashboard_selector"
     )
     
-    # Detectar si estamos en Streamlit Cloud o local
-    # Método simplificado - siempre mostrar enlaces locales por defecto
-    is_streamlit_cloud = False
+    is_cloud = is_streamlit_cloud()
     
     # Mostrar el dashboard seleccionado
     if dashboard_seleccionado != "🏠 Dashboard Principal (Actual)":
         st.markdown(f"### {dashboard_seleccionado}")
         
-        if is_streamlit_cloud:
+        if is_cloud:
             # URLs para Streamlit Cloud - Información de desarrollo
             urls_dashboards = {
                 "🌤️ Análisis Meteorológico Profesional": "#meteorologico",
@@ -1004,10 +801,10 @@ def mostrar_dashboard_principal():
         
         url_dashboard = urls_dashboards.get(dashboard_seleccionado, "http://localhost:8501")
         
-        if is_streamlit_cloud:
+        if is_cloud:
             # Mensaje para Streamlit Cloud
             st.markdown(f"""
-            <div style="border: 3px solid #FF6B35; border-radius: 15px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div style="border: 3px solid {PRIMARY}; border-radius: 14px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, {PRIMARY} 0%, {ACCENT} 100%); color: white;">
                 <h3>🎯 {dashboard_seleccionado}</h3>
                 <p style="font-size: 18px; margin: 20px 0;">Módulo especializado del sistema METGO</p>
                 <div style="background-color: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
@@ -1021,10 +818,10 @@ def mostrar_dashboard_principal():
         else:
             # Mensaje para acceso local
             st.markdown(f"""
-            <div style="border: 3px solid #FF6B35; border-radius: 15px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div style="border: 3px solid {PRIMARY}; border-radius: 14px; padding: 30px; margin: 20px 0; text-align: center; background: linear-gradient(135deg, {PRIMARY} 0%, {ACCENT} 100%); color: white;">
                 <h3>🎯 {dashboard_seleccionado}</h3>
                 <p style="font-size: 18px; margin: 20px 0;">Acceso directo al módulo especializado</p>
-                <a href="{url_dashboard}" target="_blank" style="background-color: #FF6B35; color: white; padding: 15px 30px; text-decoration: none; border-radius: 10px; font-size: 18px; font-weight: bold; display: inline-block; margin: 20px 0;">🚀 Abrir Dashboard</a>
+                <a href="{url_dashboard}" target="_blank" style="background-color: {PRIMARY_HOVER}; color: white; padding: 15px 30px; text-decoration: none; border-radius: 10px; font-size: 18px; font-weight: bold; display: inline-block; margin: 20px 0;">🚀 Abrir Dashboard</a>
                 <div style="background-color: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <h4>📋 Información de Acceso</h4>
                     <p><strong>URL:</strong> {url_dashboard}</p>
@@ -1039,67 +836,35 @@ def mostrar_dashboard_principal():
     
     col1, col2, col3 = st.columns(3)
     
-    if is_streamlit_cloud:
-        # Información para Streamlit Cloud
-        dashboards_info = [
-            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico profesional con 5 años de datos", "8502", "#meteorologico"),
-            ("🌾 Agrícola Inteligente", "#2196F3", "Gestión agrícola con IA, plagas, riego y heladas", "8503", "#agricola"),
-            ("📊 Visualizaciones", "#9C27B0", "Visualizaciones avanzadas y análisis comparativo", "8506", "#visualizaciones"),
-            ("🔍 Monitoreo", "#795548", "Monitoreo en tiempo real del sistema", "8504", "#monitoreo"),
-            ("🤖 IA/ML", "#E91E63", "Sistema de inteligencia artificial y machine learning", "8505", "#ml"),
-            ("📈 Global", "#00BCD4", "Métricas globales y análisis integral", "8507", "#global"),
-            ("🌾 Precisión", "#4CAF50", "Agricultura de precisión con datos históricos", "8508", "#agricola-precision"),
-            ("📊 Comparativo", "#607D8B", "Análisis comparativo de 5 años", "8509", "#comparativo"),
-            ("🔬 Alertas", "#FF5722", "Sistema automático de alertas", "8510", "#alertas"),
-            ("📊 Simple", "#9E9E9E", "Dashboard simple optimizado", "8511", "#simple"),
-            ("🔄 Unificado", "#3F51B5", "Dashboard unificado diferenciado", "8512", "#unificado")
-        ]
+    _mods = [
+        ("🌤️ Meteorológico", MC["meteo"], "Análisis meteorológico profesional con 5 años de datos", "8502"),
+        ("🌾 Agrícola Inteligente", MC["agricola"], "Gestión agrícola con IA, plagas, riego y heladas", "8503"),
+        ("📊 Visualizaciones", MC["visual"], "Visualizaciones avanzadas y análisis comparativo", "8506"),
+        ("🔍 Monitoreo", MC["monitoreo"], "Monitoreo en tiempo real del sistema", "8504"),
+        ("🤖 IA/ML", MC["ml"], "Sistema de inteligencia artificial y machine learning", "8505"),
+        ("📈 Global", MC["global"], "Métricas globales y análisis integral", "8507"),
+        ("🌾 Precisión", MC["precision"], "Agricultura de precisión con datos históricos", "8508"),
+        ("📊 Comparativo", MC["comparativo"], "Análisis comparativo de 5 años", "8509"),
+        ("🔬 Alertas", MC["alertas"], "Sistema automático de alertas", "8510"),
+        ("📊 Simple", MC["simple"], "Dashboard simple optimizado", "8511"),
+        ("🔄 Unificado", MC["unificado"], "Dashboard unificado diferenciado", "8512"),
+    ]
+    if is_cloud:
+        dashboards_info = [(n, c, d, p, "#") for n, c, d, p in _mods]
     else:
-        # Información para acceso local
         dashboards_info = [
-            ("🌤️ Meteorológico", "#4CAF50", "Análisis meteorológico profesional con 5 años de datos", "8502", "http://192.168.1.7:8502"),
-            ("🌾 Agrícola Inteligente", "#2196F3", "Gestión agrícola con IA, plagas, riego y heladas", "8503", "http://192.168.1.7:8503"),
-            ("📊 Visualizaciones", "#9C27B0", "Visualizaciones avanzadas y análisis comparativo", "8506", "http://192.168.1.7:8506"),
-            ("🔍 Monitoreo", "#795548", "Monitoreo en tiempo real del sistema", "8504", "http://192.168.1.7:8504"),
-            ("🤖 IA/ML", "#E91E63", "Sistema de inteligencia artificial y machine learning", "8505", "http://192.168.1.7:8505"),
-            ("📈 Global", "#00BCD4", "Métricas globales y análisis integral", "8507", "http://192.168.1.7:8507"),
-            ("🌾 Precisión", "#4CAF50", "Agricultura de precisión con datos históricos", "8508", "http://192.168.1.7:8508"),
-            ("📊 Comparativo", "#607D8B", "Análisis comparativo de 5 años", "8509", "http://192.168.1.7:8509"),
-            ("🔬 Alertas", "#FF5722", "Sistema automático de alertas", "8510", "http://192.168.1.7:8510"),
-            ("📊 Simple", "#9E9E9E", "Dashboard simple optimizado", "8511", "http://192.168.1.7:8511"),
-            ("🔄 Unificado", "#3F51B5", "Dashboard unificado diferenciado", "8512", "http://192.168.1.7:8512")
+            (n, c, d, p, f"http://127.0.0.1:{p}") for n, c, d, p in _mods
         ]
-    
+
     for i, (nombre, color, descripcion, puerto, url) in enumerate(dashboards_info):
         col = [col1, col2, col3][i % 3]
         with col:
-            if is_streamlit_cloud:
-                # Grid para Streamlit Cloud
-                st.markdown(f"""
-                <div style="border: 2px solid {color}; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: rgba(255,255,255,0.1);">
-                    <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
-                    <p style="margin: 0 0 10px 0; font-size: 12px;">{descripcion}</p>
-                    <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Estado: En desarrollo</p>
-                    <div style="background-color: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 10px 0;">
-                        <p style="margin: 0; font-size: 11px;">💡 Módulo disponible en sistema local</p>
-                        <p style="margin: 0; font-size: 11px;">📞 Contactar administrador</p>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                # Grid para acceso local
-                st.markdown(f"""
-                <div style="border: 2px solid {color}; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: rgba(255,255,255,0.1);">
-                    <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
-                    <p style="margin: 0 0 10px 0; font-size: 12px;">{descripcion}</p>
-                    <p style="margin: 0 0 10px 0; font-size: 10px; color: #666;">Puerto: {puerto}</p>
-                    <a href="{url}" target="_blank" style="background-color: {color}; color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; font-size: 12px; display: inline-block; margin: 5px 0;">🚀 Acceder</a>
-                    <div style="background-color: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 10px 0;">
-                        <p style="margin: 0; font-size: 11px;">💡 Disponible en red local</p>
-                        <p style="margin: 0; font-size: 11px;">📱 Funciona desde celular</p>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+            st.markdown(
+                module_card_html(
+                    nombre, color, descripcion, puerto=puerto, url=url, cloud=is_cloud
+                ),
+                unsafe_allow_html=True,
+            )
     
     # Información sobre acceso a módulos
     st.markdown("### 🔧 Información de Acceso a Módulos")
@@ -1125,9 +890,9 @@ def mostrar_dashboard_principal():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("""
-        <div style="border: 2px solid #FF6B35; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: rgba(255,107,53,0.1);">
-            <h4 style="color: #FF6B35;">📂 Carpetas del Sistema METGO</h4>
+        st.markdown(f"""
+        <div style="border: 2px solid {PRIMARY}; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #e8f2eb;">
+            <h4 style="color: {PRIMARY};">📂 Carpetas del Sistema METGO</h4>
             <ul style="margin: 0; padding-left: 20px;">
                 <li><strong>01_Sistema_Meteorologico:</strong> Dashboards meteorológicos avanzados</li>
                 <li><strong>02_Sistema_Agricola:</strong> Módulos agrícolas especializados</li>
@@ -1144,9 +909,9 @@ def mostrar_dashboard_principal():
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("""
-        <div style="border: 2px solid #4CAF50; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: rgba(76,175,80,0.1);">
-            <h4 style="color: #4CAF50;">🚀 Acceso Rápido a Dashboards</h4>
+        st.markdown(f"""
+        <div style="border: 2px solid {ACCENT}; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f4faf6;">
+            <h4 style="color: {ACCENT};">🚀 Acceso Rápido a Dashboards</h4>
             <p><strong>Dashboard Principal:</strong> <code>sistema_auth_dashboard_principal_metgo.py</code></p>
             <p><strong>Dashboard Meteorológico:</strong> <code>dashboard_meteorologico_metgo.py</code></p>
             <p><strong>Dashboard Agrícola:</strong> <code>dashboard_agricola_metgo.py</code></p>

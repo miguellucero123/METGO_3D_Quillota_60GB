@@ -13,10 +13,15 @@ from __future__ import annotations
 import streamlit as st
 
 from metgo_streamlit_bootstrap import bootstrap
+from metgo_streamlit_theme import inject_theme
 
 bootstrap("01_meteo", "05_api_rest", "07_monitoreo")
+inject_theme()
 
-st.title("METGO 3D — Sistema Integrado Quillota")
+st.markdown(
+    '<div class="main-header"><h1 style="margin:0;color:white;">METGO 3D — Sistema Integrado Quillota</h1></div>',
+    unsafe_allow_html=True,
+)
 st.caption("Layout v4 · backend · frontend · site-web")
 
 st.markdown(

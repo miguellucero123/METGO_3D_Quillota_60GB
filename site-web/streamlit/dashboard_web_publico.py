@@ -33,6 +33,7 @@ import plotly.express as px
 import streamlit as st
 
 from api_rest.services import ESTACIONES_PRINCIPALES, pronostico_meteo, resumen_meteo, slug_a_nombre
+from metgo_streamlit_theme import PRIMARY, inject_theme
 
 st.set_page_config(
     page_title="METGO 3D — Quillota (público)",
@@ -40,7 +41,13 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("METGO 3D — Monitoreo público")
+inject_theme()
+
+st.markdown(
+    f'<div class="main-header"><h2 style="margin:0;color:white;">METGO 3D — Monitoreo público</h2>'
+    f'<p style="margin:0.5rem 0 0;opacity:0.95;">Misma identidad visual que la app Vue</p></div>',
+    unsafe_allow_html=True,
+)
 st.caption(
     "Datos vía OpenMeteo · Valle de Quillota y estaciones del Valle Central. "
     "Para operación completa (agrícola, alertas, ML) use la aplicación con login."
