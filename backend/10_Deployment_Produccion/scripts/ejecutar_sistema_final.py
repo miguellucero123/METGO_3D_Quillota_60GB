@@ -9,6 +9,15 @@ import subprocess
 import sys
 import time
 import os
+from pathlib import Path
+
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
+from _deprecated_notice import warn_if_deprecated
+
+warn_if_deprecated(__file__, "iniciar_metgo_desarrollo.bat + Centro de servicios (Vue)")
+
 
 def ejecutar_dashboard(ruta_dashboard, puerto):
     """Ejecutar un dashboard desde su ruta organizada"""

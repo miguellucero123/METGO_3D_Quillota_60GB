@@ -51,7 +51,7 @@ Respuesta:
 
 Enviar header: `Authorization: Bearer <access_token>`
 
-Rutas públicas: `GET /api/health`, `POST /api/auth/login`
+Rutas públicas: `GET /api/health`, `POST /api/auth/login`, `GET /api/public/estaciones`, `GET /api/public/meteo/{id}`
 
 ### Otros endpoints auth
 
@@ -61,6 +61,15 @@ Rutas públicas: `GET /api/health`, `POST /api/auth/login`
 | POST | `/api/auth/refresh` | Nuevo token (requiere token válido) |
 
 Credenciales compartidas con Streamlit: `metgo_auth.py` + variables `METGO_PASSWORD_ADMIN`, `METGO_PASSWORD_USER`, `METGO_PASSWORD_METGO`.
+
+## Endpoints públicos de solo lectura (sin JWT)
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/public/estaciones` | Estaciones principales |
+| GET | `/api/public/meteo/{id}` | Resumen meteorológico (mismo JSON que `/api/meteo/{id}`) |
+
+Uso previsto: `site-web`, widgets externos o landing. Sin datos agrícolas ni alertas.
 
 ## Endpoints de datos (requieren JWT)
 

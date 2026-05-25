@@ -10,6 +10,15 @@ import sys
 import subprocess
 import webbrowser
 import time
+from pathlib import Path
+
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
+from _deprecated_notice import warn_if_deprecated
+
+warn_if_deprecated(__file__, "iniciar_metgo_desarrollo.bat + streamlit_app.py")
+
 
 def ejecutar_modulo(modulo, puerto):
     """Ejecutar un módulo específico"""

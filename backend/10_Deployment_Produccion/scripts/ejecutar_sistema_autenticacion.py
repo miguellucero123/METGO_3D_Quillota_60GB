@@ -6,8 +6,16 @@ Script para ejecutar el sistema de autenticación con Streamlit
 import subprocess
 import sys
 import os
+from pathlib import Path
+
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
+from _deprecated_notice import warn_if_deprecated
+
 
 def ejecutar_sistema_autenticacion():
+    warn_if_deprecated(__file__, "streamlit run streamlit_app.py (raíz del repo)")
     """Ejecutar sistema de autenticación"""
     try:
         print("="*60)

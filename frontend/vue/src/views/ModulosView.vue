@@ -84,7 +84,8 @@ onMounted(async () => {
         <li>Use <router-link to="/configuracion">Configuración</router-link> para ver atributos por estación.</li>
       </ol>
       <p class="muted">
-        Comando: <code>python 04_Dashboards_Unificados/dashboards/ejecutar_todos_dashboards.py</code>
+        Centro de servicios: use <strong>Iniciar</strong> en cada módulo Streamlit (API :8080).
+        Script legacy: <code>python frontend/dashboards/ejecutar_todos_dashboards.py</code>
       </p>
     </SectionCard>
   </div>

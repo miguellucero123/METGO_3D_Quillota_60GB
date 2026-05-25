@@ -32,6 +32,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
+from _deprecated_notice import warn_if_deprecated
+
+warn_if_deprecated(__file__, "iniciar_metgo_desarrollo.bat o notebooks por módulo")
+
+
 class EjecutorMETGO3D:
     """
     Clase principal para ejecutar todo el sistema METGO 3D

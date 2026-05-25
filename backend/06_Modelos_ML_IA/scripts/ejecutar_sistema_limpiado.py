@@ -10,6 +10,15 @@ import sys
 import time
 import webbrowser
 import os
+from pathlib import Path
+
+_deploy = Path(__file__).resolve().parents[2] / "10_Deployment_Produccion" / "scripts"
+if str(_deploy) not in sys.path:
+    sys.path.insert(0, str(_deploy))
+from _deprecated_notice import warn_if_deprecated
+
+warn_if_deprecated(__file__, "iniciar_metgo_desarrollo.bat")
+
 
 def ejecutar_dashboard(dashboard, puerto):
     """Ejecutar un dashboard en un puerto específico"""

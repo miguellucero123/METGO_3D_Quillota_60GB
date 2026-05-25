@@ -17,9 +17,14 @@ Servidor, datos, APIs, modelos ML, monitoreo, despliegue y respaldos.
 | `10_Deployment_Produccion/` | Scripts `.bat`, deploy |
 | `12_Respaldos_Archivos/` | Backups locales |
 
-## Arranque API
+## Arranque
 
-```bash
-# Desde la raíz del repositorio
-python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py
-```
+| Componente | Comando |
+|------------|---------|
+| API REST | `python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py` |
+| API + Vue | `backend/10_Deployment_Produccion/scripts/iniciar_metgo_desarrollo.bat` |
+| Dashboard público | `backend/10_Deployment_Produccion/scripts/iniciar_site_web.bat` |
+
+Capas hermanas: [`frontend/`](../frontend/README.md) · [`site-web/`](../site-web/README.md)
+
+Rutas centralizadas: [`metgo_paths.py`](../metgo_paths.py) en la raíz del repo.

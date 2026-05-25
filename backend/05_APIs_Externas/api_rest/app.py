@@ -17,11 +17,13 @@ for _p in Path(__file__).resolve().parents:
         break
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "05_APIs_Externas"))
 
 import metgo_paths
 
 metgo_paths.setup_paths("01_meteo", "05_api_rest")
+_apis_root = metgo_paths.MODULE_PATHS.get("05_api_rest")
+if _apis_root and str(_apis_root) not in sys.path:
+    sys.path.insert(0, str(_apis_root))
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -51,6 +53,8 @@ def create_app() -> Flask:
                 "endpoints": {
                     "health": "/api/health",
                     "login": "POST /api/auth/login",
+                    "public_estaciones": "/api/public/estaciones",
+                    "public_meteo": "/api/public/meteo/<estacion_id>",
                 },
             }
         )
@@ -58,6 +62,19 @@ def create_app() -> Flask:
     @app.get("/api/health")
     def health():
         return jsonify(services.health_check())
+
+    @app.get("/api/public/estaciones")
+    def public_estaciones():
+        """Estaciones principales (solo lectura, sin JWT)."""
+        return jsonify(services.listar_estaciones())
+
+    @app.get("/api/public/meteo/<estacion_id>")
+    def public_meteo(estacion_id: str):
+        """Resumen meteorológico público (solo lectura, sin JWT)."""
+        data = services.resumen_meteo(estacion_id)
+        if data is None:
+            return jsonify({"error": "Sin datos para la estacion"}), 404
+        return jsonify(data)
 
     @app.get("/api/estaciones")
     @auth_required
@@ -164,7 +181,8 @@ def main() -> None:
     debug = os.getenv("METGO_API_DEBUG", "0") == "1"
     auth_mode = "JWT activo" if os.getenv("METGO_API_AUTH_REQUIRED", "1") != "0" else "sin auth"
     print(f"METGO API REST -> http://{host}:{port}/api/health ({auth_mode})")
-    print(f"Interfaz Vue    -> http://127.0.0.1:5173 (cd frontend_vue && npm run dev)")
+    vue_dir = "frontend/vue" if metgo_paths.LAYOUT_CAPAS else "04_Dashboards_Unificados/frontend_vue"
+    print(f"Interfaz Vue    -> http://127.0.0.1:5173 (cd {vue_dir} && npm run dev)")
     print("NO abra :8080 en el navegador para la UI; ese puerto es solo la API.")
     app.run(host=host, port=port, debug=debug)
 

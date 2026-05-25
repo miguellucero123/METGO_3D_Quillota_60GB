@@ -1,168 +1,89 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Script para poner el dashboard METGO en linea publica usando ngrok
+Dashboard público METGO — resumen meteorológico (OpenMeteo) sin autenticación.
+Capa site-web; operadores usan frontend/dashboards + Vue.
 """
 
-import subprocess
+from __future__ import annotations
+
 import sys
-import time
-import threading
-import os
-import urllib.request
+from pathlib import Path
 
-def instalar_ngrok():
-    """Descarga e instala ngrok"""
-    print("Descargando ngrok...")
-    try:
-        # URL de descarga de ngrok
-        ngrok_url = "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip"
-        ngrok_zip = "ngrok.zip"
-        
-        print("Descargando desde:", ngrok_url)
-        urllib.request.urlretrieve(ngrok_url, ngrok_zip)
-        
-        # Extraer ngrok
-        import zipfile
-        with zipfile.ZipFile(ngrok_zip, 'r') as zip_ref:
-            zip_ref.extractall('.')
-        
-        # Limpiar archivo zip
-        os.remove(ngrok_zip)
-        
-        print("ngrok instalado correctamente")
-        return True
-        
-    except Exception as e:
-        print(f"Error instalando ngrok: {e}")
-        return False
+_root = Path(__file__).resolve()
+for _p in _root.parents:
+    if (_p / "metgo_paths.py").exists():
+        PROJECT_ROOT = _p
+        break
+else:
+    raise RuntimeError("No se encontró metgo_paths.py en ancestros del proyecto.")
 
-def verificar_ngrok():
-    """Verifica si ngrok esta instalado"""
-    try:
-        result = subprocess.run(['ngrok', 'version'], capture_output=True, text=True, shell=True)
-        return True
-    except:
-        return False
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-def ejecutar_streamlit():
-    """Ejecuta Streamlit en segundo plano"""
-    try:
-        comando = [
-            sys.executable, "-m", "streamlit", "run",
-            "sistema_auth_dashboard_principal_metgo.py",
-            "--server.port=8501",
-            "--server.address=127.0.0.1",
-            "--server.headless=true"
-        ]
-        
-        print("Iniciando Streamlit...")
-        subprocess.run(comando)
-        
-    except Exception as e:
-        print(f"Error ejecutando Streamlit: {e}")
+import metgo_paths
 
-def ejecutar_ngrok():
-    """Ejecuta ngrok para crear tunel publico"""
-    try:
-        print("Iniciando tunel publico con ngrok...")
-        subprocess.run(['ngrok', 'http', '8501', '--log=stdout'], shell=True)
-    except Exception as e:
-        print(f"Error ejecutando ngrok: {e}")
+metgo_paths.setup_paths("01_meteo", "05_api_rest")
+_apis = metgo_paths.MODULE_PATHS["05_api_rest"]
+if _apis and str(_apis) not in sys.path:
+    sys.path.insert(0, str(_apis))
 
-def obtener_url_ngrok():
-    """Obtiene la URL publica de ngrok"""
-    try:
-        import requests
-        response = requests.get('http://localhost:4040/api/tunnels', timeout=5)
-        data = response.json()
-        
-        for tunnel in data['tunnels']:
-            if tunnel['proto'] == 'https':
-                return tunnel['public_url']
-        
-        for tunnel in data['tunnels']:
-            if tunnel['proto'] == 'http':
-                return tunnel['public_url']
-                
-    except Exception as e:
-        print(f"No se pudo obtener URL de ngrok: {e}")
-    
-    return None
+import pandas as pd
+import plotly.express as px
+import streamlit as st
 
-def main():
-    """Funcion principal"""
-    print("=" * 60)
-    print("DASHBOARD METGO - ACCESO PUBLICO WEB")
-    print("=" * 60)
-    
-    # Verificar si ngrok esta instalado
-    if not verificar_ngrok():
-        print("ngrok no encontrado. Instalando...")
-        if not instalar_ngrok():
-            print("No se pudo instalar ngrok. Usando acceso local solamente.")
-            print("URLs disponibles:")
-            print("Local: http://localhost:8501")
-            print("Red:   http://192.168.1.7:8501")
-            
-            # Ejecutar solo Streamlit
-            ejecutar_streamlit()
-            return
-    
-    print("ngrok disponible")
-    print()
-    
-    # Iniciar Streamlit en hilo separado
-    streamlit_thread = threading.Thread(target=ejecutar_streamlit, daemon=True)
-    streamlit_thread.start()
-    
-    # Esperar a que Streamlit inicie
-    print("Esperando a que Streamlit inicie...")
-    time.sleep(5)
-    
-    # Iniciar ngrok
-    ngrok_thread = threading.Thread(target=ejecutar_ngrok, daemon=True)
-    ngrok_thread.start()
-    
-    # Esperar a que ngrok inicie
-    time.sleep(3)
-    
-    # Obtener URL publica
-    url_publica = obtener_url_ngrok()
-    
-    print("=" * 60)
-    print("DASHBOARD METGO EJECUTANDOSE")
-    print("=" * 60)
-    
-    if url_publica:
-        print(f"URL PUBLICA: {url_publica}")
-        print("Accesible desde cualquier lugar del mundo")
-        print()
-        print("Comparte esta URL con otros usuarios:")
-        print(f"{url_publica}")
-    else:
-        print("URL publica no disponible")
-    
-    print()
-    print("URLS DISPONIBLES:")
-    print(f"Local:        http://localhost:8501")
-    print(f"Red Local:    http://192.168.1.7:8501")
-    if url_publica:
-        print(f"Publica:      {url_publica}")
-    
-    print()
-    print("IMPORTANTE:")
-    print("- Presiona Ctrl+C para detener")
-    print("- La URL publica cambiara cada vez que reinicies")
-    print("- Para URL fija, registra cuenta en ngrok.com")
-    print()
-    
-    try:
-        # Mantener el programa ejecutandose
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nDeteniendo dashboard...")
-        print("Dashboard detenido")
+from api_rest.services import ESTACIONES_PRINCIPALES, pronostico_meteo, resumen_meteo, slug_a_nombre
 
-if __name__ == "__main__":
-    main()
+st.set_page_config(
+    page_title="METGO 3D — Quillota (público)",
+    page_icon="🌤️",
+    layout="wide",
+)
+
+st.title("METGO 3D — Monitoreo público")
+st.caption(
+    "Datos vía OpenMeteo · Valle de Quillota y estaciones del Valle Central. "
+    "Para operación completa (agrícola, alertas, ML) use la aplicación con login."
+)
+
+slug = st.selectbox(
+    "Estación",
+    ESTACIONES_PRINCIPALES,
+    format_func=lambda s: slug_a_nombre(s),
+)
+
+resumen = resumen_meteo(slug)
+if not resumen:
+    st.warning("No hay datos disponibles para esta estación. Intente más tarde.")
+    st.stop()
+
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Temperatura", f"{resumen['temperatura']} °C")
+c2.metric("Humedad", f"{resumen['humedad']} %")
+c3.metric("Viento", f"{resumen['viento']} km/h")
+c4.metric("Precipitación", f"{resumen['precipitacion']} mm")
+
+st.subheader(f"Pronóstico — {resumen['estacion']}")
+pron = pronostico_meteo(slug, 7)
+if pron:
+    df = pd.DataFrame(pron)
+    fig = px.line(
+        df,
+        x="fecha",
+        y=["temperatura_max", "temperatura_min"],
+        labels={"value": "°C", "fecha": "Fecha", "variable": "Serie"},
+        title="Temperaturas máx / mín (7 días)",
+    )
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Sin serie de pronóstico para graficar.")
+
+st.divider()
+st.markdown(
+    f"**Fuente:** {resumen.get('fuente', 'OpenMeteo')} · "
+    f"**Actualizado:** {resumen.get('actualizado', '—')}"
+)
+st.markdown(
+    "[Repositorio](https://github.com/miguellucero123/METGO_3D_Quillota_60GB) · "
+    "Panel operativo: `streamlit run streamlit_app.py` (raíz del proyecto)"
+)

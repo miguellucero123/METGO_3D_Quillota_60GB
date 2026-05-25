@@ -51,7 +51,7 @@ MODULE_PATHS = {
     "02_agricola": _root_module("02_Sistema_Agricola") / "scripts",
     "03_iot": _root_module("03_Sistema_IoT_Drones") / "scripts",
     "04_dashboards": _frontend_path("dashboards"),
-    "04_mobile": _frontend_path("dashboards", "mobile"),
+    "04_mobile": _frontend_path("app_movil"),
     "05_apis": _root_module("05_APIs_Externas") / "scripts",
     "05_api_rest": _root_module("05_APIs_Externas"),
     "06_ml": _root_module("06_Modelos_ML_IA") / "scripts",
@@ -92,6 +92,24 @@ def ensure_runtime_dirs() -> None:
 def streamlit_dashboard_path(filename: str) -> Path:
     """Ruta a un script Streamlit en frontend/dashboards."""
     return _frontend_path("dashboards", filename)
+
+
+def site_web_streamlit_path(filename: str) -> Path:
+    """Ruta a un script Streamlit en site-web/streamlit/."""
+    return SITE_WEB / "streamlit" / filename
+
+
+def frontend_vue_dir() -> Path:
+    """Directorio de la SPA Vue."""
+    return _frontend_path("vue")
+
+
+def frontend_app_movil_dir() -> Path:
+    """Directorio de la app móvil React Native."""
+    canonical = _frontend_path("app_movil")
+    if canonical.is_dir():
+        return canonical
+    return _frontend_path("dashboards", "app_movil_metgo")
 
 
 def deploy_script(name: str) -> Path:

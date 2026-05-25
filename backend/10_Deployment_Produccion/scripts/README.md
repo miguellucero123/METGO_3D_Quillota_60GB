@@ -40,4 +40,6 @@ python 10_Deployment_Produccion/scripts/reorganizar_proyecto_v3.py
 - **Streamlit Cloud:** `deploy_streamlit_cloud.py`
 - **Mantenimiento:** `optimizar_*.py`, `monitorear_sistema.py`
 
-Documentación: [`11_Documentacion/manuales/`](../../11_Documentacion/manuales/)
+Documentación: [`docs/manuales/`](../../../docs/manuales/) · [`docs/CAPAS_OPERACION.md`](../../../docs/CAPAS_OPERACION.md)
+
+**Scripts deprecated:** `ejecutar_sistema_*.py` — usar `iniciar_metgo_desarrollo.bat`. Para forzar ejecución: `set METGO_ALLOW_DEPRECATED=1`.
