@@ -39,7 +39,6 @@ from metgo_streamlit_theme import (
     is_streamlit_cloud,
     module_card_html,
 )
-from metgo_vue_embed import show_vue_fullscreen_on_cloud
 
 # Configurar página optimizada para móviles
 st.set_page_config(
@@ -51,14 +50,15 @@ st.set_page_config(
 
 inject_theme()
 
-# Cloud + METGO_VUE_URL → solo Vue (Netlify), no el panel legacy
-show_vue_fullscreen_on_cloud("/servicios", height=920)
-
-if not is_streamlit_cloud():
+if is_streamlit_cloud():
+    st.info(
+        "Panel operadores **legacy**. Use la **página de inicio** del menú o "
+        "[metgo3d.netlify.app](https://metgo3d.netlify.app) (aplicación Vue / index)."
+    )
+else:
     st.warning(
-        "Panel Streamlit **legacy**. La interfaz con iconos está en **Vue**: "
-        "[http://127.0.0.1:5173](http://127.0.0.1:5173) → Centro de servicios "
-        "(requiere API en :8080). Menú lateral: **0 Catalogo y servicios**."
+        "Panel Streamlit **legacy**. Interfaz principal: `streamlit run streamlit_app.py` "
+        "o Vue en http://127.0.0.1:5173"
     )
 
 # Funciones para generar datos meteorológicos
