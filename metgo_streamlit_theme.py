@@ -46,9 +46,14 @@ html, body, [class*="css"] {{
     font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif !important;
 }}
 
-.stApp {{
-    background-color: {BG};
-    color: {TEXT};
+.stApp, [data-testid="stAppViewContainer"], .main {{
+    background-color: {BG} !important;
+    color: {TEXT} !important;
+}}
+
+[data-testid="stHeader"] {{
+    background: {SURFACE} !important;
+    border-bottom: 1px solid {BORDER};
 }}
 
 .block-container {{
