@@ -176,8 +176,10 @@ app = create_app()
 
 
 def main() -> None:
-    port = int(os.getenv("METGO_API_PORT", "8080"))
-    host = os.getenv("METGO_API_HOST", "127.0.0.1")
+    # Render/Railway inyectan PORT; en local use METGO_API_PORT (8080)
+    port = int(os.getenv("PORT", os.getenv("METGO_API_PORT", "8080")))
+    default_host = "0.0.0.0" if os.getenv("PORT") else "127.0.0.1"
+    host = os.getenv("METGO_API_HOST", default_host)
     debug = os.getenv("METGO_API_DEBUG", "0") == "1"
     auth_mode = "JWT activo" if os.getenv("METGO_API_AUTH_REQUIRED", "1") != "0" else "sin auth"
     print(f"METGO API REST -> http://{host}:{port}/api/health ({auth_mode})")

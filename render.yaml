@@ -1,0 +1,24 @@
+# API REST METGO en Render (gratis) — para que Vue en Netlify pueda hacer login
+# https://render.com → New → Blueprint → este repo
+#
+# Tras el deploy, en Netlify (Production):
+#   VITE_METGO_API = https://metgo-api.onrender.com/api
+# y redeploy del sitio Vue.
+
+services:
+  - type: web
+    name: metgo-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py
+    healthCheckPath: /api/health
+    envVars:
+      - key: METGO_API_HOST
+        value: 0.0.0.0
+      - key: METGO_CORS_ORIGINS
+        value: https://metgo3d.netlify.app,https://metgo-3d-quillota-60gb.streamlit.app
+      - key: METGO_JWT_SECRET
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.9"
