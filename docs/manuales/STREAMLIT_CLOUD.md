@@ -33,7 +33,9 @@ Streamlit Cloud usa `requirements.txt` en la raíz del repositorio.
 
 ## Tras cada push a GitHub
 
-1. Confirme **Main file path** = `streamlit_app.py`.
+1. **Main file** al crear la app: `streamlit_app.py` o `sistema_auth_dashboard_principal_metgo.py` (este último en la raíz **redirige** a `streamlit_app.py`).
+
+   En **App settings → General** solo verá subdominio y Python; **no** se puede cambiar el Main file tras el deploy. Si la app es antigua, basta con el wrapper en la raíz + Reboot.
 2. En la app → menú **⋮** → **Reboot app** (Streamlit Cloud no siempre recarga al instante).
 3. Abra el menú lateral y elija **Resumen público** para ver los cambios de `site-web`.
 

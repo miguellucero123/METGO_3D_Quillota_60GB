@@ -121,10 +121,14 @@ def show_vue_fullscreen_on_cloud(
     height: int = 900,
 ) -> None:
     """
-    En Streamlit Cloud, si METGO_VUE_URL existe, muestra Vue a pantalla completa y
+    Si METGO_VUE_URL apunta a producción (https), muestra Vue a pantalla completa y
     detiene el resto del script (evita el panel legacy con graficas).
     """
-    if not is_streamlit_cloud() or not get_vue_base_url():
+    url = get_vue_base_url()
+    if not url or "127.0.0.1" in url or "localhost" in url.lower():
         return
-    render_vue_iframe(path, height=height)
-    st.stop()
+    on_cloud = is_streamlit_cloud()
+    production_vue = url.startswith("https://")
+    if on_cloud or production_vue:
+        render_vue_iframe(path, height=height)
+        st.stop()

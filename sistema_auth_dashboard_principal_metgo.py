@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Wrapper de compatibilidad METGO — redirige al módulo reorganizado."""
+"""
+Entrypoint legacy en la raíz del repo (Streamlit Cloud suele usar este nombre).
+
+No ejecuta el panel antiguo: delega en streamlit_app.py (Vue embebido si METGO_VUE_URL).
+Para forzar el dashboard legacy en local: streamlit run frontend/dashboards/sistema_auth_dashboard_principal_metgo.py
+"""
+from __future__ import annotations
+
 import runpy
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT))
-import metgo_paths
-metgo_paths.setup_all_paths()
-runpy.run_path(str(metgo_paths.streamlit_dashboard_path("sistema_auth_dashboard_principal_metgo.py")), run_name="__main__")
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+runpy.run_path(str(ROOT / "streamlit_app.py"), run_name="__main__")
