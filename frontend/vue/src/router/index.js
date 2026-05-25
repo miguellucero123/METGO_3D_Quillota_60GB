@@ -9,6 +9,12 @@ const routes = [
     meta: { public: true, title: 'Ingresar' },
   },
   {
+    path: '/estado',
+    name: 'estado',
+    component: () => import('@/views/EstadoView.vue'),
+    meta: { public: true, title: 'Estado del sistema' },
+  },
+  {
     path: '/',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),

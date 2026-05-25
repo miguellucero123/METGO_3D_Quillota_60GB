@@ -121,6 +121,25 @@ watch(
       </p>
     </header>
 
+    <div v-if="esSitioPublico" class="banner-nube">
+      <Cloud class="banner-icon" />
+      <div>
+        <strong>Modo en línea (Netlify)</strong>
+        <p>
+          Los dashboards en puertos <code>8501–8513</code> solo funcionan con METGO en su PC.
+          Use <strong>Ver en nube</strong> (visor Streamlit) o las pantallas Vue del menú.
+        </p>
+        <a
+          href="https://metgo-3d-quillota-60gb.streamlit.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link-nube"
+        >
+          Abrir portal Streamlit Cloud
+        </a>
+      </div>
+    </div>
+
     <div class="puertos-layout">
       <aside class="puertos-list card">
         <div class="list-head">
@@ -230,6 +249,36 @@ watch(
   height: calc(100vh - 4rem);
   display: flex;
   flex-direction: column;
+}
+
+.banner-nube {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  background: #e8f0eb;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.banner-nube p {
+  margin: 0.25rem 0 0;
+}
+
+.banner-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.link-nube {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--color-primary);
 }
 
 .puertos-layout {

@@ -28,6 +28,7 @@ Plataforma de **monitoreo meteorológico**, **gestión agrícola (MIP)** y **sop
 - [API REST y frontend](#api-rest-y-frontend)
 - [Despliegue](#despliegue)
 - [Documentación](#documentación)
+- [Prompt y roadmap MVP](#prompt-y-roadmap-mvp)
 - [Hoja de ruta](#hoja-de-ruta-próximas-mejoras)
 - [Mantenimiento del repositorio](#mantenimiento-del-repositorio)
 - [Licencia y contacto](#licencia-y-contacto)
@@ -339,6 +340,17 @@ Procedimiento detallado: [`docs/manuales/PUBLICAR_GITHUB.md`](docs/manuales/PUBL
 | [`docs/PROPUSTA_LAYOUT_CAPAS.md`](docs/PROPUSTA_LAYOUT_CAPAS.md) | Layout backend / frontend / site-web |
 | [`docs/manuales/API_REST.md`](docs/manuales/API_REST.md) | API Flask |
 | [`docs/manuales/PUBLICAR_GITHUB.md`](docs/manuales/PUBLICAR_GITHUB.md) | Git y CI |
+| [`docs/PROMPT_MVP_METGO.md`](docs/PROMPT_MVP_METGO.md) | **Prompt MVP**, estándares dev y fases de implementación |
+| [`docs/RAIZ_REPOSITORIO.md`](docs/RAIZ_REPOSITORIO.md) | Qué archivos deben quedar en la raíz (GitHub) |
+
+---
+
+## Prompt y roadmap MVP
+
+METGO se presenta como **MVP profesional desplegado** (Vue + API + visor de puertos), no como colección de scripts sueltos.
+
+- **Documento maestro:** [`docs/PROMPT_MVP_METGO.md`](docs/PROMPT_MVP_METGO.md) — narrativa, estado actual, métricas, **prompt listo para Cursor** y propuestas en **4 fases** (consolidar → ampliar → escala → innovación).
+- **Uso rápido en IA:** copiar la sección *“Prompt listo para pegar”* de ese archivo en reglas de Cursor o `AGENTS.md`.
 
 ---
 

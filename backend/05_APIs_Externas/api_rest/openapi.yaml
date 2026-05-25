@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: METGO 3D API REST
+  description: API agrometeorológica MVP — Valle de Aconcagua (Chile)
+  version: 1.0.0-mvp
+servers:
+  - url: http://127.0.0.1:8080
+    description: Desarrollo local
+  - url: https://metgo-api.onrender.com
+    description: Producción Render
+tags:
+  - name: auth
+  - name: meteo
+  - name: sistema
+  - name: servicios
+paths:
+  /api/health:
+    get:
+      tags: [sistema]
+      summary: Estado del sistema (público)
+      responses:
+        "200":
+          description: OK
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Login JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, example: admin }
+                password: { type: string, example: admin123 }
+      responses:
+        "200":
+          description: Token emitido
+        "401":
+          description: Credenciales incorrectas
+  /api/estaciones:
+    get:
+      tags: [meteo]
+      summary: Listar estaciones
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Lista de estaciones
+        "401":
+          description: Sin token
+  /api/meteo/{estacion_id}:
+    get:
+      tags: [meteo]
+      summary: Resumen meteorológico
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: quillota }
+        - name: tipo
+          in: query
+          schema: { type: string, enum: [pronostico, historico] }
+      responses:
+        "200":
+          description: Datos meteo
+        "401":
+          description: Sin token
+        "404":
+          description: Sin datos
+  /api/alertas:
+    get:
+      tags: [sistema]
+      summary: Alertas activas
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lista de alertas
+  /api/catalogo:
+    get:
+      tags: [sistema]
+      summary: Catálogo de módulos (alias de modulos)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: categoria
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Módulos del sistema
+  /api/modulos:
+    get:
+      tags: [sistema]
+      summary: Catálogo de módulos
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Módulos
+  /api/servicios/streamlit/{modulo_id}/visor:
+    get:
+      tags: [servicios]
+      summary: URL del visor de puertos (iframe)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: modulo_id
+          in: path
+          required: true
+          schema: { type: string, example: visualizaciones }
+      responses:
+        "200":
+          description: URLs embed local/nube
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

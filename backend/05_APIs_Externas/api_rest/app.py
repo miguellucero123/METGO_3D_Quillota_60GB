@@ -30,6 +30,8 @@ from flask_cors import CORS
 
 from api_rest import catalog, services, streamlit_launcher
 from api_rest.auth_routes import auth_required, register_auth_routes
+from api_rest.docs_routes import register_docs_routes
+from api_rest.health import build_health_payload
 
 
 def create_app() -> Flask:
@@ -41,6 +43,7 @@ def create_app() -> Flask:
     )
 
     register_auth_routes(app)
+    register_docs_routes(app)
 
     @app.get("/")
     def index():
@@ -52,6 +55,7 @@ def create_app() -> Flask:
                 "nota": "La interfaz web Vue corre en http://127.0.0.1:5173 (npm run dev)",
                 "endpoints": {
                     "health": "/api/health",
+                    "docs": "/api/docs",
                     "login": "POST /api/auth/login",
                     "public_estaciones": "/api/public/estaciones",
                     "public_meteo": "/api/public/meteo/<estacion_id>",
@@ -61,7 +65,7 @@ def create_app() -> Flask:
 
     @app.get("/api/health")
     def health():
-        return jsonify(services.health_check())
+        return jsonify(build_health_payload(services.health_check))
 
     @app.get("/api/public/estaciones")
     def public_estaciones():
@@ -128,6 +132,7 @@ def create_app() -> Flask:
     def sistema_resumen():
         return jsonify(catalog.resumen_sistema())
 
+    @app.get("/api/catalogo")
     @app.get("/api/modulos")
     @auth_required
     def modulos_lista():

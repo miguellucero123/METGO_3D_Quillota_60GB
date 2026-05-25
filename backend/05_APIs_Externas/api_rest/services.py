@@ -6,12 +6,30 @@ from __future__ import annotations
 
 import io
 import contextlib
+import sys
+import time
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 from datos_reales_openmeteo import OpenMeteoData, obtener_datos_meteorologicos_reales
+
+# Caché OpenMeteo (Fase 1.4)
+_CACHE_MOD = None
+for _p in Path(__file__).resolve().parents:
+    _gd = _p / "08_Gestion_Datos"
+    if (_p / "metgo_paths.py").exists() and _gd.is_dir():
+        if str(_gd) not in sys.path:
+            sys.path.insert(0, str(_gd))
+        try:
+            from cache_openmeteo import get_meteo_cached as _get_meteo_cached
+
+            _CACHE_MOD = _get_meteo_cached
+        except ImportError:
+            pass
+        break
 
 # Slug (Vue) -> nombre OpenMeteo
 SLUG_A_NOMBRE: dict[str, str] = {
@@ -68,14 +86,19 @@ def listar_estaciones() -> list[dict[str, Any]]:
     return resultado
 
 
-def _df_sin_prints(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:
-    """Obtiene DataFrame suprimiendo prints del módulo OpenMeteo."""
+def _fetch_meteo_raw(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
-        df = obtener_datos_meteorologicos_reales(
+        return obtener_datos_meteorologicos_reales(
             estacion=estacion, tipo=tipo, dias=dias
         )
-    return df
+
+
+def _df_sin_prints(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:
+    """Obtiene DataFrame suprimiendo prints; usa caché si está disponible."""
+    if _CACHE_MOD:
+        return _CACHE_MOD(estacion, tipo, dias, _fetch_meteo_raw)
+    return _fetch_meteo_raw(estacion, tipo, dias)
 
 
 def _ultima_fila(df: pd.DataFrame | None) -> pd.Series | None:
@@ -262,11 +285,22 @@ def recomendaciones_agricolas(estacion_id: str) -> list[dict[str, Any]]:
 
 
 def health_check() -> dict[str, Any]:
+    t0 = time.perf_counter()
     om = OpenMeteoData()
     with contextlib.redirect_stdout(io.StringIO()):
         ok = om.verificar_conexion()
+    latencia_ms = int((time.perf_counter() - t0) * 1000)
+    stats = {"cache_hits": 0, "cache_misses": 0}
+    try:
+        from cache_openmeteo import cache_stats
+
+        stats = cache_stats()
+    except ImportError:
+        pass
     return {
         "status": "ok" if ok else "degraded",
         "openmeteo": ok,
+        "latencia_openmeteo_ms": latencia_ms,
         "timestamp": datetime.now().isoformat(),
+        **stats,
     }

@@ -76,7 +76,7 @@ export async function fetchMe() {
 }
 
 export async function fetchHealth() {
-  const { data } = await api.get('/health')
+  const { data } = await api.get('/health', { timeout: 120000 })
   return data
 }
 

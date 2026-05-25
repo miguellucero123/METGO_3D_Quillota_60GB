@@ -6,14 +6,25 @@
 
 En local, cada dashboard Streamlit es **otro proceso** en **otro puerto**. En la nube el número de puerto es una **etiqueta de utilidad** (qué hace ese módulo), no un servidor escuchando en `:8506`.
 
+## Tabla rápida: ¿qué uso en la nube?
+
+| Necesito… | Dónde en la app | ¿Puerto local? |
+|-----------|-----------------|----------------|
+| Trabajar a diario (meteo, riego, alertas) | Vue → menú **Meteorología** / **Agricultura** / **Alertas** | No |
+| Ver estado API y servicios | Vue → **Estado sistema** (`/estado`) | No |
+| Entender qué es el puerto 8506, 8502, etc. | **Centro de servicios** o **Visor de puertos** | Solo etiqueta en nube |
+| Ver gráficos Plotly legacy en internet | **Visor de puertos** → activar en nube | No (visor Render) |
+| Gráficos Plotly al 100 % como en el PC | Instalar METGO local + **Iniciar PC** | Sí (`8501–8513`) |
+| Documentación API para integradores | https://metgo-api.onrender.com/api/docs | No |
+
 ## Qué tienes desplegado
 
 | Servicio | URL | Qué hace |
 |----------|-----|----------|
 | **Netlify** | https://metgo3d.netlify.app | App **Vue** (login, meteo, agrícola, alertas, **Centro de servicios**) |
-| **Render `metgo-api`** | https://metgo-api.onrender.com | **API REST** (catálogo, estados de puertos, login) |
+| **Render `metgo-api`** | https://metgo-api.onrender.com | **API REST** (catálogo, estados de puertos, login, **/api/docs**) |
 | **Render `metgo-streamlit`** | https://metgo-streamlit.onrender.com | **Portal** Streamlit (catálogo, `?activar=modulo`) |
-| **Streamlit Cloud** (opcional) | https://metgo3d.streamlit.app | Mismo portal multipágina |
+| **Streamlit Cloud** (opcional) | https://metgo-3d-quillota-60gb.streamlit.app | Mismo portal multipágina |
 
 ## Visor de puertos (recomendado)
 

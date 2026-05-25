@@ -27,6 +27,9 @@ frontend/vue/dist/
 frontend/vue/.vite/
 04_Dashboards_Unificados/
 
+# Caché OpenMeteo (Fase 1.4)
+metgo/cache/
+
 # Data (runtime + compatibilidad raíz)
 data/
 logs/
