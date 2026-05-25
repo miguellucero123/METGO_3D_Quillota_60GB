@@ -22,3 +22,18 @@ services:
         generateValue: true
       - key: PYTHON_VERSION
         value: "3.11.9"
+
+  # Portal Streamlit en la nube (UNA app: inicio + páginas). No sustituye los 13 puertos 8501-8513 locales.
+  - type: web
+    name: metgo-streamlit
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m streamlit run streamlit_app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
+    envVars:
+      - key: METGO_VUE_URL
+        value: https://metgo3d.netlify.app
+      - key: METGO_CORS_ORIGINS
+        value: https://metgo3d.netlify.app,https://metgo-streamlit.onrender.com
+      - key: PYTHON_VERSION
+        value: "3.11.9"

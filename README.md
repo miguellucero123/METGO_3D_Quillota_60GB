@@ -312,9 +312,20 @@ Proxy de desarrollo: `frontend/vue` → API en `127.0.0.1:8080` (ver `vite.confi
 | **Repository** | `miguellucero123/METGO_3D_Quillota_60GB` |
 | **Branch** | `master` |
 | **Main file** | `streamlit_app.py` |
-| **Páginas** | `pages/1_Resumen_publico.py` (site-web) · `pages/2_Panel_operadores.py` |
+| **Páginas** | `0_Catalogo_y_servicios` · `1_Resumen_publico` · `2_Panel_operadores` · **`3_Panel_Vue_embebido`** (iframe) |
 
 Tras cada push: **Reboot app** en Streamlit Cloud. Guía: [`docs/manuales/STREAMLIT_CLOUD.md`](docs/manuales/STREAMLIT_CLOUD.md).
+
+### Vue en Netlify + iframe en Streamlit
+
+1. **Netlify** → Import repo GitHub (usa [`netlify.toml`](netlify.toml) en la raíz).
+2. Variable de entorno: `VITE_METGO_API` = URL HTTPS de la API Flask.
+3. Streamlit Cloud **Secrets**: `METGO_VUE_URL = "https://su-sitio.netlify.app"`.
+4. Menú lateral → **3 Panel Vue embebido**.
+
+Guía detallada: [`docs/manuales/DESPLIEGUE_VUE_NETLIFY.md`](docs/manuales/DESPLIEGUE_VUE_NETLIFY.md). Resumen iframe: [`docs/manuales/DESPLIEGUE_VUE_IFRAME.md`](docs/manuales/DESPLIEGUE_VUE_IFRAME.md).
+
+**¿Puertos 8501–8513 en la nube?** Netlify/Render **no** los exponen como en local. Lea [`docs/manuales/QUE_VER_EN_NUBE.md`](docs/manuales/QUE_VER_EN_NUBE.md).
 
 ### Publicación en GitHub
 
