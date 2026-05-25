@@ -4,8 +4,9 @@
 Entrypoint Streamlit Cloud — inicio METGO 3D (layout por capas).
 
 Use el menú lateral (pages/) para:
+  - Catálogo y servicios (como Vue: iconos + Iniciar)
   - Resumen público (site-web)
-  - Panel operadores (frontend/dashboards)
+  - Panel operadores (legacy)
 """
 
 from __future__ import annotations
@@ -30,10 +31,11 @@ Elige una vista en el **menú lateral**:
 
 | Página | Descripción |
 |--------|-------------|
+| **Catálogo y servicios** | Iconos, puertos, Iniciar/Detener (equivalente Vue) |
 | **Resumen público** | OpenMeteo, sin login (`site-web/`) |
-| **Panel operadores** | Dashboard principal con acceso a módulos |
+| **Panel operadores** | Vista anterior con tarjetas HTML |
 
-Para uso diario con Vue + API JWT: clone el repo y ejecute `iniciar_metgo_desarrollo.bat`.
+**La app Vue** (sidebar, iconos Lucide, `/servicios`): solo en PC → `iniciar_metgo_desarrollo.bat` → http://127.0.0.1:5173
 """
 )
 
