@@ -9,20 +9,40 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# API Flask en Render (antes del catch-all SPA; si no, /api/* devuelve index.html → 404)
+# API Flask en Render
 [[redirects]]
   from = "/api/*"
   to = "https://metgo-api.onrender.com/api/:splat"
   status = 200
   force = true
 
-# Vue Router (history mode)
+# Archivos estáticos (no enviar index.html si falta un chunk → error MIME)
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+# Vue Router (solo rutas de app; los .js en /assets/ se sirven del paso anterior o 404)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Permitir iframe desde Streamlit Cloud
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[headers]]
   for = "/*"
   [headers.values]

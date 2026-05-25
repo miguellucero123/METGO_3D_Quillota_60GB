@@ -141,7 +141,17 @@ npx serve dist
 
 ---
 
-## 7. Solución de problemas
+## 7. Error MIME `text/html` en archivos `.js` (`MeteoView-xxx.js`)
+
+**Causa:** el navegador tiene **caché viejo** de un deploy anterior. Pide chunks que ya no existen; Netlify devolvía `index.html` → Chrome muestra "Expected JavaScript but got text/html".
+
+**Solución:**
+
+1. Netlify → **Deploys** → **Clear cache and deploy site**
+2. En el navegador: borrar datos del sitio `metgo3d.netlify.app` o ventana privada + **Ctrl+Shift+R**
+3. Tras el deploy, `index.html` lleva `Cache-Control: no-cache` (archivo `public/_headers`)
+
+## 8. Solución de problemas
 
 | Problema | Qué hacer |
 |----------|-----------|
@@ -153,7 +163,7 @@ npx serve dist
 
 ---
 
-## 8. Archivos del repo
+## 9. Archivos del repo
 
 | Archivo | Uso |
 |---------|-----|
