@@ -8,8 +8,12 @@ En **share.streamlit.io** → tu app → Settings:
 |-------|--------|
 | **Main file path** | `streamlit_app.py` |
 
-`streamlit_app.py` carga rutas con `metgo_paths` y ejecuta el dashboard en  
-`04_Dashboards_Unificados/dashboards/sistema_auth_dashboard_principal_metgo.py`.
+`streamlit_app.py` es la **página de inicio**. Las vistas están en `pages/`:
+
+| Archivo | Contenido |
+|---------|-----------|
+| `pages/1_Resumen_publico.py` | Dashboard público (`site-web/streamlit/dashboard_web_publico.py`) |
+| `pages/2_Panel_operadores.py` | Panel con login (`frontend/dashboards/sistema_auth_dashboard_principal_metgo.py`) |
 
 ## Secrets
 
@@ -27,11 +31,13 @@ Mismos usuarios que la API Vue: `admin`, `user`, `metgo`.
 
 Streamlit Cloud usa `requirements.txt` en la raíz del repositorio.
 
-## Tras cambiar el main file
+## Tras cada push a GitHub
 
-1. Guarde `streamlit_app.py` en la raíz del repo en GitHub.
-2. En Streamlit Cloud, confirme **Main file path** = `streamlit_app.py`.
-3. **Reboot app** desde el menú de la app.
+1. Confirme **Main file path** = `streamlit_app.py`.
+2. En la app → menú **⋮** → **Reboot app** (Streamlit Cloud no siempre recarga al instante).
+3. Abra el menú lateral y elija **Resumen público** para ver los cambios de `site-web`.
+
+Si solo ve el panel antiguo sin menú lateral, el despliegue sigue en caché: haga **Reboot** o **Clear cache**.
 
 ## URL de referencia
 

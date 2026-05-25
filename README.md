@@ -312,8 +312,9 @@ Proxy de desarrollo: `frontend/vue` → API en `127.0.0.1:8080` (ver `vite.confi
 | **Repository** | `miguellucero123/METGO_3D_Quillota_60GB` |
 | **Branch** | `master` |
 | **Main file** | `streamlit_app.py` |
+| **Páginas** | `pages/1_Resumen_publico.py` (site-web) · `pages/2_Panel_operadores.py` |
 
-Guía: [`docs/manuales/STREAMLIT_CLOUD.md`](docs/manuales/STREAMLIT_CLOUD.md).
+Tras cada push: **Reboot app** en Streamlit Cloud. Guía: [`docs/manuales/STREAMLIT_CLOUD.md`](docs/manuales/STREAMLIT_CLOUD.md).
 
 ### Publicación en GitHub
 

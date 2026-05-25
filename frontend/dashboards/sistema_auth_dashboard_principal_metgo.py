@@ -1132,7 +1132,7 @@ def mostrar_dashboard_principal():
                 <li><strong>01_Sistema_Meteorologico:</strong> Dashboards meteorológicos avanzados</li>
                 <li><strong>02_Sistema_Agricola:</strong> Módulos agrícolas especializados</li>
                 <li><strong>03_Sistema_IoT_Drones:</strong> Monitoreo con drones y sensores</li>
-                <li><strong>04_Dashboards_Unificados:</strong> Dashboards integrados</li>
+                <li><strong>frontend/dashboards:</strong> Dashboards integrados</li>
                 <li><strong>05_APIs_Externas:</strong> Conectores y APIs</li>
                 <li><strong>06_Modelos_ML_IA:</strong> Inteligencia artificial</li>
                 <li><strong>07_Sistema_Monitoreo:</strong> Monitoreo del sistema</li>
@@ -1153,7 +1153,7 @@ def mostrar_dashboard_principal():
             <p><strong>Dashboard Unificado:</strong> <code>dashboard_unificado_metgo.py</code></p>
             <p><strong>Dashboard Simple:</strong> <code>dashboard_simple_metgo.py</code></p>
             <p><strong>Dashboard Avanzado:</strong> <code>01_Sistema_Meteorologico/dashboards/dashboard_meteorologico_avanzado.py</code></p>
-            <p><strong>Dashboard Global:</strong> <code>04_Dashboards_Unificados/dashboards/dashboard_global_metgo.py</code></p>
+            <p><strong>Dashboard Global:</strong> <code>frontend/dashboards/dashboard_global_metgo.py</code></p>
             </div>
             """, unsafe_allow_html=True)
     

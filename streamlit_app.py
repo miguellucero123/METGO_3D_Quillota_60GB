@@ -1,17 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Entrypoint Streamlit Cloud — redirige al dashboard principal."""
-import runpy
-import sys
-from pathlib import Path
+"""
+Entrypoint Streamlit Cloud — inicio METGO 3D (layout por capas).
 
-ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT))
-import metgo_paths
+Use el menú lateral (pages/) para:
+  - Resumen público (site-web)
+  - Panel operadores (frontend/dashboards)
+"""
 
-metgo_paths.setup_all_paths()
+from __future__ import annotations
 
-runpy.run_path(
-    str(metgo_paths.streamlit_dashboard_path("sistema_auth_dashboard_principal_metgo.py")),
-    run_name="__main__",
+import streamlit as st
+
+from metgo_streamlit_bootstrap import bootstrap
+
+bootstrap("01_meteo", "05_api_rest", "07_monitoreo")
+
+st.title("METGO 3D — Sistema Integrado Quillota")
+st.caption("Layout v4 · backend · frontend · site-web")
+
+st.markdown(
+    """
+Elige una vista en el **menú lateral**:
+
+| Página | Descripción |
+|--------|-------------|
+| **Resumen público** | OpenMeteo, sin login (`site-web/`) |
+| **Panel operadores** | Dashboard principal con acceso a módulos |
+
+Para uso diario con Vue + API JWT: clone el repo y ejecute `iniciar_metgo_desarrollo.bat`.
+"""
+)
+
+st.info(
+    "Si no ve estas opciones en el menú, en Streamlit Cloud confirme "
+    "**Main file** = `streamlit_app.py` y pulse **Reboot app** tras el último push a GitHub."
 )
