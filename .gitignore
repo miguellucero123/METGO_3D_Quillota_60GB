@@ -17,6 +17,8 @@ venv.bak/
 .env.local
 **/.env
 !**/.env.example
+**/.env.production
+!**/.env.production.example
 .streamlit/secrets.toml
 
 # Node / Vue

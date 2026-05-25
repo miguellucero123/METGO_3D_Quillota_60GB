@@ -84,13 +84,15 @@ Si en la consola del navegador aparece:
 
 Haga push a GitHub y **Trigger deploy** en Netlify. Vue puede seguir con `VITE_METGO_API=/api`.
 
-**Solución B:** variable en Netlify → Production:
+**Solución B:** variable en Netlify → Production (valor **público**, no marcar como *secret*):
 
 ```env
-VITE_METGO_API=https://metgo-api.onrender.com/api
+VITE_METGO_API=/api
 ```
 
-y **Trigger deploy** (rebuild).
+El proxy `_redirects` envía `/api` a Render. **No** suba URLs al repo (Netlify secrets-scan bloquea el build).
+
+Si el build falla por *secrets scanning*: elimine `VITE_METGO_API` de variables marcadas como secret, o añada `SECRETS_SCAN_OMIT_KEYS=VITE_METGO_API` solo si usa URL absoluta en el build.
 
 **Credenciales por defecto** (si no definió `METGO_PASSWORD_*` en Render):
 
