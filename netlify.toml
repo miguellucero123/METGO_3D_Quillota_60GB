@@ -1,0 +1,22 @@
+# Despliegue SPA Vue METGO en Netlify (repo monorepo)
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  base = "frontend/vue"
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Vue Router (history mode): todas las rutas → index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Permitir iframe desde Streamlit Cloud
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors https://*.streamlit.app https://*.streamlit.io 'self'"

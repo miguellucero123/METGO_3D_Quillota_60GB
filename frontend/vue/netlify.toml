@@ -1,0 +1,18 @@
+# Misma config si en Netlify el "Base directory" ya es frontend/vue
+
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors https://*.streamlit.app https://*.streamlit.io 'self'"
