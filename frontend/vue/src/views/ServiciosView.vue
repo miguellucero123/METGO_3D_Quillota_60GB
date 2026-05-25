@@ -65,8 +65,22 @@ async function detenerTodos() {
   cargando.value = false
 }
 
+const esSitioPublico = typeof window !== 'undefined' &&
+  !['localhost', '127.0.0.1'].includes(window.location.hostname)
+
+function esUrlLocal(url) {
+  return /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/i.test(url || '')
+}
+
 function abrir(url) {
-  if (url) window.open(url, '_blank', 'noopener,noreferrer')
+  if (!url) return
+  if (esSitioPublico && esUrlLocal(url)) {
+    mensaje.value =
+      'Los dashboards en puertos 850x solo funcionan en su PC (127.0.0.1), no desde Netlify. ' +
+      'Use la pestaña «App Vue» o ejecute METGO en local.'
+    return
+  }
+  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 onMounted(() => {
@@ -116,9 +130,13 @@ onUnmounted(() => clearInterval(pollTimer))
     </div>
 
     <div v-else class="tab-panel">
+      <p v-if="esSitioPublico" class="banner banner--warn">
+        En producción (Netlify) no se pueden abrir puertos locales como :8506. La API en Render no
+        ejecuta Streamlit en su navegador. Use la pestaña <strong>App Vue</strong> o instale METGO en su PC.
+      </p>
       <SectionCard
         title="Dashboards Streamlit"
-        subtitle="Cada uno usa su puerto; inícielos solo cuando los vaya a usar"
+        subtitle="Solo en PC local con API en :8080; cada módulo usa su puerto"
       >
         <template #actions>
           <button type="button" class="btn btn--ghost" :disabled="cargando" @click="detenerTodos">
@@ -135,17 +153,17 @@ onUnmounted(() => clearInterval(pollTimer))
             <span :class="['status', s.estado]">{{ s.estado }}</span>
             <div class="service-actions">
               <button
-                v-if="s.estado !== 'corriendo'"
+                v-if="s.estado !== 'corriendo' && s.estado !== 'solo_local'"
                 type="button"
                 class="btn btn-sm"
-                :disabled="cargando"
+                :disabled="cargando || esSitioPublico"
                 title="Iniciar servidor Streamlit"
                 @click="iniciar(s.id)"
               >
                 <Play /> Iniciar
               </button>
               <button
-                v-else
+                v-else-if="s.estado === 'corriendo'"
                 type="button"
                 class="btn btn-sm btn--ghost"
                 :disabled="cargando"
@@ -156,7 +174,7 @@ onUnmounted(() => clearInterval(pollTimer))
               <button
                 type="button"
                 class="btn btn-sm btn--ghost"
-                :disabled="s.estado !== 'corriendo'"
+                :disabled="s.estado !== 'corriendo' || !s.url"
                 @click="abrir(s.url)"
               >
                 <ExternalLink /> Abrir
@@ -221,6 +239,11 @@ onUnmounted(() => clearInterval(pollTimer))
   border-radius: var(--radius-md);
   margin-bottom: 1rem;
   font-size: 0.875rem;
+}
+
+.banner--warn {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .intro {
@@ -298,6 +321,11 @@ onUnmounted(() => clearInterval(pollTimer))
 .status.detenido {
   background: var(--color-border);
   color: var(--color-muted);
+}
+
+.status.solo_local {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .service-actions {

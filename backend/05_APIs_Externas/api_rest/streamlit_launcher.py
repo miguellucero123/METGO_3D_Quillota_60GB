@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import os
 import socket
 import subprocess
 import sys
@@ -12,6 +13,15 @@ from pathlib import Path
 from typing import Any
 
 from api_rest import catalog
+
+
+def _api_en_nube() -> bool:
+    """En Render/Railway no se pueden levantar Streamlit locales en 127.0.0.1."""
+    if os.getenv("METGO_STREAMLIT_LOCAL_ONLY", "").lower() in ("0", "false", "no"):
+        return False
+    if os.getenv("METGO_STREAMLIT_LOCAL_ONLY", "").lower() in ("1", "true", "yes"):
+        return True
+    return bool(os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID") or os.getenv("PORT"))
 
 ROOT = Path(__file__).resolve().parent
 for _p in Path(__file__).resolve().parents:
@@ -41,6 +51,18 @@ def estado_servicio(modulo_id: str) -> dict[str, Any]:
 
     puerto = m["puerto"]
     url = f"{catalog.streamlit_host()}:{puerto}"
+    if _api_en_nube():
+        return {
+            **m,
+            "estado": "solo_local",
+            "url": None,
+            "acceso": "local",
+            "mensaje_acceso": (
+                "Este dashboard Streamlit corre en su PC (puerto "
+                f"{puerto}), no en la nube. Use la app Vue o ejecute METGO en local."
+            ),
+        }
+
     proc = _procesos.get(modulo_id)
 
     if proc and proc.poll() is None:
@@ -58,6 +80,16 @@ def iniciar(modulo_id: str) -> dict[str, Any]:
     m = _modulo_streamlit(modulo_id)
     if not m:
         return {"ok": False, "error": "Modulo Streamlit no valido"}
+
+    if _api_en_nube():
+        return {
+            "ok": False,
+            "error": (
+                "No se puede iniciar Streamlit en el servidor cloud. "
+                "Ejecute METGO en su computador (API + Vue local) o use solo la pestaña App Vue."
+            ),
+            **estado_servicio(modulo_id),
+        }
 
     script = ROOT / m["script"]
     if not script.is_file():
