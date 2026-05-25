@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from metgo_streamlit_theme import (
+from metgo.streamlit_theme import (
     ACCENT,
     PRIMARY,
     TEXT_SECONDARY,
@@ -13,7 +13,7 @@ from metgo_streamlit_theme import (
     is_streamlit_cloud,
     module_card_html,
 )
-from metgo_vue_embed import get_vue_base_url
+from metgo.vue_embed import get_vue_base_url
 
 DEFAULT_VUE_PROD = "https://metgo3d.netlify.app"
 DEFAULT_API_PROD = "https://metgo-api.onrender.com"

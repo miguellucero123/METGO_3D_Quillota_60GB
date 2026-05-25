@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import streamlit as st
 
-from metgo_streamlit_bootstrap import bootstrap
-from metgo_streamlit_theme import inject_theme
-from metgo_vue_embed import ROUTES, get_vue_base_url, render_vue_iframe, vue_url_config_hint
+from metgo.streamlit_bootstrap import bootstrap
+from metgo.streamlit_theme import inject_theme
+from metgo.vue_embed import ROUTES, get_vue_base_url, render_vue_iframe, vue_url_config_hint
 
 bootstrap()
 inject_theme()
@@ -34,7 +34,7 @@ ruta_label = st.selectbox("Vista", list(ROUTES.keys()), index=0)
 altura = st.slider("Altura del panel (px)", 500, 1200, 820, 20)
 
 if st.button("Abrir en pestaña nueva", type="secondary"):
-    from metgo_vue_embed import build_vue_url
+    from metgo.vue_embed import build_vue_url
 
     url = build_vue_url(ROUTES[ruta_label], embed=False)
     if url:

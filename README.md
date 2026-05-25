@@ -156,28 +156,20 @@ flowchart LR
 ```text
 METGO_3D_Quillota_60GB/
 ├── backend/                    # Dominio, datos, ML, API, operaciones
-│   ├── 01_Sistema_Meteorologico/
-│   ├── 02_Sistema_Agricola/
-│   ├── 03_Sistema_IoT_Drones/
-│   ├── 05_APIs_Externas/       # api_rest/ (Flask + JWT)
-│   ├── 06_Modelos_ML_IA/       # modelos .joblib / pipelines
-│   ├── 07_Sistema_Monitoreo/   # auth compartida (metgo_auth.py)
-│   ├── 08_Gestion_Datos/
-│   ├── 09_Testing_Validacion/
-│   ├── 10_Deployment_Produccion/
-│   └── 12_Respaldos_Archivos/
-├── frontend/
-│   ├── vue/                    # SPA principal (Pinia, Vue Router, axios)
-│   └── dashboards/             # Streamlit operativos
+├── frontend/                   # Vue + dashboards Streamlit
 ├── site-web/                   # Capa pública
-│   └── streamlit/
-├── docs/                       # Manuales y gobernanza
-├── streamlit_app.py            # Entrypoint Streamlit Cloud (raíz)
-├── metgo_paths.py              # Resolución de rutas (layout capas + legacy)
-├── metgo_auth.py               # Wrapper → backend/07/.../metgo_auth.py
-├── requirements.txt
-└── .env.example
+├── docs/                       # Manuales (ver docs/RAIZ_REPOSITORIO.md)
+├── metgo/                      # Biblioteca compartida (tema, portal, visor, Vue embed)
+├── scripts/                    # compat/ wrappers · git/ ayuda GitHub
+├── pages/                      # Streamlit multipágina (requerido en raíz)
+├── streamlit_app.py            # Entrypoint Streamlit Cloud
+├── metgo_paths.py              # Marcador de raíz + rutas
+├── metgo_auth.py               # Wrapper JWT
+├── render.yaml · netlify.toml · requirements.txt
+└── README.md · LICENSE
 ```
+
+Detalle de qué debe quedar en la raíz: [`docs/RAIZ_REPOSITORIO.md`](docs/RAIZ_REPOSITORIO.md).
 
 | Capa | Responsabilidad | Documentación |
 |------|-----------------|---------------|

@@ -13,16 +13,21 @@ import sys
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent
+from metgo.paths import PROJECT_ROOT
+
+ROOT = PROJECT_ROOT
 
 
 def _setup() -> None:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
-    import metgo_paths
+    import metgo.paths as mp
 
-    metgo_paths.setup_paths("01_meteo", "05_api_rest", "04_dashboards", "07_monitoreo")
-    metgo_paths.ensure_runtime_dirs()
+    compat = mp.compat_scripts_dir()
+    if compat.is_dir() and str(compat) not in sys.path:
+        sys.path.insert(0, str(compat))
+    mp.setup_paths("01_meteo", "05_api_rest", "04_dashboards", "07_monitoreo")
+    mp.ensure_runtime_dirs()
 
 
 def obtener_script_modulo(modulo_id: str) -> dict[str, Any] | None:

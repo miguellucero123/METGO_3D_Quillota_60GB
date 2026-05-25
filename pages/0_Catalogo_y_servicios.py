@@ -35,8 +35,8 @@ import os
 import streamlit as st
 from api_rest import catalog, streamlit_launcher
 from api_rest.streamlit_launcher import _api_en_nube
-from metgo_streamlit_bootstrap import bootstrap
-from metgo_streamlit_theme import (
+from metgo.streamlit_bootstrap import bootstrap
+from metgo.streamlit_theme import (
     ACCENT,
     PRIMARY,
     TEXT_SECONDARY,

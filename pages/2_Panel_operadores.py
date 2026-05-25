@@ -6,11 +6,11 @@ from __future__ import annotations
 
 import runpy
 
-from metgo_streamlit_bootstrap import bootstrap
+from metgo.streamlit_bootstrap import bootstrap
 import metgo_paths
 import streamlit as st
 
-from metgo_vue_embed import get_vue_base_url
+from metgo.vue_embed import get_vue_base_url
 
 bootstrap("01_meteo", "05_apis", "07_monitoreo")
 

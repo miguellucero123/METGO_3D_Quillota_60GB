@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import streamlit as st
 
-from metgo_streamlit_bootstrap import bootstrap
-from metgo_streamlit_portal import render_inicio_page
+from metgo.streamlit_bootstrap import bootstrap
+from metgo.streamlit_portal import render_inicio_page
 
 st.set_page_config(
     page_title="METGO 3D — Inicio",

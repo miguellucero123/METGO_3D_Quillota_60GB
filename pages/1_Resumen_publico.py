@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import runpy
 
-from metgo_streamlit_bootstrap import bootstrap
+from metgo.streamlit_bootstrap import bootstrap
 import metgo_paths
 
 bootstrap("01_meteo", "05_api_rest")

@@ -40,7 +40,7 @@ def _url_visor(modulo_id: str, *, embed: bool = True) -> str | None:
     if not base:
         return None
     try:
-        from metgo_dashboard_loader import url_visor as _uv
+        from metgo.dashboard_loader import url_visor as _uv
     except ImportError:
         slug = "Visor_de_puerto"
         q = f"id={modulo_id}"

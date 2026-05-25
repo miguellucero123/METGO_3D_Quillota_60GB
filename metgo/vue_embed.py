@@ -15,7 +15,7 @@ from urllib.parse import urljoin
 import streamlit as st
 import streamlit.components.v1 as components
 
-from metgo_streamlit_theme import is_streamlit_cloud
+from metgo.streamlit_theme import is_streamlit_cloud
 
 DEFAULT_LOCAL_VUE = "http://127.0.0.1:5173"
 

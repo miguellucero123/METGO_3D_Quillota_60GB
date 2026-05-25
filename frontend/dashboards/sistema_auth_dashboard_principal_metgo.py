@@ -30,7 +30,7 @@ for _p in _root.parents:
             sys.path.insert(0, str(_p))
         break
 
-from metgo_streamlit_theme import (
+from metgo.streamlit_theme import (
     ACCENT,
     MODULE_COLORS as MC,
     PRIMARY,

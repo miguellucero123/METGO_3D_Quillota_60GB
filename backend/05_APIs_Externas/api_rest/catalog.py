@@ -356,7 +356,7 @@ def enriquecer_modulo(mod: dict[str, Any]) -> dict[str, Any]:
 
     nube = streamlit_cloud_base()
     try:
-        from metgo_dashboard_loader import url_visor
+        from metgo.dashboard_loader import url_visor
 
         visor = url_visor(nube, m["id"]) if nube else None
     except ImportError:

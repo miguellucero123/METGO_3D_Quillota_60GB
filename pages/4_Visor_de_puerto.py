@@ -24,9 +24,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import streamlit as st
-from metgo_dashboard_loader import ejecutar_dashboard, obtener_script_modulo
-from metgo_streamlit_bootstrap import bootstrap
-from metgo_streamlit_theme import inject_theme, PRIMARY
+from metgo.dashboard_loader import ejecutar_dashboard, obtener_script_modulo
+from metgo.streamlit_bootstrap import bootstrap
+from metgo.streamlit_theme import inject_theme, PRIMARY
 
 bootstrap("01_meteo", "05_api_rest", "04_dashboards", "07_monitoreo")
 inject_theme()

@@ -4,15 +4,15 @@
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT))
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(REPO_ROOT))
 import metgo_paths
 metgo_paths.setup_all_paths()
 
 import importlib.util
 _spec = importlib.util.spec_from_file_location(
     "_metgo_shim",
-    metgo_paths.streamlit_dashboard_path("dashboard_mobile_optimizado.py"),
+    metgo_paths._frontend_path("dashboards", "mobile", "cache_offline_mobile.py"),
 )
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
