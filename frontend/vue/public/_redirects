@@ -1,1 +1,3 @@
-/*    /index.html   200
+# Orden importa: API primero, SPA después (copiado a dist/ en npm run build)
+/api/*  https://metgo-api.onrender.com/api/:splat  200
+/*      /index.html  200
