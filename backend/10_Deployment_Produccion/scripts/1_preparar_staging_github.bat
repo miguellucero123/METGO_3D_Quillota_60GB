@@ -52,7 +52,7 @@ echo.
 echo ======================================================================
 echo  PASO 2 — Haga el commit USTED (elija una opcion):
 echo.
-echo  A) Mensaje sugerido (Visor de puertos):
+echo  A) Mensaje sugerido (integracion fases 4-10):
 echo     2_commit_github.bat
 echo.
 echo  B) Mensaje personalizado:

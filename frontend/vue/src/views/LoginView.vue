@@ -47,7 +47,9 @@ async function onSubmit() {
         <p class="login-tagline">Monitoreo meteorológico y agrícola</p>
         <p class="login-region">Quillota · Región de Valparaíso</p>
         <p class="login-hint muted">
-          Demo: <strong>admin</strong> / <strong>admin123</strong> · La API puede tardar ~1 min al despertar (Render).
+          Demo: <strong>admin</strong>/admin123 · <strong>agronomo</strong>/agro123 ·
+          <strong>operador</strong>/op123 · <strong>lector</strong>/lec123 ·
+          Render puede tardar ~1 min al despertar.
         </p>
       </div>
 

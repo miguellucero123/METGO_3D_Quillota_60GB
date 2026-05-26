@@ -31,7 +31,7 @@ if "%OPC%"=="4" (
 )
 if "%OPC%"=="5" call "%~dp03_push_github.bat" & goto menu
 if "%OPC%"=="6" (
-  call "%~dp0publicar_github.bat" "feat: Visor de puertos y centro de servicios en nube"
+  call "%~dp0publicar_github.bat" "feat: integracion API-Vue fases 4-10 y escalamiento MVP"
   goto menu
 )
 if "%OPC%"=="7" call "%~dp0quitar_secretos_del_staging.bat" & goto menu

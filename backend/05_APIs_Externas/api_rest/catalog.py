@@ -112,6 +112,9 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "puerto": 8501,
         "icono": "monitor",
         "ruta_vue_alternativa": "/",
+        "deprecado": True,
+        "migrado_vue": "/",
+        "nota_deprecacion": "Panel general Vue sustituye el dashboard principal Streamlit.",
     },
     {
         "id": "meteo_streamlit",
@@ -125,6 +128,9 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "puerto": 8502,
         "icono": "thermometer",
         "ruta_vue_alternativa": "/meteo",
+        "deprecado": True,
+        "migrado_vue": "/meteo/historico",
+        "nota_deprecacion": "Histórico y gráficos en Vue (/meteo, /meteo/historico).",
     },
     {
         "id": "agricola_streamlit",
@@ -151,6 +157,9 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "puerto": 8504,
         "icono": "activity",
         "ruta_vue_alternativa": "/monitoreo",
+        "deprecado": True,
+        "migrado_vue": "/monitoreo",
+        "nota_deprecacion": "Alertas y monitoreo en Vue (/monitoreo, /alertas/config).",
     },
     {
         "id": "ml_streamlit",
@@ -163,6 +172,10 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "script": "frontend/dashboards/dashboard_ia_ml_avanzado.py",
         "puerto": 8505,
         "icono": "cpu",
+        "deprecado": True,
+        "migrado_vue": "/ml",
+        "ruta_vue_alternativa": "/ml",
+        "nota_deprecacion": "ML e IA en Vue /ml y API /api/ml/*.",
     },
     {
         "id": "visualizaciones",
@@ -175,6 +188,10 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "script": "frontend/dashboards/dashboard_visualizaciones_avanzadas.py",
         "puerto": 8506,
         "icono": "bar-chart-3",
+        "deprecado": True,
+        "migrado_vue": "/meteo/comparativo",
+        "ruta_vue_alternativa": "/meteo/comparativo",
+        "nota_deprecacion": "Comparativos en Vue /meteo/comparativo.",
     },
     {
         "id": "metricas_globales",
@@ -187,6 +204,10 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "script": "frontend/dashboards/dashboard_global_metricas.py",
         "puerto": 8507,
         "icono": "gauge",
+        "deprecado": True,
+        "migrado_vue": "/metricas",
+        "nota_deprecacion": "KPIs globales en Vue /metricas.",
+        "ruta_vue_alternativa": "/metricas",
     },
     {
         "id": "agricola_precision",
@@ -199,6 +220,8 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "script": "frontend/dashboards/dashboard_agricultura_precision.py",
         "puerto": 8508,
         "icono": "map",
+        "deprecado": True,
+        "migrado_vue": "/agricola",
         "ruta_vue_alternativa": "/agricola",
     },
     {
@@ -212,7 +235,8 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "script": "frontend/dashboards/dashboard_analisis_comparativo.py",
         "puerto": 8509,
         "icono": "git-compare",
-        "ruta_vue_alternativa": "/meteo",
+        "migrado_vue": "/meteo/comparativo",
+        "ruta_vue_alternativa": "/meteo/comparativo",
     },
     {
         "id": "alertas_streamlit",
@@ -225,7 +249,10 @@ MODULOS_SISTEMA: list[dict[str, Any]] = [
         "script": "frontend/dashboards/dashboard_alertas_automaticas.py",
         "puerto": 8510,
         "icono": "shield-alert",
-        "ruta_vue_alternativa": "/monitoreo",
+        "deprecado": True,
+        "migrado_vue": "/alertas/config",
+        "ruta_vue_alternativa": "/alertas/config",
+        "nota_deprecacion": "Config alertas en Vue /alertas/config.",
     },
     {
         "id": "simple",
@@ -332,14 +359,44 @@ def streamlit_host() -> str:
     return os.getenv("METGO_STREAMLIT_HOST", "http://127.0.0.1").rstrip("/")
 
 
-def streamlit_cloud_base() -> str | None:
-    """URL del portal Streamlit en Render/Cloud (una app, no 13 puertos)."""
-    url = (
+def streamlit_cloud_base(*, para_iframe: bool = True) -> str | None:
+    """
+    URL del portal Streamlit para el visor integrado.
+
+    para_iframe=True evita *.streamlit.app (login / ERR_TOO_MANY_REDIRECTS en iframe).
+    Use METGO_STREAMLIT_RENDER_URL o el servicio metgo-streamlit en Render.
+    """
+    explicit = (
         os.getenv("METGO_STREAMLIT_CLOUD_URL")
         or os.getenv("METGO_STREAMLIT_PORTAL_URL")
         or ""
     ).strip().rstrip("/")
-    return url or None
+    render_url = (
+        os.getenv("METGO_STREAMLIT_RENDER_URL", "https://metgo-streamlit.onrender.com")
+        .strip()
+        .rstrip("/")
+    )
+    public_link = (
+        os.getenv("METGO_STREAMLIT_PUBLIC_URL", "https://metgo-3d-quillota-60gb.streamlit.app")
+        .strip()
+        .rstrip("/")
+    )
+
+    if para_iframe:
+        if explicit and "streamlit.app" not in explicit.lower():
+            return explicit
+        if render_url:
+            return render_url
+        if explicit:
+            return None
+        return render_url or None
+
+    return explicit or public_link or render_url or None
+
+
+def streamlit_public_portal_url() -> str | None:
+    """Enlace humano (Streamlit Cloud), no para iframe."""
+    return streamlit_cloud_base(para_iframe=False)
 
 
 def enriquecer_modulo(mod: dict[str, Any]) -> dict[str, Any]:
@@ -354,7 +411,7 @@ def enriquecer_modulo(mod: dict[str, Any]) -> dict[str, Any]:
 
     from api_rest.streamlit_launcher import _api_en_nube
 
-    nube = streamlit_cloud_base()
+    nube = streamlit_cloud_base(para_iframe=True)
     try:
         from metgo.dashboard_loader import url_visor
 

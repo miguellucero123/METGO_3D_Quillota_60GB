@@ -6,9 +6,20 @@ const streamlitOk = ref(null)
 const cargando = ref(false)
 let pollTimer = null
 
+/** Render (embebible); no usar *.streamlit.app aquí (bucle /-/login en consola). */
 const STREAMLIT_URL =
   import.meta.env.VITE_METGO_STREAMLIT_URL ||
+  import.meta.env.VITE_METGO_STREAMLIT_RENDER_URL ||
+  'https://metgo-streamlit.onrender.com'
+
+const STREAMLIT_PUBLIC =
+  import.meta.env.VITE_METGO_STREAMLIT_PUBLIC_URL ||
   'https://metgo-3d-quillota-60gb.streamlit.app'
+
+function esEntornoLocal() {
+  if (typeof window === 'undefined') return false
+  return ['localhost', '127.0.0.1'].includes(window.location.hostname)
+}
 
 export function useHealthStore() {
   async function refrescar() {
@@ -22,14 +33,18 @@ export function useHealthStore() {
         timestamp: new Date().toISOString(),
       }
     }
-    try {
-      const r = await fetch(STREAMLIT_URL, { mode: 'no-cors' })
-      streamlitOk.value = r.type === 'opaque' || r.ok
-    } catch {
-      streamlitOk.value = false
-    } finally {
-      cargando.value = false
+    if (esEntornoLocal()) {
+      streamlitOk.value = null
+    } else {
+      try {
+        const base = STREAMLIT_URL.replace(/\/$/, '')
+        const r = await fetch(`${base}/_stcore/health`, { mode: 'no-cors' })
+        streamlitOk.value = r.type === 'opaque' || r.ok
+      } catch {
+        streamlitOk.value = false
+      }
     }
+    cargando.value = false
   }
 
   function iniciarPolling(ms = 30000) {
@@ -53,5 +68,6 @@ export function useHealthStore() {
     iniciarPolling,
     detenerPolling,
     streamlitUrl: STREAMLIT_URL,
+    streamlitPublicUrl: STREAMLIT_PUBLIC,
   }
 }

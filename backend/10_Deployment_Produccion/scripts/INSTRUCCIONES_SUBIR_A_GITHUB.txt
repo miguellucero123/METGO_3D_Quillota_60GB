@@ -1,0 +1,48 @@
+================================================================================
+  COMO SUBIR ESTE PROYECTO A GITHUB (manual — usted confirma cada paso)
+================================================================================
+
+  Repositorio: https://github.com/miguellucero123/METGO_3D_Quillota_60GB
+  Rama:        master
+
+  Carpeta de scripts (esta carpeta):
+  backend\10_Deployment_Produccion\scripts\
+
+--------------------------------------------------------------------------------
+  FORMA RECOMENDADA — doble clic en el MENU
+--------------------------------------------------------------------------------
+
+  Desde la raiz del proyecto:
+    SUBIR_GITHUB_MANUAL.bat
+
+  O directamente:
+    subir_github_menu.bat   (este menu)
+
+  Opciones del menu:
+    1  Ver estado (sin cambiar nada)
+    2  Preparar archivos (git add) — PASO 1
+    3  Commit con mensaje sugerido (integracion fases 4-10) — PASO 2
+    4  Commit con su propio mensaje — PASO 2
+    5  Push a GitHub — PASO 3
+
+--------------------------------------------------------------------------------
+  ORDEN SI USA LOS .bat SUELTOS
+--------------------------------------------------------------------------------
+
+  1_preparar_staging_github.bat
+  2_commit_github_sugerido.bat     (lee MENSAJE_COMMIT_SUGERIDO.txt)
+  3_push_github.bat
+
+--------------------------------------------------------------------------------
+  SOLO COPIAR COMANDOS
+--------------------------------------------------------------------------------
+
+  Abra: COMANDOS_GIT_MANUAL.txt
+
+--------------------------------------------------------------------------------
+  NO SUBIR
+--------------------------------------------------------------------------------
+
+  .env, secrets.toml, datos_runtime (ya en .gitignore)
+
+================================================================================

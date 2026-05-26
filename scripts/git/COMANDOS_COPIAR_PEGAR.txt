@@ -1,0 +1,15 @@
+cd D:\METGO_3D_Quillota_60GB
+
+git remote -v
+git status -sb
+
+git add -A
+git reset HEAD .env
+git reset HEAD .env.local
+git reset HEAD .streamlit/secrets.toml
+
+git diff --cached --name-status
+
+git commit -m "feat: integracion fases 4-10, Vue, API y documentacion escalamiento"
+
+git push origin master

@@ -20,7 +20,8 @@ def auth_required(f: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         if os.getenv("METGO_API_AUTH_REQUIRED", "1") == "0":
             g.current_user = "anonymous"
-            g.user_role = "guest"
+            g.user_role = "admin"
+            g.tenant_id = None
             return f(*args, **kwargs)
 
         header = request.headers.get("Authorization", "")
@@ -32,10 +33,38 @@ def auth_required(f: Callable) -> Callable:
             return jsonify({"error": "Token invalido o expirado"}), 401
 
         g.current_user = payload.get("sub")
-        g.user_role = payload.get("role")
+        g.user_role = payload.get("role") or metgo_auth.rol_de_usuario(g.current_user or "")
+        g.tenant_id = payload.get("tenant")
+        if g.tenant_id is None and g.current_user:
+            g.tenant_id = metgo_auth.tenant_de_usuario(g.current_user)
         return f(*args, **kwargs)
 
     return wrapper
+
+
+def requiere_rol(*roles: str) -> Callable:
+    """RBAC: admin siempre pasa; otros roles deben estar en roles."""
+
+    def decorator(f: Callable) -> Callable:
+        @wraps(f)
+        @auth_required
+        def wrapper(*args, **kwargs):
+            if not metgo_auth.rol_permitido(g.user_role or "", roles):
+                return (
+                    jsonify(
+                        {
+                            "error": "Sin permisos",
+                            "role": g.user_role,
+                            "requiere": list(roles),
+                        }
+                    ),
+                    403,
+                )
+            return f(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def register_auth_routes(app: Flask) -> None:
@@ -60,6 +89,7 @@ def register_auth_routes(app: Flask) -> None:
             {
                 "username": g.current_user,
                 "role": g.user_role,
+                "tenant": g.tenant_id,
             }
         )
 

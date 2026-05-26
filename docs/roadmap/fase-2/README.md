@@ -1,13 +1,11 @@
-# Fase 2 — Producto ampliado (semanas 7–12)
+# Fase 2 — Integrada en código
 
-Prioridad **media**.
+| ID | Tarea | Estado |
+|----|-------|--------|
+| 2.1 | Dashboards Vue (histórico, comparativo, métricas) | Hecho |
+| 2.2 | Alertas configurables CRUD | Hecho |
+| 2.3 | RBAC JWT + guards Vue | Hecho |
+| 2.4 | PWA (`vite-plugin-pwa`) | Hecho |
+| 2.5 | Docker Compose dev | Hecho |
 
-| ID | Tarea | Ficha |
-|----|-------|-------|
-| 2.1 | Migrar 3 dashboards a Vue | [01-migrar-dashboards-vue.md](01-migrar-dashboards-vue.md) |
-| 2.2 | Alertas configurables | [02-alertas-configurables.md](02-alertas-configurables.md) |
-| 2.3 | RBAC por roles | [03-rbac.md](03-rbac.md) |
-| 2.4 | PWA ligera | [04-pwa.md](04-pwa.md) |
-| 2.5 | Docker Compose dev | [05-docker-compose.md](05-docker-compose.md) |
-
-**Estado:** pendiente de implementación (solo especificación).
+Ver `docs/DESARROLLO_LOCAL.md` y menú lateral Vue.

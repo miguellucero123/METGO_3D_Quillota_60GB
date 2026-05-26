@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Autenticacion compartida METGO (Streamlit + API REST JWT).
-Credenciales: METGO_PASSWORD_ADMIN, METGO_PASSWORD_USER, METGO_PASSWORD_METGO
+Credenciales: METGO_PASSWORD_{USUARIO} en mayúsculas.
+Roles: admin | agronomo | operador | lectura
 """
 
 from __future__ import annotations
@@ -24,16 +25,50 @@ try:
 except ImportError:
     jwt = None  # type: ignore
 
-USUARIOS_VALIDOS = ("admin", "user", "metgo")
+# Usuario de login -> rol JWT
+USER_TO_ROLE: dict[str, str] = {
+    "admin": "admin",
+    "user": "operador",
+    "metgo": "agronomo",
+    "agronomo": "agronomo",
+    "operador": "operador",
+    "lector": "lectura",
+}
 
-# Solo desarrollo local si no hay variables de entorno
+USUARIOS_VALIDOS = tuple(USER_TO_ROLE.keys())
+
+ROLE_HIERARCHY = ("admin", "agronomo", "operador", "lectura")
+
 _DEV_FALLBACK = {
     "admin": "admin123",
     "user": "user123",
     "metgo": "metgo2025",
+    "agronomo": "agro123",
+    "operador": "op123",
+    "lector": "lec123",
 }
 
 _warned_dev = False
+
+
+def rol_de_usuario(usuario: str) -> str:
+    return USER_TO_ROLE.get(usuario.lower().strip(), "lectura")
+
+
+def tenant_de_usuario(usuario: str) -> str | None:
+    """None = admin ve todos los tenants."""
+    try:
+        from api_rest.tenants import tenant_de_usuario as _t
+
+        return _t(usuario)
+    except ImportError:
+        return "quillota" if usuario != "admin" else None
+
+
+def rol_permitido(user_role: str, roles_requeridos: tuple[str, ...]) -> bool:
+    if user_role == "admin":
+        return True
+    return user_role in roles_requeridos
 
 
 def _warn_dev_fallback() -> None:
@@ -41,14 +76,13 @@ def _warn_dev_fallback() -> None:
     if not _warned_dev:
         warnings.warn(
             "METGO: usando contraseñas de desarrollo. "
-            "Defina METGO_PASSWORD_ADMIN, METGO_PASSWORD_USER, METGO_PASSWORD_METGO.",
+            "Defina METGO_PASSWORD_* en el entorno.",
             stacklevel=3,
         )
         _warned_dev = True
 
 
 def obtener_password(usuario: str) -> str | None:
-    """Lee contraseña desde variable de entorno METGO_PASSWORD_{USUARIO}."""
     usuario = usuario.lower().strip()
     if usuario not in USUARIOS_VALIDOS:
         return None
@@ -63,7 +97,6 @@ def obtener_password(usuario: str) -> str | None:
 
 
 def verificar_credenciales(usuario: str, contraseña: str) -> bool:
-    """Valida usuario y contraseña (Streamlit y API login)."""
     if not usuario or not contraseña:
         return False
     esperada = obtener_password(usuario)
@@ -87,7 +120,6 @@ def jwt_algorithm() -> str:
 
 
 def crear_token_acceso(usuario: str) -> dict[str, Any]:
-    """Genera JWT y metadatos para el cliente."""
     if jwt is None:
         raise RuntimeError("Instale PyJWT: pip install PyJWT")
 
@@ -95,11 +127,14 @@ def crear_token_acceso(usuario: str) -> dict[str, Any]:
     if usuario not in USUARIOS_VALIDOS:
         raise ValueError("Usuario no permitido")
 
+    role = rol_de_usuario(usuario)
+    tenant = tenant_de_usuario(usuario)
     exp_secs = jwt_expiration_seconds()
     now = datetime.now(timezone.utc)
     payload = {
         "sub": usuario,
-        "role": usuario,
+        "role": role,
+        "tenant": tenant,
         "iat": now,
         "exp": now + timedelta(seconds=exp_secs),
     }
@@ -111,12 +146,11 @@ def crear_token_acceso(usuario: str) -> dict[str, Any]:
         "access_token": token,
         "token_type": "bearer",
         "expires_in": exp_secs,
-        "user": {"username": usuario, "role": usuario},
+        "user": {"username": usuario, "role": role, "tenant": tenant},
     }
 
 
 def decodificar_token(token: str) -> dict[str, Any] | None:
-    """Devuelve payload JWT o None si es invalido/expirado."""
     if jwt is None or not token:
         return None
     try:

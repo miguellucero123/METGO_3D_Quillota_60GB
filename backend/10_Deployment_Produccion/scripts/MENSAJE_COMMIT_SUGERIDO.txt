@@ -1,7 +1,8 @@
-feat: Visor de puertos integrado, utilidad por modulo y despliegue nube
+feat: integracion API-Vue fases 4-10 y documentacion escalamiento MVP
 
-- Vue /puertos con iframe (embed) y API GET .../visor
-- Streamlit pages/4_Visor_de_puerto.py y metgo_dashboard_loader.py
-- Centro de servicios: ver en visor, activar nube, utilidad 8501-8513
-- METGO_STREAMLIT_CLOUD_URL en render.yaml
-- Docs VISOR_PUERTOS.md y QUE_VER_EN_NUBE.md
+- Integracion modulos backend 01-12 (api_rest/integracion, hub Vue /integracion)
+- ETL nocturno, MQTT, registro ML, cola entrenamiento, workers
+- Notificaciones multicanal (webhook, outbox, SMTP opcional)
+- Metricas GET /api/metrics, fase 10 en health
+- docs/PROMPT_ESCALAMIENTO_MVP.md y roadmap fase-4 a fase-10
+- Tests test_fase7 a test_fase10

@@ -30,7 +30,11 @@ function logout() {
         <Activity class="status-pill__icon" aria-hidden="true" />
         {{ store.apiOnline ? 'En línea' : 'Sin conexión' }}
       </div>
-      <div v-if="auth.user" class="user-chip">{{ auth.user.username }}</div>
+      <div v-if="auth.user" class="user-chip">
+        {{ auth.user.username }}
+        <span v-if="auth.user.role" class="user-chip__role">{{ auth.user.role }}</span>
+        <span v-if="auth.user.tenant" class="user-chip__tenant">{{ auth.user.tenant }}</span>
+      </div>
       <label class="station-select">
         <span class="station-select__label">Estación</span>
         <select v-model="store.estacionActiva" @change="store.cargarDatosMeteo()">
@@ -118,6 +122,16 @@ function logout() {
   background: var(--color-primary-muted);
   color: var(--color-primary);
   border-radius: var(--radius-sm);
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.user-chip__role,
+.user-chip__tenant {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  text-transform: uppercase;
 }
 
 .station-select {

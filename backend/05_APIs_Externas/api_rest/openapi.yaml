@@ -12,6 +12,7 @@ tags:
   - name: auth
   - name: meteo
   - name: sistema
+  - name: datos
   - name: servicios
 paths:
   /api/health:
@@ -73,7 +74,7 @@ paths:
   /api/alertas:
     get:
       tags: [sistema]
-      summary: Alertas activas
+      summary: Alertas activas (automáticas + configuradas)
       security: [{ bearerAuth: [] }]
       parameters:
         - name: estacion
@@ -82,6 +83,72 @@ paths:
       responses:
         "200":
           description: Lista de alertas
+  /api/alertas/config:
+    get:
+      tags: [alertas]
+      summary: Listar reglas del usuario
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Reglas personalizadas
+    post:
+      tags: [alertas]
+      summary: Crear regla de alerta
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201":
+          description: Regla creada
+        "403":
+          description: Rol sin permiso
+  /api/meteo/comparativo:
+    get:
+      tags: [meteo]
+      summary: Comparativo multi-estación
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Resumen por estación principal
+  /api/metricas/globales:
+    get:
+      tags: [sistema]
+      summary: KPIs globales del valle
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Métricas consolidadas
+  /api/integracion/estado:
+    get:
+      tags: [sistema]
+      summary: Grado de integración por módulo (público)
+      responses:
+        "200":
+          description: Promedio y checks por módulo
+  /api/datos/etl/status:
+    get:
+      tags: [datos]
+      summary: Última ejecución ETL meteorológico (público)
+      description: Sin rutas de disco completas; uso monitoreo y smoke tests
+      responses:
+        "200":
+          description: último run, historial count, fuentes
+  /api/datos/etl/sync:
+    post:
+      tags: [datos]
+      summary: Sincronizar OpenMeteo + CSV hacia SQLite histórico
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dias: { type: integer, example: 14 }
+                incluir_csv: { type: boolean, default: true }
+      responses:
+        "200":
+          description: Detalle por estación y estadísticas store
+        "401":
+          description: Sin token
   /api/catalogo:
     get:
       tags: [sistema]

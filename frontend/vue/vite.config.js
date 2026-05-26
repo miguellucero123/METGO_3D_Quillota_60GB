@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ mode }) => {
@@ -10,7 +11,31 @@ export default defineConfig(({ mode }) => {
   console.log(`[vite] Proxy /api -> ${apiTarget}`)
 
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          name: 'METGO Quillota',
+          short_name: 'METGO',
+          description: 'Monitoreo meteorológico y agrícola',
+          theme_color: '#166534',
+          background_color: '#f8fafc',
+          display: 'standalone',
+          start_url: '/',
+          icons: [],
+        },
+        workbox: {
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname.startsWith('/api/public'),
+              handler: 'NetworkFirst',
+              options: { cacheName: 'metgo-public-meteo', expiration: { maxEntries: 32 } },
+            },
+          ],
+        },
+      }),
+    ],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

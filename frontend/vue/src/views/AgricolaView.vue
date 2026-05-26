@@ -4,7 +4,12 @@ import { Sprout, Droplets, ThermometerSnowflake, Tractor } from 'lucide-vue-next
 import { useMetgoStore } from '@/stores/metgo'
 import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
-import { fetchRecomendacionesAgricolas } from '@/api/metgoApi'
+import {
+  fetchRecomendacionesAgricolas,
+  fetchAgricolaRiego,
+  fetchAgricolaCultivos,
+  fetchAgricolaEconomico,
+} from '@/api/metgoApi'
 import {
   CULTIVOS_QUILLOTA,
   riesgoHelada,
@@ -14,6 +19,10 @@ import {
 
 const store = useMetgoStore()
 const recomendaciones = ref([])
+const cultivosApi = ref([])
+const riegoApi = ref(null)
+const economico = ref(null)
+const cultivoSel = ref('palto')
 const cargando = ref(false)
 
 const d = computed(() => store.datosMeteo)
@@ -25,8 +34,14 @@ async function cargar() {
   cargando.value = true
   try {
     recomendaciones.value = await fetchRecomendacionesAgricolas(store.estacionActiva)
+    cultivosApi.value = await fetchAgricolaCultivos()
+    riegoApi.value = await fetchAgricolaRiego(store.estacionActiva, cultivoSel.value)
+    economico.value = await fetchAgricolaEconomico(store.estacionActiva)
   } catch {
     recomendaciones.value = []
+    cultivosApi.value = []
+    riegoApi.value = null
+    economico.value = null
   } finally {
     cargando.value = false
   }
@@ -63,10 +78,20 @@ watch(() => store.estacionActiva, cargar)
       <MetricCard label="Aplicaciones / viento" :value="viento.label">
         <template #icon><Tractor /></template>
       </MetricCard>
+      <MetricCard
+        v-if="riegoApi"
+        label="Riego API (02)"
+        :value="`${riegoApi.mm_sugeridos_hoy} mm · ${riegoApi.accion}`"
+      >
+        <template #icon><Droplets /></template>
+      </MetricCard>
     </div>
 
     <div class="layout-split">
-      <SectionCard title="Recomendaciones por cultivo" subtitle="Basadas en pronóstico OpenMeteo">
+      <SectionCard
+        title="Recomendaciones por cultivo"
+        subtitle="Motor avanzado módulo 02 (heladas, plagas, cosecha)"
+      >
         <template #icon><Sprout /></template>
         <p v-if="cargando" class="skeleton">Analizando condiciones…</p>
         <div v-else-if="recomendaciones.length" class="reco-cards">

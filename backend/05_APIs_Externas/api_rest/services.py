@@ -67,10 +67,18 @@ def nombre_a_slug(nombre: str) -> str:
     return NOMBRE_A_SLUG.get(nombre, nombre.lower().replace(" ", "_"))
 
 
-def listar_estaciones() -> list[dict[str, Any]]:
+def listar_estaciones(tenant_id: str | None = None) -> list[dict[str, Any]]:
     om = OpenMeteoData()
+    slugs = ESTACIONES_PRINCIPALES
+    if tenant_id:
+        try:
+            from api_rest.tenants import estaciones_de_tenant
+
+            slugs = [s for s in estaciones_de_tenant(tenant_id) if s in SLUG_A_NOMBRE]
+        except ImportError:
+            pass
     resultado = []
-    for slug in ESTACIONES_PRINCIPALES:
+    for slug in slugs:
         nombre = SLUG_A_NOMBRE[slug]
         if nombre in om.estaciones:
             coords = om.estaciones[nombre]
@@ -150,10 +158,25 @@ def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | 
 def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | None:
     nombre = slug_a_nombre(estacion_id)
     df = _df_sin_prints(nombre, "historicos", min(dias, 92))
-    if df is None or df.empty:
-        return None
-    df = df.sort_values("fecha")
-    return [_fila_a_resumen(row, estacion_id) for _, row in df.iterrows()]
+    registros: list[dict[str, Any]] = []
+    if df is not None and not df.empty:
+        df = df.sort_values("fecha")
+        registros = [_fila_a_resumen(row, estacion_id) for _, row in df.iterrows()]
+    try:
+        from api_rest.integracion.meteo_store import guardar_registros, leer_registros
+
+        if registros:
+            guardar_registros(estacion_id, registros)
+        local = leer_registros(estacion_id, dias)
+        if local and not registros:
+            return local
+        if local and registros:
+            fechas_loc = {r.get("fecha") for r in local}
+            merged = local + [r for r in registros if r.get("fecha") not in fechas_loc]
+            return sorted(merged, key=lambda x: str(x.get("fecha", "")))[-dias:]
+    except ImportError:
+        pass
+    return registros if registros else None
 
 
 def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
@@ -228,11 +251,41 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                 "mensaje": "Condiciones dentro de rangos normales",
             }
         )
+
+    try:
+        from api_rest.integracion.alertas_store import evaluar_umbrales_01, registrar_alertas
+
+        for eid in estaciones:
+            res = resumen_meteo(eid)
+            if res:
+                extra = evaluar_umbrales_01(res, eid)
+                seen = {a["mensaje"] for a in alertas}
+                for ex in extra:
+                    if ex["mensaje"] not in seen:
+                        ex["id"] = aid
+                        aid += 1
+                        alertas.append(ex)
+        registrar_alertas(alertas)
+    except ImportError:
+        pass
+
     return alertas
 
 
-def recomendaciones_agricolas(estacion_id: str) -> list[dict[str, Any]]:
-    """Recomendaciones simples basadas en pronóstico (módulo 02 — lógica básica)."""
+def recomendaciones_agricolas(estacion_id: str, *, avanzado: bool = True) -> list[dict[str, Any]]:
+    """Recomendaciones módulo 02 (avanzado si está disponible)."""
+    pron = pronostico_meteo(estacion_id, 14) or []
+    hist = historico_meteo(estacion_id, 14) or []
+    filas = (hist or []) + (pron or [])
+
+    if avanzado and filas:
+        try:
+            from api_rest.integracion.agricola_avanzado import recomendaciones_lista
+
+            return recomendaciones_lista(filas, estacion_id)
+        except Exception:
+            pass
+
     resumen = resumen_meteo(estacion_id)
     if not resumen:
         return [
@@ -282,6 +335,68 @@ def recomendaciones_agricolas(estacion_id: str) -> list[dict[str, Any]]:
         )
 
     return recs
+
+
+def reporte_agricola_avanzado(estacion_id: str) -> dict[str, Any]:
+    pron = pronostico_meteo(estacion_id, 14) or []
+    hist = historico_meteo(estacion_id, 14) or []
+    filas = (hist or []) + (pron or [])
+    try:
+        from api_rest.integracion.agricola_avanzado import reporte_integral
+
+        return reporte_integral(filas)
+    except ImportError as e:
+        return {"error": str(e)}
+
+
+def comparativo_estaciones(tenant_id: str | None = None) -> list[dict[str, Any]]:
+    """Resumen actual de todas las estaciones principales (Fase 2.1)."""
+    filas = []
+    slugs = ESTACIONES_PRINCIPALES
+    if tenant_id:
+        try:
+            from api_rest.tenants import estaciones_de_tenant
+
+            slugs = estaciones_de_tenant(tenant_id)
+        except ImportError:
+            pass
+    for slug in slugs:
+        res = resumen_meteo(slug)
+        if res:
+            filas.append(res)
+    return filas
+
+
+def metricas_globales(tenant_id: str | None = None) -> dict[str, Any]:
+    """KPIs consolidados del valle (Fase 2.1)."""
+    filas = comparativo_estaciones(tenant_id)
+    if not filas:
+        return {
+            "estaciones_activas": 0,
+            "temperatura_media_max": None,
+            "temperatura_media_min": None,
+            "precipitacion_total": 0,
+            "alertas_activas": 0,
+            "actualizado": datetime.now().isoformat(),
+        }
+    alertas = generar_alertas()
+    alertas_warn = sum(1 for a in alertas if a.get("nivel") == "warning")
+    return {
+        "estaciones_activas": len(filas),
+        "temperatura_media_max": round(
+            sum(f["temperatura_max"] for f in filas) / len(filas), 1
+        ),
+        "temperatura_media_min": round(
+            sum(f["temperatura_min"] for f in filas) / len(filas), 1
+        ),
+        "precipitacion_total": round(sum(f["precipitacion"] for f in filas), 1),
+        "viento_max": max(f["viento"] for f in filas),
+        "humedad_media": round(sum(f["humedad"] for f in filas) / len(filas), 1),
+        "alertas_activas": len(alertas),
+        "alertas_warning": alertas_warn,
+        "estaciones": [f["estacion_id"] for f in filas],
+        "actualizado": datetime.now().isoformat(),
+    }
 
 
 def health_check() -> dict[str, Any]:

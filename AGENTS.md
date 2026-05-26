@@ -1,6 +1,6 @@
 # Instrucciones para agentes (Cursor / IA)
 
-Documento operativo: **`docs/roadmap/README.md`** · Prompt extendido: **`docs/PROMPT_MVP_METGO.md`**
+Documento operativo: **`docs/roadmap/README.md`** · MVP: **`docs/PROMPT_MVP_METGO.md`** · Escalamiento (fases 1–10): **`docs/PROMPT_ESCALAMIENTO_MVP.md`**
 
 ---
 
@@ -22,7 +22,7 @@ Respondes en **español** salvo que el código o commits requieran inglés técn
 
 **Arquitectura:** `backend/` · `frontend/vue/` · `frontend/dashboards/` (8501–8513 solo PC) · `metgo/` · `pages/` · `scripts/compat/` · `scripts/git/`
 
-**Fase 1 integrada en código:** OpenAPI `/api/docs`, CI `.github/workflows/ci.yml`, `/estado` Vue, caché OpenMeteo, UX visor puertos.
+**Integrado en código (fases 1–10):** OpenAPI, CI, health, caché OpenMeteo, RBAC, integración módulos 01–12 (`/integracion`), ETL nocturno, MQTT, MLOps registry, workers, notificaciones multicanal, `/api/metrics`. Ver `docs/PROMPT_ESCALAMIENTO_MVP.md`.
 
 ## REGLAS NO NEGOCIABLES
 
@@ -41,6 +41,8 @@ Respondes en **español** salvo que el código o commits requieran inglés técn
 | 1 — Consolidar MVP | `docs/roadmap/fase-1/` |
 | 2 — Producto ampliado | `docs/roadmap/fase-2/` |
 | 3 — Escala | `docs/roadmap/fase-3/` |
+| 4–10 — Integración y ops | `docs/roadmap/fase-4/` … `fase-10/` |
+| Escalamiento (prompt) | `docs/PROMPT_ESCALAMIENTO_MVP.md` |
 | Deuda técnica | `docs/roadmap/deuda-tecnica/` |
 
 ## FORMATO DE RESPUESTA REQUERIDO

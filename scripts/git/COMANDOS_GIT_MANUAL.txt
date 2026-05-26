@@ -1,35 +1,50 @@
 ================================================================================
-  METGO — Subida a GitHub MANUAL (copiar y pegar)
-  Proyecto: D:\METGO_3D_Quillota_60GB
+  METGO 3D — Subida MANUAL a GitHub
+  Repo: https://github.com/miguellucero123/METGO_3D_Quillota_60GB.git
+  Rama: master
+  Carpeta: D:\METGO_3D_Quillota_60GB
   Guia: docs\manuales\SUBIR_GITHUB_MANUAL.md
 ================================================================================
 
+--- 0) Ir al proyecto ---
 cd /d D:\METGO_3D_Quillota_60GB
 
-git status -sb
+--- 1) Revisar ---
 git remote -v
+git branch --show-current
+git status -sb
+git log -3 --oneline
 
+--- 2) Staging (añadir todo y quitar lo prohibido) ---
 git add -A
 git reset HEAD .env
 git reset HEAD .env.local
 git reset HEAD .streamlit\secrets.toml
-
+git reset HEAD -- .pytest_cache 2>nul
 git diff --cached --name-status
 git diff --cached --shortstat
 
-git commit -m "feat: Visor de puertos integrado, utilidad por modulo y despliegue nube"
+  REVISE la lista: NO debe aparecer .env, secrets.toml, datos_runtime, *.db
 
-git branch --show-current
+--- 3) Commit (cambie el mensaje) ---
+git commit -m "feat: integracion fases 4-10 y prompt escalamiento MVP"
+
+  Mensaje alternativo largo:
+git commit -m "feat: integracion API-Vue modulos 01-12" -m "- Fases 4-10: ETL, MQTT, ML, workers, notificaciones, metricas" -m "- docs PROMPT_ESCALAMIENTO_MVP.md"
+
+--- 4) Push ---
 git push origin master
 
---- Si la rama es main en lugar de master:
-git push origin main
+  Primera vez en esta PC/rama:
+git push -u origin master
 
---- Si GitHub pide actualizar antes:
+  Si GitHub pide actualizar antes:
 git pull --rebase origin master
 git push origin master
 
---- Primera vez en la rama:
-git push -u origin master
+--- 5) Tras el push ---
+  - Netlify (Vue): redeploy si hace falta
+  - Render (API / Streamlit): panel Render
+  - Streamlit Cloud: si esta conectado al repo
 
 ================================================================================

@@ -1,0 +1,9 @@
+Los scripts oficiales para subir a GitHub estan aqui:
+
+  backend\10_Deployment_Produccion\scripts\
+
+Desde la raiz del proyecto use:
+
+  SUBIR_GITHUB_MANUAL.bat
+
+No use esta carpeta scripts\git (copias antiguas).

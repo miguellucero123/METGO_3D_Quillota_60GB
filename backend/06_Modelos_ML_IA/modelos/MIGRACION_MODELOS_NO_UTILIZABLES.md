@@ -1,0 +1,63 @@
+﻿# Modelos movidos a cuarentena
+Fecha: 2026-05-25 22:05:49
+
+## Conservados para API actual
+- modelos_ml_quillota/configuracion_modelos.json
+- modelos_ml_quillota/modelo_temperatura_max.joblib
+- modelos_ml_quillota/modelo_temperatura_min.joblib
+- modelos_ml_quillota/modelo_precipitacion.joblib
+- modelos_ml_quillota/modelo_humedad.joblib
+- modelos_ml_quillota/modelo_presion.joblib
+- modelos_ml_quillota/configuracion_modelos.json
+
+## Movidos a no_utilizables_revision
+- modelos\deep_learning\cnn_1d_avanzado.h5
+- modelos\deep_learning\lstm_avanzado_best.h5
+- modelos\deep_learning\lstm_avanzado_final.h5
+- modelos\deep_learning\transformer_avanzado.h5
+- modelos_dinamicos\GB_Precipitacion.joblib
+- modelos_dinamicos\GB_Precipitacion_scaler.joblib
+- modelos_dinamicos\RF_Temp_Promedio.joblib
+- modelos_dinamicos\RF_Temp_Promedio_scaler.joblib
+- modelos_hibridos_rapidos\Ensemble_Rapido_Temp.joblib
+- modelos_hibridos_rapidos\Voting_Rapido_Humedad.joblib
+- modelos_ml\GradientBoosting_humedad_relativa.joblib
+- modelos_ml\GradientBoosting_nubosidad.joblib
+- modelos_ml\GradientBoosting_precipitacion.joblib
+- modelos_ml\GradientBoosting_presion_atmosferica.joblib
+- modelos_ml\GradientBoosting_temperatura_actual.joblib
+- modelos_ml\GradientBoosting_velocidad_viento.joblib
+- modelos_ml\LinearRegression_humedad_relativa.joblib
+- modelos_ml\LinearRegression_nubosidad.joblib
+- modelos_ml\LinearRegression_precipitacion.joblib
+- modelos_ml\LinearRegression_presion_atmosferica.joblib
+- modelos_ml\LinearRegression_temperatura_actual.joblib
+- modelos_ml\LinearRegression_velocidad_viento.joblib
+- modelos_ml\RandomForest_humedad_relativa.joblib
+- modelos_ml\RandomForest_nubosidad.joblib
+- modelos_ml\RandomForest_precipitacion.joblib
+- modelos_ml\RandomForest_presion_atmosferica.joblib
+- modelos_ml\RandomForest_temperatura_actual.joblib
+- modelos_ml\RandomForest_velocidad_viento.joblib
+- modelos_ml\Ridge_humedad_relativa.joblib
+- modelos_ml\Ridge_nubosidad.joblib
+- modelos_ml\Ridge_precipitacion.joblib
+- modelos_ml\Ridge_presion_atmosferica.joblib
+- modelos_ml\Ridge_temperatura_actual.joblib
+- modelos_ml\Ridge_velocidad_viento.joblib
+- modelos_ml_avanzados\GradientBoosting_Rapido_temperatura_promedio.joblib
+- modelos_ml_avanzados\RandomForest_Rapido_temperatura_promedio.joblib
+- modelos_ml_avanzados\Ridge_Optimizado_temperatura_promedio.joblib
+- modelos_ml_quillota\configuracion_modelos.json
+- modelos_ml_quillota\modelo_gradient_boosting.pkl
+- modelos_ml_quillota\modelo_humedad.joblib
+- modelos_ml_quillota\modelo_knn.pkl
+- modelos_ml_quillota\modelo_linear_regression.pkl
+- modelos_ml_quillota\modelo_precipitacion.joblib
+- modelos_ml_quillota\modelo_presion.joblib
+- modelos_ml_quillota\modelo_random_forest.pkl
+- modelos_ml_quillota\modelo_svm.pkl
+- modelos_ml_quillota\modelo_temperatura_max.joblib
+- modelos_ml_quillota\modelo_temperatura_min.joblib
+- modelos_ultra_optimizados\Ultra_Humedad_Optimizado.joblib
+- modelos_ultra_optimizados\Ultra_Temp_Optimizado.joblib

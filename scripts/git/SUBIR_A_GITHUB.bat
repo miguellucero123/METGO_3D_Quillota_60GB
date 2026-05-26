@@ -1,5 +1,5 @@
 @echo off
 chcp 65001 >nul
-REM Muestra comandos para subida MANUAL (recomendado)
+REM Atajo legacy → menu manual actualizado
 cd /d "%~dp0"
-call "%~dp0SUBIR_GITHUB_MANUAL.bat"
+call "%~dp0SUBIR_GITHUB_MENU.bat"

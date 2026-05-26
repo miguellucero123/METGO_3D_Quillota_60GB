@@ -15,7 +15,9 @@ Servidor, datos, APIs, modelos ML, monitoreo, despliegue y respaldos.
 | `08_Gestion_Datos/` | ETL, `datos/`, runtime |
 | `09_Testing_Validacion/` | Pruebas |
 | `10_Deployment_Produccion/` | Scripts `.bat`, deploy |
-| `12_Respaldos_Archivos/` | Backups locales |
+| `12_Respaldos_Archivos/` | Backups locales (no usar en código activo) |
+
+**Nota:** Los módulos **04** (dashboards) y **11** (docs) no viven en `backend/`. Ver [`docs/roadmap/BACKEND_MODULOS_01-12_AUDITORIA.md`](../docs/roadmap/BACKEND_MODULOS_01-12_AUDITORIA.md).
 
 ## Arranque
 

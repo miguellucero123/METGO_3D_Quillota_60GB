@@ -1,0 +1,33 @@
+# Desarrollo local METGO (Fase 2.5) — API + Vue
+# Uso: docker compose -f docker-compose.dev.yml up --build
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/05_APIs_Externas/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      METGO_API_AUTH_REQUIRED: "1"
+      METGO_PASSWORD_ADMIN: admin123
+      METGO_PASSWORD_AGRONOMO: agro123
+      METGO_PASSWORD_OPERADOR: op123
+      METGO_PASSWORD_LECTOR: lec123
+      METGO_JWT_SECRET: dev-docker-jwt-secret
+      METGO_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    volumes:
+      - ./backend/08_Gestion_Datos/datos_runtime:/app/backend/08_Gestion_Datos/datos_runtime
+
+  vue:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_METGO_API: http://api:8080/api
+    volumes:
+      - ./frontend/vue:/app
+    depends_on:
+      - api

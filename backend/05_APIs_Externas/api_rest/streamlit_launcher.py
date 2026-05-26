@@ -25,7 +25,32 @@ def _api_en_nube() -> bool:
 
 
 def _cloud_base() -> str | None:
-    return catalog.streamlit_cloud_base()
+    return catalog.streamlit_cloud_base(para_iframe=True)
+
+
+def _url_es_embebible(url: str | None) -> bool:
+    if not url:
+        return False
+    u = url.lower()
+    if "streamlit.app" in u:
+        return False
+    return True
+
+
+def _aplicar_politica_embed(st: dict[str, Any]) -> dict[str, Any]:
+    """Marca si la URL puede ir en iframe (Vue /puertos)."""
+    u = st.get("url_embed") or st.get("url_visor") or st.get("url")
+    embebible = _url_es_embebible(u)
+    st["embebible"] = embebible
+    if u:
+        st["url_externa"] = u
+    if not embebible:
+        st["url_embed"] = None
+        st["mensaje_visor"] = (
+            "Abra el enlace en una pestaña nueva. Streamlit Cloud y puertos locales "
+            "no pueden mostrarse en un marco desde otro sitio."
+        )
+    return st
 
 
 def _url_nube_modulo(modulo_id: str) -> str | None:
@@ -57,7 +82,7 @@ def _url_local_embed(puerto: int, modulo_id: str) -> str:
 
 def url_visor_modulo(modulo_id: str) -> dict[str, Any]:
     """URLs del sistema Visor de Puertos (Vue + iframe)."""
-    st = estado_servicio(modulo_id)
+    st = _aplicar_politica_embed(estado_servicio(modulo_id))
     if st.get("estado") == "desconocido":
         return {"ok": False, "error": "Modulo no valido", **st}
     modo = "nube" if _api_en_nube() else "local"
@@ -65,7 +90,9 @@ def url_visor_modulo(modulo_id: str) -> dict[str, Any]:
         "ok": True,
         "modulo_id": modulo_id,
         "modo": modo,
-        "url_embed": st.get("url_embed") or st.get("url_visor") or st.get("url"),
+        "url_embed": st.get("url_embed"),
+        "url_externa": st.get("url_externa"),
+        "embebible": st.get("embebible", False),
         "requiere_iniciar_local": modo == "local" and st.get("estado") == "detenido",
         **st,
     }
@@ -113,7 +140,7 @@ def estado_servicio(modulo_id: str) -> dict[str, Any]:
     url_visor = _url_visor(modulo_id)
     if _api_en_nube():
         if url_nube or url_visor:
-            return {
+            payload = {
                 **m,
                 **extra,
                 "estado": "disponible_nube",
@@ -127,6 +154,7 @@ def estado_servicio(modulo_id: str) -> dict[str, Any]:
                     "En internet use el **Visor de puertos** (iframe) o la app Vue."
                 ),
             }
+            return _aplicar_politica_embed(payload)
         return {
             **m,
             **extra,
@@ -145,43 +173,59 @@ def estado_servicio(modulo_id: str) -> dict[str, Any]:
 
     url_visor = _url_visor(modulo_id)
     puerto_activo = _puerto_ocupado(puerto)
-    url_embed_local = _url_local_embed(puerto, modulo_id) if puerto_activo else None
+    # Preferir visor Render; iframe directo al puerto solo si no hay portal nube
+    url_embed_local = (
+        _url_local_embed(puerto, modulo_id)
+        if puerto_activo and modulo_id != "streamlit_principal"
+        else None
+    )
+    url_embed = url_visor or url_embed_local or url_nube
 
     if proc and proc.poll() is None:
-        return {
-            **m,
-            **extra,
-            "estado": "corriendo",
-            "url": url,
-            "url_nube": url_nube,
-            "url_visor": url_visor,
-            "url_embed": url_embed_local or url_visor,
-            "pid": proc.pid,
-            "acceso": "local",
-        }
+        return _aplicar_politica_embed(
+            {
+                **m,
+                **extra,
+                "estado": "corriendo",
+                "url": url,
+                "url_nube": url_nube,
+                "url_visor": url_visor,
+                "url_embed": url_embed,
+                "pid": proc.pid,
+                "acceso": "local",
+            }
+        )
     if puerto_activo:
-        return {
+        return _aplicar_politica_embed(
+            {
+                **m,
+                **extra,
+                "estado": "corriendo",
+                "url": url,
+                "url_nube": url_nube,
+                "url_visor": url_visor,
+                "url_embed": url_embed,
+                "pid": None,
+                "externo": True,
+                "acceso": "local",
+            }
+        )
+    return _aplicar_politica_embed(
+        {
             **m,
             **extra,
-            "estado": "corriendo",
+            "estado": "detenido",
             "url": url,
             "url_nube": url_nube,
             "url_visor": url_visor,
-            "url_embed": url_embed_local or url_visor,
-            "pid": None,
-            "externo": True,
+            "url_embed": url_visor or url_nube,
             "acceso": "local",
+            "mensaje_acceso": (
+                f"Inicie el módulo en el puerto {puerto} o configure "
+                "METGO_STREAMLIT_RENDER_URL para el visor en la nube."
+            ),
         }
-    return {
-        **m,
-        **extra,
-        "estado": "detenido",
-        "url": url,
-        "url_nube": url_nube,
-        "url_visor": url_visor,
-        "url_embed": url_visor or url_nube,
-        "acceso": "local",
-    }
+    )
 
 
 def listar_estados() -> list[dict[str, Any]]:

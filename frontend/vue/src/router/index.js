@@ -15,6 +15,18 @@ const routes = [
     meta: { public: true, title: 'Estado del sistema' },
   },
   {
+    path: '/integracion',
+    name: 'integracion',
+    component: () => import('@/views/IntegracionView.vue'),
+    meta: { title: 'Conexiones del sistema' },
+  },
+  {
+    path: '/403',
+    name: 'forbidden',
+    component: () => import('@/views/ForbiddenView.vue'),
+    meta: { title: 'Sin permiso' },
+  },
+  {
     path: '/',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
@@ -27,6 +39,36 @@ const routes = [
     meta: { title: 'Meteorologia' },
   },
   {
+    path: '/meteo/historico',
+    name: 'meteo-historico',
+    component: () => import('@/views/MeteoHistoricoView.vue'),
+    meta: { title: 'Histórico meteo' },
+  },
+  {
+    path: '/meteo/comparativo',
+    name: 'meteo-comparativo',
+    component: () => import('@/views/ComparativoEstacionesView.vue'),
+    meta: { title: 'Comparativo estaciones' },
+  },
+  {
+    path: '/metricas',
+    name: 'metricas',
+    component: () => import('@/views/MetricasGlobalesView.vue'),
+    meta: { title: 'Métricas globales' },
+  },
+  {
+    path: '/iot',
+    name: 'iot',
+    component: () => import('@/views/IotView.vue'),
+    meta: { title: 'Sensores IoT' },
+  },
+  {
+    path: '/ml',
+    name: 'ml',
+    component: () => import('@/views/MlView.vue'),
+    meta: { title: 'Modelos ML' },
+  },
+  {
     path: '/agricola',
     name: 'agricola',
     component: () => import('@/views/AgricolaView.vue'),
@@ -37,6 +79,12 @@ const routes = [
     name: 'monitoreo',
     component: () => import('@/views/MonitoreoView.vue'),
     meta: { title: 'Monitoreo' },
+  },
+  {
+    path: '/alertas/config',
+    name: 'alertas-config',
+    component: () => import('@/views/AlertasConfigView.vue'),
+    meta: { title: 'Config alertas', roles: ['admin', 'agronomo', 'operador'] },
   },
   {
     path: '/modulos',
@@ -69,6 +117,12 @@ const router = createRouter({
   routes,
 })
 
+function roleAllowed(userRole, required) {
+  if (!required?.length) return true
+  if (userRole === 'admin') return true
+  return required.includes(userRole)
+}
+
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
   if (!to.meta.public) {
@@ -78,6 +132,9 @@ router.beforeEach(async (to) => {
     const ok = await auth.ensureValidSession()
     if (!ok) {
       return { name: 'login', query: { redirect: to.fullPath } }
+    }
+    if (to.meta.roles && !roleAllowed(auth.user?.role, to.meta.roles)) {
+      return { name: 'forbidden' }
     }
   }
   if (to.name === 'login' && auth.isAuthenticated) {

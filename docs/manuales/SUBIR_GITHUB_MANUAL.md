@@ -1,133 +1,38 @@
-# Subir cambios a GitHub (manual)
+# Subir el proyecto a GitHub (manual)
 
-Guía corta: **usted ejecuta cada comando** en CMD o PowerShell.  
-Carpeta del proyecto:
+**Repositorio:** https://github.com/miguellucero123/METGO_3D_Quillota_60GB  
+**Rama:** `master`
+
+## Inicio (desde la raíz del proyecto)
+
+Doble clic en:
 
 ```text
-D:\METGO_3D_Quillota_60GB
+SUBIR_GITHUB_MANUAL.bat
 ```
 
----
+Abre el **menú** en `backend/10_Deployment_Produccion/scripts/` con los pasos 1 → 2 → 3.
 
-## 1. Abrir terminal en el proyecto
+## Archivos importantes (misma carpeta de scripts)
 
-**CMD o PowerShell:**
+| Archivo | Para qué |
+|---------|----------|
+| `INSTRUCCIONES_SUBIR_A_GITHUB.txt` | Guía en texto plano |
+| `COMANDOS_GIT_MANUAL.txt` | Comandos para copiar/pegar |
+| `MENSAJE_COMMIT_SUGERIDO.txt` | Mensaje listo para este commit (integración fases 4–10) |
+| `1_preparar_staging_github.bat` | Paso 1: `git add` |
+| `2_commit_github_sugerido.bat` | Paso 2: commit con mensaje sugerido |
+| `3_push_github.bat` | Paso 3: `git push origin master` |
 
-```bat
-cd /d D:\METGO_3D_Quillota_60GB
-```
+## Orden recomendado en el menú
 
----
+1. **Revisar estado**  
+2. **Preparar staging**  
+3. **Commit** (opción 3 = mensaje sugerido actualizado)  
+4. **Push**
 
-## 2. Revisar (opcional)
+## No subir
 
-```bat
-git status -sb
-git remote -v
-git branch --show-current
-git log -3 --oneline
-```
+`.env`, `.streamlit/secrets.toml`, carpetas `datos_runtime/`.
 
----
-
-## 3. Añadir archivos al commit (staging)
-
-```bat
-git add -A
-```
-
-Quitar secretos del staging (si aparecen):
-
-```bat
-git reset HEAD .env
-git reset HEAD .env.local
-git reset HEAD .streamlit\secrets.toml
-```
-
-Ver qué se va a commitear:
-
-```bat
-git diff --cached --name-status
-git diff --cached --shortstat
-```
-
-**No debe aparecer** `.env` ni `secrets.toml` en la lista.
-
----
-
-## 4. Commit (usted elige el mensaje)
-
-Ejemplo para esta versión (Visor de puertos):
-
-```bat
-git commit -m "feat: Visor de puertos integrado, utilidad por modulo y despliegue nube"
-```
-
-O mensaje más largo (varias líneas):
-
-```bat
-git commit -m "feat: Visor de puertos integrado" -m "- Vue /puertos con iframe y API visor" -m "- Streamlit Visor_de_puerto en Render" -m "- Centro de servicios y docs"
-```
-
-Si Git dice *nothing to commit*: no hay cambios en staging; repita el paso 3.
-
----
-
-## 5. Push a GitHub
-
-Ver rama actual:
-
-```bat
-git branch --show-current
-```
-
-Subir (cambie `master` por su rama si es otra, por ejemplo `main`):
-
-```bat
-git push origin master
-```
-
-Primera vez en esa rama:
-
-```bat
-git push -u origin master
-```
-
----
-
-## 6. Después del push
-
-- **Netlify** (Vue): redeploy si no es automático.
-- **Render** (`metgo-api`, `metgo-streamlit`): redeploy manual o auto según el panel.
-- **Streamlit Cloud**: actualiza solo si el repo está conectado.
-
----
-
-## Problemas frecuentes
-
-| Mensaje | Qué hacer |
-|---------|-----------|
-| `rejected (fetch first)` | `git pull --rebase origin master` y luego `git push origin master` |
-| `failed to push` / auth | Iniciar sesión en GitHub Desktop o configurar token (PAT) |
-| `.env` en staging | `git reset HEAD .env` y no volver a añadirlo |
-| `nothing to commit` | `git add -A` y revisar `git status` |
-| Rama distinta | Use el nombre que devuelve `git branch --show-current` en el push |
-
----
-
-## Referencia rápida (todo seguido)
-
-```bat
-cd /d D:\METGO_3D_Quillota_60GB
-git status -sb
-git add -A
-git reset HEAD .env
-git reset HEAD .streamlit\secrets.toml
-git diff --cached --name-status
-git commit -m "feat: Visor de puertos integrado, utilidad por modulo y despliegue nube"
-git push origin master
-```
-
----
-
-Los `.bat` automáticos siguen en `backend\10_Deployment_Produccion\scripts\` por si los necesita; **esta guía es la forma recomendada**.
+Guía ampliada: [`PUBLICAR_GITHUB.md`](PUBLICAR_GITHUB.md)

@@ -1,11 +1,21 @@
 <script setup>
-import { onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useHealthStore } from '@/stores/health'
 import SectionCard from '@/components/ui/SectionCard.vue'
-import { Activity, Cloud, Server, Clock } from 'lucide-vue-next'
+import { Activity, Cloud, Server, Clock, Layers } from 'lucide-vue-next'
+import { fetchIntegracionEstado } from '@/api/metgoApi'
 
 const { health, streamlitOk, cargando, iniciarPolling, detenerPolling, streamlitUrl } =
   useHealthStore()
+const integracion = ref(null)
+
+async function cargarIntegracion() {
+  try {
+    integracion.value = await fetchIntegracionEstado()
+  } catch {
+    integracion.value = null
+  }
+}
 
 const tarjetas = computed(() => {
   const h = health.value || {}
@@ -23,10 +33,20 @@ const tarjetas = computed(() => {
       detalle: `Latencia ${h.latencia_openmeteo_ms ?? '?'} ms · caché ${h.cache_hits ?? 0} hits`,
     },
     {
-      titulo: 'Streamlit Cloud',
+      titulo: 'Portal Streamlit',
       icon: Activity,
-      estado: streamlitOk.value ? 'ok' : 'warn',
-      detalle: streamlitUrl,
+      estado:
+        streamlitOk.value === null ? 'ok' : streamlitOk.value ? 'ok' : 'warn',
+      detalle:
+        streamlitOk.value === null
+          ? 'Local: use /puertos o Render'
+          : streamlitUrl,
+    },
+    {
+      titulo: 'Observabilidad',
+      icon: Activity,
+      estado: h.observabilidad?.sentry ? 'ok' : 'warn',
+      detalle: `Logs JSON · fase ${h.fase || '?'}`,
     },
     {
       titulo: 'Última actualización',
@@ -37,7 +57,10 @@ const tarjetas = computed(() => {
   ]
 })
 
-onMounted(() => iniciarPolling(30000))
+onMounted(() => {
+  iniciarPolling(30000)
+  cargarIntegracion()
+})
 onUnmounted(() => detenerPolling())
 </script>
 
@@ -65,6 +88,21 @@ onUnmounted(() => detenerPolling())
         </span>
       </SectionCard>
     </div>
+
+    <SectionCard
+      v-if="integracion"
+      title="Integración backend 01–12"
+      :subtitle="`Promedio ${integracion.promedio_integracion}% · Fase ${integracion.fase || '5'}${integracion.integracion_completa ? ' · Integración completa' : ''}`"
+    >
+      <template #icon><Layers /></template>
+      <ul class="mod-list">
+        <li v-for="m in integracion.modulos" :key="m.id">
+          <span class="mod-pct" :class="{ 'mod-pct--ok': m.porcentaje >= 95 }">{{ m.porcentaje }}%</span>
+          <strong>{{ m.id }}</strong> {{ m.nombre }}
+          <span class="mod-det">{{ m.detalle }} ({{ m.checks_ok }}/{{ m.checks_total }})</span>
+        </li>
+      </ul>
+    </SectionCard>
 
     <pre v-if="health" class="raw">{{ JSON.stringify(health, null, 2) }}</pre>
   </div>
@@ -96,6 +134,30 @@ onUnmounted(() => detenerPolling())
 .badge.err {
   background: #fde8e8;
   color: var(--color-danger, #9b3d3d);
+}
+.mod-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.8rem;
+}
+.mod-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mod-pct {
+  display: inline-block;
+  min-width: 2.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.mod-pct--ok {
+  color: var(--color-success);
+}
+.mod-det {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.72rem;
 }
 .raw {
   margin-top: 1.5rem;

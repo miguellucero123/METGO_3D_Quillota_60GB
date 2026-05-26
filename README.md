@@ -341,6 +341,7 @@ Procedimiento detallado: [`docs/manuales/PUBLICAR_GITHUB.md`](docs/manuales/PUBL
 | [`docs/manuales/API_REST.md`](docs/manuales/API_REST.md) | API Flask |
 | [`docs/manuales/PUBLICAR_GITHUB.md`](docs/manuales/PUBLICAR_GITHUB.md) | Git y CI |
 | [`docs/PROMPT_MVP_METGO.md`](docs/PROMPT_MVP_METGO.md) | **Prompt MVP**, estándares dev y fases de implementación |
+| [`docs/PROMPT_ESCALAMIENTO_MVP.md`](docs/PROMPT_ESCALAMIENTO_MVP.md) | **Escalamiento post-MVP** (fases 1–10 integradas, inventario + prompt agentes) |
 | [`docs/RAIZ_REPOSITORIO.md`](docs/RAIZ_REPOSITORIO.md) | Qué archivos deben quedar en la raíz (GitHub) |
 
 ---
@@ -349,7 +350,8 @@ Procedimiento detallado: [`docs/manuales/PUBLICAR_GITHUB.md`](docs/manuales/PUBL
 
 METGO se presenta como **MVP profesional desplegado** (Vue + API + visor de puertos), no como colección de scripts sueltos.
 
-- **Documento maestro:** [`docs/PROMPT_MVP_METGO.md`](docs/PROMPT_MVP_METGO.md) — narrativa, estado actual, métricas, **prompt listo para Cursor** y propuestas en **4 fases** (consolidar → ampliar → escala → innovación).
+- **Documento maestro:** [`docs/PROMPT_MVP_METGO.md`](docs/PROMPT_MVP_METGO.md) — narrativa MVP original y fases 1–4 planificadas.
+- **Escalamiento (estado actual del repo):** [`docs/PROMPT_ESCALAMIENTO_MVP.md`](docs/PROMPT_ESCALAMIENTO_MVP.md) — integración fases 1–10, API/Vue/workers/ML, prompt listo para pegar en Cursor.
 - **Uso rápido en IA:** copiar la sección *“Prompt listo para pegar”* de ese archivo en reglas de Cursor o `AGENTS.md`.
 
 ---

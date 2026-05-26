@@ -29,9 +29,14 @@ api.interceptors.request.use((config) => {
 
 /** Redirige a login sin recargar la página (evita error de iframe en preview de Cursor/Chrome). */
 let onUnauthorized = null
+let onForbidden = null
 
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler
+}
+
+export function setForbiddenHandler(handler) {
+  onForbidden = handler
 }
 
 api.interceptors.response.use(
@@ -46,6 +51,9 @@ api.interceptors.response.use(
       } else if (window.self === window.top && !window.location.pathname.includes('/login')) {
         window.location.assign('/login')
       }
+    }
+    if (status === 403 && onForbidden) {
+      onForbidden()
     }
     let msg =
       err.response?.data?.error ??
@@ -107,6 +115,266 @@ export async function fetchHistorico(estacionId, dias = 30) {
 export async function fetchAlertas(estacionId) {
   const { data } = await api.get('/alertas', {
     params: estacionId ? { estacion: estacionId } : {},
+  })
+  return data
+}
+
+export async function fetchComparativo() {
+  const { data } = await api.get('/meteo/comparativo')
+  return data
+}
+
+export async function fetchMetricasGlobales() {
+  const { data } = await api.get('/metricas/globales')
+  return data
+}
+
+export async function fetchAlertasConfig() {
+  const { data } = await api.get('/alertas/config')
+  return data
+}
+
+export async function crearAlertaConfig(payload) {
+  const { data } = await api.post('/alertas/config', payload)
+  return data
+}
+
+export async function eliminarAlertaConfig(id) {
+  const { data } = await api.delete(`/alertas/config/${id}`)
+  return data
+}
+
+export async function fetchTenantMe() {
+  const { data } = await api.get('/tenants/me')
+  return data
+}
+
+export async function fetchIotSensores() {
+  const { data } = await api.get('/iot/sensores')
+  return data
+}
+
+export async function fetchIotLecturas(estacionId) {
+  const { data } = await api.get('/iot/lecturas', {
+    params: estacionId ? { estacion: estacionId } : {},
+  })
+  return data
+}
+
+export async function simularIot() {
+  const { data } = await api.post('/iot/simular')
+  return data
+}
+
+export async function fetchMlModelos(soloServibles = false) {
+  const { data } = await api.get('/ml/modelos', {
+    params: soloServibles ? { solo_servibles: '1' } : {},
+  })
+  return data
+}
+
+export async function fetchMlResumen() {
+  const { data } = await api.get('/ml/resumen')
+  return data
+}
+
+export async function fetchMlRegistry() {
+  const { data } = await api.get('/ml/registry')
+  return data
+}
+
+export async function syncMlRegistry() {
+  const { data } = await api.post('/ml/registry/sync')
+  return data
+}
+
+export async function fetchMlPrediccion(variable, estacionId) {
+  const { data } = await api.get(`/ml/prediccion/${variable}`, {
+    params: { estacion: estacionId },
+  })
+  return data
+}
+
+export async function fetchIntegracionEstado() {
+  const { data } = await api.get('/integracion/estado')
+  return data
+}
+
+export async function syncDatosEtl(dias = 14, incluirCsv = true) {
+  const { data } = await api.post('/datos/etl/sync', { dias, incluir_csv: incluirCsv })
+  return data
+}
+
+export async function fetchEtlStatus() {
+  const { data } = await api.get('/datos/etl/status')
+  return data
+}
+
+export async function fetchAgricolaRiego(estacionId, cultivo = 'palto') {
+  const { data } = await api.get(`/agricola/${estacionId}/riego`, { params: { cultivo } })
+  return data
+}
+
+export async function fetchStreamlitCobertura() {
+  const { data } = await api.get('/modulos/streamlit/cobertura')
+  return data
+}
+
+export async function fetchAgricolaAvanzado(estacionId) {
+  const { data } = await api.get(`/agricola/${estacionId}/avanzado`)
+  return data
+}
+
+export async function fetchAlertasHistorial(estacionId) {
+  const { data } = await api.get('/alertas/historial', {
+    params: estacionId ? { estacion: estacionId } : {},
+  })
+  return data
+}
+
+export async function fetchReportesUltimos(limite = 10) {
+  const { data } = await api.get('/reportes/ultimos', { params: { limite } })
+  return data
+}
+
+export async function fetchReporteDetalle(nombre) {
+  const { data } = await api.get(`/reportes/${encodeURIComponent(nombre)}`)
+  return data
+}
+
+export async function fetchDatosFuentes() {
+  const { data } = await api.get('/datos/fuentes')
+  return data
+}
+
+export async function fetchMeteoStore() {
+  const { data } = await api.get('/datos/meteo/store')
+  return data
+}
+
+export async function fetchAgricolaCultivos() {
+  const { data } = await api.get('/agricola/cultivos')
+  return data
+}
+
+export async function fetchAgricolaEconomico(estacionId) {
+  const { data } = await api.get(`/agricola/${estacionId}/economico`)
+  return data
+}
+
+export async function fetchNotificacionesConfig() {
+  const { data } = await api.get('/notificaciones/config')
+  return data
+}
+
+export async function guardarNotificacionesConfig(payload) {
+  const { data } = await api.put('/notificaciones/config', payload)
+  return data
+}
+
+export async function probarNotificaciones(mensaje = 'Prueba METGO') {
+  const { data } = await api.post('/notificaciones/probar', { mensaje })
+  return data
+}
+
+export async function fetchNotificacionesStatus() {
+  const { data } = await api.get('/notificaciones/status')
+  return data
+}
+
+export async function fetchNotificacionesOutbox(limite = 20) {
+  const { data } = await api.get('/notificaciones/outbox', { params: { limite } })
+  return data
+}
+
+export async function reintentarNotificacionesOutbox(max = 10) {
+  const { data } = await api.post('/notificaciones/outbox/retry', { max })
+  return data
+}
+
+export async function fetchIotDrones() {
+  const { data } = await api.get('/iot/drones')
+  return data
+}
+
+export async function fetchIotSatelital() {
+  const { data } = await api.get('/iot/satelital')
+  return data
+}
+
+export async function fetchMqttStatus() {
+  const { data } = await api.get('/iot/mqtt/status')
+  return data
+}
+
+export async function ingestarMqtt(topic, payload) {
+  const { data } = await api.post('/iot/mqtt/ingestar', { topic, payload })
+  return data
+}
+
+export async function fetchMlTrainStatus() {
+  const { data } = await api.get('/ml/train/status')
+  return data
+}
+
+export async function encolarMlTrain(
+  variables = [],
+  estacionId = 'quillota',
+  notas = '',
+  modo = 'sync'
+) {
+  const { data } = await api.post('/ml/train/queue', {
+    variables,
+    estacion_id: estacionId,
+    notas,
+    modo,
+  })
+  return data
+}
+
+export async function fetchWorkersStatus() {
+  const { data } = await api.get('/workers/status')
+  return data
+}
+
+export async function entrenarMlQuillota(estacionId = 'quillota', variables = null, diasDatos = 365) {
+  const { data } = await api.post('/ml/train/run', {
+    estacion_id: estacionId,
+    variables,
+    dias_datos: diasDatos,
+  })
+  return data
+}
+
+export async function procesarColaMl(max = 1) {
+  const { data } = await api.post('/ml/train/process-queue', { max })
+  return data
+}
+
+export async function ejecutarMlTrainSiguiente() {
+  const { data } = await api.post('/ml/train/run-next')
+  return data
+}
+
+export async function fetchDeployInfo() {
+  const { data } = await api.get('/deploy/info')
+  return data
+}
+
+export async function fetchDocsIndice() {
+  const { data } = await api.get('/docs/indice')
+  return data
+}
+
+export async function fetchTestingResumen() {
+  const { data } = await api.get('/testing/resumen')
+  return data
+}
+
+export async function mlPredictBatch(variables, estacionId = 'quillota') {
+  const { data } = await api.post('/ml/predict/batch', {
+    variables,
+    estacion_id: estacionId,
   })
   return data
 }

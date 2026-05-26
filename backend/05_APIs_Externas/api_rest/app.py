@@ -25,13 +25,22 @@ _apis_root = metgo_paths.MODULE_PATHS.get("05_api_rest")
 if _apis_root and str(_apis_root) not in sys.path:
     sys.path.insert(0, str(_apis_root))
 
-from flask import Flask, jsonify, request
+from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
 from api_rest import catalog, services, streamlit_launcher
-from api_rest.auth_routes import auth_required, register_auth_routes
+from api_rest.alertas_config import generar_alertas_combinadas
+from api_rest.alertas_routes import register_alertas_routes
+from api_rest.auth_routes import auth_required, register_auth_routes, requiere_rol
 from api_rest.docs_routes import register_docs_routes
 from api_rest.health import build_health_payload
+from api_rest.fase3_routes import register_fase3_routes
+from api_rest.fase4_routes import register_fase4_routes
+from api_rest.fase7_routes import register_fase7_routes
+from api_rest.fase8_routes import register_fase8_routes
+from api_rest.fase9_routes import register_fase9_routes
+from api_rest.fase10_routes import register_fase10_routes
+from api_rest.observability import register_observability
 
 
 def create_app() -> Flask:
@@ -42,7 +51,15 @@ def create_app() -> Flask:
         supports_credentials=True,
     )
 
+    register_observability(app)
     register_auth_routes(app)
+    register_alertas_routes(app)
+    register_fase3_routes(app)
+    register_fase4_routes(app)
+    register_fase7_routes(app)
+    register_fase8_routes(app)
+    register_fase9_routes(app)
+    register_fase10_routes(app)
     register_docs_routes(app)
 
     @app.get("/")
@@ -83,7 +100,7 @@ def create_app() -> Flask:
     @app.get("/api/estaciones")
     @auth_required
     def estaciones():
-        return jsonify(services.listar_estaciones())
+        return jsonify(services.listar_estaciones(getattr(g, "tenant_id", None)))
 
     @app.get("/api/meteo/<estacion_id>")
     @auth_required
@@ -120,7 +137,17 @@ def create_app() -> Flask:
     @auth_required
     def alertas():
         estacion_id = request.args.get("estacion")
-        return jsonify(services.generar_alertas(estacion_id))
+        return jsonify(generar_alertas_combinadas(estacion_id))
+
+    @app.get("/api/meteo/comparativo")
+    @auth_required
+    def meteo_comparativo():
+        return jsonify(services.comparativo_estaciones(getattr(g, "tenant_id", None)))
+
+    @app.get("/api/metricas/globales")
+    @auth_required
+    def metricas_globales():
+        return jsonify(services.metricas_globales(getattr(g, "tenant_id", None)))
 
     @app.get("/api/agricola/<estacion_id>")
     @auth_required
@@ -160,17 +187,17 @@ def create_app() -> Flask:
         return jsonify(streamlit_launcher.listar_estados())
 
     @app.post("/api/servicios/streamlit/<modulo_id>/iniciar")
-    @auth_required
+    @requiere_rol("admin", "operador")
     def servicios_streamlit_iniciar(modulo_id: str):
         return jsonify(streamlit_launcher.iniciar(modulo_id))
 
     @app.post("/api/servicios/streamlit/<modulo_id>/detener")
-    @auth_required
+    @requiere_rol("admin", "operador")
     def servicios_streamlit_detener(modulo_id: str):
         return jsonify(streamlit_launcher.detener(modulo_id))
 
     @app.post("/api/servicios/streamlit/detener-todos")
-    @auth_required
+    @requiere_rol("admin")
     def servicios_streamlit_detener_todos():
         return jsonify(streamlit_launcher.detener_todos())
 

@@ -23,9 +23,20 @@ const router = useRouter()
 const servicios = ref([])
 const seleccionado = ref(null)
 const embedUrl = ref('')
+const urlExterna = ref('')
+const embebible = ref(true)
+const mensajeVisor = ref('')
 const cargando = ref(false)
 const errorVisor = ref('')
 const iframeKey = ref(0)
+
+function urlNoEmbebible(url) {
+  if (!url) return true
+  const u = url.toLowerCase()
+  if (u.includes('streamlit.app')) return true
+  if (esSitioPublico && (u.includes('127.0.0.1') || u.includes('localhost'))) return true
+  return false
+}
 
 const esSitioPublico =
   typeof window !== 'undefined' &&
@@ -49,6 +60,8 @@ async function abrirVisor(id, opts = {}) {
   cargando.value = true
   errorVisor.value = ''
   embedUrl.value = ''
+  urlExterna.value = ''
+  mensajeVisor.value = ''
 
   try {
     if (!esSitioPublico && opts.iniciarSiLocal) {
@@ -64,16 +77,29 @@ async function abrirVisor(id, opts = {}) {
       errorVisor.value = v.error || 'No se pudo obtener URL del visor'
       return
     }
-    const url = v.url_embed || v.url_visor || v.url
-    if (!url) {
+    const urlIframe = v.url_embed || null
+    const urlAbrir = v.url_externa || v.url_visor || v.url_nube || v.url
+    if (!urlIframe && !urlAbrir) {
       errorVisor.value =
         v.requiere_iniciar_local
-          ? 'Inicie el módulo en su PC (botón Iniciar) o use la nube.'
-          : 'Sin URL de visor configurada.'
+          ? 'Inicie el módulo en su PC (botón Iniciar) o use la vista Vue del menú.'
+          : 'Sin URL de visor. Configure METGO_STREAMLIT_RENDER_URL en la API o inicie el puerto en su PC.'
       return
     }
-    embedUrl.value = url.includes('embed=') ? url : `${url}${url.includes('?') ? '&' : '?'}embed=true`
-    iframeKey.value += 1
+    const puedeIframe =
+      Boolean(urlIframe) && v.embebible !== false && !urlNoEmbebible(urlIframe)
+    embebible.value = puedeIframe
+    mensajeVisor.value = v.mensaje_visor || ''
+    urlExterna.value = urlAbrir || urlIframe
+    if (puedeIframe) {
+      embedUrl.value = urlIframe.includes('embed=')
+        ? urlIframe
+        : `${urlIframe}${urlIframe.includes('?') ? '&' : '?'}embed=true`
+      iframeKey.value += 1
+    } else {
+      embedUrl.value = ''
+      errorVisor.value = ''
+    }
     router.replace({ query: { id } })
   } catch (e) {
     errorVisor.value = e.message
@@ -95,17 +121,16 @@ function irVue() {
 onMounted(async () => {
   await cargarLista()
   const id = route.query.id
-  if (id && typeof id === 'string') {
+  if (id && typeof id === 'string' && id !== 'streamlit_principal') {
     await abrirVisor(id, { iniciarSiLocal: true })
-  } else if (servicios.value.length) {
-    await abrirVisor(servicios.value[0].id, { iniciarSiLocal: false })
   }
+  // No auto-cargar iframe al entrar (evita 127.0.0.1:850x sin proceso)
 })
 
 watch(
   () => route.query.id,
   async (id) => {
-    if (id && id !== seleccionado.value) {
+    if (id && id !== seleccionado.value && id !== 'streamlit_principal') {
       await abrirVisor(String(id), { iniciarSiLocal: true })
     }
   }
@@ -126,16 +151,16 @@ watch(
       <div>
         <strong>Modo en línea (Netlify)</strong>
         <p>
-          Los dashboards en puertos <code>8501–8513</code> solo funcionan con METGO en su PC.
-          Use <strong>Ver en nube</strong> (visor Streamlit) o las pantallas Vue del menú.
+          No se puede incrustar <code>127.0.0.1:850x</code> ni Streamlit Cloud en un iframe.
+          Use <strong>Abrir en nueva pestaña</strong> o las pantallas Vue del menú.
         </p>
         <a
-          href="https://metgo-3d-quillota-60gb.streamlit.app"
+          href="https://metgo-streamlit.onrender.com"
           target="_blank"
           rel="noopener noreferrer"
           class="link-nube"
         >
-          Abrir portal Streamlit Cloud
+          Portal Streamlit (Render)
         </a>
       </div>
     </div>
@@ -205,6 +230,31 @@ watch(
           <RefreshCw class="spin" /> Cargando visor…
         </div>
         <p v-else-if="errorVisor" class="viewer-error">{{ errorVisor }}</p>
+        <div v-else-if="urlExterna && !embedUrl" class="viewer-external">
+          <p>
+            Este dashboard no puede mostrarse dentro del marco del navegador
+            (Streamlit Cloud, puerto local sin proceso, u otro dominio).
+          </p>
+          <p v-if="mensajeVisor" class="muted">{{ mensajeVisor }}</p>
+          <div class="external-actions">
+            <a
+              :href="urlExterna"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-primary"
+            >
+              Abrir en nueva pestaña
+            </a>
+            <button
+              v-if="moduloActual?.ruta_vue_alternativa"
+              type="button"
+              class="btn btn--ghost"
+              @click="irVue"
+            >
+              Usar pantalla Vue equivalente
+            </button>
+          </div>
+        </div>
         <iframe
           v-else-if="embedUrl"
           id="metgo-puerto-iframe"
@@ -468,6 +518,27 @@ watch(
   color: var(--color-warning);
   padding: 1rem;
   font-size: 0.875rem;
+}
+
+.viewer-external {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.viewer-external p {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.external-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .spin {

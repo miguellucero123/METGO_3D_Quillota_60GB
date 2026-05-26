@@ -4,9 +4,13 @@
 
 **Guía principal:** [`SUBIR_GITHUB_MANUAL.md`](SUBIR_GITHUB_MANUAL.md)
 
-**Doble clic en la raíz:** `SUBIR_GITHUB_MANUAL.bat` (muestra los comandos para copiar).
+**Doble clic en la raíz:** `SUBIR_GITHUB_MANUAL.bat` → menú paso a paso.
 
-**Lista en texto:** `backend/10_Deployment_Produccion/scripts/COMANDOS_GIT_MANUAL.txt`
+**Instrucciones:** `backend/10_Deployment_Produccion/scripts/INSTRUCCIONES_SUBIR_A_GITHUB.txt`
+
+**Mensaje de commit sugerido (integración actual):** `MENSAJE_COMMIT_SUGERIDO.txt`
+
+**Comandos copiar/pegar:** `COMANDOS_GIT_MANUAL.txt`
 
 Usted ejecuta `git add`, `git commit` y `git push` en su terminal.
 

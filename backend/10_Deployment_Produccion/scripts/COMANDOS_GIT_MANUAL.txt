@@ -1,13 +1,14 @@
 ================================================================================
-  METGO — Subida a GitHub MANUAL (copiar y pegar)
-  Proyecto: D:\METGO_3D_Quillota_60GB
-  Guia: docs\manuales\SUBIR_GITHUB_MANUAL.md
+  METGO — Subida MANUAL a GitHub (copiar y pegar en PowerShell o CMD)
+  Repo: https://github.com/miguellucero123/METGO_3D_Quillota_60GB.git
+  Rama: master
+  Carpeta: D:\METGO_3D_Quillota_60GB
 ================================================================================
 
 cd /d D:\METGO_3D_Quillota_60GB
 
-git status -sb
 git remote -v
+git status -sb
 
 git add -A
 git reset HEAD .env
@@ -15,21 +16,13 @@ git reset HEAD .env.local
 git reset HEAD .streamlit\secrets.toml
 
 git diff --cached --name-status
-git diff --cached --shortstat
 
-git commit -m "feat: Visor de puertos integrado, utilidad por modulo y despliegue nube"
+git commit -F backend\10_Deployment_Produccion\scripts\MENSAJE_COMMIT_SUGERIDO.txt
 
-git branch --show-current
 git push origin master
 
---- Si la rama es main en lugar de master:
-git push origin main
-
---- Si GitHub pide actualizar antes:
+--- Si pide actualizar antes del push:
 git pull --rebase origin master
 git push origin master
-
---- Primera vez en la rama:
-git push -u origin master
 
 ================================================================================

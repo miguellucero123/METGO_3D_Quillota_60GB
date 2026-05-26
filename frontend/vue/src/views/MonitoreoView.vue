@@ -3,10 +3,11 @@ import { ref, watch, onMounted } from 'vue'
 import { BellRing, AlertTriangle, Info } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import SectionCard from '@/components/ui/SectionCard.vue'
-import { fetchAlertas } from '@/api/metgoApi'
+import { fetchAlertas, fetchAlertasHistorial } from '@/api/metgoApi'
 
 const store = useMetgoStore()
 const alertas = ref([])
+const historial = ref([])
 const cargando = ref(true)
 
 function iconFor(nivel) {
@@ -18,8 +19,10 @@ async function cargar() {
   cargando.value = true
   try {
     alertas.value = await fetchAlertas(store.estacionActiva)
+    historial.value = await fetchAlertasHistorial(store.estacionActiva)
   } catch {
     alertas.value = []
+    historial.value = []
   } finally {
     cargando.value = false
   }
@@ -34,7 +37,8 @@ watch(() => store.estacionActiva, cargar)
     <header class="page-header">
       <h2 class="page-title">Alertas y monitoreo</h2>
       <p class="page-subtitle">
-        Umbrales automáticos · {{ store.estacionNombre }}
+        Umbrales automáticos y personalizados · {{ store.estacionNombre }}
+        · <router-link to="/alertas/config">Configurar reglas</router-link>
       </p>
     </header>
 
@@ -54,6 +58,19 @@ watch(() => store.estacionActiva, cargar)
         </li>
       </ul>
       <p v-else class="muted">No hay alertas registradas.</p>
+    </SectionCard>
+
+    <SectionCard
+      title="Historial de alertas"
+      :subtitle="`${historial.length} evento(s) · módulo 07`"
+    >
+      <ul v-if="historial.length" class="hist-list">
+        <li v-for="(h, i) in historial" :key="i">
+          <span class="hist-time">{{ h.timestamp || h.fecha }}</span>
+          {{ h.mensaje || h.detalle || JSON.stringify(h) }}
+        </li>
+      </ul>
+      <p v-else class="muted">Sin historial persistido.</p>
     </SectionCard>
   </div>
 </template>
@@ -110,5 +127,20 @@ watch(() => store.estacionActiva, cargar)
   color: var(--color-muted);
   margin-top: 0.25rem;
   display: block;
+}
+
+.hist-list {
+  list-style: none;
+  padding: 0;
+  font-size: 0.8rem;
+}
+.hist-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.hist-time {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-muted);
 }
 </style>

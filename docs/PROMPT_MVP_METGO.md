@@ -13,6 +13,7 @@ Documento maestro para alinear **desarrollo**, **agentes de IA (Cursor)** y **pr
 | **Equipo dev** | [Estado MVP actual](#estado-mvp-actual) + [roadmap por carpetas](roadmap/README.md). |
 | **Demo / pitch** | [Narrativa del producto](#narrativa-del-producto-mvp) + URLs desplegadas. |
 | **Nuevo contribuidor** | `README.md` → `docs/RAIZ_REPOSITORIO.md` → `docs/roadmap/fase-1/`. |
+| **Escalar post-MVP (fases 1–10)** | **[`docs/PROMPT_ESCALAMIENTO_MVP.md`](PROMPT_ESCALAMIENTO_MVP.md)** — inventario completo + prompt para agentes. |
 
 ---
 
@@ -64,12 +65,21 @@ Documento maestro para alinear **desarrollo**, **agentes de IA (Cursor)** y **pr
 - **Documentación operativa**: despliegue Vue/Netlify, API, Streamlit Cloud, visor, Git manual.
 - **Convención de commits** y scripts de publicación manual.
 
-### 3.4 Deuda técnica aceptada en MVP (explícita)
+### 3.4 Extensiones post-MVP (fases 4–10, ya en repo)
+
+- Integración dinámica módulos 01–12: `GET /api/integracion/estado`, hub Vue `/integracion`.
+- ETL nocturno → SQLite `meteo_historico.db`; workers MQTT y cola ML.
+- Registro MLOps con modelos **servibles** vs no servibles (`/ml`).
+- Notificaciones webhook + outbox (+ SMTP opcional); métricas `GET /api/metrics`.
+
+Detalle completo: **[`PROMPT_ESCALAMIENTO_MVP.md`](PROMPT_ESCALAMIENTO_MVP.md)**.
+
+### 3.5 Deuda técnica aceptada en MVP (explícita)
 
 - Dual stack Vue + Streamlit (migración incompleta).
 - Plan free Render → latencia y cold start.
-- Tests smoke limitados; CI en progreso.
 - Dashboards Plotly completos solo en PC o vía visor (carga bajo demanda en nube).
+- SMTP corporativo requiere plan de pago o webhook alternativo.
 
 ---
 
