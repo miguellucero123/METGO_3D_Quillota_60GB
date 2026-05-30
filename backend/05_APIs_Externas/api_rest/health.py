@@ -66,9 +66,9 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
         "etl_nightly",
     ]
     try:
-        from api_rest.integracion.estado_integracion import estado_modulos
+        from api_rest.integracion.estado_integracion import resumen_integracion_health
 
-        base["integracion"] = estado_modulos()
+        base["integracion"] = resumen_integracion_health()
     except ImportError:
         pass
     if os.getenv("METGO_SENTRY_DSN"):

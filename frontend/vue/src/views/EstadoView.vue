@@ -103,8 +103,6 @@ onUnmounted(() => detenerPolling())
         </li>
       </ul>
     </SectionCard>
-
-    <pre v-if="health" class="raw">{{ JSON.stringify(health, null, 2) }}</pre>
   </div>
 </template>
 
@@ -158,13 +156,5 @@ onUnmounted(() => detenerPolling())
   display: block;
   color: var(--color-muted);
   font-size: 0.72rem;
-}
-.raw {
-  margin-top: 1.5rem;
-  font-size: 0.72rem;
-  background: var(--color-primary-subtle);
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  overflow: auto;
 }
 </style>

@@ -156,7 +156,7 @@ def register_fase4_routes(app: Flask) -> None:
 
     @app.get("/api/deploy/info")
     def deploy_info_route():
-        return jsonify(deploy_info.resumen_deploy())
+        return jsonify(deploy_info.resumen_deploy_publico())
 
     @app.get("/api/docs/indice")
     def docs_indice():

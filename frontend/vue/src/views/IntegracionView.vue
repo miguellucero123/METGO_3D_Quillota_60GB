@@ -171,7 +171,7 @@ onMounted(cargar)
       </SectionCard>
 
       <SectionCard v-if="deploy" title="Deploy (10)" subtitle="Scripts de producción">
-        <p class="muted">{{ deploy.scripts?.length }} scripts · Docker dev: {{ deploy.docker_compose_dev ? 'sí' : 'no' }}</p>
+        <p class="muted">{{ deploy.scripts_total ?? 0 }} scripts · Docker dev: {{ deploy.docker_compose_dev ? 'sí' : 'no' }}</p>
       </SectionCard>
 
       <SectionCard v-if="tests" title="Testing (09)">

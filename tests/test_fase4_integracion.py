@@ -47,8 +47,23 @@ def test_integracion_estado_publico(client):
 def test_health_integracion(client):
     r = client.get("/api/health")
     assert r.status_code == 200
-    assert r.get_json().get("fase") in ("5", "7", "8", "9", "10")
-    assert "integracion" in r.get_json()
+    body = r.get_json()
+    assert body.get("fase") in ("5", "7", "8", "9", "10")
+    integracion = body.get("integracion") or {}
+    assert "promedio_integracion" in integracion
+    assert "scripts" not in integracion
+    assert "deploy" not in integracion
+
+
+def test_integracion_estado_sin_rutas_deploy(client):
+    r = client.get("/api/integracion/estado")
+    assert r.status_code == 200
+    body = r.get_json()
+    deploy = body.get("deploy") or {}
+    assert "scripts" not in deploy
+    assert "scripts_total" in deploy
+    assert "fuentes_datos" not in body
+    assert "documentacion" not in body
 
 
 def test_agricola_avanzado_auth(client):

@@ -32,3 +32,15 @@ def resumen_deploy() -> dict[str, Any]:
             "integrado": len(scripts) >= 3,
         }
     return {"scripts": [], "integrado": False}
+
+
+def resumen_deploy_publico() -> dict[str, Any]:
+    """Resumen sin rutas ni nombres de scripts (endpoints públicos)."""
+    full = resumen_deploy()
+    return {
+        "scripts_total": len(full.get("scripts", [])),
+        "docker_compose_dev": full.get("docker_compose_dev", False),
+        "render": full.get("render", False),
+        "iniciar_desarrollo": full.get("iniciar_desarrollo", False),
+        "integrado": full.get("integrado", False),
+    }
