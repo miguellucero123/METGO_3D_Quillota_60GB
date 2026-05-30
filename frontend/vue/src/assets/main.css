@@ -10,6 +10,12 @@
   --color-accent: #5a9b72;
   --color-accent-light: #c5e0ce;
 
+  /* Sky / light blue (meteo + ML proyecciones) */
+  --color-sky: #5b9bd5;
+  --color-sky-deep: #3a7ca5;
+  --color-sky-light: #dbeef8;
+  --color-sky-muted: #c5e4f3;
+
   --color-bg: #f5f9f6;
   --color-surface: #ffffff;
   --color-surface-elevated: #ffffff;

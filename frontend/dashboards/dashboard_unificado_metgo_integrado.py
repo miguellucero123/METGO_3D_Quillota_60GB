@@ -12,31 +12,23 @@ import plotly.express as px
 import subprocess
 import os
 import sys
+from pathlib import Path
 
-# Configuración moderna de Plotly
-PLOTLY_CONFIG = {
-    'displayModeBar': True,
-    'displaylogo': False,
-    'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'],
-    'toImageButtonOptions': {
-        'format': 'png',
-        'filename': 'grafico_metgo',
-        'height': 600,
-        'width': 900,
-        'scale': 2
-    },
-    'responsive': True,
-    'staticPlot': False
-}
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo.streamlit_theme import PLOTLY_CONFIG, plotly_layout
+from metgo_dashboard_init import page_config_and_theme
+
 from datetime import datetime
 import webbrowser
 
-# Configuración de página
-st.set_page_config(
-    page_title="METGO 3D - Dashboard Unificado",
+st, _, _ = page_config_and_theme(
+    "Dashboard Unificado Integrado",
+    "Acceso central a todos los módulos Streamlit",
+    module="unificado",
     page_icon="🌱",
-    layout="wide",
-    initial_sidebar_state="expanded"
 )
 
 # CSS para diseño profesional y minimalista
@@ -251,11 +243,11 @@ class DashboardUnificadoIntegrado:
                 'categoria': 'Tecnología'
             },
             'dashboard_global': {
-                'nombre': 'Dashboard Global HTML',
-                'descripcion': 'Vista global en HTML con todas las funcionalidades integradas',
+                'nombre': 'Dashboard Global',
+                'descripcion': 'Vista global dinámica con métricas integradas',
                 'icono': '🌍',
-                'archivo': 'dashboard_global_html.html',
-                'puerto': None,
+                'archivo': 'dashboard_global_html.py',
+                'puerto': 8507,
                 'estado': 'activo',
                 'categoria': 'Global'
             },

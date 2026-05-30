@@ -5,6 +5,20 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from metgo.streamlit_theme import (
+    bootstrap_dashboard,
+    classify_weather_from_row,
+    weather_scene_html,
+    PLOTLY_CONFIG,
+    plotly_layout,
+)
 
 def generar_datos_meteorologicos():
     """Genera datos meteorológicos simulados para Quillota"""
@@ -138,15 +152,27 @@ def main():
     st.set_page_config(
         page_title="Sistema Meteorológico METGO",
         page_icon="🌤️",
-        layout="wide"
+        layout="wide",
     )
-    
-    st.title("🌤️ Sistema Meteorológico METGO")
-    st.markdown("### Pronósticos y Datos Climáticos para Quillota")
-    st.markdown("---")
-    
+
+    bootstrap_dashboard(
+        "Sistema Meteorológico METGO",
+        "Pronósticos y datos climáticos · Quillota",
+        module="meteo",
+    )
+
     # Generar datos
     datos = generar_datos_meteorologicos()
+    ult = datos.iloc[-1]
+    cond = classify_weather_from_row(
+        {
+            "temperatura_min": ult["temp_min"],
+            "precipitacion": ult["precipitacion"],
+            "humedad_relativa": ult["humedad_relativa"],
+            "cobertura_nubosa": ult["cobertura_nubosa"],
+        }
+    )
+    st.markdown(weather_scene_html(cond), unsafe_allow_html=True)
     
     # Métricas principales
     col1, col2, col3, col4 = st.columns(4)

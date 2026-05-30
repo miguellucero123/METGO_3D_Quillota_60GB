@@ -22,10 +22,13 @@ services:
         value: https://metgo-streamlit.onrender.com
       - key: METGO_JWT_SECRET
         generateValue: true
+      - key: METGO_ML_LEGACY_SCAN
+        value: "0"
+      - key: METGO_ML_AUTO_TRAIN
+        value: "1"
       - key: PYTHON_VERSION
         value: "3.11.9"
 
-  # Portal Streamlit en la nube (UNA app: inicio + páginas). No sustituye los 13 puertos 8501-8513 locales.
   - type: web
     name: metgo-streamlit
     runtime: python

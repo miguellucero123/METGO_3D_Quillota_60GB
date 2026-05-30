@@ -22,6 +22,85 @@ from api_rest.integracion.ml_train_catalog import FEATURES_BASE, catalogo_comple
 MIN_FILAS_REALES = 30
 
 
+def _allow_synthetic() -> bool:
+    return os.getenv("METGO_ML_ALLOW_SYNTHETIC", "0").lower() in ("1", "true", "yes")
+
+
+def _repo_root() -> Path:
+    for p in Path(__file__).resolve().parents:
+        if (p / "metgo_paths.py").exists():
+            return p
+    raise FileNotFoundError("Raíz METGO no encontrada")
+
+
+def _setup_openmeteo_imports() -> None:
+    """Rutas para datos_reales_openmeteo (módulo 01 + compat)."""
+    import sys
+
+    root = _repo_root()
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    import metgo_paths
+
+    metgo_paths.setup_paths("01_meteo", "05_api_rest")
+    compat = root / "scripts" / "compat"
+    if compat.is_dir() and str(compat) not in sys.path:
+        sys.path.insert(0, str(compat))
+
+
+def _sincronizar_datos_reales(estacion_id: str, dias: int) -> dict[str, Any]:
+    """Pobla meteo_store desde CSV 5 años (Quillota) + OpenMeteo reciente."""
+    _setup_openmeteo_imports()
+    from api_rest.integracion.etl_sync import importar_csv_historico
+
+    detalle: dict[str, Any] = {"csv": importar_csv_historico()}
+    try:
+        from api_rest.services import historico_meteo
+
+        hist = historico_meteo(estacion_id, dias=min(dias, 92))
+        detalle["openmeteo_filas"] = len(hist) if hist else 0
+        detalle["openmeteo_ok"] = bool(hist)
+    except Exception as exc:
+        detalle["openmeteo_error"] = str(exc)
+    detalle["store"] = meteo_store.estadisticas_store()
+    return detalle
+
+
+def _etiqueta_origen(meta_sync: dict[str, Any] | None) -> str:
+    if not meta_sync:
+        return "meteo_sqlite"
+    csv_n = int((meta_sync.get("csv") or {}).get("importados") or 0)
+    om = int(meta_sync.get("openmeteo_filas") or 0)
+    if csv_n and om:
+        return "csv_openmeteo"
+    if csv_n:
+        return "csv_5_anios"
+    if om:
+        return "openmeteo"
+    return "meteo_sqlite"
+
+
+def _obtener_filas_entrenamiento(
+    estacion_id: str,
+    dias_datos: int,
+) -> tuple[list[dict[str, Any]], str, dict[str, Any] | None]:
+    """Datos reales primero; sintético solo con METGO_ML_ALLOW_SYNTHETIC=1."""
+    filas = _filas_desde_meteo(estacion_id, dias_datos)
+    if len(filas) >= MIN_FILAS_REALES:
+        return filas, "meteo_sqlite", None
+
+    sync_meta = _sincronizar_datos_reales(estacion_id, dias_datos)
+    filas = _filas_desde_meteo(estacion_id, dias_datos)
+    if len(filas) >= MIN_FILAS_REALES:
+        return filas, _etiqueta_origen(sync_meta), sync_meta
+
+    if _allow_synthetic():
+        n = min(365, max(120, dias_datos))
+        return _filas_sinteticas(n), "sintetico", sync_meta
+
+    return [], "sin_datos_reales", sync_meta
+
+
 def _modelos_root() -> Path:
     for p in Path(__file__).resolve().parents:
         if (p / "metgo_paths.py").exists():
@@ -204,11 +283,24 @@ def entrenar_todos(
     dias_datos: int = 365,
 ) -> dict[str, Any]:
     """Entrena el catálogo completo y escribe model_manifest.json."""
-    filas = _filas_desde_meteo(estacion_id, dias_datos)
-    origen = "meteo_sqlite"
-    if len(filas) < MIN_FILAS_REALES:
-        filas = _filas_sinteticas(min(365, max(120, dias_datos)))
-        origen = "sintetico"
+    filas, origen, sync_meta = _obtener_filas_entrenamiento(estacion_id, dias_datos)
+    if not filas:
+        return {
+            "ok": False,
+            "origen_datos": origen,
+            "filas": 0,
+            "entrenados": 0,
+            "errores": 1,
+            "detalle_errores": [
+                {
+                    "error": (
+                        "Sin datos reales suficientes para entrenar. "
+                        "Verifique CSV 5 años, OpenMeteo y meteo_historico.db."
+                    )
+                }
+            ],
+            "sync_datos": sync_meta,
+        }
 
     root = _modelos_root()
     catalog = catalogo_completo()
@@ -255,7 +347,7 @@ def entrenar_todos(
     from api_rest.integracion import ml_registry
 
     reg = ml_registry.sincronizar_registro()
-    return {
+    out = {
         "ok": len(errores) == 0,
         "origen_datos": origen,
         "filas": len(filas),
@@ -266,6 +358,9 @@ def entrenar_todos(
         "registry_total": reg.get("total"),
         "finalizado": manifest["actualizado"],
     }
+    if sync_meta:
+        out["sync_datos"] = sync_meta
+    return out
 
 
 def _sklearn_version() -> str:

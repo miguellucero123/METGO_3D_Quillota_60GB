@@ -182,16 +182,21 @@ def crear_tabla_recomendaciones(datos):
     return pd.DataFrame(tabla_data)
 
 def main():
-    st.set_page_config(
-        page_title="Sistema Agrícola METGO",
+    import sys
+    from pathlib import Path
+
+    _DASH = Path(__file__).resolve().parent
+    if str(_DASH) not in sys.path:
+        sys.path.insert(0, str(_DASH))
+    from metgo_dashboard_init import page_config_and_theme
+
+    st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
+        "Sistema Agrícola METGO",
+        "Gestión y monitoreo agrícola · Quillota",
+        module="agricola",
         page_icon="🌾",
-        layout="wide"
     )
-    
-    st.title("🌾 Sistema Agrícola METGO")
-    st.markdown("### Gestión y Monitoreo Agrícola para Quillota")
-    st.markdown("---")
-    
+
     # Generar datos
     datos_cultivos = generar_datos_agricolas()
     datos_clima = generar_datos_climaticos_agricolas()

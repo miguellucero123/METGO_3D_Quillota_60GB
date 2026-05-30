@@ -12,6 +12,9 @@ import {
 import { useMetgoStore } from '@/stores/metgo'
 import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
+import WeatherScene from '@/components/meteo/WeatherScene.vue'
+import FrostBadge from '@/components/meteo/FrostBadge.vue'
+import { riesgoHelada } from '@/utils/agroInsights'
 import { fetchPronostico, fetchHistorico } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
 
@@ -26,6 +29,7 @@ const estacionInfo = computed(() =>
 )
 
 const d = computed(() => store.datosMeteo)
+const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
 const viento = computed(() => condicionViento(d.value?.viento))
 const lluviaHist = computed(() => acumuladoPrecipitacion(historico.value))
 const lluviaPron = computed(() => acumuladoPrecipitacion(pronostico.value))
@@ -76,6 +80,18 @@ watch(() => store.estacionActiva, cargar)
         {{ estacionInfo.lat.toFixed(4) }}°, {{ estacionInfo.lon.toFixed(4) }}° · America/Santiago
       </p>
     </header>
+
+    <div v-if="d" class="weather-hero">
+      <WeatherScene :datos="d" />
+      <div class="weather-hero__aside">
+        <p class="weather-hero__title">Valle de Aconcagua</p>
+        <p class="weather-hero__temp">{{ d.temperatura }}°C · humedad {{ d.humedad }}%</p>
+        <div v-if="helada.nivel !== 'low'" class="frost-row">
+          <FrostBadge size="sm" show-label />
+          <span>{{ helada.label }}</span>
+        </div>
+      </div>
+    </div>
 
     <div v-if="d" class="card-grid card-grid--wide">
       <MetricCard label="Temp. media" :value="d.temperatura" unit="°C">
@@ -171,6 +187,49 @@ watch(() => store.estacionActiva, cargar)
 <style scoped>
 .page {
   max-width: 1280px;
+}
+
+.weather-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.weather-hero__aside {
+  flex: 1;
+  min-width: 180px;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.weather-hero__title {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.weather-hero__temp {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.frost-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--color-sky-deep);
+  font-weight: 600;
 }
 
 .coords {

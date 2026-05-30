@@ -48,10 +48,10 @@ def abrir_sistema_completo():
     
     # URLs de dashboards HTML
     dashboards_html = [
-        "dashboard_global_html.html",
-        "dashboard_html_completo.html", 
-        "dashboard_sistema_unificado.html",
-        "dashboard_metgo_3d.html"
+        "dashboard_global_html.py",
+        "dashboard_html_completo.py",
+        "dashboard_sistema_unificado.py",
+        "dashboard_metgo_3d.py",
     ]
     
     print(f"\nABRIENDO DASHBOARDS HTML:")

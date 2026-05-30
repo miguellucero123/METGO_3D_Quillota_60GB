@@ -13,12 +13,20 @@ from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
-# Configurar página
-st.set_page_config(
-    page_title="METGO_3D - Dashboard Simple",
+import sys
+from pathlib import Path
+
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo_dashboard_init import page_config_and_theme
+
+st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
+    "Dashboard Simple METGO",
+    "Gráficos matplotlib · datos de prueba",
+    module="simple",
     page_icon="🌾",
-    layout="wide",
-    initial_sidebar_state="expanded"
 )
 
 def generar_datos_prueba():

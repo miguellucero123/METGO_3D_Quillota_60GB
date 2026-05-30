@@ -269,4 +269,7 @@ def main():
         return False
 
 if __name__ == "__main__":
+    from legacy_guard import bloquear_entrenamiento_legacy
+
+    bloquear_entrenamiento_legacy(__file__)
     main()

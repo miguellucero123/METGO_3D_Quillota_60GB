@@ -16,13 +16,20 @@ import json
 import subprocess
 import sys
 import os
+import sys
+from pathlib import Path
 
-# Configuración de la página
-st.set_page_config(
-    page_title="METGO 3D - Dashboard Principal Integrado",
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo_dashboard_init import page_config_and_theme
+
+st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
+    "Dashboard Principal Integrado",
+    "Hub METGO 3D · lanzador de módulos",
+    module="unificado",
     page_icon="🌾",
-    layout="wide",
-    initial_sidebar_state="expanded"
 )
 
 class DashboardPrincipalIntegrado:

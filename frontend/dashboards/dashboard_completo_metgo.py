@@ -242,11 +242,30 @@ class DashboardCompletoMETGO:
                 page_title="METGO 3D - Dashboard Completo",
                 page_icon="🌾",
                 layout="wide",
-                initial_sidebar_state="expanded"
+                initial_sidebar_state="expanded",
             )
-            
-            # Título principal
-            st.title("🌾 METGO 3D - Dashboard Completo")
+            try:
+                import sys
+                from pathlib import Path
+
+                root = Path(__file__).resolve().parents[2]
+                dash = root / "frontend" / "dashboards"
+                if str(dash) not in sys.path:
+                    sys.path.insert(0, str(dash))
+                if str(root) not in sys.path:
+                    sys.path.insert(0, str(root))
+                from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+
+                bootstrap_dashboard(
+                    "METGO 3D - Dashboard Completo",
+                    "Análisis integral meteorológico y agrícola",
+                    module="unificado",
+                )
+            except ImportError:
+                PLOTLY_CONFIG = {}
+                plotly_layout = lambda **k: {}
+
+            # Contenido principal
             st.markdown("### Sistema Meteorológico Agrícola Quillota - Versión 2.0")
             
             # Sidebar

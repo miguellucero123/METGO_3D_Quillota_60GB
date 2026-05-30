@@ -222,10 +222,14 @@ def main() -> None:
             if boot and boot.get("ok"):
                 print(
                     f"ML bootstrap: {boot.get('entrenados', 0)} modelos entrenados "
-                    f"({boot.get('origen_datos', '?')})"
+                    f"({boot.get('origen_datos', '?')}), servibles={boot.get('registry_servibles')}"
                 )
             elif boot and boot.get("error"):
                 print(f"ML bootstrap omitido: {boot['error']}")
+            from api_rest.integracion import ml_registry
+
+            reg = ml_registry.sincronizar_registro()
+            print(f"ML registry: {reg.get('servibles', 0)}/{reg.get('total', 0)} servibles (legacy_scan={reg.get('legacy_scan')})")
         except Exception as exc:
             print(f"ML bootstrap omitido: {exc}")
 

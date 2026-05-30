@@ -24,6 +24,12 @@ WARNING = "#9a6b2e"
 DANGER = "#9b3d3d"
 INFO_BG = "#e8f2eb"
 
+# Light blue (meteo / ML — alineado con Vue main.css)
+SKY = "#5b9bd5"
+SKY_DEEP = "#3a7ca5"
+SKY_LIGHT = "#dbeef8"
+SKY_MUTED = "#c5e4f3"
+
 # Acentos por módulo (familia verde, distinguibles)
 MODULE_COLORS = {
     "meteo": PRIMARY,
@@ -242,7 +248,175 @@ html, body, [class*="css"] {{
     .main-header {{ padding: 1.5rem 0.75rem; }}
     .metric-number {{ font-size: 1.5rem; }}
 }}
+
+/* —— Ilustraciones meteorológicas (CSS, mismo lenguaje que Vue) —— */
+.weather-scene-st {{
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    height: 130px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid {BORDER};
+    margin: 0.5rem 0 1rem;
+    background: linear-gradient(180deg, {SKY_LIGHT} 0%, {SKY_MUTED} 100%);
+}}
+.weather-scene-st__sun {{
+    position: absolute; top: 18px; right: 24px; width: 48px; height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffeaa7, #f4c430);
+    box-shadow: 0 0 20px rgba(244,196,48,0.45);
+    animation: metgo-sun 4s ease-in-out infinite;
+}}
+.weather-scene-st__cloud {{
+    position: absolute; background: rgba(255,255,255,0.92); border-radius: 999px;
+    animation: metgo-cloud 12s ease-in-out infinite alternate;
+}}
+.weather-scene-st__cloud--a {{ width: 68px; height: 26px; top: 34px; left: 16%; }}
+.weather-scene-st__cloud--b {{ width: 80px; height: 28px; top: 54px; right: 10%; opacity: 0.88; }}
+.weather-scene-st__rain span {{
+    position: absolute; top: 55%; width: 2px; height: 12px; border-radius: 2px;
+    background: linear-gradient(180deg, transparent, {SKY});
+    animation: metgo-rain 0.85s linear infinite;
+}}
+.weather-scene-st__label {{
+    position: absolute; bottom: 0; left: 0; right: 0; margin: 0; padding: 0.4rem;
+    font-size: 0.72rem; font-weight: 600; text-align: center; color: {TEXT_SECONDARY};
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.85));
+}}
+.frost-badge-st {{
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    color: {SKY_DEEP}; font-weight: 700; font-size: 0.75rem;
+}}
+.frost-badge-st svg {{ width: 1.4rem; height: 1.4rem; animation: metgo-frost 3s ease-in-out infinite; }}
+@keyframes metgo-sun {{
+    0%,100% {{ transform: scale(1); }}
+    50% {{ transform: scale(1.06); }}
+}}
+@keyframes metgo-cloud {{
+    from {{ transform: translateX(-5px); }}
+    to {{ transform: translateX(8px); }}
+}}
+@keyframes metgo-rain {{
+    from {{ transform: translateY(-6px); opacity: 0; }}
+    30% {{ opacity: 0.8; }}
+    to {{ transform: translateY(22px); opacity: 0; }}
+}}
+@keyframes metgo-frost {{
+    0%,100% {{ opacity: 1; transform: scale(1); }}
+    50% {{ opacity: 0.88; transform: scale(1.05) rotate(4deg); }}
+}}
 """
+
+PLOTLY_CONFIG = {
+    "displayModeBar": True,
+    "displaylogo": False,
+    "responsive": True,
+    "toImageButtonOptions": {"format": "png", "scale": 2},
+}
+
+PLOTLY_COLOR_SEQUENCE = [PRIMARY, SKY, ACCENT, SKY_DEEP, SUCCESS, MUTED, WARNING, DANGER]
+
+
+def plotly_layout(title: str = "", **extra) -> dict:
+    """Layout Plotly alineado al design system METGO."""
+    base = {
+        "title": {"text": title, "font": {"family": "DM Sans", "color": TEXT, "size": 16}},
+        "paper_bgcolor": BG,
+        "plot_bgcolor": SURFACE,
+        "font": {"family": "DM Sans", "color": TEXT_SECONDARY},
+        "colorway": PLOTLY_COLOR_SEQUENCE,
+        "margin": {"l": 48, "r": 24, "t": 48 if title else 24, "b": 40},
+        "xaxis": {"gridcolor": BORDER, "linecolor": BORDER},
+        "yaxis": {"gridcolor": BORDER, "linecolor": BORDER},
+    }
+    base.update(extra)
+    return base
+
+
+FROST_SVG = (
+    '<svg viewBox="0 0 64 64" aria-hidden="true">'
+    '<path d="M32 4 L32 60 M32 32 L8 18 M32 32 L56 18 M32 32 L8 46 M32 32 L56 46 '
+    'M32 16 L20 32 M32 16 L44 32 M32 48 L20 32 M32 48 L44 32" fill="none" '
+    f'stroke="{SKY_DEEP}" stroke-width="2.5" stroke-linecap="round"/>'
+    f'<circle cx="32" cy="32" r="4" fill="{SKY_DEEP}"/></svg>'
+)
+
+
+def frost_badge_html(label: str = "Helada") -> str:
+    return f'<div class="frost-badge-st">{FROST_SVG}<span>{label}</span></div>'
+
+
+def weather_scene_html(condition: str = "soleado", label: str = "") -> str:
+    """condition: soleado | parcial | nublado | lluvioso | helada"""
+    labels = {
+        "soleado": "Soleado",
+        "parcial": "Parcialmente nublado",
+        "nublado": "Nublado",
+        "lluvioso": "Lluvioso",
+        "helada": "Riesgo de heladas",
+    }
+    lbl = label or labels.get(condition, condition)
+    sun = '<div class="weather-scene-st__sun"></div>' if condition in ("soleado", "parcial") else ""
+    cloud_a = ""
+    cloud_b = ""
+    if condition in ("parcial", "nublado", "lluvioso", "helada"):
+        cloud_a = '<div class="weather-scene-st__cloud weather-scene-st__cloud--a"></div>'
+    if condition in ("nublado", "lluvioso", "helada"):
+        cloud_b = '<div class="weather-scene-st__cloud weather-scene-st__cloud--b"></div>'
+    rain = ""
+    if condition == "lluvioso":
+        drops = "".join(
+            f'<span style="left:{12 + i * 9}%; animation-delay:{-i * 0.1:.1f}s"></span>'
+            for i in range(8)
+        )
+        rain = f'<div class="weather-scene-st__rain">{drops}</div>'
+    frost = frost_badge_html(lbl) if condition == "helada" else ""
+    return f"""
+    <div class="weather-scene-st weather-scene-st--{condition}">
+        {sun}{cloud_a}{cloud_b}{rain}{frost}
+        <p class="weather-scene-st__label">{lbl}</p>
+    </div>
+    """
+
+
+def main_header_html(title: str, subtitle: str = "", module: str = "meteo") -> str:
+    color = MODULE_COLORS.get(module, PRIMARY)
+    sub = f"<p style='margin:0.5rem 0 0; opacity:0.92; font-size:1rem;'>{subtitle}</p>" if subtitle else ""
+    return f"""
+    <div class="main-header" style="background: linear-gradient(135deg, {color} 0%, {ACCENT} 55%, {SKY} 100%);">
+        <h1 style="margin:0; font-size:1.75rem;">{title}</h1>
+        {sub}
+    </div>
+    """
+
+
+def bootstrap_dashboard(title: str, subtitle: str = "", *, module: str = "meteo") -> None:
+    """Inyecta tema METGO + cabecera unificada (llamar tras set_page_config)."""
+    import streamlit as st
+
+    inject_theme()
+    st.markdown(main_header_html(title, subtitle, module), unsafe_allow_html=True)
+
+
+def classify_weather_from_row(row: dict) -> str:
+    """Clasificación visual compatible con Vue weatherCondition.js."""
+    try:
+        tmin = float(row.get("temperatura_min") or row.get("temp_min") or row.get("temperatura") or 15)
+        precip = float(row.get("precipitacion") or 0)
+        hum = float(row.get("humedad") or row.get("humedad_relativa") or 60)
+        nub = float(row.get("nubosidad") or row.get("cobertura_nubosa") or max(0, min(100, 100 - hum + precip * 8)))
+    except (TypeError, ValueError):
+        return "parcial"
+    if tmin <= 2:
+        return "helada"
+    if precip >= 2:
+        return "lluvioso"
+    if nub >= 70 or hum >= 88:
+        return "nublado"
+    if nub >= 35 or hum >= 68 or precip >= 0.3:
+        return "parcial"
+    return "soleado"
 
 
 def is_streamlit_cloud() -> bool:

@@ -7,23 +7,28 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
 import time
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
 
 # Configuración de la página
 st.set_page_config(
-    page_title="🔍 Monitoreo en Tiempo Real - METGO",
+    page_title="Monitoreo en Tiempo Real - METGO",
     page_icon="🔍",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-# Título principal
-st.markdown("""
-<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #795548 0%, #5D4037 100%); color: white; border-radius: 15px; margin-bottom: 30px;">
-    <h1>🔍 Monitoreo en Tiempo Real</h1>
-    <h3>Sistema METGO - Supervisión Continua</h3>
-    <p>Monitoreo en tiempo real de sensores, alertas y estado del sistema</p>
-</div>
-""", unsafe_allow_html=True)
+bootstrap_dashboard(
+    "Monitoreo en Tiempo Real",
+    "Supervisión continua de sensores y alertas",
+    module="monitoreo",
+)
 
 # Sidebar para controles
 st.sidebar.markdown("### 🎛️ Panel de Control")

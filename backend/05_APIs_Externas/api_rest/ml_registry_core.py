@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from api_rest import services
+# services se importa solo en predecir_registrado (evita arrancar OpenMeteo al entrenar ML)
 
 # Paquetes bajo backend/06_Modelos_ML_IA/modelos/
 PAQUETES_ML = (
@@ -566,6 +566,8 @@ def predecir_registrado(variable: str, estacion_id: str = "quillota") -> dict[st
                 "paquete": no_srv[0].get("paquete"),
             }
         return {"error": f"Variable no modelada o sin modelo servible: {variable}"}
+
+    from api_rest import services
 
     resumen = services.resumen_meteo(estacion_id)
     if not resumen:

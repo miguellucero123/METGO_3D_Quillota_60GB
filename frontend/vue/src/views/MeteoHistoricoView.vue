@@ -98,7 +98,7 @@ watch(() => store.estacionActiva, async () => {
         :labels="labels"
         :values="lluvia"
         unit=" mm"
-        color="#2563eb"
+        color="var(--color-sky)"
       />
     </SectionCard>
   </div>

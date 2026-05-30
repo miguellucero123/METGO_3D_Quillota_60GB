@@ -6,23 +6,28 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
 
 # Configuración de la página
 st.set_page_config(
-    page_title="🌾 Gestión Agrícola Inteligente - METGO",
+    page_title="Gestión Agrícola Inteligente - METGO",
     page_icon="🌾",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-# Título principal
-st.markdown("""
-<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; border-radius: 15px; margin-bottom: 30px;">
-    <h1>🌾 Gestión Agrícola Inteligente</h1>
-    <h3>Sistema METGO - Recomendaciones por IA</h3>
-    <p>Análisis inteligente de cultivos, plagas, riego y factores climáticos</p>
-</div>
-""", unsafe_allow_html=True)
+bootstrap_dashboard(
+    "Gestión Agrícola Inteligente",
+    "Recomendaciones por IA · cultivos Valle de Aconcagua",
+    module="agricola",
+)
 
 # Sidebar para controles
 st.sidebar.markdown("### 🎛️ Panel de Control Agrícola")

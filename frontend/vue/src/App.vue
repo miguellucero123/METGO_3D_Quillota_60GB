@@ -16,9 +16,11 @@ const isEmbedded = computed(
   () => route.query.embed === '1' || (typeof window !== 'undefined' && window.self !== window.top),
 )
 
-onMounted(() => {
-  if (auth.isAuthenticated) {
-    store.inicializar()
+onMounted(async () => {
+  if (!auth.isAuthenticated) return
+  const ok = await auth.ensureValidSession()
+  if (ok) {
+    await store.inicializar()
   }
 })
 </script>

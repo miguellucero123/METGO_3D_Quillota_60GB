@@ -1,6 +1,6 @@
 {
-  "actualizado": "2026-05-30T01:59:57.706279Z",
-  "origen_datos": "sintetico",
+  "actualizado": "2026-05-30T02:13:56.100109Z",
+  "origen_datos": "meteo_sqlite",
   "filas": 2920,
   "estacion_id": "quillota",
   "sklearn_version": "1.5.2",
@@ -23,8 +23,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_temperatura_max.joblib",
-      "mse": 1.1499711868612208,
-      "r2": 0.9818738143026341,
+      "mse": 0.7203889879988267,
+      "r2": 0.9823679051529521,
       "servible": true
     },
     {
@@ -43,8 +43,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_temperatura_min.joblib",
-      "mse": 1.4213430353835783,
-      "r2": 0.9778089864903811,
+      "mse": 0.28261974969832604,
+      "r2": 0.9914499299199404,
       "servible": true
     },
     {
@@ -64,8 +64,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_precipitacion.joblib",
-      "mse": 0.5409938800950455,
-      "r2": -0.026901874909163848,
+      "mse": 0.48455731098334476,
+      "r2": 0.9142317292090609,
       "servible": true
     },
     {
@@ -84,8 +84,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_humedad.joblib",
-      "mse": 93.71182819767975,
-      "r2": 0.15446468609349195,
+      "mse": 107.694410153639,
+      "r2": 0.5628851072060999,
       "servible": true
     },
     {
@@ -104,8 +104,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_presion.joblib",
-      "mse": 3.8466043443612628,
-      "r2": 0.8804190136433304,
+      "mse": 85.71436983612992,
+      "r2": 0.005921235714542394,
       "servible": true
     },
     {
@@ -127,8 +127,8 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_random_forest.pkl",
-      "mse": 0.00041603072628723685,
-      "r2": 0.9999934424007431,
+      "mse": 8.65677321156768e-06,
+      "r2": 0.9999997881185736,
       "servible": true
     },
     {
@@ -150,7 +150,7 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_linear_regression.pkl",
-      "mse": 4.74019509211221e-28,
+      "mse": 7.626826101128213e-27,
       "r2": 1.0,
       "servible": true
     },
@@ -173,8 +173,8 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_gradient_boosting.pkl",
-      "mse": 0.11616814939127616,
-      "r2": 0.998168923298215,
+      "mse": 0.07460751423406588,
+      "r2": 0.9981739216045878,
       "servible": true
     },
     {
@@ -196,8 +196,8 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_svm.pkl",
-      "mse": 7.860541864687155e-07,
-      "r2": 0.9999999876099817,
+      "mse": 2.1432989006685867e-08,
+      "r2": 0.9999999994754105,
       "servible": true
     },
     {
@@ -219,8 +219,8 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_knn.pkl",
-      "mse": 0.0005830111045209168,
-      "r2": 0.999994739655743,
+      "mse": 0.0002954381183409276,
+      "r2": 0.9999988008625402,
       "servible": true
     },
     {
@@ -245,8 +245,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/GradientBoosting_temperatura_actual.joblib",
-      "mse": 0.11758258722194435,
-      "r2": 0.998153621538747,
+      "mse": 0.06200955534673296,
+      "r2": 0.9981774309581275,
       "servible": true
     },
     {
@@ -271,8 +271,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/GradientBoosting_humedad_relativa.joblib",
-      "mse": 0.20146558149339386,
-      "r2": 0.9981822330546146,
+      "mse": 0.44853343530913375,
+      "r2": 0.9981794724144928,
       "servible": true
     },
     {
@@ -297,8 +297,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/GradientBoosting_velocidad_viento.joblib",
-      "mse": 0.0043804759169965195,
-      "r2": 0.9981171986599859,
+      "mse": 0.04567504247180656,
+      "r2": 0.9981765762612372,
       "servible": true
     },
     {
@@ -323,8 +323,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/GradientBoosting_precipitacion.joblib",
-      "mse": 0.0018400748712256553,
-      "r2": 0.9965072131039581,
+      "mse": 0.010166742124260114,
+      "r2": 0.9982004525124064,
       "servible": true
     },
     {
@@ -349,8 +349,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/GradientBoosting_presion_atmosferica.joblib",
-      "mse": 0.06221150728644788,
-      "r2": 0.9980660050428753,
+      "mse": 0.15526068772427856,
+      "r2": 0.998199352653585,
       "servible": true
     },
     {
@@ -375,8 +375,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/GradientBoosting_nubosidad.joblib",
-      "mse": 0.2218430950664328,
-      "r2": 0.9981474829843485,
+      "mse": 0.7277837686099352,
+      "r2": 0.9981712069928452,
       "servible": true
     },
     {
@@ -401,7 +401,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_temperatura_actual.joblib",
-      "mse": 4.475067908147235e-27,
+      "mse": 1.483642718153701e-28,
       "r2": 1.0,
       "servible": true
     },
@@ -427,7 +427,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_humedad_relativa.joblib",
-      "mse": 3.2569373843184054e-25,
+      "mse": 2.086353386975484e-27,
       "r2": 1.0,
       "servible": true
     },
@@ -453,7 +453,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_velocidad_viento.joblib",
-      "mse": 8.210259403700289e-29,
+      "mse": 1.0432035338278641e-29,
       "r2": 1.0,
       "servible": true
     },
@@ -479,7 +479,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_precipitacion.joblib",
-      "mse": 4.2428918281586077e-29,
+      "mse": 1.6950121744562974e-29,
       "r2": 1.0,
       "servible": true
     },
@@ -505,7 +505,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_presion_atmosferica.joblib",
-      "mse": 5.070287840750713e-26,
+      "mse": 9.295158852532952e-27,
       "r2": 1.0,
       "servible": true
     },
@@ -531,7 +531,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_nubosidad.joblib",
-      "mse": 3.6774369882680236e-25,
+      "mse": 4.014522947200838e-27,
       "r2": 1.0,
       "servible": true
     },
@@ -557,8 +557,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_temperatura_actual.joblib",
-      "mse": 0.00030204915192318837,
-      "r2": 0.999995256975871,
+      "mse": 4.1778531766140225e-06,
+      "r2": 0.9999998772056046,
       "servible": true
     },
     {
@@ -583,8 +583,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_humedad_relativa.joblib",
-      "mse": 0.0010744003568926418,
-      "r2": 0.9999903059895373,
+      "mse": 0.0002948039225012475,
+      "r2": 0.9999988034366427,
       "servible": true
     },
     {
@@ -609,8 +609,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_velocidad_viento.joblib",
-      "mse": 0.0003995505808845596,
-      "r2": 0.9998282665209564,
+      "mse": 7.572298325722339e-06,
+      "r2": 0.9999996977012439,
       "servible": true
     },
     {
@@ -635,8 +635,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_precipitacion.joblib",
-      "mse": 0.00043539516742770255,
-      "r2": 0.9991735431208957,
+      "mse": 6.849315068496306e-07,
+      "r2": 0.9999998787648239,
       "servible": true
     },
     {
@@ -661,8 +661,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_presion_atmosferica.joblib",
-      "mse": 0.0024609494639672718,
-      "r2": 0.9999234954422317,
+      "mse": 4.8934550989412234e-05,
+      "r2": 0.9999994324779139,
       "servible": true
     },
     {
@@ -687,8 +687,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_nubosidad.joblib",
-      "mse": 0.00803324594925976,
-      "r2": 0.9999329177912548,
+      "mse": 0.0003337084269524732,
+      "r2": 0.9999991614492326,
       "servible": true
     },
     {
@@ -713,8 +713,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_temperatura_actual.joblib",
-      "mse": 5.607570332853667e-06,
-      "r2": 0.9999999119453201,
+      "mse": 2.077544886299956e-09,
+      "r2": 0.9999999999389373,
       "servible": true
     },
     {
@@ -739,8 +739,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_humedad_relativa.joblib",
-      "mse": 6.49384829684505e-08,
-      "r2": 0.9999999994140785,
+      "mse": 7.053105972425675e-08,
+      "r2": 0.9999999997137253,
       "servible": true
     },
     {
@@ -765,8 +765,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_velocidad_viento.joblib",
-      "mse": 8.205795428323932e-08,
-      "r2": 0.9999999647301276,
+      "mse": 9.257157898963495e-09,
+      "r2": 0.9999999996304388,
       "servible": true
     },
     {
@@ -791,8 +791,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_precipitacion.joblib",
-      "mse": 1.118460191510027e-06,
-      "r2": 0.9999978769651378,
+      "mse": 1.4138464071166525e-06,
+      "r2": 0.9999997497444394,
       "servible": true
     },
     {
@@ -817,8 +817,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_presion_atmosferica.joblib",
-      "mse": 5.303520658471179e-08,
-      "r2": 0.9999999983512725,
+      "mse": 1.780574964854895e-09,
+      "r2": 0.9999999999793496,
       "servible": true
     },
     {
@@ -843,8 +843,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_nubosidad.joblib",
-      "mse": 6.205883778924693e-08,
-      "r2": 0.9999999994817731,
+      "mse": 6.964215146749581e-08,
+      "r2": 0.9999999998250014,
       "servible": true
     },
     {
@@ -869,8 +869,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_avanzados/RandomForest_Rapido_temperatura_promedio.joblib",
-      "mse": 0.00030204915192318837,
-      "r2": 0.999995256975871,
+      "mse": 4.1778531766140225e-06,
+      "r2": 0.9999998772056046,
       "servible": true
     },
     {
@@ -895,8 +895,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_avanzados/GradientBoosting_Rapido_temperatura_promedio.joblib",
-      "mse": 0.11758258722194435,
-      "r2": 0.998153621538747,
+      "mse": 0.06200955534673296,
+      "r2": 0.9981774309581275,
       "servible": true
     },
     {
@@ -921,8 +921,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_avanzados/Ridge_Optimizado_temperatura_promedio.joblib",
-      "mse": 5.607570332853667e-06,
-      "r2": 0.9999999119453201,
+      "mse": 2.077544886299956e-09,
+      "r2": 0.9999999999389373,
       "servible": true
     },
     {
@@ -947,8 +947,8 @@
       "scaler": "RF_Temp_Promedio_scaler.joblib",
       "modo": "manifest",
       "modelo_path": "modelos_dinamicos/RF_Temp_Promedio.joblib",
-      "mse": 0.0002984721582603426,
-      "r2": 0.9999953131447664,
+      "mse": 4.4775107108592616e-06,
+      "r2": 0.9999998683981467,
       "servible": true
     },
     {
@@ -973,8 +973,8 @@
       "scaler": "GB_Precipitacion_scaler.joblib",
       "modo": "manifest",
       "modelo_path": "modelos_dinamicos/GB_Precipitacion.joblib",
-      "mse": 0.0018259180894429742,
-      "r2": 0.9965340851745862,
+      "mse": 0.010166742124260114,
+      "r2": 0.9982004525124064,
       "servible": true
     },
     {
@@ -999,8 +999,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ultra_optimizados/Ultra_Temp_Optimizado.joblib",
-      "mse": 0.11758258722194435,
-      "r2": 0.998153621538747,
+      "mse": 0.06200955534673296,
+      "r2": 0.9981774309581275,
       "servible": true
     },
     {
@@ -1025,8 +1025,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ultra_optimizados/Ultra_Humedad_Optimizado.joblib",
-      "mse": 0.0010744003568926418,
-      "r2": 0.9999903059895373,
+      "mse": 0.0002948039225012475,
+      "r2": 0.9999988034366427,
       "servible": true
     },
     {
@@ -1051,8 +1051,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_hibridos_rapidos/Ensemble_Rapido_Temp.joblib",
-      "mse": 0.6892008214297227,
-      "r2": 0.9891776020392901,
+      "mse": 0.3700392530318728,
+      "r2": 0.9891239006136648,
       "servible": true
     },
     {
@@ -1077,8 +1077,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_hibridos_rapidos/Voting_Rapido_Humedad.joblib",
-      "mse": 1.1890933611599042,
-      "r2": 0.9892711470074876,
+      "mse": 2.713683929893336,
+      "r2": 0.9889855781892523,
       "servible": true
     }
   ]

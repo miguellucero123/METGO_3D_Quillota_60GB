@@ -7,6 +7,8 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
 import io
+import sys
+from pathlib import Path
 
 # Importar datos reales de OpenMeteo
 try:
@@ -15,12 +17,24 @@ try:
 except ImportError:
     DATOS_REALES_DISPONIBLES = False
 
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from metgo.streamlit_theme import bootstrap_dashboard, weather_scene_html, classify_weather_from_row, PLOTLY_CONFIG
+
 # Configuración de la página optimizada para móviles
 st.set_page_config(
-    page_title="📊 Visualizaciones Avanzadas - METGO",
+    page_title="Visualizaciones Avanzadas - METGO",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed"  # Colapsado para móviles
+    initial_sidebar_state="collapsed",
+)
+
+bootstrap_dashboard(
+    "Visualizaciones Avanzadas",
+    "Gráficos meteorológicos, heladas y análisis agrícola",
+    module="visual",
 )
 
 # CSS personalizado para diseño móvil profesional
@@ -28,7 +42,7 @@ st.markdown("""
 <style>
     /* Diseño móvil profesional */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #3d6b52 0%, #5a9b72 55%, #5b9bd5 100%);
         padding: 2rem 1rem;
         border-radius: 15px;
         margin-bottom: 2rem;

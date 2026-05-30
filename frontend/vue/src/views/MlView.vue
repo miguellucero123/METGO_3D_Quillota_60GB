@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Cpu, Sparkles, RefreshCw, CheckCircle, XCircle } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import SectionCard from '@/components/ui/SectionCard.vue'
+import MlProjectionChart from '@/components/charts/MlProjectionChart.vue'
 import { useApiCall } from '@/composables/useApiCall'
 import {
   fetchMlModelos,
@@ -14,6 +15,7 @@ import {
   ejecutarMlTrainSiguiente,
   entrenarMlQuillota,
   fetchWorkersStatus,
+  mlPredictBatch,
 } from '@/api/metgoApi'
 
 const store = useMetgoStore()
@@ -28,6 +30,15 @@ const trainStatus = ref(null)
 const trainMsg = ref('')
 const workers = ref(null)
 const entrenando = ref(false)
+const mlChart = ref([])
+const cargandoChart = ref(false)
+
+const ML_CHART_VARS = [
+  { variable: 'temperatura_max', label: 'T. máx', unidad: '°', field: 'temperatura_max' },
+  { variable: 'temperatura_min', label: 'T. mín', unidad: '°', field: 'temperatura_min' },
+  { variable: 'humedad', label: 'Humedad', unidad: '%', field: 'humedad' },
+  { variable: 'precipitacion', label: 'Lluvia', unidad: ' mm', field: 'precipitacion' },
+]
 
 const { data: modelos, loading, error, run } = useApiCall(() => fetchMlModelos(false))
 
@@ -93,6 +104,41 @@ async function ejecutarCola() {
   }
 }
 
+async function cargarProyeccionesChart() {
+  cargandoChart.value = true
+  try {
+    const vars = ML_CHART_VARS.map((v) => v.variable).filter((v) =>
+      modelosServibles.value.some((m) => m.variable === v)
+    )
+    if (!vars.length) {
+      mlChart.value = []
+      return
+    }
+    const batch = await mlPredictBatch(vars, store.estacionActiva)
+    const rows = Array.isArray(batch) ? batch : batch?.resultados || []
+    const actual = store.datosMeteo || {}
+    mlChart.value = ML_CHART_VARS.filter((v) => vars.includes(v.variable)).map((v) => {
+      const hit = rows.find((x) => x.variable === v.variable)
+      const predObj = hit?.prediccion
+      const val =
+        typeof predObj === 'object' && predObj != null
+          ? predObj.prediccion ?? predObj.valor
+          : predObj
+      return {
+        variable: v.variable,
+        label: v.label,
+        unidad: v.unidad,
+        actual: actual[v.field],
+        prediccion: val,
+      }
+    }).filter((x) => x.prediccion != null && !Number.isNaN(Number(x.prediccion)))
+  } catch {
+    mlChart.value = []
+  } finally {
+    cargandoChart.value = false
+  }
+}
+
 async function cargarTodo() {
   await run()
   try {
@@ -105,6 +151,7 @@ async function cargarTodo() {
   if (modelosServibles.value.length && !modelosServibles.value.find((m) => m.variable === variable.value)) {
     variable.value = modelosServibles.value[0].variable
   }
+  await cargarProyeccionesChart()
 }
 
 async function sincronizarRegistro() {
@@ -239,6 +286,12 @@ onMounted(() => cargarTodo())
           </li>
         </ul>
       </details>
+    </SectionCard>
+
+    <SectionCard title="Gráfico de proyecciones" subtitle="Valor actual vs predicción ML">
+      <template #icon><Sparkles /></template>
+      <p v-if="cargandoChart" class="muted">Generando gráfico…</p>
+      <MlProjectionChart v-else :items="mlChart" />
     </SectionCard>
 
     <SectionCard title="Predicción (solo modelos servibles)">

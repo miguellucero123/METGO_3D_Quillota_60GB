@@ -17,7 +17,10 @@ import { Grid3x3 } from 'lucide-vue-next'
 const router = useRouter()
 import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
-import { fetchPronostico, fetchAlertas, fetchRecomendacionesAgricolas } from '@/api/metgoApi'
+import WeatherScene from '@/components/meteo/WeatherScene.vue'
+import FrostBadge from '@/components/meteo/FrostBadge.vue'
+import MlProjectionChart from '@/components/charts/MlProjectionChart.vue'
+import { fetchPronostico, fetchAlertas, fetchRecomendacionesAgricolas, mlPredictBatch } from '@/api/metgoApi'
 import {
   riesgoHelada,
   necesidadRiego,
@@ -29,6 +32,16 @@ const pronostico = ref([])
 const alertas = ref([])
 const recomendaciones = ref([])
 const cargandoExtra = ref(false)
+const mlProyecciones = ref([])
+const cargandoMl = ref(false)
+
+const ML_VARS = [
+  { variable: 'temperatura_max', label: 'T. máx', unidad: '°', field: 'temperatura_max' },
+  { variable: 'temperatura_min', label: 'T. mín', unidad: '°', field: 'temperatura_min' },
+  { variable: 'humedad', label: 'Humedad', unidad: '%', field: 'humedad' },
+  { variable: 'precipitacion', label: 'Lluvia', unidad: ' mm', field: 'precipitacion' },
+  { variable: 'presion', label: 'Presión', unidad: '', field: 'presion' },
+]
 
 const d = computed(() => store.datosMeteo)
 const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
@@ -37,6 +50,7 @@ const lluvia7d = computed(() => acumuladoPrecipitacion(pronostico.value))
 
 async function cargarResumen() {
   cargandoExtra.value = true
+  cargandoMl.value = true
   try {
     const [p, a, r] = await Promise.all([
       fetchPronostico(store.estacionActiva, 7),
@@ -52,6 +66,33 @@ async function cargarResumen() {
     recomendaciones.value = []
   } finally {
     cargandoExtra.value = false
+  }
+  try {
+    const batch = await mlPredictBatch(
+      ML_VARS.map((v) => v.variable),
+      store.estacionActiva
+    )
+    const rows = Array.isArray(batch) ? batch : batch?.resultados || []
+    const actual = store.datosMeteo || {}
+    mlProyecciones.value = ML_VARS.map((v) => {
+      const hit = rows.find((x) => x.variable === v.variable)
+      const predObj = hit?.prediccion
+      const val =
+        typeof predObj === 'object' && predObj != null
+          ? predObj.prediccion ?? predObj.valor
+          : predObj
+      return {
+        variable: v.variable,
+        label: v.label,
+        unidad: v.unidad,
+        actual: actual[v.field],
+        prediccion: val,
+      }
+    }).filter((x) => x.prediccion != null && !Number.isNaN(Number(x.prediccion)))
+  } catch {
+    mlProyecciones.value = []
+  } finally {
+    cargandoMl.value = false
   }
 }
 
@@ -87,6 +128,14 @@ watch(() => store.estacionActiva, cargarResumen)
     <div v-if="store.cargando" class="skeleton">Cargando condiciones actuales…</div>
 
     <template v-else-if="d">
+      <div class="weather-hero">
+        <WeatherScene :datos="d" />
+        <div class="weather-hero__aside">
+          <p class="weather-hero__title">Condición actual</p>
+          <p class="weather-hero__temp">{{ d.temperatura }}°C · {{ d.temperatura_min }}° / {{ d.temperatura_max }}°</p>
+        </div>
+      </div>
+
       <div class="card-grid card-grid--wide">
         <MetricCard label="Temperatura media" :value="d.temperatura" unit="°C">
           <template #icon><Thermometer /></template>
@@ -112,7 +161,8 @@ watch(() => store.estacionActiva, cargarResumen)
       </div>
 
       <div class="insight-row">
-        <div class="insight-chip" :class="`insight-chip--${helada.nivel}`">
+        <div class="insight-chip insight-chip--frost" :class="`insight-chip--${helada.nivel}`">
+          <FrostBadge v-if="helada.nivel !== 'low'" size="sm" />
           <strong>Heladas:</strong> {{ helada.label }}
         </div>
         <div class="insight-chip" :class="`insight-chip--${riego.nivel}`">
@@ -122,6 +172,15 @@ watch(() => store.estacionActiva, cargarResumen)
           <strong>Lluvia 7 días:</strong> {{ lluvia7d.toFixed(1) }} mm acum.
         </div>
       </div>
+
+      <SectionCard
+        title="Proyecciones ML"
+        subtitle="Modelos servibles vs condición actual"
+        class="ml-section"
+      >
+        <p v-if="cargandoMl" class="muted">Calculando proyecciones…</p>
+        <MlProjectionChart v-else :items="mlProyecciones" />
+      </SectionCard>
 
       <div class="layout-split">
         <SectionCard title="Pronóstico próximos días" subtitle="OpenMeteo · 7 días">
@@ -201,6 +260,52 @@ watch(() => store.estacionActiva, cargarResumen)
   border-radius: var(--radius-md);
   margin-bottom: 1rem;
   font-size: 0.875rem;
+}
+
+.insight-chip--frost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.weather-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: stretch;
+  margin-bottom: 1.25rem;
+}
+
+.weather-hero__aside {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.weather-hero__title {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.weather-hero__temp {
+  margin: 0.35rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ml-section {
+  margin-bottom: 1.25rem;
 }
 
 .insight-row {

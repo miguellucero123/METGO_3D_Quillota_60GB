@@ -32,7 +32,7 @@ class MobileConfig:
             }
             
             .mobile-header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #3d6b52 0%, #5a9b72 55%, #5b9bd5 100%);
                 padding: 1rem;
                 border-radius: 10px;
                 margin-bottom: 1rem;
@@ -463,6 +463,18 @@ class MobileConfig:
     def apply_mobile_optimizations():
         """Aplica todas las optimizaciones móviles"""
         MobileConfig.setup_mobile_page_config()
+        try:
+            import sys
+            from pathlib import Path
+
+            root = Path(__file__).resolve().parents[2]
+            if str(root) not in sys.path:
+                sys.path.insert(0, str(root))
+            from metgo.streamlit_theme import inject_theme
+
+            inject_theme()
+        except ImportError:
+            pass
         st.markdown(MobileConfig.get_mobile_css(), unsafe_allow_html=True)
         st.markdown(MobileConfig.get_mobile_js(), unsafe_allow_html=True)
         

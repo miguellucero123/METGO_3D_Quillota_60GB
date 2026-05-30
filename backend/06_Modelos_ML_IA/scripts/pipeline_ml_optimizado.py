@@ -426,6 +426,9 @@ def entrenar_pipeline_ml(datos: pd.DataFrame, variables_objetivo: List[str]) -> 
 
 # Ejemplo de uso
 if __name__ == "__main__":
+    from legacy_guard import bloquear_entrenamiento_legacy
+
+    bloquear_entrenamiento_legacy(__file__)
     # Crear datos de prueba
     np.random.seed(42)
     fechas = pd.date_range(start='2024-01-01', periods=100, freq='D')

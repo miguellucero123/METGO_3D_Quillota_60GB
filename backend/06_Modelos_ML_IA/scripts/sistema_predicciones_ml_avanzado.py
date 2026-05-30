@@ -505,4 +505,7 @@ def main():
         print(f"{variable}: {pred['valor_predicho']} (confianza: {pred['confianza']:.3f})")
 
 if __name__ == "__main__":
+    from legacy_guard import bloquear_entrenamiento_legacy
+
+    bloquear_entrenamiento_legacy(__file__)
     main()

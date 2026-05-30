@@ -6,16 +6,24 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
 
-# Configuración de la página optimizada para móviles
-st.set_page_config(
-    page_title="🌾 Agricultura de Precisión - METGO",
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo_dashboard_init import page_config_and_theme
+
+st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
+    "Agricultura de Precisión",
+    "Análisis de cultivos con datos históricos Quillota",
+    module="precision",
     page_icon="🌾",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
-# CSS personalizado para diseño móvil profesional
+# CSS complementario
 st.markdown("""
 <style>
     /* Diseño móvil profesional para agricultura */

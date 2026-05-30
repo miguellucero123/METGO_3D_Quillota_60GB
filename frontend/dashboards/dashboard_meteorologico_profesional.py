@@ -6,23 +6,21 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
 
-# Configuración de la página
-st.set_page_config(
-    page_title="🌤️ Análisis Meteorológico Profesional - METGO",
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo_dashboard_init import page_config_and_theme
+
+st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
+    "Análisis Meteorológico Profesional",
+    "Quillota y región · histórico y pronóstico",
+    module="meteo",
     page_icon="🌤️",
-    layout="wide",
-    initial_sidebar_state="expanded"
 )
-
-# Título principal
-st.markdown("""
-<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; margin-bottom: 30px;">
-    <h1>🌤️ Análisis Meteorológico Profesional</h1>
-    <h3>Sistema METGO - Quillota y Región</h3>
-    <p>Análisis avanzado con 5 años de datos históricos y pronósticos</p>
-</div>
-""", unsafe_allow_html=True)
 
 # Sidebar para controles
 st.sidebar.markdown("### 🎛️ Panel de Control")

@@ -6,13 +6,27 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
-    page_title="📈 Dashboard Global de Métricas - METGO",
+    page_title="Dashboard Global de Métricas - METGO",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
+)
+
+bootstrap_dashboard(
+    "Dashboard Global de Métricas",
+    "KPIs integrados del ecosistema METGO 3D",
+    module="global",
 )
 
 # CSS personalizado para diseño móvil profesional

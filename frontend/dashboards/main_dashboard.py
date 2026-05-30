@@ -13,19 +13,23 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
 import os
+import sys
+from pathlib import Path
 
-# Configuración de la página
-st.set_page_config(
-    page_title="Dashboard Unificado METGO_3D",
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo_dashboard_init import page_config_and_theme
+
+st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
+    "Dashboard Unificado METGO_3D",
+    "Sistema integrado de gestión agrícola y meteorológica",
+    module="unificado",
     page_icon="🏠",
-    layout="wide",
-    initial_sidebar_state="expanded"
 )
 
 def main():
-    st.title("🏠 Dashboard Unificado METGO_3D")
-    st.markdown("### Sistema Integrado de Gestión Agrícola y Meteorológica")
-    
     # Sidebar con navegación
     st.sidebar.header("🧭 Navegación")
     

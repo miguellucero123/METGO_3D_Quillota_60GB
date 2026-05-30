@@ -27,7 +27,9 @@ async function onSubmit() {
     }
     await auth.login(username.value.trim(), password.value)
     await metgo.inicializar()
-    router.push('/')
+    // Tras deploy en Netlify, evita chunks JS de un build anterior (PWA/caché)
+    const redirect = router.currentRoute.value.query.redirect || '/'
+    window.location.assign(typeof redirect === 'string' ? redirect : '/')
   } catch (e) {
     error.value = e.message ?? 'Error de inicio de sesión'
   } finally {

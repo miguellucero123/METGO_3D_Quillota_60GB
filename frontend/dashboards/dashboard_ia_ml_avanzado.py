@@ -6,13 +6,21 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
 
 # Configuración de la página
 st.set_page_config(
-    page_title="🤖 Sistema de Inteligencia Artificial - METGO",
+    page_title="Sistema de Inteligencia Artificial - METGO",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 
@@ -35,14 +43,11 @@ if not _ml_ok:
     )
     st.stop()
 
-# Título principal
-st.markdown("""
-<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%); color: white; border-radius: 15px; margin-bottom: 30px;">
-    <h1>🤖 Sistema de Inteligencia Artificial</h1>
-    <h3>Sistema METGO - Machine Learning Avanzado</h3>
-    <p>Modelos predictivos, análisis inteligente y automatización</p>
-</div>
-""", unsafe_allow_html=True)
+bootstrap_dashboard(
+    "Sistema de Inteligencia Artificial",
+    "Machine Learning avanzado · proyecciones METGO 3D",
+    module="ml",
+)
 
 # Sidebar para controles
 st.sidebar.markdown("### 🎛️ Panel de Control IA")
