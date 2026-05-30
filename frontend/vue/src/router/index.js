@@ -9,6 +9,12 @@ const routes = [
     meta: { public: true, title: 'Ingresar' },
   },
   {
+    path: '/registro',
+    name: 'registro',
+    component: () => import('@/views/RegistroView.vue'),
+    meta: { public: true, title: 'Registro' },
+  },
+  {
     path: '/estado',
     name: 'estado',
     component: () => import('@/views/EstadoView.vue'),
@@ -48,7 +54,23 @@ const routes = [
     path: '/meteo/comparativo',
     name: 'meteo-comparativo',
     component: () => import('@/views/ComparativoEstacionesView.vue'),
-    meta: { title: 'Comparativo estaciones' },
+    meta: { title: 'Visualizaciones · comparativo' },
+  },
+  {
+    path: '/favoritos',
+    name: 'favoritos',
+    component: () => import('@/views/FavoritosView.vue'),
+    meta: { title: 'Estaciones favoritas', requiresAuth: true },
+  },
+  {
+    path: '/preferencias',
+    name: 'preferencias',
+    component: () => import('@/views/PreferenciasView.vue'),
+    meta: { title: 'Preferencias', requiresAuth: true },
+  },
+  {
+    path: '/preferencias-clima',
+    redirect: { name: 'preferencias' },
   },
   {
     path: '/metricas',
@@ -138,6 +160,10 @@ router.beforeEach(async (to) => {
     }
   }
   if (to.name === 'login' && auth.isAuthenticated) {
+    const ok = await auth.ensureValidSession()
+    if (ok) return { name: 'dashboard' }
+  }
+  if (to.name === 'registro' && auth.isAuthenticated) {
     const ok = await auth.ensureValidSession()
     if (ok) return { name: 'dashboard' }
   }

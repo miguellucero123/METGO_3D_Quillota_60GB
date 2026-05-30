@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { login as apiLogin, fetchMe } from '@/api/metgoApi'
+import { login as authLogin, register as authRegister } from '@/services/authService'
+import { fetchMe } from '@/api/metgoApi'
 
 const TOKEN_KEY = 'metgo_access_token'
 const USER_KEY = 'metgo_user'
@@ -26,7 +27,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(username, password) {
-    const data = await apiLogin(username, password)
+    const data = await authLogin(username, password)
+    setSession(data.access_token, data.user)
+    return data
+  }
+
+  async function register(username, password, email) {
+    const data = await authRegister({ username, password, email })
     setSession(data.access_token, data.user)
     return data
   }
@@ -54,6 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isAuthenticated,
     login,
+    register,
     logout,
     clearSession,
     ensureValidSession,

@@ -8,8 +8,11 @@ import {
   Gauge,
   MapPin,
   Sun,
+  Star,
 } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
+import { useFavoritesStore } from '@/stores/favorites'
+import { useFormatTemp } from '@/composables/useFormatTemp'
 import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
 import WeatherScene from '@/components/meteo/WeatherScene.vue'
@@ -19,6 +22,8 @@ import { fetchPronostico, fetchHistorico } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
 
 const store = useMetgoStore()
+const favorites = useFavoritesStore()
+const { formatTemperatura } = useFormatTemp()
 const pronostico = ref([])
 const historico = ref([])
 const cargandoPron = ref(false)
@@ -33,6 +38,10 @@ const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
 const viento = computed(() => condicionViento(d.value?.viento))
 const lluviaHist = computed(() => acumuladoPrecipitacion(historico.value))
 const lluviaPron = computed(() => acumuladoPrecipitacion(pronostico.value))
+const rangoTermico = computed(() => {
+  if (!d.value) return '—'
+  return `${formatTemperatura(d.value.temperatura_min)} / ${formatTemperatura(d.value.temperatura_max)}`
+})
 
 async function cargar() {
   cargandoPron.value = true
@@ -64,6 +73,15 @@ watch(() => store.estacionActiva, cargar)
       <p class="page-subtitle">
         Condiciones y pronóstico · {{ store.estacionNombre }}
         <span v-if="d?.fuente" class="badge badge--neutral">{{ d.fuente }}</span>
+        <button
+          type="button"
+          class="btn-fav"
+          :class="{ 'btn-fav--on': favorites.isFavorite(store.estacionActiva) }"
+          :title="favorites.isFavorite(store.estacionActiva) ? 'Quitar favorita' : 'Añadir favorita'"
+          @click="favorites.toggle(store.estacionActiva)"
+        >
+          <Star aria-hidden="true" />
+        </button>
       </p>
       <div class="page-meta">
         <label class="inline-select">
@@ -85,7 +103,9 @@ watch(() => store.estacionActiva, cargar)
       <WeatherScene :datos="d" />
       <div class="weather-hero__aside">
         <p class="weather-hero__title">Valle de Aconcagua</p>
-        <p class="weather-hero__temp">{{ d.temperatura }}°C · humedad {{ d.humedad }}%</p>
+        <p class="weather-hero__temp">
+          {{ formatTemperatura(d.temperatura) }} · humedad {{ d.humedad }}%
+        </p>
         <div v-if="helada.nivel !== 'low'" class="frost-row">
           <FrostBadge size="sm" show-label />
           <span>{{ helada.label }}</span>
@@ -94,10 +114,10 @@ watch(() => store.estacionActiva, cargar)
     </div>
 
     <div v-if="d" class="card-grid card-grid--wide">
-      <MetricCard label="Temp. media" :value="d.temperatura" unit="°C">
+      <MetricCard label="Temp. media" :value="d.temperatura" :temp-celsius="d.temperatura">
         <template #icon><Thermometer /></template>
       </MetricCard>
-      <MetricCard label="Rango térmico" :value="`${d.temperatura_min} / ${d.temperatura_max}`" unit="°C">
+      <MetricCard label="Rango térmico" :value="rangoTermico">
         <template #icon><Sun /></template>
       </MetricCard>
       <MetricCard label="Humedad" :value="d.humedad" unit="%">
@@ -290,6 +310,26 @@ watch(() => store.estacionActiva, cargar)
   font-size: 0.85rem;
   color: var(--color-primary);
   text-decoration: none;
+}
+
+.btn-fav {
+  margin-left: 0.35rem;
+  padding: 0.15rem 0.35rem;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.btn-fav svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-fav--on {
+  color: var(--color-warning);
+  fill: var(--color-warning);
 }
 
 .link-config:hover {

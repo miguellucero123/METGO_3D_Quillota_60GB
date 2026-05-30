@@ -75,10 +75,28 @@ def register_auth_routes(app: Flask) -> None:
         password = data.get("password") or data.get("contraseña") or data.get("contrasena") or ""
 
         if not metgo_auth.verificar_credenciales(username, password):
-            return jsonify({"error": "Credenciales incorrectas"}), 401
+            return jsonify({"error": "Usuario o contraseña incorrectos"}), 401
 
         try:
             return jsonify(metgo_auth.crear_token_acceso(username))
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.post("/api/auth/register")
+    def register():
+        data = request.get_json(silent=True) or {}
+        username = (data.get("username") or data.get("usuario") or "").strip()
+        password = data.get("password") or data.get("contraseña") or data.get("contrasena") or ""
+        email = data.get("email") or data.get("correo")
+
+        ok, msg = metgo_auth.registrar_usuario(username, password, email)
+        if not ok:
+            return jsonify({"error": msg}), 400
+
+        try:
+            payload = metgo_auth.crear_token_acceso(username)
+            payload["message"] = msg
+            return jsonify(payload), 201
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 

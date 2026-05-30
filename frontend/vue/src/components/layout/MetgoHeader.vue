@@ -1,16 +1,18 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import { MapPin, LogOut, Activity } from 'lucide-vue-next'
+import { useRouter, useRoute } from 'vue-router'
+import { MapPin, LogOut, Activity, Settings } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import { useAuthStore } from '@/stores/auth'
 
 const store = useMetgoStore()
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 function logout() {
+  const needsLogin = !route.meta.public
   auth.logout()
-  router.push('/login')
+  router.push(needsLogin ? { name: 'login' } : { name: 'dashboard' })
 }
 </script>
 
@@ -35,6 +37,10 @@ function logout() {
         <span v-if="auth.user.role" class="user-chip__role">{{ auth.user.role }}</span>
         <span v-if="auth.user.tenant" class="user-chip__tenant">{{ auth.user.tenant }}</span>
       </div>
+      <router-link to="/preferencias" class="header-link" title="Preferencias de clima">
+        <Settings aria-hidden="true" />
+        <span class="sr-only">Preferencias</span>
+      </router-link>
       <label class="station-select">
         <span class="station-select__label">Estación</span>
         <select v-model="store.estacionActiva" @change="store.cargarDatosMeteo()">
@@ -183,5 +189,37 @@ function logout() {
   background: var(--color-primary-muted);
   border-color: var(--color-border-strong);
   color: var(--color-primary);
+}
+
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.header-link svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.header-link:hover {
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 </style>

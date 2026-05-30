@@ -26,8 +26,10 @@ import {
   necesidadRiego,
   acumuladoPrecipitacion,
 } from '@/utils/agroInsights'
+import { useFormatTemp } from '@/composables/useFormatTemp'
 
 const store = useMetgoStore()
+const { formatTemperatura } = useFormatTemp()
 const pronostico = ref([])
 const alertas = ref([])
 const recomendaciones = ref([])
@@ -123,7 +125,7 @@ watch(() => store.estacionActiva, cargarResumen)
       </div>
     </header>
 
-    <p v-if="store.error" class="alert-banner">{{ store.error }}</p>
+    <p v-if="store.error" class="alert-banner" role="alert">{{ store.error }}</p>
 
     <div v-if="store.cargando" class="skeleton">Cargando condiciones actuales…</div>
 
@@ -132,18 +134,30 @@ watch(() => store.estacionActiva, cargarResumen)
         <WeatherScene :datos="d" />
         <div class="weather-hero__aside">
           <p class="weather-hero__title">Condición actual</p>
-          <p class="weather-hero__temp">{{ d.temperatura }}°C · {{ d.temperatura_min }}° / {{ d.temperatura_max }}°</p>
+          <p class="weather-hero__temp">
+            {{ formatTemperatura(d.temperatura) }} ·
+            {{ formatTemperatura(d.temperatura_min) }} / {{ formatTemperatura(d.temperatura_max) }}
+          </p>
         </div>
       </div>
 
       <div class="card-grid card-grid--wide">
-        <MetricCard label="Temperatura media" :value="d.temperatura" unit="°C">
+        <MetricCard label="Temperatura media" :value="d.temperatura" :temp-celsius="d.temperatura">
           <template #icon><Thermometer /></template>
         </MetricCard>
-        <MetricCard label="Máxima" :value="d.temperatura_max" unit="°C">
+        <MetricCard
+          label="Máxima"
+          :value="d.temperatura_max"
+          :temp-celsius="d.temperatura_max"
+        >
           <template #icon><ArrowUp /></template>
         </MetricCard>
-        <MetricCard label="Mínima" :value="d.temperatura_min" unit="°C" :variant="helada.nivel === 'high' ? 'alert' : 'default'">
+        <MetricCard
+          label="Mínima"
+          :value="d.temperatura_min"
+          :temp-celsius="d.temperatura_min"
+          :variant="helada.nivel === 'high' ? 'alert' : 'default'"
+        >
           <template #icon><ArrowDown /></template>
         </MetricCard>
         <MetricCard label="Humedad relativa" :value="d.humedad" unit="%">

@@ -10,18 +10,30 @@ import io
 import sys
 from pathlib import Path
 
-# Importar datos reales de OpenMeteo
-try:
-    from datos_reales_openmeteo import obtener_datos_meteorologicos_reales, OpenMeteoData
-    DATOS_REALES_DISPONIBLES = True
-except ImportError:
-    DATOS_REALES_DISPONIBLES = False
-
 _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+import metgo_paths
+
+metgo_paths.setup_paths("01_meteo", "05_api_rest")
+
+from api_rest.services import (
+    comparativo_estaciones,
+    historico_meteo,
+    nombre_a_slug,
+)
+from datos_reales_openmeteo import obtener_datos_meteorologicos_reales
+
+DATOS_REALES_DISPONIBLES = True
+
 from metgo.streamlit_theme import bootstrap_dashboard, weather_scene_html, classify_weather_from_row, PLOTLY_CONFIG
+
+# Estaciones alineadas con API (valle) + referencia regional (OpenMeteo)
+ESTACIONES_VALLE = ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue"]
+ESTACIONES_EXTRA = ["Santiago", "Valparaiso", "Vina del Mar", "Casablanca"]
+ESTACIONES_TODAS = ESTACIONES_VALLE + ESTACIONES_EXTRA
+OPCIONES_ESTACION = ["Todas las Estaciones"] + ESTACIONES_TODAS
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
@@ -142,131 +154,143 @@ with st.sidebar:
         key="viz_selector"
     )
     
-    # Selector de estación
+    # Selector de estación (por defecto: todas)
     estacion = st.selectbox(
         "🌍 Estación:",
-        ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Santiago", "Valparaiso", "Vina del Mar", "Todas las Estaciones"],
-        key="estacion_selector"
+        OPCIONES_ESTACION,
+        index=0,
+        key="estacion_selector",
     )
 
-# Función para generar datos avanzados con OpenMeteo
-@st.cache_data
+# Función para generar datos avanzados (API valle + OpenMeteo regional)
+@st.cache_data(ttl=600, show_spinner=False)
 def generar_datos_visualizaciones_avanzados(periodo, estacion):
-    """Genera datos avanzados para visualizaciones usando OpenMeteo"""
-    
-    # Mapeo de períodos a días
+    """Genera datos avanzados para visualizaciones multi-estación."""
+
     dias_map = {
         "Últimos 7 días": 7,
         "Últimos 30 días": 30,
         "Últimos 3 meses": 90,
         "Últimos 6 meses": 180,
         "Último año": 365,
-        "Últimos 5 años": 1825
+        "Últimos 5 años": 1825,
     }
-    
+
     dias = dias_map[periodo]
-    
-    # Lista de estaciones disponibles
-    estaciones_disponibles = ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Santiago", "Valparaiso", "Vina del Mar"]
-    
+    if estacion == "Todas las Estaciones":
+        estaciones_objetivo = list(ESTACIONES_TODAS)
+    else:
+        estaciones_objetivo = [estacion]
+
     datos_completos = []
-    
-    # Obtener datos para cada estación
-    for est in estaciones_disponibles:
-        if estacion != "Todas las Estaciones" and est != estacion:
-            continue
-        
+
+    for est in estaciones_objetivo:
         try:
-            if DATOS_REALES_DISPONIBLES:
-                # Obtener datos reales de OpenMeteo
-                datos_reales = obtener_datos_meteorologicos_reales(est, 'historicos', min(dias, 92))
-                
-                if datos_reales is not None and len(datos_reales) > 0:
-                    # Procesar datos reales
-                    for _, row in datos_reales.iterrows():
-                        # Generar datos horarios si es período corto
-                        if dias <= 7:
-                            for hora in range(0, 24, 3):  # Cada 3 horas
-                                fecha_hora = row['fecha'] + timedelta(hours=hora)
-                                
-                                # Variación horaria simulada
-                                variacion_hora = np.sin(2 * np.pi * hora / 24) * 2
-                                temp_hora = row['temperatura_promedio'] + variacion_hora + np.random.normal(0, 1)
-                                
-                                # Calcular temperatura mínima y máxima para el día
-                                temp_min_dia = temp_hora - np.random.uniform(2, 6)
-                                temp_max_dia = temp_hora + np.random.uniform(2, 6)
-                                
-                                # Calcular sensación térmica agrícola
-                                humedad_hora = row['humedad_relativa'] + np.random.normal(0, 5)
-                                viento_hora = row['velocidad_viento'] + np.random.normal(0, 2)
-                                sensacion_termica = temp_hora * (1 + (humedad_hora - 50) * 0.01) * (1 + (viento_hora / 10) * 0.1)
-                                sensacion_termica = max(-10, min(50, sensacion_termica))
-                                
-                                datos_completos.append({
-                                    'Fecha': fecha_hora,
-                                    'Estacion': est,
-                                    'Temperatura': round(temp_hora, 1),
-                                    'Temperatura_Min': round(temp_min_dia, 1),
-                                    'Temperatura_Max': round(temp_max_dia, 1),
-                                    'Precipitacion': round(row['precipitacion'] / 24, 2),  # Distribuir precipitación diaria
-                                    'Humedad': round(humedad_hora, 1),
-                                    'Presion': round(row['presion_atmosferica'] + np.random.normal(0, 2), 1),
-                                    'Viento': round(viento_hora, 1),
-                                    'Nubosidad': round(np.random.uniform(0, 100), 1),  # Simulado
-                                    'Probabilidad_Niebla': round(np.random.uniform(0, 30) if humedad_hora > 80 else 0, 1),
-                                    'Indice_Helada': round(max(0, 32 - temp_hora) if temp_hora < 5 else 0, 1),
-                                    'Sensacion_Termica_Agricola': round(sensacion_termica, 1),
-                                    'Rendimiento': round(20 + temp_hora * 0.5 + humedad_hora * 0.1, 1),
-                                    'Calidad': round(min(100, max(0, 70 + temp_hora * 0.3 + humedad_hora * 0.2)), 1),
-                                    'Mes': fecha_hora.month,
-                                    'DiaSemana': fecha_hora.strftime('%A'),
-                                    'Hora': hora,
-                                    'Fuente': 'OpenMeteo Real'
-                                })
-                        else:
-                            # Para períodos largos, usar datos diarios
-                            # Calcular sensación térmica agrícola
-                            sensacion_termica = row['temperatura_promedio'] * (1 + (row['humedad_relativa'] - 50) * 0.01) * (1 + (row['velocidad_viento'] / 10) * 0.1)
-                            sensacion_termica = max(-10, min(50, sensacion_termica))
-                            
-                            datos_completos.append({
-                                'Fecha': row['fecha'],
-                                'Estacion': est,
-                                'Temperatura': round(row['temperatura_promedio'], 1),
-                                'Temperatura_Min': round(row['temperatura_min'], 1),
-                                'Temperatura_Max': round(row['temperatura_max'], 1),
-                                'Precipitacion': round(row['precipitacion'], 2),
-                                'Humedad': round(row['humedad_relativa'], 1),
-                                'Presion': round(row['presion_atmosferica'], 1),
-                                'Viento': round(row['velocidad_viento'], 1),
-                                'Nubosidad': round(np.random.uniform(20, 80), 1),
-                                'Probabilidad_Niebla': round(np.random.uniform(0, 40) if row['humedad_relativa'] > 75 else 0, 1),
-                                'Indice_Helada': round(max(0, 32 - row['temperatura_min']) if row['temperatura_min'] < 5 else 0, 1),
-                                'Sensacion_Termica_Agricola': round(sensacion_termica, 1),
-                                'Rendimiento': round(20 + row['temperatura_promedio'] * 0.5 + row['humedad_relativa'] * 0.1, 1),
-                                'Calidad': round(min(100, max(0, 70 + row['temperatura_promedio'] * 0.3 + row['humedad_relativa'] * 0.2)), 1),
-                                'Mes': row['fecha'].month,
-                                'DiaSemana': row['fecha'].strftime('%A'),
-                                'Hora': 12,
-                                'Fuente': 'OpenMeteo Real'
-                            })
-                else:
-                    # Fallback a datos simulados si no hay datos reales
+            if est in ESTACIONES_VALLE:
+                slug = nombre_a_slug(est)
+                hist = historico_meteo(slug, min(dias, 92)) or []
+                fuente_base = "API METGO"
+                if not hist:
                     datos_simulados = generar_datos_simulados(est, dias)
                     datos_completos.extend(datos_simulados)
+                    continue
+                for row in hist:
+                    fecha = pd.to_datetime(row.get("fecha"))
+                    temp_prom = float(row.get("temperatura") or row.get("temperatura_max") or 0)
+                    temp_min = float(row.get("temperatura_min") or temp_prom - 4)
+                    temp_max = float(row.get("temperatura_max") or temp_prom + 4)
+                    humedad = float(row.get("humedad") or 0)
+                    viento = float(row.get("viento") or 0)
+                    sensacion = temp_prom * (1 + (humedad - 50) * 0.01) * (1 + (viento / 10) * 0.1)
+                    sensacion = max(-10, min(50, sensacion))
+                    datos_completos.append(
+                        _fila_visual(
+                            fecha,
+                            est,
+                            temp_prom,
+                            temp_min,
+                            temp_max,
+                            float(row.get("precipitacion") or 0),
+                            humedad,
+                            float(row.get("presion") or 1013),
+                            viento,
+                            sensacion,
+                            fuente_base,
+                            hora=12,
+                        )
+                    )
+            elif DATOS_REALES_DISPONIBLES:
+                datos_reales = obtener_datos_meteorologicos_reales(est, "historicos", min(dias, 92))
+                if datos_reales is not None and len(datos_reales) > 0:
+                    for _, row in datos_reales.iterrows():
+                        sensacion = row["temperatura_promedio"] * (
+                            1 + (row["humedad_relativa"] - 50) * 0.01
+                        ) * (1 + (row["velocidad_viento"] / 10) * 0.1)
+                        sensacion = max(-10, min(50, sensacion))
+                        datos_completos.append(
+                            _fila_visual(
+                                row["fecha"],
+                                est,
+                                row["temperatura_promedio"],
+                                row["temperatura_min"],
+                                row["temperatura_max"],
+                                row["precipitacion"],
+                                row["humedad_relativa"],
+                                row["presion_atmosferica"],
+                                row["velocidad_viento"],
+                                sensacion,
+                                "OpenMeteo",
+                                hora=12,
+                            )
+                        )
+                else:
+                    datos_completos.extend(generar_datos_simulados(est, dias))
             else:
-                # Usar datos simulados si OpenMeteo no está disponible
-                datos_simulados = generar_datos_simulados(est, dias)
-                datos_completos.extend(datos_simulados)
-                
+                datos_completos.extend(generar_datos_simulados(est, dias))
         except Exception as e:
-            st.warning(f"No se pudieron obtener datos reales para {est}: {e}")
-            # Fallback a datos simulados
-            datos_simulados = generar_datos_simulados(est, dias)
-            datos_completos.extend(datos_simulados)
-    
+            st.warning(f"No se pudieron obtener datos para {est}: {e}")
+            datos_completos.extend(generar_datos_simulados(est, dias))
+
     return pd.DataFrame(datos_completos)
+
+
+def _fila_visual(
+    fecha,
+    estacion,
+    temp_prom,
+    temp_min,
+    temp_max,
+    precipitacion,
+    humedad,
+    presion,
+    viento,
+    sensacion,
+    fuente,
+    hora=12,
+):
+    """Fila normalizada para gráficos Plotly del dashboard 8506."""
+    fecha = pd.to_datetime(fecha)
+    return {
+        "Fecha": fecha,
+        "Estacion": estacion,
+        "Temperatura": round(float(temp_prom), 1),
+        "Temperatura_Min": round(float(temp_min), 1),
+        "Temperatura_Max": round(float(temp_max), 1),
+        "Precipitacion": round(float(precipitacion), 2),
+        "Humedad": round(float(humedad), 1),
+        "Presion": round(float(presion), 1),
+        "Viento": round(float(viento), 1),
+        "Nubosidad": round(np.random.uniform(20, 80), 1),
+        "Probabilidad_Niebla": round(np.random.uniform(0, 40) if humedad > 75 else 0, 1),
+        "Indice_Helada": round(max(0, 32 - temp_min) if temp_min < 5 else 0, 1),
+        "Sensacion_Termica_Agricola": round(float(sensacion), 1),
+        "Rendimiento": round(20 + temp_prom * 0.5 + humedad * 0.1, 1),
+        "Calidad": round(min(100, max(0, 70 + temp_prom * 0.3 + humedad * 0.2)), 1),
+        "Mes": fecha.month,
+        "DiaSemana": fecha.strftime("%A"),
+        "Hora": hora,
+        "Fuente": fuente,
+    }
 
 def generar_datos_simulados(estacion, dias):
     """Genera datos simulados como fallback"""
@@ -341,14 +365,46 @@ def generar_datos_simulados(estacion, dias):
     return datos_simulados
 
 # Información sobre datos reales
-if DATOS_REALES_DISPONIBLES:
-    st.success("🌐 **Datos Reales Disponibles:** Conectado a OpenMeteo API")
-else:
-    st.info("ℹ️ **Datos:** Usando datos simulados (OpenMeteo no disponible)")
+st.success("🌐 **Valle de Aconcagua:** datos vía API METGO (5 estaciones) + OpenMeteo (referencia regional)")
+
+# Resumen actual multi-estación (siempre visible)
+try:
+    resumen_valle = comparativo_estaciones()
+    if resumen_valle:
+        st.markdown("### 🌍 Resumen actual · Valle de Aconcagua")
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {
+                        "Estación": r.get("estacion"),
+                        "T° máx": f"{r.get('temperatura_max')}°C",
+                        "T° mín": f"{r.get('temperatura_min')}°C",
+                        "Lluvia": f"{r.get('precipitacion')} mm",
+                        "Viento": f"{r.get('viento')} km/h",
+                        "Humedad": f"{r.get('humedad')}%",
+                    }
+                    for r in resumen_valle
+                ]
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
+except Exception as e:
+    st.caption(f"No se pudo cargar resumen multi-estación: {e}")
 
 # Generar datos
 with st.spinner('📊 Generando datos para visualizaciones...'):
     df = generar_datos_visualizaciones_avanzados(periodo, estacion)
+
+if df.empty:
+    st.error("Sin datos para la selección actual. Pruebe «Todas las Estaciones» o sincronice ETL en la API.")
+    st.stop()
+
+estaciones_cargadas = sorted(df["Estacion"].unique())
+st.info(
+    f"**Estaciones con datos:** {', '.join(estaciones_cargadas)} "
+    f"({len(estaciones_cargadas)} de {len(ESTACIONES_TODAS) if estacion == 'Todas las Estaciones' else 1})"
+)
 
 # Botón de descarga de datos
 col1, col2, col3 = st.columns([2, 1, 1])

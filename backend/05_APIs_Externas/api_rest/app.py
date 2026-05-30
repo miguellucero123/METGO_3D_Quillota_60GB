@@ -144,6 +144,14 @@ def create_app() -> Flask:
     def meteo_comparativo():
         return jsonify(services.comparativo_estaciones(getattr(g, "tenant_id", None)))
 
+    @app.get("/api/meteo/comparativo/historico")
+    @auth_required
+    def meteo_comparativo_historico():
+        dias = request.args.get("dias", 14, type=int)
+        return jsonify(
+            services.comparativo_historico(dias, getattr(g, "tenant_id", None))
+        )
+
     @app.get("/api/metricas/globales")
     @auth_required
     def metricas_globales():

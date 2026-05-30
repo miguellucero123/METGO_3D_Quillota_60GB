@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import {
   LayoutDashboard,
   CloudSun,
@@ -17,18 +18,22 @@ import {
   Radio,
   Cpu,
   Link2,
+  Star,
+  UserCog,
 } from 'lucide-vue-next'
 
 const links = [
   { to: '/', label: 'Panel general', icon: LayoutDashboard },
   { to: '/estado', label: 'Estado sistema', icon: Activity },
   { to: '/integracion', label: 'Conexiones', icon: Link2 },
+  { to: '/favoritos', label: 'Favoritos', icon: Star, requiresAuth: true },
+  { to: '/preferencias', label: 'Preferencias', icon: UserCog, requiresAuth: true },
   { to: '/metricas', label: 'Métricas globales', icon: Gauge },
   { to: '/iot', label: 'Sensores IoT', icon: Radio },
   { to: '/ml', label: 'Modelos ML', icon: Cpu },
   { to: '/meteo', label: 'Meteorología', icon: CloudSun },
   { to: '/meteo/historico', label: 'Histórico meteo', icon: History },
-  { to: '/meteo/comparativo', label: 'Comparativo', icon: GitCompare },
+  { to: '/meteo/comparativo', label: 'Visualizaciones', icon: GitCompare },
   { to: '/agricola', label: 'Gestión agrícola', icon: Sprout },
   { to: '/monitoreo', label: 'Alertas', icon: BellRing },
   { to: '/alertas/config', label: 'Config. alertas', icon: SlidersHorizontal },
@@ -37,6 +42,10 @@ const links = [
   { to: '/modulos', label: 'Catálogo', icon: Grid3x3 },
   { to: '/configuracion', label: 'Configuración', icon: Settings },
 ]
+
+const auth = useAuthStore()
+
+const linksVisibles = links.filter((link) => !link.requiresAuth || auth.isAuthenticated)
 </script>
 
 <template>
@@ -47,7 +56,7 @@ const links = [
     </div>
     <nav class="sidebar__nav">
       <RouterLink
-        v-for="link in links"
+        v-for="link in linksVisibles"
         :key="link.to"
         :to="link.to"
         class="nav-link"

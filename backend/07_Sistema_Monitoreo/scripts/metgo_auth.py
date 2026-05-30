@@ -8,9 +8,13 @@ Roles: admin | agronomo | operador | lectura
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+import re
 import warnings
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 
 try:
@@ -50,9 +54,77 @@ _DEV_FALLBACK = {
 
 _warned_dev = False
 
+_USERNAME_RE = re.compile(r"^[a-z0-9_]{3,32}$")
+
+
+def _registry_path() -> Path:
+    for p in Path(__file__).resolve().parents:
+        if (p / "metgo_paths.py").exists():
+            gd = p / "backend" / "08_Gestion_Datos" / "datos_runtime"
+            gd.mkdir(parents=True, exist_ok=True)
+            return gd / "usuarios_registrados.json"
+    return Path("usuarios_registrados.json")
+
+
+def cargar_usuarios_registrados() -> dict[str, dict[str, Any]]:
+    path = _registry_path()
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def usuario_existe(usuario: str) -> bool:
+    u = usuario.lower().strip()
+    return u in USER_TO_ROLE or u in cargar_usuarios_registrados()
+
+
+def registrar_usuario(
+    usuario: str, contraseña: str, email: str | None = None
+) -> tuple[bool, str]:
+    """Auto-registro demo (rol lectura). Requiere METGO_ALLOW_SELF_REGISTER=1."""
+    if os.getenv("METGO_ALLOW_SELF_REGISTER", "1") != "1":
+        return False, "Registro deshabilitado en este entorno"
+
+    u = usuario.lower().strip()
+    if not _USERNAME_RE.match(u):
+        return (
+            False,
+            "Usuario inválido (3-32 caracteres: letras minúsculas, números, _)",
+        )
+    if u in USER_TO_ROLE:
+        return False, "Nombre de usuario reservado del sistema"
+    if u in cargar_usuarios_registrados():
+        return False, "El usuario ya existe"
+    if len(contraseña or "") < 6:
+        return False, "La contraseña debe tener al menos 6 caracteres"
+
+    reg = cargar_usuarios_registrados()
+    reg[u] = {
+        "password_hash": _hash_password(contraseña),
+        "email": (email or "").strip() or None,
+        "role": "lectura",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    path = _registry_path()
+    path.write_text(json.dumps(reg, indent=2, ensure_ascii=False), encoding="utf-8")
+    return True, "Usuario registrado correctamente"
+
 
 def rol_de_usuario(usuario: str) -> str:
-    return USER_TO_ROLE.get(usuario.lower().strip(), "lectura")
+    u = usuario.lower().strip()
+    if u in USER_TO_ROLE:
+        return USER_TO_ROLE[u]
+    if u in cargar_usuarios_registrados():
+        return str(cargar_usuarios_registrados()[u].get("role") or "lectura")
+    return "lectura"
 
 
 def tenant_de_usuario(usuario: str) -> str | None:
@@ -84,6 +156,8 @@ def _warn_dev_fallback() -> None:
 
 def obtener_password(usuario: str) -> str | None:
     usuario = usuario.lower().strip()
+    if usuario in cargar_usuarios_registrados():
+        return None
     if usuario not in USUARIOS_VALIDOS:
         return None
     env_key = f"METGO_PASSWORD_{usuario.upper()}"
@@ -99,7 +173,11 @@ def obtener_password(usuario: str) -> str | None:
 def verificar_credenciales(usuario: str, contraseña: str) -> bool:
     if not usuario or not contraseña:
         return False
-    esperada = obtener_password(usuario)
+    u = usuario.lower().strip()
+    reg = cargar_usuarios_registrados()
+    if u in reg:
+        return reg[u].get("password_hash") == _hash_password(contraseña)
+    esperada = obtener_password(u)
     return esperada is not None and esperada == contraseña
 
 
@@ -124,7 +202,7 @@ def crear_token_acceso(usuario: str) -> dict[str, Any]:
         raise RuntimeError("Instale PyJWT: pip install PyJWT")
 
     usuario = usuario.lower().strip()
-    if usuario not in USUARIOS_VALIDOS:
+    if not usuario_existe(usuario):
         raise ValueError("Usuario no permitido")
 
     role = rol_de_usuario(usuario)

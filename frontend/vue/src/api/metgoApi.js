@@ -78,6 +78,11 @@ export async function login(username, password) {
   return data
 }
 
+export async function register({ username, password, email }) {
+  const { data } = await api.post('/auth/register', { username, password, email })
+  return data
+}
+
 export async function fetchMe() {
   const { data } = await api.get('/auth/me')
   return data
@@ -135,6 +140,13 @@ export async function fetchAlertas(estacionId) {
 
 export async function fetchComparativo() {
   const { data } = await api.get('/meteo/comparativo')
+  return data
+}
+
+export async function fetchComparativoHistorico(dias = 14) {
+  const { data } = await api.get('/meteo/comparativo/historico', {
+    params: { dias },
+  })
   return data
 }
 

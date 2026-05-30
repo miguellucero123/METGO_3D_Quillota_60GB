@@ -1,10 +1,29 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import { useFormatTemp } from '@/composables/useFormatTemp'
+
+const props = defineProps({
   label: { type: String, required: true },
   value: { type: [String, Number], required: true },
   unit: { type: String, default: '' },
   hint: { type: String, default: '' },
   variant: { type: String, default: 'default' },
+  /** Si se indica, formatea según preferencias °C/°F (M7). */
+  tempCelsius: { type: Number, default: null },
+})
+
+const { formatTemperatura } = useFormatTemp()
+
+const displayValue = computed(() => {
+  if (props.tempCelsius != null && !Number.isNaN(Number(props.tempCelsius))) {
+    return formatTemperatura(props.tempCelsius)
+  }
+  return String(props.value)
+})
+
+const displayUnit = computed(() => {
+  if (props.tempCelsius != null) return ''
+  return props.unit
 })
 </script>
 
@@ -16,7 +35,7 @@ defineProps({
     <div class="metric-card__body">
       <p class="metric-card__label">{{ label }}</p>
       <p class="metric-card__value">
-        {{ value }}<span v-if="unit" class="metric-card__unit">{{ unit }}</span>
+        {{ displayValue }}<span v-if="displayUnit" class="metric-card__unit">{{ displayUnit }}</span>
       </p>
       <p v-if="hint" class="metric-card__hint">{{ hint }}</p>
     </div>

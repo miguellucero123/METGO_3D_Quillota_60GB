@@ -266,3 +266,34 @@ body {
 .app-shell--embed .app-main {
   padding: var(--space-md);
 }
+
+/* Tema oscuro (preferencias P7) */
+html[data-theme='dark'] {
+  --color-primary: #6db892;
+  --color-primary-hover: #5a9b72;
+  --color-primary-muted: #1e3328;
+  --color-primary-subtle: #152419;
+  --color-accent: #7ec4a0;
+  --color-bg: #0f1812;
+  --color-surface: #162019;
+  --color-surface-elevated: #1c2820;
+  --color-border: #2a3d32;
+  --color-border-strong: #3d5248;
+  --color-text: #e8f2eb;
+  --color-text-secondary: #b8cfc0;
+  --color-muted: #8fa895;
+  --color-success-bg: #1a3d2e;
+  --color-warning-bg: #3d3018;
+  --color-danger-bg: #3d1f1f;
+  --color-info-bg: #1e3328;
+}
+
+.alert-banner {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  border: 1px solid var(--color-danger);
+}

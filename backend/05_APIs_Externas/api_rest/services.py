@@ -405,6 +405,33 @@ def comparativo_estaciones(tenant_id: str | None = None) -> list[dict[str, Any]]
     return filas
 
 
+def comparativo_historico(dias: int = 14, tenant_id: str | None = None) -> list[dict[str, Any]]:
+    """Histórico reciente de todas las estaciones principales (visualizaciones / comparativo)."""
+    slugs = list(ESTACIONES_PRINCIPALES)
+    if tenant_id:
+        try:
+            from api_rest.tenants import estaciones_de_tenant
+
+            slugs = [s for s in estaciones_de_tenant(tenant_id) if s in SLUG_A_NOMBRE]
+        except ImportError:
+            pass
+    filas: list[dict[str, Any]] = []
+    limite = min(max(dias, 1), 92)
+    for slug in slugs:
+        hist = historico_meteo(slug, limite) or []
+        nombre = slug_a_nombre(slug)
+        for row in hist[-limite:]:
+            filas.append(
+                {
+                    **row,
+                    "estacion_id": slug,
+                    "estacion": nombre,
+                    "fecha": _fecha_dia(row.get("fecha")),
+                }
+            )
+    return filas
+
+
 def metricas_globales(tenant_id: str | None = None) -> dict[str, Any]:
     """KPIs consolidados del valle (Fase 2.1)."""
     filas = comparativo_estaciones(tenant_id)
