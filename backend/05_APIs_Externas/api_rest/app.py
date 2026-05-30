@@ -214,6 +214,21 @@ app = create_app()
 
 def main() -> None:
     # Render/Railway inyectan PORT; en local use METGO_API_PORT (8080)
+    if os.getenv("METGO_ML_AUTO_TRAIN", "1").lower() not in ("0", "false", "no"):
+        try:
+            from api_rest.integracion.ml_train_runner import ensure_modelos_servibles
+
+            boot = ensure_modelos_servibles()
+            if boot and boot.get("ok"):
+                print(
+                    f"ML bootstrap: {boot.get('entrenados', 0)} modelos entrenados "
+                    f"({boot.get('origen_datos', '?')})"
+                )
+            elif boot and boot.get("error"):
+                print(f"ML bootstrap omitido: {boot['error']}")
+        except Exception as exc:
+            print(f"ML bootstrap omitido: {exc}")
+
     port = int(os.getenv("PORT", os.getenv("METGO_API_PORT", "8080")))
     default_host = "0.0.0.0" if os.getenv("PORT") else "127.0.0.1"
     host = os.getenv("METGO_API_HOST", default_host)

@@ -6,10 +6,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
-import joblib
 
 # Configuración de la página
 st.set_page_config(
@@ -18,6 +14,26 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+def _ml_deps_ok() -> tuple[bool, str | None]:
+    try:
+        import sklearn  # noqa: F401
+        import joblib  # noqa: F401
+        return True, None
+    except ImportError as exc:
+        return False, str(exc)
+
+
+_ml_ok, _ml_err = _ml_deps_ok()
+if not _ml_ok:
+    st.error(f"Dependencias ML no instaladas: {_ml_err}")
+    st.info(
+        "En **Render** (servicio `metgo-streamlit`): haga **Manual Deploy** tras el push "
+        "con `scikit-learn` y `joblib` en `requirements.txt`. "
+        "Comando de build: `pip install -r requirements.txt`."
+    )
+    st.stop()
 
 # Título principal
 st.markdown("""
@@ -141,7 +157,10 @@ def generar_datos_entrenamiento(modelo):
 # Función para entrenar modelo
 def entrenar_modelo(modelo, datos):
     """Entrena un modelo de machine learning"""
-    
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.metrics import mean_squared_error, r2_score
+    from sklearn.model_selection import train_test_split
+
     if modelo == "Predicción Meteorológica":
         X = datos[['temperatura', 'humedad', 'presion', 'viento', 'precipitacion']]
         y = datos['temp_futura']

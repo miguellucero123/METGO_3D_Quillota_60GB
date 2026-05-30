@@ -103,7 +103,7 @@ class Visualizacion3DMETGO:
             fechas = pd.date_range(
                 start='2022-01-01',
                 end='2024-01-01',
-                freq='H'
+                freq='h'
             )
             
             # Generar datos sintéticos realistas

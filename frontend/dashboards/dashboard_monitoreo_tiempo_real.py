@@ -196,7 +196,7 @@ st.plotly_chart(fig_barras, use_container_width=True)
 st.markdown("### 📊 Evolución Temporal de Sensores")
 
 # Generar datos históricos simulados
-horas = pd.date_range(end=datetime.now(), periods=24, freq='H')
+horas = pd.date_range(end=datetime.now(), periods=24, freq='h')
 datos_historicos = []
 
 for sensor in datos_sensores['Sensor'].unique():

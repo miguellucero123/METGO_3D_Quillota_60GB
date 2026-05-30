@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { fetchEstaciones, fetchResumenMeteo, fetchHealth } from '@/api/metgoApi'
+import { fetchEstaciones, fetchResumenMeteo, fetchHealth, wakeApi } from '@/api/metgoApi'
 
 export const useMetgoStore = defineStore('metgo', () => {
   const estaciones = ref([
@@ -41,6 +41,15 @@ export const useMetgoStore = defineStore('metgo', () => {
       return
     }
     try {
+      const esPublico =
+        typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')
+      if (esPublico) {
+        try {
+          await wakeApi()
+        } catch {
+          /* cold start Render: reintento en fetchHealth */
+        }
+      }
       const health = await fetchHealth()
       apiOnline.value = health.status === 'ok' || health.status === 'degraded'
     } catch {

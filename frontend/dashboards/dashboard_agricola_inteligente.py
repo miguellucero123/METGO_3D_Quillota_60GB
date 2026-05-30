@@ -267,6 +267,57 @@ if recomendaciones:
             </div>
             """, unsafe_allow_html=True)
 
+# Descarga de reporte agrícola (HTML imprimible como PDF)
+def _generar_reporte_html(cultivo, fase, superficie, temp, humedad, precip, recs, alts):
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
+    rec_html = "".join(f"<li>{r}</li>" for r in recs) or "<li>Sin recomendaciones</li>"
+    alt_html = "".join(
+        f"<li><strong>{a.get('tipo', 'Alerta')}</strong>: {a.get('mensaje', '')}</li>"
+        for a in alts
+    ) or "<li>Sin alertas activas</li>"
+    return f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Reporte METGO - {cultivo}</title>
+<style>
+body{{font-family:Arial,sans-serif;margin:2rem;color:#222}}
+h1{{color:#2E7D32}} table{{border-collapse:collapse;width:100%;margin:1rem 0}}
+td,th{{border:1px solid #ccc;padding:8px;text-align:left}}
+@media print{{body{{margin:1cm}}}}
+</style></head><body>
+<h1>Reporte agrícola METGO</h1>
+<p>Generado: {fecha}</p>
+<table>
+<tr><th>Cultivo</th><td>{cultivo}</td></tr>
+<tr><th>Fase</th><td>{fase}</td></tr>
+<tr><th>Superficie</th><td>{superficie} ha</td></tr>
+<tr><th>Temperatura</th><td>{temp:.1f} °C</td></tr>
+<tr><th>Humedad</th><td>{humedad:.1f} %</td></tr>
+<tr><th>Precipitación 24h</th><td>{precip:.1f} mm</td></tr>
+</table>
+<h2>Recomendaciones</h2><ul>{rec_html}</ul>
+<h2>Alertas</h2><ul>{alt_html}</ul>
+</body></html>"""
+
+st.markdown("### 📄 Exportar reporte")
+reporte_html = _generar_reporte_html(
+    cultivo_seleccionado,
+    fase_actual,
+    superficie,
+    temp_actual,
+    humedad_actual,
+    precipitacion_actual,
+    recomendaciones,
+    alertas,
+)
+st.download_button(
+    label="📄 Descargar reporte (HTML / imprimir como PDF)",
+    data=reporte_html.encode("utf-8"),
+    file_name=f"reporte_metgo_{cultivo_seleccionado.lower()}_{datetime.now():%Y%m%d}.html",
+    mime="text/html",
+    type="primary",
+    use_container_width=True,
+    help="Abra el archivo en el navegador y use Imprimir → Guardar como PDF.",
+)
+
 # Botones de acción empresarial
 st.markdown("### 🚀 Acciones Empresariales")
 

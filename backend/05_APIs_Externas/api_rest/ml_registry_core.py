@@ -276,6 +276,24 @@ def sincronizar_registro(forzar: bool = False) -> dict[str, Any]:
         fname = Path(meta.get("modelo_path", "")).name
         model_path = quillota_dir / fname
         if not model_path.is_file():
+            entradas.append(
+                {
+                    "id": f"config:{var}",
+                    "paquete": "modelos_ml_quillota",
+                    "archivo": fname,
+                    "ruta_relativa": f"modelos_ml_quillota/{fname}",
+                    "variable": var,
+                    "variable_key": _norm(var),
+                    "servible": False,
+                    "sanity": {"ok": False, "motivo": "load: archivo no encontrado"},
+                    "motivo_no_servible": "load: archivo no encontrado",
+                    "features": meta.get("features", []),
+                    "modo": "configuracion_modelos",
+                    "r2": meta.get("r2"),
+                    "mse": meta.get("mse"),
+                    "scaler": None,
+                }
+            )
             continue
         features = meta.get("features", [])
         sanity = sanity_check(model_path, features=features)

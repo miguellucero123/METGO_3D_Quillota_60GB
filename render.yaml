@@ -30,7 +30,7 @@ services:
     name: metgo-streamlit
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python -c "import sklearn, joblib, openpyxl"
     startCommand: python -m streamlit run streamlit_app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
     envVars:
       - key: METGO_VUE_URL

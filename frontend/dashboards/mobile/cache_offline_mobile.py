@@ -98,7 +98,7 @@ def generate_sample_data():
     """Genera datos de muestra para el caché"""
     
     # Datos meteorológicos simulados
-    dates = pd.date_range(start=datetime.now() - timedelta(days=30), end=datetime.now(), freq='H')
+    dates = pd.date_range(start=datetime.now() - timedelta(days=30), end=datetime.now(), freq='h')
     
     meteorologicos_data = []
     for date in dates:

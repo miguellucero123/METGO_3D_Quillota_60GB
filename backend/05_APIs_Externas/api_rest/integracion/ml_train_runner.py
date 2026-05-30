@@ -10,6 +10,7 @@ Guarda en modelos_ml_quillota/ y actualiza configuracion_modelos.json.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -195,3 +196,36 @@ def entrenar_quillota(
         "registry_total": reg.get("total"),
         "finalizado": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
+
+
+def ensure_modelos_servibles(min_servibles: int = 1) -> dict[str, Any] | None:
+    """Entrena modelos Quillota si no hay artefactos servibles (p. ej. Render sin .joblib)."""
+    if os.getenv("METGO_ML_AUTO_TRAIN", "1").lower() in ("0", "false", "no"):
+        return None
+    try:
+        import joblib  # noqa: F401
+        from sklearn.ensemble import RandomForestRegressor  # noqa: F401
+    except ImportError:
+        return {"ok": False, "error": "scikit-learn/joblib no instalados"}
+
+    quillota_dir = _quillota_dir()
+    joblibs = list(quillota_dir.glob("modelo_*.joblib"))
+    try:
+        from api_rest.integracion import ml_registry
+
+        if joblibs:
+            reg = ml_registry.sincronizar_registro(forzar=True)
+            if reg.get("servibles", 0) >= min_servibles:
+                return None
+        else:
+            reg = ml_registry.leer_registro()
+            if reg.get("servibles", 0) >= min_servibles:
+                return None
+    except Exception:
+        if len(joblibs) >= 3:
+            return None
+
+    try:
+        return entrenar_quillota()
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}

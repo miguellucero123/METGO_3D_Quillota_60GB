@@ -93,7 +93,7 @@ def generar_datos_meteorologicos_profesionales(estacion, periodo, tipo):
     }
     
     dias = dias_map[periodo]
-    fechas = pd.date_range(end=datetime.now(), periods=dias, freq='H')
+    fechas = pd.date_range(end=datetime.now(), periods=dias, freq='D')
     
     # Generar datos meteorológicos profesionales
     datos = []

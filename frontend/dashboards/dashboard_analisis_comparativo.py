@@ -152,6 +152,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+st.info(
+    "**¿Qué hace este módulo?** Compara métricas agrícolas y climáticas entre años, meses, "
+    "estaciones del Valle de Aconcagua o cultivos. Use el panel lateral para elegir el tipo "
+    "de comparación y las métricas. Los gráficos muestran tendencias, variabilidad y valores "
+    "extremos sobre datos de referencia de 5 años (simulados si no hay histórico local)."
+)
+
 # Sidebar
 with st.sidebar:
     st.markdown("### 🎛️ Panel de Comparación")

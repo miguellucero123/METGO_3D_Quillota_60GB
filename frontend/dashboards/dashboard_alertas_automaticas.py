@@ -419,7 +419,7 @@ for alerta in alertas[:10]:  # Mostrar las 10 más recientes
 st.markdown('<h2 class="section-title-alertas">📈 Análisis de Tendencias</h2>', unsafe_allow_html=True)
 
 # Generar datos de tendencias
-fechas_tendencia = pd.date_range(end=datetime.now(), periods=24, freq='H')
+fechas_tendencia = pd.date_range(end=datetime.now(), periods=24, freq='h')
 tendencias_data = []
 
 for fecha in fechas_tendencia:

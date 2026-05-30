@@ -109,11 +109,29 @@ def _df_sin_prints(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:
     return _fetch_meteo_raw(estacion, tipo, dias)
 
 
-def _ultima_fila(df: pd.DataFrame | None) -> pd.Series | None:
+def _fila_hoy(df: pd.DataFrame | None) -> pd.Series | None:
+    """Fila del día actual (o la más reciente pasada), no el último día del pronóstico."""
     if df is None or df.empty:
         return None
-    ordenado = df.sort_values("fecha", ascending=False)
-    return ordenado.iloc[0]
+    work = df.copy()
+    if not pd.api.types.is_datetime64_any_dtype(work["fecha"]):
+        work["fecha"] = pd.to_datetime(work["fecha"])
+    hoy = pd.Timestamp.now().normalize()
+    fechas = work["fecha"].dt.normalize()
+    mask_hoy = fechas == hoy
+    if mask_hoy.any():
+        return work.loc[mask_hoy].sort_values("fecha").iloc[0]
+    pasados = work[fechas <= hoy]
+    if not pasados.empty:
+        return pasados.sort_values("fecha", ascending=False).iloc[0]
+    return work.sort_values("fecha", ascending=True).iloc[0]
+
+
+def _ultima_fila(df: pd.DataFrame | None) -> pd.Series | None:
+    """Última fila cronológica (histórico). Para resumen del día use _fila_hoy."""
+    if df is None or df.empty:
+        return None
+    return df.sort_values("fecha", ascending=False).iloc[0]
 
 
 def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
@@ -137,7 +155,7 @@ def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
 def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
     nombre = slug_a_nombre(estacion_id)
     df = _df_sin_prints(nombre, "pronostico", 7)
-    row = _ultima_fila(df)
+    row = _fila_hoy(df)
     if row is None:
         return None
     return _fila_a_resumen(row, estacion_id)
