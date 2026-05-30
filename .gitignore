@@ -31,6 +31,8 @@ frontend/vue/.vite/
 metgo/cache/
 
 # Data (runtime + compatibilidad raíz)
+/data
+/logs
 data/
 logs/
 backend/08_Gestion_Datos/datos_runtime/

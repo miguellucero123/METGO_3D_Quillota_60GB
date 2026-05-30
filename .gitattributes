@@ -1,0 +1,4 @@
+# Evitar 800+ diffs fantasma CRLF/LF entre Windows y Linux
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
