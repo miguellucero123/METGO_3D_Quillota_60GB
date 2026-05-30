@@ -105,11 +105,25 @@ export async function fetchPronostico(estacionId, dias = 7) {
   return data
 }
 
+/** Una fila por YYYY-MM-DD (SQLite vs OpenMeteo mezclaban formatos). */
+export function dedupeHistoricoPorDia(rows, dias = 30) {
+  if (!Array.isArray(rows)) return rows
+  const porDia = new Map()
+  for (const r of rows) {
+    const dia = String(r?.fecha ?? '').slice(0, 10)
+    if (dia.length === 10) porDia.set(dia, { ...r, fecha: dia })
+  }
+  return [...porDia.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-dias)
+    .map(([, r]) => r)
+}
+
 export async function fetchHistorico(estacionId, dias = 30) {
   const { data } = await api.get(`/meteo/${estacionId}/historico`, {
     params: { dias },
   })
-  return data
+  return dedupeHistoricoPorDia(data, dias)
 }
 
 export async function fetchAlertas(estacionId) {

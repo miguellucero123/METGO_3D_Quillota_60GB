@@ -134,12 +134,31 @@ def _ultima_fila(df: pd.DataFrame | None) -> pd.Series | None:
     return df.sort_values("fecha", ascending=False).iloc[0]
 
 
+def _fecha_dia(val: Any) -> str:
+    """Normaliza cualquier fecha a YYYY-MM-DD (evita duplicados local vs OpenMeteo)."""
+    if val is None:
+        return ""
+    if hasattr(val, "strftime"):
+        return val.strftime("%Y-%m-%d")
+    return str(val)[:10]
+
+
+def _dedupe_historico_por_dia(filas: list[dict[str, Any]], dias: int) -> list[dict[str, Any]]:
+    """Una fila por día; OpenMeteo pisa local si hay conflicto."""
+    por_dia: dict[str, dict[str, Any]] = {}
+    for r in filas:
+        dia = _fecha_dia(r.get("fecha"))
+        if dia:
+            por_dia[dia] = {**r, "fecha": dia}
+    return sorted(por_dia.values(), key=lambda x: x["fecha"])[-dias:]
+
+
 def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
     nombre = row.get("estacion", slug_a_nombre(estacion_id))
     return {
         "estacion_id": estacion_id,
         "estacion": str(nombre),
-        "fecha": row["fecha"].isoformat() if hasattr(row["fecha"], "isoformat") else str(row["fecha"]),
+        "fecha": _fecha_dia(row["fecha"]),
         "temperatura": round(float(row.get("temperatura_promedio") or 0), 1),
         "temperatura_max": round(float(row.get("temperatura_max") or 0), 1),
         "temperatura_min": round(float(row.get("temperatura_min") or 0), 1),
@@ -186,15 +205,16 @@ def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | 
         if registros:
             guardar_registros(estacion_id, registros)
         local = leer_registros(estacion_id, dias)
-        if local and not registros:
-            return local
-        if local and registros:
-            fechas_loc = {r.get("fecha") for r in local}
-            merged = local + [r for r in registros if r.get("fecha") not in fechas_loc]
-            return sorted(merged, key=lambda x: str(x.get("fecha", "")))[-dias:]
+        merged: list[dict[str, Any]] = []
+        if local:
+            merged.extend(local)
+        if registros:
+            merged.extend(registros)
+        if merged:
+            return _dedupe_historico_por_dia(merged, dias)
     except ImportError:
         pass
-    return registros if registros else None
+    return _dedupe_historico_por_dia(registros, dias) if registros else None
 
 
 def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:

@@ -17,17 +17,32 @@ const { data: historico, loading, error, run } = useApiCall(() =>
   fetchHistorico(store.estacionActiva, dias)
 )
 
+/** Una fila por día (últimos N), evita duplicados si la API mezcla fuentes. */
+function ultimosDiasUnicos(rows, n = 14) {
+  const porDia = new Map()
+  for (const r of rows || []) {
+    const dia = String(r.fecha ?? '').slice(0, 10)
+    if (dia) porDia.set(dia, r)
+  }
+  return [...porDia.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-n)
+    .map(([, r]) => r)
+}
+
+const ultimas2Semanas = computed(() => ultimosDiasUnicos(historico.value, 14))
+
 const labels = computed(() =>
-  (historico.value || []).slice(-14).map((r) => {
+  ultimas2Semanas.value.map((r) => {
     const d = r.fecha || r.actualizado || ''
     return d.slice(5, 10) || d.slice(0, 10)
   })
 )
 const tempsMax = computed(() =>
-  (historico.value || []).slice(-14).map((r) => r.temperatura_max)
+  ultimas2Semanas.value.map((r) => r.temperatura_max)
 )
 const lluvia = computed(() =>
-  (historico.value || []).slice(-14).map((r) => r.precipitacion)
+  ultimas2Semanas.value.map((r) => r.precipitacion)
 )
 
 async function cargarStore() {
