@@ -9,6 +9,7 @@ Genera/lee ml_registry.json en datos_runtime.
 from __future__ import annotations
 
 import json
+import os
 import warnings
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,6 +26,47 @@ PAQUETES_ML = (
     "modelos_ultra_optimizados",
     "modelos_hibridos_rapidos",
 )
+
+VARIABLES_QUILLOTA = (
+    "temperatura_max",
+    "temperatura_min",
+    "precipitacion",
+    "humedad",
+    "presion",
+)
+
+
+def _manifest_path() -> Path | None:
+    root = _modelos_root()
+    if not root:
+        return None
+    p = root / "model_manifest.json"
+    return p if p.is_file() else None
+
+
+def _leer_manifest() -> dict[str, Any]:
+    path = _manifest_path()
+    if not path:
+        return {"modelos": []}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _legacy_scan_habilitado() -> bool:
+    """Legacy joblib (2019–2023) incompatible; usar manifest unificado."""
+    if _manifest_path():
+        return False
+    v = os.getenv("METGO_ML_LEGACY_SCAN", "").lower()
+    if v in ("1", "true", "yes"):
+        return True
+    if v in ("0", "false", "no"):
+        return False
+    return not bool(os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID"))
+
+
+def _paquetes_a_escanear() -> tuple[str, ...]:
+    if _legacy_scan_habilitado():
+        return PAQUETES_ML
+    return ("modelos_ml_quillota",)
 
 ALGO_PREFIXES = (
     "GradientBoosting_",
@@ -108,15 +150,31 @@ def _vector_generico(resumen: dict[str, Any]) -> list[float]:
 
 def _vector_config(resumen: dict[str, Any], features: list[str]) -> list[float]:
     now = datetime.now()
+    tmax = float(resumen.get("temperatura_max", 20))
+    tmin = float(resumen.get("temperatura_min", 10))
+    hum = float(resumen.get("humedad", 0))
+    viento = float(resumen.get("viento", 0))
+    precip = float(resumen.get("precipitacion", 0))
+    presion = float(resumen.get("presion", 1013))
+    tprom = (tmax + tmin) / 2.0
+    nub = max(0.0, min(100.0, 100 - hum + precip * 5))
     mapping = {
         "dia_año": float(now.timetuple().tm_yday),
         "hora": float(now.hour),
-        "humedad": float(resumen.get("humedad", 0)),
-        "presion": float(resumen.get("presion", 1013)),
-        "viento_velocidad": float(resumen.get("viento", 0)),
-        "temperatura_max": float(resumen.get("temperatura_max", 20)),
-        "temperatura_min": float(resumen.get("temperatura_min", 10)),
-        "precipitacion": float(resumen.get("precipitacion", 0)),
+        "dia_semana": float(now.weekday()),
+        "mes": float(now.month),
+        "humedad": hum,
+        "humedad_relativa": hum,
+        "presion": presion,
+        "presion_atmosferica": presion,
+        "viento_velocidad": viento,
+        "velocidad_viento": viento,
+        "temperatura_max": tmax,
+        "temperatura_min": tmin,
+        "temperatura_promedio": tprom,
+        "temperatura_actual": tprom,
+        "precipitacion": precip,
+        "nubosidad": nub,
     }
     return [mapping.get(f, 0.0) for f in features]
 
@@ -261,21 +319,106 @@ def _escanear_paquete(paquete: str, root: Path) -> list[dict[str, Any]]:
     return entradas
 
 
+def _entrada_desde_manifest(meta: dict[str, Any], root: Path) -> dict[str, Any]:
+    paquete = meta["paquete"]
+    archivo = meta["archivo"]
+    model_path = root / paquete / archivo
+    scaler_path = None
+    if meta.get("scaler"):
+        scaler_path = root / paquete / meta["scaler"]
+    features = meta.get("features") or []
+    if not model_path.is_file():
+        return {
+            "id": f"{paquete}/{archivo}",
+            "paquete": paquete,
+            "archivo": archivo,
+            "ruta_relativa": f"{paquete}/{archivo}",
+            "variable": meta.get("variable", ""),
+            "variable_key": _norm(meta.get("variable", "")),
+            "servible": False,
+            "sanity": {"ok": False, "motivo": "load: archivo no encontrado"},
+            "motivo_no_servible": "load: archivo no encontrado",
+            "features": features,
+            "modo": meta.get("modo", "manifest"),
+            "r2": meta.get("r2"),
+            "mse": meta.get("mse"),
+            "scaler": meta.get("scaler"),
+            "path": str(model_path),
+        }
+    sanity = sanity_check(model_path, scaler_path, features=features)
+    return {
+        "id": f"{paquete}/{archivo}",
+        "paquete": paquete,
+        "archivo": archivo,
+        "ruta_relativa": f"{paquete}/{archivo}",
+        "variable": meta.get("variable", ""),
+        "variable_key": _norm(meta.get("variable", "")),
+        "servible": sanity.get("ok", False),
+        "sanity": sanity,
+        "motivo_no_servible": None if sanity.get("ok") else sanity.get("motivo"),
+        "features": features,
+        "modo": meta.get("modo", "manifest"),
+        "r2": meta.get("r2"),
+        "mse": meta.get("mse"),
+        "scaler": meta.get("scaler"),
+        "path": str(model_path),
+    }
+
+
 def sincronizar_registro(forzar: bool = False) -> dict[str, Any]:
-    """Escanea todos los paquetes y ejecuta sanity-check."""
+    """Escanea manifest o paquetes y ejecuta sanity-check."""
     global _CACHE, _CACHE_MTIME
     root = _modelos_root()
     if not root:
         return {"error": "Directorio modelos no encontrado", "modelos": []}
 
     entradas: list[dict[str, Any]] = []
-    cfg = _leer_config_quillota()
-    quillota_dir = root / "modelos_ml_quillota"
+    manifest = _leer_manifest()
 
-    for var, meta in cfg.items():
-        fname = Path(meta.get("modelo_path", "")).name
-        model_path = quillota_dir / fname
-        if not model_path.is_file():
+    if manifest.get("modelos"):
+        for meta in manifest["modelos"]:
+            entradas.append(_entrada_desde_manifest(meta, root))
+        # Entradas faltantes del catálogo (no entrenadas aún)
+        try:
+            from api_rest.integracion.ml_train_catalog import catalogo_completo
+
+            presentes = {(m["paquete"], m["archivo"]) for m in manifest["modelos"]}
+            for spec in catalogo_completo():
+                key = (spec["paquete"], spec["archivo"])
+                if key in presentes:
+                    continue
+                entradas.append(_entrada_desde_manifest(spec, root))
+        except ImportError:
+            pass
+    else:
+        cfg = _leer_config_quillota()
+        quillota_dir = root / "modelos_ml_quillota"
+
+        for var, meta in cfg.items():
+            fname = Path(meta.get("modelo_path", "")).name
+            model_path = quillota_dir / fname
+            if not model_path.is_file():
+                entradas.append(
+                    {
+                        "id": f"config:{var}",
+                        "paquete": "modelos_ml_quillota",
+                        "archivo": fname,
+                        "ruta_relativa": f"modelos_ml_quillota/{fname}",
+                        "variable": var,
+                        "variable_key": _norm(var),
+                        "servible": False,
+                        "sanity": {"ok": False, "motivo": "load: archivo no encontrado"},
+                        "motivo_no_servible": "load: archivo no encontrado",
+                        "features": meta.get("features", []),
+                        "modo": "configuracion_modelos",
+                        "r2": meta.get("r2"),
+                        "mse": meta.get("mse"),
+                        "scaler": None,
+                    }
+                )
+                continue
+            features = meta.get("features", [])
+            sanity = sanity_check(model_path, features=features)
             entradas.append(
                 {
                     "id": f"config:{var}",
@@ -284,53 +427,42 @@ def sincronizar_registro(forzar: bool = False) -> dict[str, Any]:
                     "ruta_relativa": f"modelos_ml_quillota/{fname}",
                     "variable": var,
                     "variable_key": _norm(var),
-                    "servible": False,
-                    "sanity": {"ok": False, "motivo": "load: archivo no encontrado"},
-                    "motivo_no_servible": "load: archivo no encontrado",
-                    "features": meta.get("features", []),
+                    "servible": sanity.get("ok", False),
+                    "sanity": sanity,
+                    "motivo_no_servible": None if sanity.get("ok") else sanity.get("motivo"),
+                    "features": features,
                     "modo": "configuracion_modelos",
                     "r2": meta.get("r2"),
                     "mse": meta.get("mse"),
                     "scaler": None,
                 }
             )
-            continue
-        features = meta.get("features", [])
-        sanity = sanity_check(model_path, features=features)
-        entradas.append(
-            {
-                "id": f"config:{var}",
-                "paquete": "modelos_ml_quillota",
-                "archivo": fname,
-                "ruta_relativa": f"modelos_ml_quillota/{fname}",
-                "variable": var,
-                "variable_key": _norm(var),
-                "servible": sanity.get("ok", False),
-                "sanity": sanity,
-                "motivo_no_servible": None if sanity.get("ok") else sanity.get("motivo"),
-                "features": features,
-                "modo": "configuracion_modelos",
-                "r2": meta.get("r2"),
-                "mse": meta.get("mse"),
-                "scaler": None,
-            }
-        )
 
-    archivos_config = {Path(m.get("modelo_path", "")).name for m in cfg.values()}
-    for paquete in PAQUETES_ML:
-        for raw in _escanear_paquete(paquete, root):
-            if paquete == "modelos_ml_quillota" and raw["archivo"] in archivos_config:
-                continue
-            model_path = Path(raw["path"])
-            scaler_path = (
-                model_path.parent / raw["scaler"] if raw.get("scaler") else None
-            )
-            sanity = sanity_check(model_path, scaler_path)
-            raw["id"] = f"{paquete}/{raw['archivo']}"
-            raw["servible"] = sanity.get("ok", False)
-            raw["sanity"] = sanity
-            raw["motivo_no_servible"] = None if sanity.get("ok") else sanity.get("motivo")
-            entradas.append(raw)
+        archivos_config = {Path(m.get("modelo_path", "")).name for m in cfg.values()}
+        if _legacy_scan_habilitado():
+            for paquete in _paquetes_a_escanear():
+                for raw in _escanear_paquete(paquete, root):
+                    if paquete == "modelos_ml_quillota" and raw["archivo"] in archivos_config:
+                        continue
+                    model_path = Path(raw["path"])
+                    scaler_path = (
+                        model_path.parent / raw["scaler"] if raw.get("scaler") else None
+                    )
+                    sanity = sanity_check(model_path, scaler_path)
+                    raw["id"] = f"{paquete}/{raw['archivo']}"
+                    raw["servible"] = sanity.get("ok", False)
+                    raw["sanity"] = sanity
+                    raw["motivo_no_servible"] = None if sanity.get("ok") else sanity.get("motivo")
+                    entradas.append(raw)
+
+        if not entradas:
+            try:
+                from api_rest.integracion.ml_train_catalog import catalogo_completo
+
+                for spec in catalogo_completo():
+                    entradas.append(_entrada_desde_manifest(spec, root))
+            except ImportError:
+                pass
 
     servibles = sum(1 for e in entradas if e.get("servible"))
     reg = {
@@ -338,7 +470,9 @@ def sincronizar_registro(forzar: bool = False) -> dict[str, Any]:
         "total": len(entradas),
         "servibles": servibles,
         "no_servibles": len(entradas) - servibles,
-        "paquetes": list(PAQUETES_ML),
+        "paquetes": list({e.get("paquete") for e in entradas}),
+        "legacy_scan": _legacy_scan_habilitado(),
+        "manifest": bool(manifest.get("modelos")),
         "modelos": entradas,
     }
     path = _registry_path()

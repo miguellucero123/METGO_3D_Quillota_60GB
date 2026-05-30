@@ -1,9 +1,9 @@
 {
   "temperatura_max": {
     "variable": "temperatura_max",
-    "mse": 1.3903010188356164,
-    "r2": 0.9780222378539757,
-    "modelo_path": "modelos_ml_quillota\\modelo_temperatura_max.joblib",
+    "mse": 1.1499711868612208,
+    "r2": 0.9818738143026341,
+    "modelo_path": "modelos_ml_quillota/modelo_temperatura_max.joblib",
     "features": [
       "dia_año",
       "hora",
@@ -14,9 +14,9 @@
   },
   "temperatura_min": {
     "variable": "temperatura_min",
-    "mse": 1.2975034417808218,
-    "r2": 0.9794259940945073,
-    "modelo_path": "modelos_ml_quillota\\modelo_temperatura_min.joblib",
+    "mse": 1.4213430353835783,
+    "r2": 0.9778089864903811,
+    "modelo_path": "modelos_ml_quillota/modelo_temperatura_min.joblib",
     "features": [
       "dia_año",
       "hora",
@@ -27,22 +27,23 @@
   },
   "precipitacion": {
     "variable": "precipitacion",
-    "mse": 0.8992522083333333,
-    "r2": -0.08957435784561518,
-    "modelo_path": "modelos_ml_quillota\\modelo_precipitacion.joblib",
+    "mse": 0.5409938800950455,
+    "r2": -0.026901874909163848,
+    "modelo_path": "modelos_ml_quillota/modelo_precipitacion.joblib",
     "features": [
       "dia_año",
       "hora",
       "humedad",
       "presion",
+      "viento_velocidad",
       "temperatura_max"
     ]
   },
   "humedad": {
     "variable": "humedad",
-    "mse": 250.38758787809576,
-    "r2": 0.007951609790295966,
-    "modelo_path": "modelos_ml_quillota\\modelo_humedad.joblib",
+    "mse": 93.71182819767975,
+    "r2": 0.15446468609349195,
+    "modelo_path": "modelos_ml_quillota/modelo_humedad.joblib",
     "features": [
       "dia_año",
       "hora",
@@ -53,9 +54,9 @@
   },
   "presion": {
     "variable": "presion",
-    "mse": 1.0153618180836326,
-    "r2": 0.9798896053256371,
-    "modelo_path": "modelos_ml_quillota\\modelo_presion.joblib",
+    "mse": 3.8466043443612628,
+    "r2": 0.8804190136433304,
+    "modelo_path": "modelos_ml_quillota/modelo_presion.joblib",
     "features": [
       "dia_año",
       "hora",

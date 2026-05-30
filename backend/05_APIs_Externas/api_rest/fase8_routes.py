@@ -22,9 +22,8 @@ def register_fase8_routes(app: Flask) -> None:
         """Entrenamiento ligero inmediato (admin, puede tardar varios segundos)."""
         body = request.get_json(silent=True) or {}
         return jsonify(
-            ml_train_runner.entrenar_quillota(
+            ml_train_runner.entrenar_todos(
                 estacion_id=body.get("estacion_id", "quillota"),
-                variables=body.get("variables"),
                 dias_datos=int(body.get("dias_datos", 365)),
             )
         )
