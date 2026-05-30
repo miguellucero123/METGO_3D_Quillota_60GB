@@ -71,12 +71,14 @@ def test_health_fase8(client):
 
 
 def test_ml_train_runner_unit(tmp_path, monkeypatch):
-    out = tmp_path / "quillota"
-    out.mkdir()
-    monkeypatch.setattr("api_rest.integracion.ml_train_runner._quillota_dir", lambda: out)
+    modelos = tmp_path / "modelos"
+    modelos.mkdir()
+    monkeypatch.setattr("api_rest.integracion.ml_train_runner._modelos_root", lambda: modelos)
+    from api_rest.integracion.ml_train_runner import _filas_sinteticas
+
     monkeypatch.setattr(
-        "api_rest.integracion.ml_train_runner._filas_desde_meteo",
-        lambda *a, **k: [],
+        "api_rest.integracion.ml_train_runner._obtener_filas_entrenamiento",
+        lambda *a, **k: (_filas_sinteticas(120), "sintetico", None),
     )
     from api_rest.integracion import ml_registry
 
@@ -86,4 +88,4 @@ def test_ml_train_runner_unit(tmp_path, monkeypatch):
     res = entrenar_quillota(variables=["temperatura_max"])
     assert res.get("ok") is True
     assert res.get("origen_datos") == "sintetico"
-    assert (out / "modelo_temperatura_max.joblib").is_file()
+    assert (modelos / "modelos_ml_quillota" / "modelo_temperatura_max.joblib").is_file()
