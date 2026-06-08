@@ -46,7 +46,7 @@ def register_fase4_routes(app: Flask) -> None:
     def agricola_riego(estacion_id: str):
         cultivo = request.args.get("cultivo", "palto")
         resumen = services.resumen_meteo(estacion_id)
-        return jsonify(agricola_extra.recomendacion_riego(resumen, cultivo))
+        return jsonify(agricola_extra.recomendacion_riego(resumen, cultivo, estacion_id))
 
     @app.get("/api/agricola/<estacion_id>/economico")
     @auth_required

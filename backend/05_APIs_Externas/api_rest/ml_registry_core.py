@@ -55,12 +55,7 @@ def _legacy_scan_habilitado() -> bool:
     """Legacy joblib (2019–2023) incompatible; usar manifest unificado."""
     if _manifest_path():
         return False
-    v = os.getenv("METGO_ML_LEGACY_SCAN", "").lower()
-    if v in ("1", "true", "yes"):
-        return True
-    if v in ("0", "false", "no"):
-        return False
-    return not bool(os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID"))
+    return os.getenv("METGO_ML_LEGACY_SCAN", "").lower() in ("1", "true", "yes")
 
 
 def _paquetes_a_escanear() -> tuple[str, ...]:
@@ -132,6 +127,40 @@ def _variable_desde_archivo(stem: str) -> str:
     if s.endswith("_scaler"):
         s = s[: -len("_scaler")]
     return s.replace("_", " ")
+
+
+CAMPO_POR_VARIABLE: dict[str, str] = {
+    "temperatura_max": "temperatura_max",
+    "temperatura_min": "temperatura_min",
+    "temperatura": "temperatura",
+    "temperatura_promedio": "temperatura",
+    "humedad": "humedad",
+    "humedad_relativa": "humedad",
+    "precipitacion": "precipitacion",
+    "presion": "presion",
+    "presion_atmosferica": "presion",
+    "viento": "viento",
+    "velocidad_viento": "viento",
+}
+
+
+def _valor_actual_variable(resumen: dict[str, Any], variable: str) -> float | None:
+    key = _norm(variable)
+    campo = CAMPO_POR_VARIABLE.get(key)
+    if not campo:
+        for k, c in CAMPO_POR_VARIABLE.items():
+            if key in k or k in key:
+                campo = c
+                break
+    if not campo:
+        return None
+    val = resumen.get(campo)
+    if val is None:
+        return None
+    try:
+        return round(float(val), 2)
+    except (TypeError, ValueError):
+        return None
 
 
 def _vector_generico(resumen: dict[str, Any]) -> list[float]:
@@ -613,6 +642,10 @@ def predecir_registrado(variable: str, estacion_id: str = "quillota") -> dict[st
         "variable": variable,
         "estacion_id": estacion_id,
         "prediccion": round(pred, 2),
+        "valor_actual": _valor_actual_variable(resumen, variable),
+        "tipo_dato": resumen.get("tipo_dato"),
+        "fecha_referencia": resumen.get("fecha"),
+        "fuente": resumen.get("fuente"),
         "modelo": entrada.get("archivo"),
         "paquete": entrada.get("paquete"),
         "registry_id": entrada.get("id"),

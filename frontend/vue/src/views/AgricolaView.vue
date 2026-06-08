@@ -4,6 +4,7 @@ import { Sprout, Droplets, ThermometerSnowflake, Tractor } from 'lucide-vue-next
 import { useMetgoStore } from '@/stores/metgo'
 import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
+import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
 import {
   fetchRecomendacionesAgricolas,
   fetchAgricolaRiego,
@@ -16,11 +17,13 @@ import {
   necesidadRiego,
   condicionViento,
 } from '@/utils/agroInsights'
+import { hoyChile } from '@/utils/meteoDates'
 
 const store = useMetgoStore()
 const recomendaciones = ref([])
 const cultivosApi = ref([])
 const riegoApi = ref(null)
+const riegoPorCultivo = ref([])
 const economico = ref(null)
 const cultivoSel = ref('palto')
 const cargando = ref(false)
@@ -30,6 +33,42 @@ const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
 const riego = computed(() => necesidadRiego(d.value?.humedad, d.value?.precipitacion))
 const viento = computed(() => condicionViento(d.value?.viento))
 
+const opcionesCultivo = computed(() => {
+  if (cultivosApi.value?.length) {
+    return cultivosApi.value.map((c) => ({
+      id: c.id || c.nombre?.toLowerCase(),
+      nombre: c.nombre || c.id,
+    }))
+  }
+  return [
+    { id: 'palto', nombre: 'Palto' },
+    { id: 'uva', nombre: 'Uva de mesa' },
+    { id: 'citricos', nombre: 'Cítricos' },
+    { id: 'hortalizas', nombre: 'Hortalizas' },
+  ]
+})
+
+const labelsRiego = computed(() => riegoPorCultivo.value.map((r) => r.nombre))
+const valuesRiego = computed(() => riegoPorCultivo.value.map((r) => r.mm))
+
+async function cargarRiegoTodos() {
+  const filas = []
+  for (const c of opcionesCultivo.value) {
+    try {
+      const r = await fetchAgricolaRiego(store.estacionActiva, c.id)
+      filas.push({
+        id: c.id,
+        nombre: c.nombre,
+        mm: Number(r.mm_sugeridos_hoy) || 0,
+        accion: r.accion,
+      })
+    } catch {
+      filas.push({ id: c.id, nombre: c.nombre, mm: 0, accion: '—' })
+    }
+  }
+  riegoPorCultivo.value = filas
+}
+
 async function cargar() {
   cargando.value = true
   try {
@@ -37,18 +76,29 @@ async function cargar() {
     cultivosApi.value = await fetchAgricolaCultivos()
     riegoApi.value = await fetchAgricolaRiego(store.estacionActiva, cultivoSel.value)
     economico.value = await fetchAgricolaEconomico(store.estacionActiva)
+    await cargarRiegoTodos()
   } catch {
     recomendaciones.value = []
     cultivosApi.value = []
     riegoApi.value = null
     economico.value = null
+    riegoPorCultivo.value = []
   } finally {
     cargando.value = false
   }
 }
 
+async function onCultivoChange() {
+  try {
+    riegoApi.value = await fetchAgricolaRiego(store.estacionActiva, cultivoSel.value)
+  } catch {
+    riegoApi.value = null
+  }
+}
+
 onMounted(cargar)
 watch(() => store.estacionActiva, cargar)
+watch(cultivoSel, onCultivoChange)
 </script>
 
 <template>
@@ -56,11 +106,21 @@ watch(() => store.estacionActiva, cargar)
     <header class="page-header">
       <h2 class="page-title">Gestión agrícola</h2>
       <p class="page-subtitle">
-        Recomendaciones operativas · {{ store.estacionNombre }} · Valle del Aconcagua
+        Recomendaciones operativas · {{ store.estacionNombre }} · {{ hoyChile() }} (Chile)
       </p>
+      <div class="page-meta">
+        <label class="inline-select">
+          Cultivo foco:
+          <select v-model="cultivoSel">
+            <option v-for="c in opcionesCultivo" :key="c.id" :value="c.id">
+              {{ c.nombre }}
+            </option>
+          </select>
+        </label>
+      </div>
     </header>
 
-    <div v-if="d" class="card-grid">
+    <div v-if="d" class="card-grid card-grid--wide">
       <MetricCard
         label="Riesgo heladas"
         :value="helada.label"
@@ -80,12 +140,27 @@ watch(() => store.estacionActiva, cargar)
       </MetricCard>
       <MetricCard
         v-if="riegoApi"
-        label="Riego API (02)"
-        :value="`${riegoApi.mm_sugeridos_hoy} mm · ${riegoApi.accion}`"
+        :label="`Riego hoy · ${cultivoSel}`"
+        :value="riegoApi.mm_sugeridos_hoy"
+        unit="mm"
+        :hint="`${riegoApi.accion} — ${riegoApi.motivo}`"
       >
         <template #icon><Droplets /></template>
       </MetricCard>
     </div>
+
+    <SectionCard
+      v-if="labelsRiego.length"
+      title="Riego sugerido por cultivo"
+      :subtitle="`Comparación en ${store.estacionNombre} (mm hoy)`"
+    >
+      <HorizontalBarChart
+        :labels="labelsRiego"
+        :values="valuesRiego"
+        unit=" mm"
+        kind="precip"
+      />
+    </SectionCard>
 
     <div class="layout-split">
       <SectionCard
@@ -101,39 +176,85 @@ watch(() => store.estacionActiva, cargar)
             <p class="reco-card__motivo">{{ r.motivo }}</p>
           </article>
         </div>
-        <p v-else class="muted">Sin recomendaciones (verifique la API).</p>
+        <p v-else class="muted">Sin recomendaciones (verifique la API en :8080).</p>
       </SectionCard>
 
-      <SectionCard title="Cultivos principales — Quillota" subtitle="Referencia regional MIP">
+      <SectionCard title="Cultivos principales — Quillota" subtitle="Catálogo módulo 02">
         <template #icon><Sprout /></template>
         <table class="data-table">
           <thead>
             <tr>
               <th>Cultivo</th>
-              <th>Importancia</th>
-              <th>Estado fenológico ref.</th>
+              <th>ID</th>
+              <th>Riego ref. (mm/d)</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="c in CULTIVOS_QUILLOTA" :key="c.nombre">
+            <tr v-for="c in opcionesCultivo" :key="c.id">
               <td><strong>{{ c.nombre }}</strong></td>
-              <td>{{ c.area }}</td>
-              <td>{{ c.estacion }}</td>
+              <td>{{ c.id }}</td>
+              <td>
+                {{
+                  riegoPorCultivo.find((r) => r.id === c.id)?.mm ??
+                  cultivosApi.find((x) => x.id === c.id)?.riego_mm_dia_base ??
+                  '—'
+                }}
+              </td>
             </tr>
           </tbody>
         </table>
-        <p class="muted footnote">
-          Condiciones actuales: {{ d?.temperatura }}°C media · {{ d?.humedad }}% HR ·
-          {{ d?.precipitacion }} mm precip.
+        <p v-if="d" class="muted footnote">
+          Condiciones actuales: {{ d.temperatura }}°C media · {{ d.humedad }}% HR ·
+          {{ d.precipitacion }} mm precip. · T° mín {{ d.temperatura_min }}°C
         </p>
       </SectionCard>
     </div>
+
+    <SectionCard
+      v-if="economico"
+      title="Proyección económica"
+      subtitle="Módulo 02 · referencia regional"
+    >
+      <p class="eco-line">
+        <span v-if="economico.ahorro_estimado_clp_mes">
+          Ahorro estimado: ${{ economico.ahorro_estimado_clp_mes?.toLocaleString('es-CL') }} CLP/mes
+        </span>
+        <span v-else>{{ economico.nota || economico.resumen || 'Sin detalle' }}</span>
+      </p>
+      <p v-if="economico.fuente" class="muted small">Fuente: {{ economico.fuente }}</p>
+    </SectionCard>
   </div>
 </template>
 
 <style scoped>
 .page {
   max-width: 1280px;
+}
+
+.page-meta {
+  margin-top: 0.5rem;
+}
+
+.inline-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.inline-select select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+}
+
+.metric-foot {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  display: block;
+  margin-top: 0.25rem;
 }
 
 .reco-cards {
@@ -168,9 +289,32 @@ watch(() => store.estacionActiva, cargar)
   margin-top: 0.25rem;
 }
 
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .footnote {
   margin-top: 1rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
+}
+
+.eco-line {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.small {
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
 }
 </style>

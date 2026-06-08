@@ -3,12 +3,14 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { GitCompare, BarChart3, Star } from 'lucide-vue-next'
 import SectionCard from '@/components/ui/SectionCard.vue'
-import SimpleBarChart from '@/components/charts/SimpleBarChart.vue'
+import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
+import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import { useApiCall } from '@/composables/useApiCall'
 import { fetchComparativo, fetchComparativoHistorico } from '@/api/metgoApi'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useMetgoStore } from '@/stores/metgo'
 import { useFormatTemp } from '@/composables/useFormatTemp'
+import { hoyChile } from '@/utils/meteoDates'
 
 const router = useRouter()
 const favorites = useFavoritesStore()
@@ -35,18 +37,20 @@ const labelsTempMax = computed(() =>
   estacionesResumen.value.map((r) => r.estacion || r.estacion_id)
 )
 const valuesTempMax = computed(() =>
-  estacionesResumen.value.map((r) => r.temperatura_max)
+  estacionesResumen.value.map((r) => Number(r.temperatura_max) || 0)
 )
 const valuesPrecip = computed(() =>
-  estacionesResumen.value.map((r) => r.precipitacion)
+  estacionesResumen.value.map((r) => Number(r.precipitacion) || 0)
 )
 
-/** Promedio T° máx últimas 2 semanas por estación. */
+/** Promedio T° máx por estación en ventana histórica (solo días ≤ hoy). */
 const promedioHistPorEstacion = computed(() => {
   const porEst = new Map()
   for (const r of historico.value || []) {
     const id = r.estacion_id || r.estacion
     if (!id) continue
+    const dia = String(r.fecha ?? '').slice(0, 10)
+    if (dia > hoyChile()) continue
     if (!porEst.has(id)) porEst.set(id, { nombre: r.estacion, sum: 0, n: 0 })
     const acc = porEst.get(id)
     acc.sum += Number(r.temperatura_max) || 0
@@ -56,12 +60,36 @@ const promedioHistPorEstacion = computed(() => {
     .map((x) => ({
       nombre: x.nombre,
       promedio: x.n ? Math.round((x.sum / x.n) * 10) / 10 : 0,
+      dias: x.n,
     }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre))
 })
 
 const labelsHist = computed(() => promedioHistPorEstacion.value.map((x) => x.nombre))
 const valuesHist = computed(() => promedioHistPorEstacion.value.map((x) => x.promedio))
+
+/** Serie diaria del valle: promedio T° máx de las 5 estaciones por día. */
+const serieValle = computed(() => {
+  const porDia = new Map()
+  for (const r of historico.value || []) {
+    const dia = String(r.fecha ?? '').slice(0, 10)
+    if (!dia || dia > hoyChile()) continue
+    if (!porDia.has(dia)) porDia.set(dia, { sum: 0, n: 0 })
+    const acc = porDia.get(dia)
+    acc.sum += Number(r.temperatura_max) || 0
+    acc.n += 1
+  }
+  return [...porDia.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([fecha, acc]) => ({
+      fecha,
+      temperatura_max: acc.n ? Math.round((acc.sum / acc.n) * 10) / 10 : 0,
+    }))
+})
+
+const labelsValle = computed(() => serieValle.value.map((r) => r.fecha))
+const tempsValle = computed(() => serieValle.value.map((r) => r.temperatura_max))
+
 const tempUnitLabel = computed(() => (unit.value === 'F' ? '°F' : '°C'))
 
 function irEstacion(id) {
@@ -76,14 +104,13 @@ function irEstacion(id) {
     <header class="page-header">
       <h2 class="page-title">Visualizaciones avanzadas</h2>
       <p class="page-subtitle">
-        Valle de Aconcagua · 5 estaciones principales
-        <span class="badge badge--neutral">Migrado desde puerto 8506</span>
+        Valle de Aconcagua · comparación por estación · hoy {{ hoyChile() }}
       </p>
     </header>
 
     <SectionCard
       title="Resumen actual por estación"
-      subtitle="Pronóstico del día · Quillota, Los Nogales, Hijuelas, Limache, Olmué"
+      subtitle="Condiciones del día en las 5 estaciones principales"
     >
       <template #icon><GitCompare /></template>
       <p v-if="loading" class="skeleton">Cargando estaciones…</p>
@@ -132,48 +159,69 @@ function irEstacion(id) {
       </template>
     </SectionCard>
 
-    <SectionCard
-      title="Comparativo T° máxima (hoy)"
-      subtitle="Todas las estaciones del valle"
-    >
-      <template #icon><BarChart3 /></template>
-      <SimpleBarChart
-        v-if="labelsTempMax.length && !loading"
-        :labels="labelsTempMax"
-        :values="valuesTempMax"
-        :unit="tempUnitLabel"
-      />
-    </SectionCard>
+    <div class="chart-grid">
+      <SectionCard title="T° máxima hoy" subtitle="Comparación horizontal entre estaciones">
+        <template #icon><BarChart3 /></template>
+        <HorizontalBarChart
+          v-if="labelsTempMax.length && !loading"
+          :labels="labelsTempMax"
+          :values="valuesTempMax"
+          :unit="tempUnitLabel"
+          kind="temp"
+        />
+      </SectionCard>
 
-    <SectionCard title="Precipitación (hoy)" subtitle="mm por estación">
-      <SimpleBarChart
-        v-if="labelsTempMax.length && !loading"
-        :labels="labelsTempMax"
-        :values="valuesPrecip"
-        unit=" mm"
-        color="var(--color-sky)"
+      <SectionCard title="Precipitación hoy" subtitle="mm por estación">
+        <HorizontalBarChart
+          v-if="labelsTempMax.length && !loading"
+          :labels="labelsTempMax"
+          :values="valuesPrecip"
+          unit=" mm"
+          kind="precip"
+        />
+      </SectionCard>
+    </div>
+
+    <SectionCard
+      title="Evolución del valle (T° máx media)"
+      :subtitle="`${labelsValle.length} días · promedio de las estaciones activas`"
+    >
+      <p v-if="loadingHist" class="skeleton">Cargando histórico…</p>
+      <p v-else-if="errorHist" class="error-text">{{ errorHist }}</p>
+      <TimeSeriesChart
+        v-else-if="labelsValle.length"
+        :labels="labelsValle"
+        :values="tempsValle"
+        :unit="tempUnitLabel"
+        :height="220"
+        y-axis-title="T° máx media"
       />
+      <p v-else class="muted">Sin histórico multi-estación.</p>
     </SectionCard>
 
     <SectionCard
       title="T° máxima promedio · 2 semanas"
-      subtitle="Histórico multi-estación vía API"
+      subtitle="Por estación (barras relativas al rango del período)"
     >
-      <p v-if="loadingHist" class="skeleton">Cargando histórico…</p>
-      <p v-else-if="errorHist" class="error-text">{{ errorHist }}</p>
-      <SimpleBarChart
-        v-else-if="labelsHist.length"
+      <HorizontalBarChart
+        v-if="labelsHist.length && !loadingHist"
         :labels="labelsHist"
         :values="valuesHist"
         :unit="tempUnitLabel"
-        color="var(--color-accent, #5a9b72)"
+        kind="temp"
       />
-      <p v-else class="muted">Sin histórico multi-estación.</p>
+      <p v-else-if="!loadingHist" class="muted">Sin histórico multi-estación.</p>
     </SectionCard>
   </div>
 </template>
 
 <style scoped>
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
 .table-wrap {
   overflow-x: auto;
 }

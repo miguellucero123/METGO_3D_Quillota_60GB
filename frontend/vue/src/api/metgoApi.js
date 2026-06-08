@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { seriesHistoricoPorDia, filtrarPronosticoDesdeHoy } from '@/utils/meteoDates'
 
 const TOKEN_KEY = 'metgo_access_token'
 
@@ -103,25 +104,80 @@ export async function fetchResumenMeteo(estacionId, tipo = 'pronostico') {
   return data
 }
 
-export async function fetchPronostico(estacionId, dias = 7) {
-  const { data } = await api.get(`/meteo/${estacionId}/pronostico`, {
+export async function fetchPrecipitacionCalibrada(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/precipitacion-calibrada`, {
     params: { dias },
   })
   return data
 }
 
-/** Una fila por YYYY-MM-DD (SQLite vs OpenMeteo mezclaban formatos). */
-export function dedupeHistoricoPorDia(rows, dias = 30) {
-  if (!Array.isArray(rows)) return rows
+export async function fetchPrecipitacionBruta(estacionId, dias = 7) {
+  const { data } = await api.get(`/precip/${estacionId}/pronostico`, { params: { dias } })
+  return data
+}
+
+export async function fetchAlertasPrecipitacion(estacionId) {
+  const { data } = await api.get(`/precip/${estacionId}/alertas`)
+  return data
+}
+
+export async function fetchAlertasPrecipitacionGlobal(estacionId) {
+  const { data } = await api.get('/alertas/precipitacion', {
+    params: estacionId ? { estacion: estacionId } : {},
+  })
+  return data
+}
+
+export async function fetchPronosticoHeladas(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/heladas`, { params: { dias } })
+  return data
+}
+
+export async function fetchAlertasHelada(estacionId) {
+  const { data } = await api.get('/alertas/helada', {
+    params: estacionId ? { estacion: estacionId } : {},
+  })
+  return data
+}
+
+export async function fetchPrecipitacionHistorico(estacionId, desde, hasta) {
+  const { data } = await api.get(`/precip/${estacionId}/historico`, {
+    params: { desde, hasta, include_stats: true },
+  })
+  return data
+}
+
+export async function fetchPrecipitacionAcumulado(estacionId, rango = '7d') {
+  const { data } = await api.get(`/precip/${estacionId}/acumulado`, { params: { rango } })
+  return data
+}
+
+export async function fetchCronogramaRiego(estacionId, cultivo = 'palto') {
+  const { data } = await api.get(`/agricola/${estacionId}/cronograma-riego`, {
+    params: { cultivo },
+  })
+  return data
+}
+
+export async function fetchPronostico(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/pronostico`, {
+    params: { dias },
+  })
   const porDia = new Map()
-  for (const r of rows) {
+  for (const r of filtrarPronosticoDesdeHoy(data)) {
     const dia = String(r?.fecha ?? '').slice(0, 10)
     if (dia.length === 10) porDia.set(dia, { ...r, fecha: dia })
   }
   return [...porDia.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-dias)
-    .map(([, r]) => r)
+    .slice(0, dias)
+    .map(([, row]) => row)
+}
+
+/** Una fila por YYYY-MM-DD; excluye días futuros (OpenMeteo forecast mezclado). */
+export function dedupeHistoricoPorDia(rows, dias = 30) {
+  if (!Array.isArray(rows)) return rows
+  return seriesHistoricoPorDia(rows, dias)
 }
 
 export async function fetchHistorico(estacionId, dias = 30) {

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import {
   LayoutDashboard,
   CloudSun,
+  CloudRain,
   Sprout,
   BellRing,
   Server,
@@ -32,6 +33,7 @@ const links = [
   { to: '/iot', label: 'Sensores IoT', icon: Radio },
   { to: '/ml', label: 'Modelos ML', icon: Cpu },
   { to: '/meteo', label: 'Meteorología', icon: CloudSun },
+  { to: '/meteo/precipitacion', label: 'Precipitación', icon: CloudRain },
   { to: '/meteo/historico', label: 'Histórico meteo', icon: History },
   { to: '/meteo/comparativo', label: 'Visualizaciones', icon: GitCompare },
   { to: '/agricola', label: 'Gestión agrícola', icon: Sprout },

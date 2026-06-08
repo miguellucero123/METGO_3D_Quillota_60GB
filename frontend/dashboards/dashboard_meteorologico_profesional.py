@@ -1,373 +1,475 @@
-import streamlit as st
-import pandas as pd
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Dashboard meteorológico profesional (puerto 8502) — datos OpenMeteo vía API METGO."""
+
+from __future__ import annotations
+
+import io
+import sys
+from contextlib import redirect_stdout
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from datetime import datetime, timedelta
-import random
-import sys
-from pathlib import Path
 
 _DASH = Path(__file__).resolve().parent
+_ROOT = _DASH.parents[1]
 if str(_DASH) not in sys.path:
     sys.path.insert(0, str(_DASH))
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+import metgo_paths
+
+metgo_paths.setup_paths("01_meteo", "05_api_rest")
+
+from api_rest.services import historico_meteo, nombre_a_slug, pronostico_meteo, resumen_meteo
+from datos_reales_openmeteo import obtener_datos_meteorologicos_reales
+from meteo_dashboard_utils import hoy_chile as _hoy_chile_util
 
 from metgo_dashboard_init import page_config_and_theme
 
 st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Análisis Meteorológico Profesional",
-    "Quillota y región · histórico y pronóstico",
+    "Quillota y región · histórico y pronóstico (OpenMeteo)",
     module="meteo",
     page_icon="🌤️",
 )
 
-# Sidebar para controles
-st.sidebar.markdown("### 🎛️ Panel de Control")
-
-# Selector de estación meteorológica
-estaciones = {
+ESTACIONES = {
     "Quillota": {"lat": -32.8834, "lon": -71.2489, "altura": 120},
     "Los Nogales": {"lat": -32.8500, "lon": -71.2000, "altura": 150},
     "Hijuelas": {"lat": -32.8167, "lon": -71.1833, "altura": 200},
     "Limache": {"lat": -33.0167, "lon": -71.2667, "altura": 80},
-    "Olmue": {"lat": -33.0000, "lon": -71.1833, "altura": 100}
+    "Olmue": {"lat": -33.0000, "lon": -71.2167, "altura": 100},
 }
 
-estacion_seleccionada = st.sidebar.selectbox("🌍 Estación Meteorológica:", list(estaciones.keys()))
-periodo_analisis = st.sidebar.selectbox("📅 Período de Análisis:", 
-                                       ["Últimos 30 días", "Últimos 3 meses", "Últimos 6 meses", "Último año", "Últimos 5 años"])
-tipo_datos = st.sidebar.selectbox("📊 Tipo de Datos:", 
-                                 ["Datos Históricos", "Pronóstico 7 días", "Pronóstico 15 días", "Análisis Comparativo"])
+DIAS_MAP = {
+    "Últimos 30 días": 30,
+    "Últimos 3 meses": 90,
+    "Últimos 6 meses": 180,
+    "Último año": 365,
+    "Últimos 5 años": 92,
+}
 
-# Función para generar datos meteorológicos profesionales
-@st.cache_data
-def generar_datos_meteorologicos_profesionales(estacion, periodo, tipo):
-    """Genera datos meteorológicos profesionales con múltiples variables"""
-    
-    # Configuración específica por estación
-    configs = {
-        "Quillota": {
-            "temp_base": 18.5, "temp_var": 8.0, "humedad_base": 65, "humedad_var": 20,
-            "presion_base": 1013, "presion_var": 15, "viento_base": 8, "viento_var": 5,
-            "precip_base": 0.2, "precip_var": 2.0, "radiacion_base": 450, "radiacion_var": 100,
-            "punto_rocio_base": 12, "punto_rocio_var": 5, "indice_calor_base": 20, "indice_calor_var": 8
-        },
-        "Los Nogales": {
-            "temp_base": 17.8, "temp_var": 9.0, "humedad_base": 70, "humedad_var": 18,
-            "presion_base": 1012, "presion_var": 16, "viento_base": 10, "viento_var": 6,
-            "precip_base": 0.3, "precip_var": 2.5, "radiacion_base": 420, "radiacion_var": 110,
-            "punto_rocio_base": 11, "punto_rocio_var": 6, "indice_calor_base": 19, "indice_calor_var": 9
-        },
-        "Hijuelas": {
-            "temp_base": 16.2, "temp_var": 10.0, "humedad_base": 75, "humedad_var": 15,
-            "presion_base": 1011, "presion_var": 18, "viento_base": 12, "viento_var": 7,
-            "precip_base": 0.4, "precip_var": 3.0, "radiacion_base": 400, "radiacion_var": 120,
-            "punto_rocio_base": 10, "punto_rocio_var": 7, "indice_calor_base": 18, "indice_calor_var": 10
-        },
-        "Limache": {
-            "temp_base": 19.0, "temp_var": 7.5, "humedad_base": 60, "humedad_var": 22,
-            "presion_base": 1014, "presion_var": 14, "viento_base": 7, "viento_var": 4,
-            "precip_base": 0.1, "precip_var": 1.5, "radiacion_base": 470, "radiacion_var": 90,
-            "punto_rocio_base": 13, "punto_rocio_var": 4, "indice_calor_base": 21, "indice_calor_var": 7
-        },
-        "Olmue": {
-            "temp_base": 18.8, "temp_var": 8.5, "humedad_base": 68, "humedad_var": 19,
-            "presion_base": 1013, "presion_var": 15, "viento_base": 9, "viento_var": 5,
-            "precip_base": 0.25, "precip_var": 2.2, "radiacion_base": 460, "radiacion_var": 95,
-            "punto_rocio_base": 12.5, "punto_rocio_var": 5, "indice_calor_base": 20.5, "indice_calor_var": 8
-        }
-    }
-    
-    config = configs[estacion]
-    
-    # Determinar número de días según período
-    dias_map = {
-        "Últimos 30 días": 30,
-        "Últimos 3 meses": 90,
-        "Últimos 6 meses": 180,
-        "Último año": 365,
-        "Últimos 5 años": 1825
-    }
-    
-    dias = dias_map[periodo]
-    fechas = pd.date_range(end=datetime.now(), periods=dias, freq='D')
-    
-    # Generar datos meteorológicos profesionales
+
+def _hoy_chile() -> str:
+    return _hoy_chile_util()
+
+
+def _to_celsius_display(value_c: float, unidad: str) -> float:
+    if unidad == "F":
+        return value_c * 9 / 5 + 32
+    return value_c
+
+
+def _unidad_suffix(unidad: str) -> str:
+    return "°F" if unidad == "F" else "°C"
+
+
+def _punto_rocio_c(temp_c: float, rh: float) -> float:
+    if rh <= 0:
+        return temp_c
+    a, b = 17.27, 237.7
+    alpha = (a * temp_c) / (b + temp_c) + np.log(rh / 100.0)
+    return (b * alpha) / (a - alpha)
+
+
+def _indice_calor_c(temp_c: float, rh: float) -> float:
+    """Aproximación índice de calor (solo relevante T > 27 °C)."""
+    if temp_c < 27:
+        return temp_c
+    t_f = temp_c * 9 / 5 + 32
+    hi = (
+        -42.379
+        + 2.04901523 * t_f
+        + 10.14333127 * rh
+        - 0.22475541 * t_f * rh
+        - 0.00683783 * t_f**2
+        - 0.05481717 * rh**2
+        + 0.00122874 * t_f**2 * rh
+        + 0.00085282 * t_f * rh**2
+        - 0.00000199 * t_f**2 * rh**2
+    )
+    return (hi - 32) * 5 / 9
+
+
+def _filas_a_dataframe(filas: list[dict], unidad_temp: str) -> pd.DataFrame:
     datos = []
-    
-    for i, fecha in enumerate(fechas):
-        # Variación estacional
-        mes = fecha.month
-        estacional_temp = np.sin(2 * np.pi * mes / 12) * 3
-        estacional_humedad = -np.sin(2 * np.pi * mes / 12) * 10
-        
-        # Variación diaria
-        hora = fecha.hour
-        diaria_temp = np.sin(2 * np.pi * hora / 24) * 5
-        diaria_humedad = -np.sin(2 * np.pi * hora / 24) * 15
-        
-        # Variables meteorológicas
-        temperatura = config["temp_base"] + estacional_temp + diaria_temp + np.random.normal(0, config["temp_var"]/3)
-        humedad = max(10, min(100, config["humedad_base"] + estacional_humedad + diaria_humedad + np.random.normal(0, config["humedad_var"]/3)))
-        presion = config["presion_base"] + np.random.normal(0, config["presion_var"]/3)
-        viento = max(0, config["viento_base"] + np.random.normal(0, config["viento_var"]/2))
-        precipitacion = max(0, config["precip_base"] + np.random.exponential(config["precip_var"]/3))
-        radiacion = max(0, min(1000, config["radiacion_base"] + np.random.normal(0, config["radiacion_var"]/2)))
-        
-        # Variables derivadas
-        punto_rocio = config["punto_rocio_base"] + np.random.normal(0, config["punto_rocio_var"]/3)
-        indice_calor = config["indice_calor_base"] + np.random.normal(0, config["indice_calor_var"]/3)
-        
-        # Índices meteorológicos
-        indice_uv = max(0, min(12, 8 + np.sin(2 * np.pi * hora / 24) * 4 + np.random.normal(0, 1)))
-        visibilidad = max(0.1, min(20, 15 + np.random.normal(0, 3)))
-        
-        datos.append({
-            'Fecha': fecha,
-            'Temperatura_C': round(temperatura, 1),
-            'Humedad_%': round(humedad, 1),
-            'Presion_hPa': round(presion, 1),
-            'Viento_kmh': round(viento, 1),
-            'Precipitacion_mm': round(precipitacion, 2),
-            'Radiacion_Wm2': round(radiacion, 1),
-            'Punto_Rocio_C': round(punto_rocio, 1),
-            'Indice_Calor_C': round(indice_calor, 1),
-            'Indice_UV': round(indice_uv, 1),
-            'Visibilidad_km': round(visibilidad, 1)
-        })
-    
-    return pd.DataFrame(datos)
+    for row in filas:
+        fecha = pd.to_datetime(str(row.get("fecha", ""))[:10])
+        temp_c = float(row.get("temperatura") or 0)
+        tmax_c = float(row.get("temperatura_max") or temp_c)
+        tmin_c = float(row.get("temperatura_min") or temp_c)
+        humedad = float(row.get("humedad") or 0)
+        temp_show = _to_celsius_display(temp_c, unidad_temp)
+        tmax_show = _to_celsius_display(tmax_c, unidad_temp)
+        tmin_show = _to_celsius_display(tmin_c, unidad_temp)
+        pr = _punto_rocio_c(temp_c, humedad)
+        pr_show = _to_celsius_display(pr, unidad_temp)
+        calor_c = _indice_calor_c(tmax_c, humedad)
+        calor_show = _to_celsius_display(calor_c, unidad_temp)
+        datos.append(
+            {
+                "Fecha": fecha,
+                "Temperatura_C": round(temp_show, 1),
+                "Temperatura_Max_C": round(tmax_show, 1),
+                "Temperatura_Min_C": round(tmin_show, 1),
+                "Humedad_%": round(humedad, 1),
+                "Presion_hPa": round(float(row.get("presion") or 0), 1),
+                "Viento_kmh": round(float(row.get("viento") or 0), 1),
+                "Precipitacion_mm": round(float(row.get("precipitacion") or 0), 2),
+                "Punto_Rocio_C": round(pr_show, 1),
+                "Indice_Calor_C": round(calor_show, 1),
+                "Fuente": row.get("fuente", "METGO"),
+            }
+        )
+    return pd.DataFrame(datos).sort_values("Fecha").reset_index(drop=True)
 
-# Generar datos
-with st.spinner('🌤️ Generando datos meteorológicos profesionales...'):
-    df_meteo = generar_datos_meteorologicos_profesionales(estacion_seleccionada, periodo_analisis, tipo_datos)
 
-# Métricas principales
+@st.cache_data(ttl=600, show_spinner=False)
+def cargar_datos_meteorologicos(estacion: str, periodo: str, tipo_datos: str) -> tuple[pd.DataFrame, str]:
+    """Datos reales: API METGO (store + OpenMeteo) o fallback directo OpenMeteo."""
+    slug = nombre_a_slug(estacion)
+    dias = min(DIAS_MAP.get(periodo, 30), 92)
+    hoy = _hoy_chile()
+    filas: list[dict] = []
+    fuente = "API METGO + OpenMeteo"
+
+    try:
+        if tipo_datos.startswith("Pronóstico"):
+            pron_dias = 7 if "7" in tipo_datos else 15
+            filas = pronostico_meteo(slug, pron_dias) or []
+            filas = [r for r in filas if str(r.get("fecha", ""))[:10] >= hoy]
+            fuente = "OpenMeteo pronóstico (America/Santiago)"
+        else:
+            filas = historico_meteo(slug, dias) or []
+            filas = [r for r in filas if str(r.get("fecha", ""))[:10] <= hoy]
+            fuente = "Histórico METGO (OpenMeteo + store local)"
+    except Exception:
+        filas = []
+
+    if not filas:
+        buf = io.StringIO()
+        tipo_om = "pronostico" if tipo_datos.startswith("Pronóstico") else "historicos"
+        with redirect_stdout(buf):
+            df_om = obtener_datos_meteorologicos_reales(
+                estacion, tipo_om, min(dias, 92)
+            )
+        if df_om is not None and not df_om.empty:
+            fuente = "OpenMeteo directo"
+            for _, row in df_om.sort_values("fecha").iterrows():
+                dia = str(row["fecha"])[:10]
+                if tipo_om == "historicos" and dia > hoy:
+                    continue
+                if tipo_om == "pronostico" and dia < hoy:
+                    continue
+                filas.append(
+                    {
+                        "fecha": dia,
+                        "temperatura": row.get("temperatura_promedio"),
+                        "temperatura_max": row.get("temperatura_max"),
+                        "temperatura_min": row.get("temperatura_min"),
+                        "humedad": row.get("humedad_relativa"),
+                        "viento": row.get("velocidad_viento"),
+                        "precipitacion": row.get("precipitacion"),
+                        "presion": row.get("presion_atmosferica"),
+                        "fuente": row.get("fuente_datos", "openmeteo"),
+                    }
+                )
+
+    if not filas:
+        return pd.DataFrame(), "sin_datos"
+
+    return _filas_a_dataframe(filas, "C"), fuente
+
+
+def _metricas_actuales(estacion: str, df: pd.DataFrame, unidad_temp: str) -> dict:
+    """Valores del día en Chile y delta vs día anterior (misma unidad que Vue)."""
+    slug = nombre_a_slug(estacion)
+    resumen = resumen_meteo(slug)
+    suf = _unidad_suffix(unidad_temp)
+
+    def conv(c):
+        return _to_celsius_display(float(c), unidad_temp)
+
+    if resumen:
+        temp = conv(resumen.get("temperatura") or 0)
+        hum = float(resumen.get("humedad") or 0)
+        pres = float(resumen.get("presion") or 0)
+        viento = float(resumen.get("viento") or 0)
+        fuente_hoy = resumen.get("fuente", "METGO")
+    elif len(df) >= 1:
+        last = df.iloc[-1]
+        temp = float(last["Temperatura_C"])
+        hum = float(last["Humedad_%"])
+        pres = float(last["Presion_hPa"])
+        viento = float(last["Viento_kmh"])
+        fuente_hoy = str(last.get("Fuente", "histórico"))
+    else:
+        return {}
+
+    delta_temp = delta_hum = delta_pres = delta_viento = None
+    if len(df) >= 2:
+        prev = df.iloc[-2]
+        delta_temp = temp - float(prev["Temperatura_C"])
+        delta_hum = hum - float(prev["Humedad_%"])
+        delta_pres = pres - float(prev["Presion_hPa"])
+        delta_viento = viento - float(prev["Viento_kmh"])
+
+    return {
+        "temp": (temp, delta_temp, suf),
+        "hum": (hum, delta_hum, "%"),
+        "pres": (pres, delta_pres, " hPa"),
+        "viento": (viento, delta_viento, " km/h"),
+        "fuente": fuente_hoy,
+    }
+
+
+# --- Sidebar ---
+st.sidebar.markdown("### 🎛️ Panel de Control")
+estacion_seleccionada = st.sidebar.selectbox(
+    "🌍 Estación Meteorológica:", list(ESTACIONES.keys())
+)
+periodo_analisis = st.sidebar.selectbox(
+    "📅 Período de Análisis:",
+    list(DIAS_MAP.keys()),
+)
+tipo_datos = st.sidebar.selectbox(
+    "📊 Tipo de Datos:",
+    ["Datos Históricos", "Pronóstico 7 días", "Pronóstico 15 días", "Análisis Comparativo"],
+)
+unidad_temp = st.sidebar.radio(
+    "🌡️ Unidad de temperatura",
+    options=["C", "F"],
+    format_func=lambda u: "Celsius (°C)" if u == "C" else "Fahrenheit (°F)",
+    horizontal=True,
+    help="Misma preferencia que la SPA Vue (Configuración → Preferencias).",
+)
+
+with st.spinner("🌤️ Cargando datos meteorológicos (OpenMeteo)…"):
+    df_raw, fuente_datos = cargar_datos_meteorologicos(
+        estacion_seleccionada, periodo_analisis, tipo_datos
+    )
+
+if df_raw.empty or fuente_datos == "sin_datos":
+    st.error(
+        "No hay datos disponibles para esta estación. "
+        "Verifique la API en :8080 o sincronice ETL desde Vue (/meteo/historico)."
+    )
+    st.stop()
+
+
+def _aplicar_unidad_temp(df: pd.DataFrame, unidad: str) -> pd.DataFrame:
+    out = df.copy()
+    if unidad != "F":
+        return out
+    for col in (
+        "Temperatura_C",
+        "Temperatura_Max_C",
+        "Temperatura_Min_C",
+        "Punto_Rocio_C",
+        "Indice_Calor_C",
+    ):
+        if col in out.columns:
+            out[col] = out[col].apply(lambda v: round(v * 9 / 5 + 32, 1))
+    return out
+
+
+df_meteo = _aplicar_unidad_temp(df_raw, unidad_temp)
+
+st.success(f"🌐 **{fuente_datos}** · {len(df_meteo)} registros diarios · hoy {_hoy_chile()} (Chile)")
+
+metricas = _metricas_actuales(estacion_seleccionada, df_meteo, unidad_temp)
+suf_temp = _unidad_suffix(unidad_temp)
+
 col1, col2, col3, col4 = st.columns(4)
+if metricas:
+    t, dt, _ = metricas["temp"]
+    h, dh, _ = metricas["hum"]
+    p, dp, us_p = metricas["pres"]
+    v, dv, us_v = metricas["viento"]
+    with col1:
+        st.metric(
+            "🌡️ Temperatura Actual",
+            f"{t:.1f}{suf_temp}",
+            f"{dt:+.1f}{suf_temp}" if dt is not None else None,
+        )
+    with col2:
+        st.metric("💧 Humedad Relativa", f"{h:.1f}%", f"{dh:+.1f}%" if dh is not None else None)
+    with col3:
+        st.metric("🌀 Presión Atmosférica", f"{p:.1f}{us_p}", f"{dp:+.1f}{us_p}" if dp is not None else None)
+    with col4:
+        st.metric("💨 Velocidad del Viento", f"{v:.1f}{us_v}", f"{dv:+.1f}{us_v}" if dv is not None else None)
+    st.caption(f"Condición del día · fuente: **{metricas.get('fuente', 'METGO')}**")
 
-with col1:
-    st.metric(
-        label="🌡️ Temperatura Actual",
-        value=f"{df_meteo['Temperatura_C'].iloc[-1]:.1f}°C",
-        delta=f"{df_meteo['Temperatura_C'].iloc[-1] - df_meteo['Temperatura_C'].iloc[-2]:.1f}°C"
-    )
-
-with col2:
-    st.metric(
-        label="💧 Humedad Relativa",
-        value=f"{df_meteo['Humedad_%'].iloc[-1]:.1f}%",
-        delta=f"{df_meteo['Humedad_%'].iloc[-1] - df_meteo['Humedad_%'].iloc[-2]:.1f}%"
-    )
-
-with col3:
-    st.metric(
-        label="🌀 Presión Atmosférica",
-        value=f"{df_meteo['Presion_hPa'].iloc[-1]:.1f} hPa",
-        delta=f"{df_meteo['Presion_hPa'].iloc[-1] - df_meteo['Presion_hPa'].iloc[-2]:.1f} hPa"
-    )
-
-with col4:
-    st.metric(
-        label="💨 Velocidad del Viento",
-        value=f"{df_meteo['Viento_kmh'].iloc[-1]:.1f} km/h",
-        delta=f"{df_meteo['Viento_kmh'].iloc[-1] - df_meteo['Viento_kmh'].iloc[-2]:.1f} km/h"
-    )
-
-# Gráficos principales
 st.markdown("### 📊 Análisis Meteorológico Avanzado")
 
-# Gráfico de temperatura y humedad
 fig_temp_hum = make_subplots(
-    rows=2, cols=1,
-    subplot_titles=('🌡️ Evolución de la Temperatura', '💧 Humedad Relativa'),
-    vertical_spacing=0.1
+    rows=2,
+    cols=1,
+    subplot_titles=(
+        f"🌡️ Temperatura diaria ({suf_temp})",
+        "💧 Humedad relativa",
+    ),
+    vertical_spacing=0.12,
 )
-
 fig_temp_hum.add_trace(
-    go.Scatter(x=df_meteo['Fecha'], y=df_meteo['Temperatura_C'], 
-               name='Temperatura (°C)', line=dict(color='#FF6B35', width=2)),
-    row=1, col=1
+    go.Scatter(
+        x=df_meteo["Fecha"],
+        y=df_meteo["Temperatura_C"],
+        name=f"Media ({suf_temp})",
+        line=dict(color="#1a5f4a", width=2),
+    ),
+    row=1,
+    col=1,
 )
-
 fig_temp_hum.add_trace(
-    go.Scatter(x=df_meteo['Fecha'], y=df_meteo['Humedad_%'], 
-               name='Humedad (%)', line=dict(color='#4ECDC4', width=2)),
-    row=2, col=1
+    go.Scatter(
+        x=df_meteo["Fecha"],
+        y=df_meteo["Temperatura_Max_C"],
+        name=f"Máx ({suf_temp})",
+        line=dict(color="#FF6B35", width=1, dash="dot"),
+    ),
+    row=1,
+    col=1,
 )
-
-fig_temp_hum.update_layout(height=500, showlegend=True, title_text="🌤️ Variables Meteorológicas Principales")
-fig_temp_hum.update_xaxes(title_text="Fecha y Hora")
-fig_temp_hum.update_yaxes(title_text="Temperatura (°C)", row=1, col=1)
+fig_temp_hum.add_trace(
+    go.Scatter(
+        x=df_meteo["Fecha"],
+        y=df_meteo["Temperatura_Min_C"],
+        name=f"Mín ({suf_temp})",
+        line=dict(color="#5b9bd5", width=1, dash="dot"),
+    ),
+    row=1,
+    col=1,
+)
+fig_temp_hum.add_trace(
+    go.Scatter(
+        x=df_meteo["Fecha"],
+        y=df_meteo["Humedad_%"],
+        name="Humedad (%)",
+        line=dict(color="#4ECDC4", width=2),
+    ),
+    row=2,
+    col=1,
+)
+fig_temp_hum.update_layout(height=520, showlegend=True, title_text="Variables principales")
+fig_temp_hum.update_yaxes(title_text=f"Temperatura ({suf_temp})", row=1, col=1)
 fig_temp_hum.update_yaxes(title_text="Humedad (%)", row=2, col=1)
+st.plotly_chart(fig_temp_hum, use_container_width=True, config=PLOTLY_CONFIG)
 
-st.plotly_chart(fig_temp_hum, use_container_width=True)
-
-# Gráfico de presión y viento
 col1, col2 = st.columns(2)
-
 with col1:
     fig_presion = go.Figure()
-    fig_presion.add_trace(go.Scatter(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Presion_hPa'],
-        name='Presión Atmosférica',
-        line=dict(color='#667eea', width=2),
-        fill='tonexty'
-    ))
-    fig_presion.update_layout(
-        title='🌀 Presión Atmosférica',
-        xaxis_title='Fecha y Hora',
-        yaxis_title='Presión (hPa)',
-        height=400
+    fig_presion.add_trace(
+        go.Scatter(
+            x=df_meteo["Fecha"],
+            y=df_meteo["Presion_hPa"],
+            name="Presión",
+            line=dict(color="#667eea", width=2),
+            fill="tozeroy",
+        )
     )
-    st.plotly_chart(fig_presion, use_container_width=True)
+    fig_presion.update_layout(title="🌀 Presión atmosférica", yaxis_title="hPa", height=400)
+    st.plotly_chart(fig_presion, use_container_width=True, config=PLOTLY_CONFIG)
 
 with col2:
     fig_viento = go.Figure()
-    fig_viento.add_trace(go.Scatter(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Viento_kmh'],
-        name='Velocidad del Viento',
-        line=dict(color='#764ba2', width=2),
-        fill='tozeroy'
-    ))
-    fig_viento.update_layout(
-        title='💨 Velocidad del Viento',
-        xaxis_title='Fecha y Hora',
-        yaxis_title='Velocidad (km/h)',
-        height=400
+    fig_viento.add_trace(
+        go.Scatter(
+            x=df_meteo["Fecha"],
+            y=df_meteo["Viento_kmh"],
+            name="Viento",
+            line=dict(color="#764ba2", width=2),
+            fill="tozeroy",
+        )
     )
-    st.plotly_chart(fig_viento, use_container_width=True)
+    fig_viento.update_layout(title="💨 Velocidad del viento", yaxis_title="km/h", height=400)
+    st.plotly_chart(fig_viento, use_container_width=True, config=PLOTLY_CONFIG)
 
-# Gráfico de precipitación y radiación
-col1, col2 = st.columns(2)
-
-with col1:
-    fig_precip = go.Figure()
-    fig_precip.add_trace(go.Bar(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Precipitacion_mm'],
-        name='Precipitación',
-        marker_color='#4ECDC4'
-    ))
-    fig_precip.update_layout(
-        title='🌧️ Precipitación',
-        xaxis_title='Fecha y Hora',
-        yaxis_title='Precipitación (mm)',
-        height=400
+fig_precip = go.Figure()
+fig_precip.add_trace(
+    go.Bar(
+        x=df_meteo["Fecha"],
+        y=df_meteo["Precipitacion_mm"],
+        name="Precipitación",
+        marker_color="#4ECDC4",
     )
-    st.plotly_chart(fig_precip, use_container_width=True)
+)
+fig_precip.update_layout(title="🌧️ Precipitación diaria (mm)", height=380)
+st.plotly_chart(fig_precip, use_container_width=True, config=PLOTLY_CONFIG)
 
-with col2:
-    fig_radiacion = go.Figure()
-    fig_radiacion.add_trace(go.Scatter(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Radiacion_Wm2'],
-        name='Radiación Solar',
-        line=dict(color='#FFE66D', width=2),
-        fill='tozeroy'
-    ))
-    fig_radiacion.update_layout(
-        title='☀️ Radiación Solar',
-        xaxis_title='Fecha y Hora',
-        yaxis_title='Radiación (W/m²)',
-        height=400
-    )
-    st.plotly_chart(fig_radiacion, use_container_width=True)
-
-# Variables adicionales
-st.markdown("### 🔬 Variables Meteorológicas Adicionales")
-
+st.markdown("### 🔬 Variables derivadas")
 col1, col2, col3 = st.columns(3)
-
 with col1:
-    st.markdown("#### 🌡️ Punto de Rocío")
-    fig_rocio = go.Figure()
-    fig_rocio.add_trace(go.Scatter(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Punto_Rocio_C'],
-        name='Punto de Rocío',
-        line=dict(color='#95E1D3', width=2)
-    ))
-    fig_rocio.update_layout(height=300, title_text="Punto de Rocío (°C)")
-    st.plotly_chart(fig_rocio, use_container_width=True)
-
+    fig_rocio = px.line(df_meteo, x="Fecha", y="Punto_Rocio_C", title=f"Punto de rocío ({suf_temp})")
+    st.plotly_chart(fig_rocio, use_container_width=True, config=PLOTLY_CONFIG)
 with col2:
-    st.markdown("#### 🌡️ Índice de Calor")
-    fig_calor = go.Figure()
-    fig_calor.add_trace(go.Scatter(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Indice_Calor_C'],
-        name='Índice de Calor',
-        line=dict(color='#FF6B35', width=2)
-    ))
-    fig_calor.update_layout(height=300, title_text="Índice de Calor (°C)")
-    st.plotly_chart(fig_calor, use_container_width=True)
-
+    fig_calor = px.line(df_meteo, x="Fecha", y="Indice_Calor_C", title=f"Índice de calor ({suf_temp})")
+    st.plotly_chart(fig_calor, use_container_width=True, config=PLOTLY_CONFIG)
 with col3:
-    st.markdown("#### ☀️ Índice UV")
-    fig_uv = go.Figure()
-    fig_uv.add_trace(go.Scatter(
-        x=df_meteo['Fecha'], 
-        y=df_meteo['Indice_UV'],
-        name='Índice UV',
-        line=dict(color='#FFE66D', width=2)
-    ))
-    fig_uv.update_layout(height=300, title_text="Índice UV")
-    st.plotly_chart(fig_uv, use_container_width=True)
+    st.info(
+        "Radiación e índice UV no están en la serie diaria OpenMeteo de este módulo. "
+        "Use Vue `/meteo` o amplíe el ETL (fase 3+)."
+    )
 
-# Análisis estadístico
-st.markdown("### 📈 Análisis Estadístico")
-
+st.markdown("### 📈 Análisis estadístico")
 col1, col2 = st.columns(2)
-
 with col1:
-    st.markdown("#### 📊 Estadísticas Descriptivas")
-    stats = df_meteo[['Temperatura_C', 'Humedad_%', 'Presion_hPa', 'Viento_kmh', 'Precipitacion_mm']].describe()
+    st.markdown("#### 📊 Estadísticas descriptivas")
+    stats = df_meteo[
+        ["Temperatura_C", "Humedad_%", "Presion_hPa", "Viento_kmh", "Precipitacion_mm"]
+    ].describe()
     st.dataframe(stats.round(2))
-
 with col2:
-    st.markdown("#### 🌡️ Distribución de Temperaturas")
-    fig_hist = px.histogram(df_meteo, x='Temperatura_C', nbins=30, 
-                           title='Distribución de Temperaturas',
-                           color_discrete_sequence=['#FF6B35'])
-    st.plotly_chart(fig_hist, use_container_width=True)
+    st.markdown(f"#### 🌡️ Distribución de temperaturas ({suf_temp})")
+    fig_hist = px.histogram(
+        df_meteo,
+        x="Temperatura_C",
+        nbins=min(30, max(5, len(df_meteo) // 2)),
+        title="Distribución temperatura media diaria",
+        color_discrete_sequence=["#1a5f4a"],
+    )
+    st.plotly_chart(fig_hist, use_container_width=True, config=PLOTLY_CONFIG)
 
-# Información de la estación
-st.markdown("### 📍 Información de la Estación")
-
+st.markdown("### 📍 Información de la estación")
 col1, col2, col3 = st.columns(3)
-
+info = ESTACIONES[estacion_seleccionada]
 with col1:
-    st.info(f"""
-    **🌍 Estación:** {estacion_seleccionada}
-    **📍 Coordenadas:** {estaciones[estacion_seleccionada]['lat']:.4f}, {estaciones[estacion_seleccionada]['lon']:.4f}
-    **⛰️ Altura:** {estaciones[estacion_seleccionada]['altura']} m.s.n.m.
-    """)
-
+    st.info(
+        f"**🌍 Estación:** {estacion_seleccionada}\n\n"
+        f"**📍 Coordenadas:** {info['lat']:.4f}, {info['lon']:.4f}\n\n"
+        f"**⛰️ Altura:** {info['altura']} m.s.n.m."
+    )
 with col2:
-    st.info(f"""
-    **📅 Período Analizado:** {periodo_analisis}
-    **📊 Tipo de Datos:** {tipo_datos}
-    **🕐 Registros:** {len(df_meteo):,} mediciones
-    **📈 Frecuencia:** Cada hora
-    """)
-
+    st.info(
+        f"**📅 Período:** {periodo_analisis}\n\n"
+        f"**📊 Tipo:** {tipo_datos}\n\n"
+        f"**🕐 Registros:** {len(df_meteo):,} días\n\n"
+        f"**📈 Frecuencia:** Diaria (OpenMeteo)"
+    )
 with col3:
-    st.info(f"""
-    **🌡️ Temp. Promedio:** {df_meteo['Temperatura_C'].mean():.1f}°C
-    **💧 Humedad Promedio:** {df_meteo['Humedad_%'].mean():.1f}%
-    **🌀 Presión Promedio:** {df_meteo['Presion_hPa'].mean():.1f} hPa
-    **💨 Viento Promedio:** {df_meteo['Viento_kmh'].mean():.1f} km/h
-    """)
+    st.info(
+        f"**🌡️ Temp. promedio:** {df_meteo['Temperatura_C'].mean():.1f}{suf_temp}\n\n"
+        f"**💧 Humedad promedio:** {df_meteo['Humedad_%'].mean():.1f}%\n\n"
+        f"**🌀 Presión promedio:** {df_meteo['Presion_hPa'].mean():.1f} hPa\n\n"
+        f"**💨 Viento promedio:** {df_meteo['Viento_kmh'].mean():.1f} km/h"
+    )
 
-# Footer
 st.markdown("---")
-st.markdown("""
+st.markdown(
+    f"""
 <div style="text-align: center; color: #666; padding: 20px;">
     <p>🌤️ <strong>Sistema METGO</strong> - Análisis Meteorológico Profesional</p>
-    <p>Datos generados con algoritmos avanzados de simulación meteorológica</p>
-    <p>Última actualización: {}</p>
+    <p>Datos: <strong>{fuente_datos}</strong> · alineado con API REST y SPA Vue</p>
+    <p>Última actualización: {datetime.now(ZoneInfo("America/Santiago")).strftime("%Y-%m-%d %H:%M:%S")} (Chile)</p>
 </div>
-""".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)

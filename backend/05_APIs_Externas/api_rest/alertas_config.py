@@ -150,8 +150,9 @@ def evaluar_configuradas(estacion_id: str | None = None) -> list[dict[str, Any]]
 
 
 def generar_alertas_combinadas(estacion_id: str | None = None) -> list[dict[str, Any]]:
-    """Alertas automáticas + reglas configuradas."""
+    """Alertas automáticas + reglas configuradas, con cadencia mínima de 6 horas."""
     from api_rest import services
+    from api_rest.integracion.alertas_store import filtrar_por_cadencia
 
     base = services.generar_alertas(estacion_id)
     custom = evaluar_configuradas(estacion_id)
@@ -159,7 +160,7 @@ def generar_alertas_combinadas(estacion_id: str | None = None) -> list[dict[str,
     for a in custom:
         if a["mensaje"] not in seen:
             base.append(a)
-    return base
+    return filtrar_por_cadencia(base)
 
 
 def notificar_alertas_criticas(alertas: list[dict[str, Any]]) -> list[dict[str, Any]]:

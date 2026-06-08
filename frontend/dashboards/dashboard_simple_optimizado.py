@@ -14,6 +14,17 @@ if str(_DASH) not in sys.path:
 
 from metgo_dashboard_init import page_config_and_theme
 
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+import metgo_paths
+
+metgo_paths.setup_paths("05_api_rest")
+
+from api_rest.services import nombre_a_slug, resumen_meteo
+from meteo_dashboard_utils import hoy_chile
+
 st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Dashboard Simple",
     "Vista resumida optimizada para móvil",
@@ -129,6 +140,29 @@ with st.sidebar:
         ["Hoy", "Esta semana", "Este mes", "Últimos 3 meses"],
         key="periodo_simple"
     )
+    modo_simple = st.radio(
+        "Fuente",
+        ["API METGO (OpenMeteo)", "Vista demo (valores fijos)"],
+        index=0,
+    )
+
+if modo_simple.startswith("API"):
+    slug_s = nombre_a_slug(estacion)
+    with st.spinner("Cargando…"):
+        res_s = resumen_meteo(slug_s)
+    if not res_s:
+        st.error("Sin datos. Levante la API en :8080.")
+        st.stop()
+    st.success(f"**{hoy_chile()}** · {estacion} · {res_s.get('tipo_dato', 'observado')}")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("T°", f"{res_s.get('temperatura', 0):.1f}°C")
+    c2.metric("Humedad", f"{res_s.get('humedad', 0):.0f}%")
+    c3.metric("Lluvia", f"{res_s.get('precipitacion', 0):.1f} mm")
+    c4.metric("Viento", f"{res_s.get('viento', 0):.1f} km/h")
+    st.caption("Vue: http://127.0.0.1:5173 · Puerto 8511")
+    st.stop()
+
+st.sidebar.caption("Modo demo activo")
 
 # Función para generar datos simples
 @st.cache_data

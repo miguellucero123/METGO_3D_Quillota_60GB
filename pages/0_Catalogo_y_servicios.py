@@ -97,49 +97,72 @@ tab_cat, tab_srv = st.tabs(["📋 Catálogo de módulos", "🖧 Servicios Stream
 
 # —— Catálogo (como /modulos en Vue) ——
 with tab_cat:
-    resumen = catalog.resumen_sistema()
+    mods_all = catalog.listar_modulos()
+    oficiales = [m for m in mods_all if not m.get("deprecado")]
+    legacy = [m for m in mods_all if m.get("deprecado")]
+    vue_mods = [m for m in mods_all if m.get("tipo_acceso") == "vue"]
+    stl_mods = [m for m in mods_all if m.get("tipo_acceso") == "streamlit"]
+
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Módulos", resumen.get("total_modulos", 0))
-    c2.metric("Vue", resumen.get("vue", 0))
-    c3.metric("Streamlit", resumen.get("streamlit", 0))
-    c4.metric("Categorías", len(resumen.get("categorias", [])))
+    c1.metric("Módulos oficiales", len(oficiales))
+    c2.metric("Módulos legacy", len(legacy))
+    c3.metric("Vue / oficiales", len(vue_mods))
+    c4.metric("Streamlit / soporte", len(stl_mods))
+
+    resumen_texto = (
+        f"{len(oficiales)} oficiales · {len(legacy)} legacy · "
+        f"{len(vue_mods)} en Vue · {len(stl_mods)} en Streamlit"
+    )
+    st.caption(f"Resumen ejecutivo: {resumen_texto}")
 
     filtro = st.selectbox(
         "Filtrar categoría",
-        ["todos"] + [c["id"] for c in resumen.get("categorias", [])],
+        ["todos"] + [c["id"] for c in catalog.resumen_sistema().get("categorias", [])],
         format_func=lambda x: "Todos" if x == "todos" else next(
-            (c["nombre"] for c in resumen.get("categorias", []) if c["id"] == x), x
+            (c["nombre"] for c in catalog.resumen_sistema().get("categorias", []) if c["id"] == x), x
         ),
     )
     mods = catalog.listar_modulos(None if filtro == "todos" else filtro)
 
-    cols = st.columns(3)
-    for i, m in enumerate(mods):
-        icon = ICON_EMOJI.get(m.get("icono", "box"), "📦")
-        puerto = m.get("puerto", "")
-        desc = m.get("utilidad") or m.get("descripcion", "")
-        tipo = m.get("tipo_acceso", "")
-        attrs = ", ".join((m.get("atributos") or [])[:3])
-        if attrs:
-            desc = f"{desc} · {attrs}"
-        nombre = f"{icon} {m.get('nombre', m.get('id'))}"
-        color = PRIMARY if tipo == "vue" else ACCENT
-        url = ""
-        if tipo == "streamlit" and puerto and not is_streamlit_cloud():
-            url = f"http://127.0.0.1:{puerto}"
-        with cols[i % 3]:
-            st.markdown(
-                module_card_html(
-                    nombre,
-                    color,
-                    f"Módulo {m.get('modulo_num', '')} · {tipo} — {desc}",
-                    puerto=str(puerto) if puerto else "—",
-                    url=url,
-                    cloud=is_streamlit_cloud(),
-                ),
-                unsafe_allow_html=True,
-            )
+    def _render_grid(items, heading, empty_msg):
+        st.markdown(f"#### {heading}")
+        if not items:
+            st.info(empty_msg)
+            return
+        cols = st.columns(3)
+        for i, m in enumerate(items):
+            icon = ICON_EMOJI.get(m.get("icono", "box"), "📦")
+            puerto = m.get("puerto", "")
+            desc = m.get("utilidad") or m.get("descripcion", "")
+            tipo = m.get("tipo_acceso", "")
+            attrs = ", ".join((m.get("atributos") or [])[:3])
+            if attrs:
+                desc = f"{desc} · {attrs}"
+            estado = "LEGACY" if m.get("deprecado") else "OFICIAL"
+            if m.get("deprecado") and m.get("nota_deprecacion"):
+                desc = f"{desc} · {m['nota_deprecacion']}"
+            nombre = f"{icon} [{estado}] {m.get('nombre', m.get('id'))}"
+            color = PRIMARY if tipo == "vue" else ACCENT
+            url = ""
+            if tipo == "streamlit" and puerto and not is_streamlit_cloud():
+                url = f"http://127.0.0.1:{puerto}"
+            with cols[i % 3]:
+                st.markdown(
+                    module_card_html(
+                        nombre,
+                        color,
+                        f"Módulo {m.get('modulo_num', '')} · {tipo} — {desc}",
+                        puerto=str(puerto) if puerto else "—",
+                        url=url,
+                        cloud=is_streamlit_cloud(),
+                    ),
+                    unsafe_allow_html=True,
+                )
 
+    _render_grid([m for m in mods if not m.get("deprecado")], "Módulos oficiales", "No hay módulos oficiales para este filtro.")
+    if legacy:
+        st.divider()
+        _render_grid([m for m in mods if m.get("deprecado")], "Legacy / soporte", "No hay módulos legacy para este filtro.")
 # —— Centro de servicios (como /servicios en Vue) ——
 with tab_srv:
     st.markdown(

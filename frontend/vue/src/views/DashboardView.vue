@@ -20,7 +20,9 @@ import SectionCard from '@/components/ui/SectionCard.vue'
 import WeatherScene from '@/components/meteo/WeatherScene.vue'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
 import MlProjectionChart from '@/components/charts/MlProjectionChart.vue'
+import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import { fetchPronostico, fetchAlertas, fetchRecomendacionesAgricolas, mlPredictBatch } from '@/api/metgoApi'
+import { mapMlProjectionItems, ML_VARS_DASHBOARD } from '@/utils/mlProjection'
 import {
   riesgoHelada,
   necesidadRiego,
@@ -29,7 +31,7 @@ import {
 import { useFormatTemp } from '@/composables/useFormatTemp'
 
 const store = useMetgoStore()
-const { formatTemperatura } = useFormatTemp()
+const { formatTemperatura, unit: tempUnit } = useFormatTemp()
 const pronostico = ref([])
 const alertas = ref([])
 const recomendaciones = ref([])
@@ -37,13 +39,9 @@ const cargandoExtra = ref(false)
 const mlProyecciones = ref([])
 const cargandoMl = ref(false)
 
-const ML_VARS = [
-  { variable: 'temperatura_max', label: 'T. máx', unidad: '°', field: 'temperatura_max' },
-  { variable: 'temperatura_min', label: 'T. mín', unidad: '°', field: 'temperatura_min' },
-  { variable: 'humedad', label: 'Humedad', unidad: '%', field: 'humedad' },
-  { variable: 'precipitacion', label: 'Lluvia', unidad: ' mm', field: 'precipitacion' },
-  { variable: 'presion', label: 'Presión', unidad: '', field: 'presion' },
-]
+const labelsPron = computed(() => pronostico.value.map((r) => r.fecha))
+const tempsPronMax = computed(() => pronostico.value.map((r) => r.temperatura_max))
+const tempsPronMin = computed(() => pronostico.value.map((r) => r.temperatura_min))
 
 const d = computed(() => store.datosMeteo)
 const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
@@ -71,26 +69,10 @@ async function cargarResumen() {
   }
   try {
     const batch = await mlPredictBatch(
-      ML_VARS.map((v) => v.variable),
+      ML_VARS_DASHBOARD.map((v) => v.variable),
       store.estacionActiva
     )
-    const rows = Array.isArray(batch) ? batch : batch?.resultados || []
-    const actual = store.datosMeteo || {}
-    mlProyecciones.value = ML_VARS.map((v) => {
-      const hit = rows.find((x) => x.variable === v.variable)
-      const predObj = hit?.prediccion
-      const val =
-        typeof predObj === 'object' && predObj != null
-          ? predObj.prediccion ?? predObj.valor
-          : predObj
-      return {
-        variable: v.variable,
-        label: v.label,
-        unidad: v.unidad,
-        actual: actual[v.field],
-        prediccion: val,
-      }
-    }).filter((x) => x.prediccion != null && !Number.isNaN(Number(x.prediccion)))
+    mlProyecciones.value = mapMlProjectionItems(batch, store.datosMeteo)
   } catch {
     mlProyecciones.value = []
   } finally {
@@ -189,7 +171,7 @@ watch(() => store.estacionActiva, cargarResumen)
 
       <SectionCard
         title="Proyecciones ML"
-        subtitle="Modelos servibles vs condición actual"
+        subtitle="Observado OpenMeteo (misma entrada del modelo) vs predicción ML"
         class="ml-section"
       >
         <p v-if="cargandoMl" class="muted">Calculando proyecciones…</p>
@@ -197,10 +179,23 @@ watch(() => store.estacionActiva, cargarResumen)
       </SectionCard>
 
       <div class="layout-split">
-        <SectionCard title="Pronóstico próximos días" subtitle="OpenMeteo · 7 días">
+        <SectionCard title="Pronóstico próximos días" subtitle="OpenMeteo · banda térmica diaria">
           <template #icon><CloudRain /></template>
           <p v-if="cargandoExtra" class="muted">Cargando…</p>
-          <table v-else-if="pronostico.length" class="data-table">
+          <TimeSeriesChart
+            v-else-if="labelsPron.length"
+            :labels="labelsPron"
+            :values="tempsPronMax"
+            :values-min="tempsPronMin"
+            :unit="tempUnit === 'F' ? '°F' : '°C'"
+            :height="220"
+            show-band
+            :show-area="false"
+            y-axis-title="Temperatura"
+            color="#c45c26"
+            fill-color="rgba(196, 92, 38, 0.15)"
+          />
+          <table v-if="!cargandoExtra && pronostico.length" class="data-table">
             <thead>
               <tr>
                 <th>Fecha</th>

@@ -15,6 +15,23 @@ if str(_DASH) not in sys.path:
 
 from metgo_dashboard_init import page_config_and_theme
 
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+import metgo_paths
+
+metgo_paths.setup_paths("02_agricola", "05_api_rest")
+
+from api_rest.services import (
+    comparativo_estaciones,
+    historico_meteo,
+    nombre_a_slug,
+    reporte_agricola_avanzado,
+)
+from agricola_dashboard_utils import CULTIVO_A_SLUG, ESTACIONES_VALLE, cargar_contexto_agricola
+from meteo_dashboard_utils import filtrar_historico_hasta_hoy, hoy_chile
+
 st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Agricultura de Precisión",
     "Análisis de cultivos con datos históricos Quillota",
@@ -183,6 +200,83 @@ with st.sidebar:
         key="tecnologia"
     )
 
+    modo_precision = st.radio(
+        "Fuente de datos",
+        ["API METGO (valle)", "Series ilustrativas (5 años)"],
+        index=0,
+    )
+
+    if modo_precision.startswith("API"):
+        est_p = st.selectbox("🌍 Estación", ESTACIONES_VALLE, key="est_api_p")
+        cult_p = st.selectbox("🌱 Cultivo", list(CULTIVO_A_SLUG.keys()), key="cult_api_p")
+
+if modo_precision.startswith("API"):
+    slug_p = nombre_a_slug(est_p)
+
+    with st.spinner("Cargando precisión agrícola (API)…"):
+        ctx_p = cargar_contexto_agricola(est_p, cult_p)
+        hist_p = filtrar_historico_hasta_hoy(historico_meteo(slug_p, 30) or [])
+        valle_p = comparativo_estaciones()
+        rep_p = reporte_agricola_avanzado(slug_p)
+
+    st.success(f"**API METGO** · {est_p} · {hoy_chile()} · Vue http://127.0.0.1:5173/agricola")
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("T° actual", f"{ctx_p['temperatura']:.1f}°C")
+    c2.metric("Humedad", f"{ctx_p['humedad']:.0f}%")
+    c3.metric("Riego sugerido", f"{ctx_p.get('riego', {}).get('mm_sugeridos_hoy', '—')} mm")
+    c4.metric("Lluvia hoy", f"{ctx_p['precipitacion']:.1f} mm")
+
+    if hist_p:
+        df_h = pd.DataFrame(
+            [
+                {
+                    "fecha": r["fecha"],
+                    "humedad": r.get("humedad"),
+                    "precipitacion": r.get("precipitacion"),
+                    "temperatura": r.get("temperatura"),
+                }
+                for r in hist_p
+            ]
+        )
+        fig_h = make_subplots(rows=2, cols=1, subplot_titles=("Humedad (%)", "Precipitación (mm)"))
+        fig_h.add_trace(
+            go.Scatter(x=df_h["fecha"], y=df_h["humedad"], name="Humedad"),
+            row=1,
+            col=1,
+        )
+        fig_h.add_trace(
+            go.Bar(x=df_h["fecha"], y=df_h["precipitacion"], name="Lluvia"),
+            row=2,
+            col=1,
+        )
+        fig_h.update_layout(height=420, title=f"Histórico 30 días · {est_p}")
+        st.plotly_chart(fig_h, use_container_width=True, config=PLOTLY_CONFIG)
+
+    if valle_p:
+        st.markdown("### Comparación por estación (hoy)")
+        st.dataframe(
+            pd.DataFrame(valle_p)[
+                ["estacion", "temperatura_max", "temperatura_min", "humedad", "precipitacion"]
+            ],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    if rep_p and not rep_p.get("error"):
+        with st.expander("Reporte integral módulo 02", expanded=True):
+            st.json(rep_p)
+    elif rep_p:
+        st.warning(rep_p.get("error", "Sin reporte avanzado"))
+
+    for rec in ctx_p.get("recomendaciones_api") or []:
+        st.info(f"**{rec.get('cultivo')}**: {rec.get('accion')} — {rec.get('motivo')}")
+
+    st.stop()
+
+st.sidebar.markdown("---")
+st.sidebar.caption("Modo ilustrativo: series semanales simuladas")
+
 # Función para generar datos de agricultura de precisión
 @st.cache_data
 def generar_datos_precision(cultivo, zona, tecnologia):
@@ -298,6 +392,11 @@ def generar_datos_precision(cultivo, zona, tecnologia):
                 })
     
     return pd.DataFrame(datos)
+
+st.warning(
+    "Modo **ilustrativo**: series semanales simuladas (5 años). "
+    "Use **API METGO** en el panel lateral para datos OpenMeteo reales."
+)
 
 # Generar datos
 with st.spinner('🌾 Generando datos de agricultura de precisión...'):

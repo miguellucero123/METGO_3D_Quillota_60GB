@@ -120,6 +120,80 @@ paths:
           description: Regla creada
         "403":
           description: Rol sin permiso
+  /api/meteo/{estacion_id}/precipitacion-calibrada:
+    get:
+      tags: [meteo]
+      summary: Pronóstico de precipitación calibrado (bias local)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, maximum: 10 }
+      responses:
+        "200":
+          description: PoP, intensidad, percentiles p10/p90
+        "404":
+          description: Sin pronóstico
+  /api/meteo/{estacion_id}/heladas:
+    get:
+      tags: [meteo]
+      summary: Pronóstico de heladas 7 días por cultivo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: Riesgo helada por día y cultivo
+  /api/precip/{estacion_id}/calibrado:
+    get:
+      tags: [meteo]
+      summary: Alias precipitación calibrada
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Pronóstico calibrado
+  /api/precip/{estacion_id}/alertas:
+    get:
+      tags: [alertas]
+      summary: Alertas de precipitación por cultivo
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Alertas activas lluvia/encharcamiento
+  /api/alertas/precipitacion:
+    get:
+      tags: [alertas]
+      summary: Alertas precipitación valle
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Lista consolidada
+  /api/alertas/helada:
+    get:
+      tags: [alertas]
+      summary: Alertas helada valle
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Lista consolidada heladas
+  /api/agricola/{estacion_id}/cronograma-riego:
+    get:
+      tags: [agricola]
+      summary: Cronograma riego inteligente (lluvia + helada)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Recomendación posponer/suspender riego
   /api/meteo/comparativo:
     get:
       tags: [meteo]
@@ -148,6 +222,36 @@ paths:
       responses:
         "200":
           description: Métricas consolidadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  estaciones_activas: { type: integer }
+                  temperatura_media_max: { type: number, nullable: true }
+                  temperatura_media_min: { type: number, nullable: true }
+                  precipitacion_total: { type: number }
+                  viento_max: { type: number }
+                  humedad_media: { type: number }
+                  alertas_activas: { type: integer }
+                  alertas_warning: { type: integer }
+                  referencia_fecha: { type: string, format: date, description: Día calendario Chile }
+                  detalle_estaciones:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        estacion_id: { type: string }
+                        estacion: { type: string }
+                        temperatura: { type: number }
+                        temperatura_max: { type: number }
+                        temperatura_min: { type: number }
+                        humedad: { type: number }
+                        viento: { type: number }
+                        precipitacion: { type: number }
+                        fuente: { type: string }
+                  estaciones: { type: array, items: { type: string } }
+                  actualizado: { type: string, format: date-time }
   /api/integracion/estado:
     get:
       tags: [sistema]

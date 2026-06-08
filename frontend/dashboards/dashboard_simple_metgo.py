@@ -24,21 +24,30 @@ from metgo_dashboard_init import page_config_and_theme
 
 st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Dashboard Simple METGO",
-    "Gráficos matplotlib · datos de prueba",
+    "Gráficos matplotlib · datos reales primero",
     module="simple",
     page_icon="🌾",
 )
 
 def generar_datos_prueba():
-    """Generar datos de prueba simples"""
-    
-    # Crear rango de fechas para el último mes
+    """Obtiene datos reales recientes si están disponibles; si no, usa una demo controlada."""
+    try:
+        from api_rest.integracion import meteo_store
+
+        filas = list(meteo_store.leer_registros("quillota", dias=30))
+        if filas:
+            datos = pd.DataFrame(filas)
+            if "fecha" in datos.columns:
+                datos["fecha"] = pd.to_datetime(datos["fecha"], errors="coerce")
+            datos["temperatura_promedio"] = (datos.get("temperatura_max", 0) + datos.get("temperatura_min", 0)) / 2
+            datos["amplitud_termica"] = datos.get("temperatura_max", 0) - datos.get("temperatura_min", 0)
+            return datos
+    except Exception:
+        pass
+
     fecha_inicio = datetime.now() - timedelta(days=30)
     fechas = pd.date_range(start=fecha_inicio, end=datetime.now(), freq='D')
-    
-    # Generar datos meteorológicos simulados
     np.random.seed(42)
-    
     datos = pd.DataFrame({
         'fecha': fechas,
         'temperatura_max': 25 + 5 * np.sin(np.arange(len(fechas)) * 2 * np.pi / 30) + np.random.normal(0, 2, len(fechas)),
@@ -47,16 +56,11 @@ def generar_datos_prueba():
         'precipitacion': np.random.exponential(1, len(fechas)) * (np.random.random(len(fechas)) < 0.3),
         'velocidad_viento': 10 + 3 * np.sin(np.arange(len(fechas)) * 2 * np.pi / 30) + np.random.normal(0, 2, len(fechas))
     })
-    
-    # Calcular variables derivadas
     datos['temperatura_promedio'] = (datos['temperatura_max'] + datos['temperatura_min']) / 2
     datos['amplitud_termica'] = datos['temperatura_max'] - datos['temperatura_min']
-    
-    # Asegurar valores realistas
     datos['humedad_relativa'] = datos['humedad_relativa'].clip(0, 100)
     datos['velocidad_viento'] = datos['velocidad_viento'].clip(0, 30)
     datos['precipitacion'] = datos['precipitacion'].clip(0, 50)
-    
     return datos
 
 def main():

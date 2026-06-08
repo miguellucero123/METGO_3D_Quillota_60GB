@@ -41,7 +41,7 @@
   },
   "humedad": {
     "variable": "humedad",
-    "mse": 107.694410153639,
+    "mse": 107.69441015363898,
     "r2": 0.5628851072060999,
     "modelo_path": "modelos_ml_quillota/modelo_humedad.joblib",
     "features": [
@@ -55,7 +55,7 @@
   "presion": {
     "variable": "presion",
     "mse": 85.71436983612992,
-    "r2": 0.005921235714542394,
+    "r2": 0.005921235714542505,
     "modelo_path": "modelos_ml_quillota/modelo_presion.joblib",
     "features": [
       "dia_año",

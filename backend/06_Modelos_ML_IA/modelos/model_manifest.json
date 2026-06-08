@@ -1,9 +1,9 @@
 {
-  "actualizado": "2026-05-30T02:13:56.100109Z",
+  "actualizado": "2026-06-04T02:59:50.493046Z",
   "origen_datos": "meteo_sqlite",
   "filas": 2920,
   "estacion_id": "quillota",
-  "sklearn_version": "1.5.2",
+  "sklearn_version": "1.8.0",
   "total": 43,
   "entrenados": 43,
   "modelos": [
@@ -84,7 +84,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_humedad.joblib",
-      "mse": 107.694410153639,
+      "mse": 107.69441015363898,
       "r2": 0.5628851072060999,
       "servible": true
     },
@@ -105,7 +105,7 @@
       "modo": "manifest",
       "modelo_path": "modelos_ml_quillota/modelo_presion.joblib",
       "mse": 85.71436983612992,
-      "r2": 0.005921235714542394,
+      "r2": 0.005921235714542505,
       "servible": true
     },
     {
@@ -150,7 +150,7 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_linear_regression.pkl",
-      "mse": 7.626826101128213e-27,
+      "mse": 7.363000756743751e-27,
       "r2": 1.0,
       "servible": true
     },
@@ -196,7 +196,7 @@
       "scaler": null,
       "modo": "pkl",
       "modelo_path": "modelos_ml_quillota/modelo_svm.pkl",
-      "mse": 2.1432989006685867e-08,
+      "mse": 2.1432989011923187e-08,
       "r2": 0.9999999994754105,
       "servible": true
     },
@@ -401,7 +401,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_temperatura_actual.joblib",
-      "mse": 1.483642718153701e-28,
+      "mse": 1.7916766921718508e-28,
       "r2": 1.0,
       "servible": true
     },
@@ -427,7 +427,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_humedad_relativa.joblib",
-      "mse": 2.086353386975484e-27,
+      "mse": 3.134647950664769e-26,
       "r2": 1.0,
       "servible": true
     },
@@ -453,7 +453,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_velocidad_viento.joblib",
-      "mse": 1.0432035338278641e-29,
+      "mse": 8.285817467491538e-28,
       "r2": 1.0,
       "servible": true
     },
@@ -479,7 +479,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_precipitacion.joblib",
-      "mse": 1.6950121744562974e-29,
+      "mse": 1.8711282601397794e-29,
       "r2": 1.0,
       "servible": true
     },
@@ -505,7 +505,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_presion_atmosferica.joblib",
-      "mse": 9.295158852532952e-27,
+      "mse": 3.2152397097523507e-25,
       "r2": 1.0,
       "servible": true
     },
@@ -531,7 +531,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/LinearRegression_nubosidad.joblib",
-      "mse": 4.014522947200838e-27,
+      "mse": 3.676166989493963e-27,
       "r2": 1.0,
       "servible": true
     },
@@ -661,8 +661,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/RandomForest_presion_atmosferica.joblib",
-      "mse": 4.8934550989412234e-05,
-      "r2": 0.9999994324779139,
+      "mse": 4.958143074587466e-05,
+      "r2": 0.999999424975678,
       "servible": true
     },
     {
@@ -713,7 +713,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_temperatura_actual.joblib",
-      "mse": 2.077544886299956e-09,
+      "mse": 2.077544885302062e-09,
       "r2": 0.9999999999389373,
       "servible": true
     },
@@ -739,7 +739,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_humedad_relativa.joblib",
-      "mse": 7.053105972425675e-08,
+      "mse": 7.053105967763209e-08,
       "r2": 0.9999999997137253,
       "servible": true
     },
@@ -765,7 +765,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_velocidad_viento.joblib",
-      "mse": 9.257157898963495e-09,
+      "mse": 9.257157898830084e-09,
       "r2": 0.9999999996304388,
       "servible": true
     },
@@ -791,8 +791,8 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_precipitacion.joblib",
-      "mse": 1.4138464071166525e-06,
-      "r2": 0.9999997497444394,
+      "mse": 1.413846409534759e-06,
+      "r2": 0.999999749744439,
       "servible": true
     },
     {
@@ -817,7 +817,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_presion_atmosferica.joblib",
-      "mse": 1.780574964854895e-09,
+      "mse": 1.7805749663551804e-09,
       "r2": 0.9999999999793496,
       "servible": true
     },
@@ -843,7 +843,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml/Ridge_nubosidad.joblib",
-      "mse": 6.964215146749581e-08,
+      "mse": 6.964215154948151e-08,
       "r2": 0.9999999998250014,
       "servible": true
     },
@@ -921,7 +921,7 @@
       "scaler": null,
       "modo": "manifest",
       "modelo_path": "modelos_ml_avanzados/Ridge_Optimizado_temperatura_promedio.joblib",
-      "mse": 2.077544886299956e-09,
+      "mse": 2.077544885302062e-09,
       "r2": 0.9999999999389373,
       "servible": true
     },

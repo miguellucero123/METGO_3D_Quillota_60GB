@@ -57,6 +57,12 @@ const routes = [
     meta: { title: 'Visualizaciones · comparativo' },
   },
   {
+    path: '/meteo/precipitacion',
+    name: 'meteo-precipitacion',
+    component: () => import('@/views/PrecipitacionView.vue'),
+    meta: { title: 'Precipitación y heladas' },
+  },
+  {
     path: '/favoritos',
     name: 'favoritos',
     component: () => import('@/views/FavoritosView.vue'),

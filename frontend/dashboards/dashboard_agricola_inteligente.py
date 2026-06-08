@@ -13,7 +13,20 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+import metgo_paths
+
+metgo_paths.setup_paths("01_meteo", "02_agricola", "05_api_rest")
+
 from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+from agricola_dashboard_utils import ESTACIONES_VALLE, cargar_contexto_agricola
+from meteo_dashboard_utils import hoy_chile
+
+
+def _fmt_delta(val: float | None, unidad: str) -> str | None:
+    if val is None:
+        return None
+    sign = "+" if val > 0 else ""
+    return f"{sign}{val:.1f}{unidad} vs ayer"
 
 # Configuración de la página
 st.set_page_config(
@@ -71,9 +84,25 @@ cultivos_config = {
     }
 }
 
+estacion_seleccionada = st.sidebar.selectbox("🌍 Estación:", ESTACIONES_VALLE)
 cultivo_seleccionado = st.sidebar.selectbox("🌱 Cultivo:", list(cultivos_config.keys()))
 fase_actual = st.sidebar.selectbox("📅 Fase Actual:", cultivos_config[cultivo_seleccionado]["fases"])
 superficie = st.sidebar.number_input("📏 Superficie (hectáreas):", min_value=0.1, max_value=1000.0, value=1.0, step=0.1)
+
+with st.spinner("Cargando condiciones y recomendaciones (API METGO)…"):
+    ctx = cargar_contexto_agricola(estacion_seleccionada, cultivo_seleccionado)
+
+tipo = ctx.get("tipo_dato", "observado")
+st.caption(
+    f"**{ctx.get('fecha_referencia', hoy_chile())}** · {estacion_seleccionada} · "
+    f"**{tipo}** ({ctx.get('fuente', 'OpenMeteo')}) · "
+    f"T° {ctx['temperatura_min']:.1f}–{ctx['temperatura_max']:.1f}°C · "
+    "Vue: http://127.0.0.1:5173/agricola"
+)
+if tipo != "observado":
+    st.warning(
+        "Sin observación de hoy en histórico; se muestra pronóstico. Reinicie la API si acaba de actualizar OpenMeteo."
+    )
 
 # Función para generar recomendaciones IA
 def generar_recomendaciones_ia(cultivo, fase, superficie, temp_actual, humedad_actual, precipitacion_actual):
@@ -103,22 +132,15 @@ def generar_recomendaciones_ia(cultivo, fase, superficie, temp_actual, humedad_a
         recomendaciones.append(f"💧 **Humedad alta**: Reducir riego y mejorar ventilación")
         alertas.append({"tipo": "Exceso Humedad", "severidad": "Baja", "mensaje": "Riesgo de enfermedades fúngicas"})
     
-    # Recomendaciones de riego
-    riego_cantidad = config["riego_cantidad"] * superficie
-    riego_frecuencia = config["riego_frecuencia"]
-    recomendaciones.append(f"💧 **Riego**: {riego_cantidad:.1f}L cada {riego_frecuencia} días")
-    
-    # Recomendaciones de plagas
-    plagas_activas = random.sample(config["plagas_comunes"], min(2, len(config["plagas_comunes"])))
-    for plaga in plagas_activas:
-        recomendaciones.append(f"🐛 **Control de {plaga}**: Monitorear y aplicar tratamiento preventivo")
-        alertas.append({"tipo": "Plaga", "severidad": "Media", "mensaje": f"Presencia de {plaga}"})
-    
-    # Recomendaciones de enfermedades
-    enfermedades_activas = random.sample(config["enfermedades"], min(1, len(config["enfermedades"])))
-    for enfermedad in enfermedades_activas:
-        recomendaciones.append(f"🦠 **Prevención {enfermedad}**: Aplicar fungicida preventivo")
-        alertas.append({"tipo": "Enfermedad", "severidad": "Alta", "mensaje": f"Riesgo de {enfermedad}"})
+    # Plagas/enfermedades: solo si hay estrés climático (sin listas genéricas)
+    if humedad_actual > hum_max:
+        for enfermedad in config["enfermedades"][:1]:
+            recomendaciones.append(f"🦠 **Prevención {enfermedad}**: Humedad elevada — fungicida preventivo")
+            alertas.append({"tipo": "Enfermedad", "severidad": "Media", "mensaje": f"Riesgo fúngico ({enfermedad})"})
+    if temp_actual > temp_max:
+        for plaga in config["plagas_comunes"][:1]:
+            recomendaciones.append(f"🐛 **Control de {plaga}**: Estrés térmico — monitoreo intensivo")
+            alertas.append({"tipo": "Plaga", "severidad": "Media", "mensaje": f"Vigilar {plaga}"})
     
     # Recomendaciones específicas por fase
     if fase == "Floración":
@@ -132,49 +154,72 @@ def generar_recomendaciones_ia(cultivo, fase, superficie, temp_actual, humedad_a
     
     return recomendaciones, alertas
 
-# Simular datos ambientales actuales
-temp_actual = 22.5 + np.random.normal(0, 3)
-humedad_actual = 65 + np.random.normal(0, 10)
-precipitacion_actual = np.random.exponential(0.5)
+temp_actual = ctx["temperatura"]
+humedad_actual = ctx["humedad"]
+precipitacion_actual = ctx["precipitacion"]
 
-# Generar recomendaciones
 recomendaciones, alertas = generar_recomendaciones_ia(
-    cultivo_seleccionado, fase_actual, superficie, 
-    temp_actual, humedad_actual, precipitacion_actual
+    cultivo_seleccionado,
+    fase_actual,
+    superficie,
+    temp_actual,
+    humedad_actual,
+    precipitacion_actual,
 )
+
+recomendaciones_api_txt: list[str] = []
+for rec in ctx.get("recomendaciones_api") or []:
+    recomendaciones_api_txt.append(
+        f"📡 **{rec.get('cultivo', 'METGO')}**: {rec.get('accion', '')} — _{rec.get('motivo', '')}_"
+    )
+if ctx.get("riego"):
+    r = ctx["riego"]
+    recomendaciones_api_txt.insert(
+        0,
+        f"💧 **Riego (API)**: {r.get('mm_sugeridos_hoy', '—')} mm hoy · {r.get('accion', '')}",
+    )
 
 # Métricas principales
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
-        label="🌡️ Temperatura Actual",
+        label="🌡️ T° promedio hoy",
         value=f"{temp_actual:.1f}°C",
-        delta=f"{temp_actual - cultivos_config[cultivo_seleccionado]['temp_optima'][0]:.1f}°C"
+        delta=_fmt_delta(ctx.get("delta_temp"), "°C"),
+        help=f"Mín {ctx['temperatura_min']:.1f}°C · máx {ctx['temperatura_max']:.1f}°C (OpenMeteo)",
     )
 
 with col2:
     st.metric(
-        label="💧 Humedad Relativa",
+        label="💧 Humedad relativa",
         value=f"{humedad_actual:.1f}%",
-        delta=f"{humedad_actual - cultivos_config[cultivo_seleccionado]['humedad_optima'][0]:.1f}%"
+        delta=_fmt_delta(ctx.get("delta_humedad"), "%"),
     )
 
 with col3:
     st.metric(
-        label="🌧️ Precipitación 24h",
+        label="🌧️ Precipitación día",
         value=f"{precipitacion_actual:.1f} mm",
-        delta="+0.2 mm"
+        delta=_fmt_delta(ctx.get("delta_precip"), " mm"),
     )
 
 with col4:
-    config = cultivos_config[cultivo_seleccionado]
-    riego_total = config["riego_cantidad"] * superficie
-    st.metric(
-        label="💧 Riego Recomendado",
-        value=f"{riego_total:.1f} L",
-        delta=f"Cada {config['riego_frecuencia']} días"
-    )
+    riego_api = ctx.get("riego") or {}
+    mm_hoy = riego_api.get("mm_sugeridos_hoy")
+    if mm_hoy is not None:
+        st.metric(
+            label="💧 Riego API (hoy)",
+            value=f"{mm_hoy} mm",
+            delta=str(riego_api.get("accion", ""))[:24],
+        )
+    else:
+        st.metric(
+            label="💧 Riego",
+            value="—",
+            delta="Sin dato API",
+            help="Active la API en :8080 o elija cultivo en Vue /agricola",
+        )
 
 # Sistema de Alertas y Recomendaciones Profesional
 st.markdown("""
@@ -259,18 +304,27 @@ if alertas:
 else:
     st.success("✅ No hay alertas activas en este momento")
 
-# Sistema de recomendaciones profesional
-st.markdown("#### 🎯 Recomendaciones Estratégicas IA")
+# Recomendaciones API (datos reales)
+st.markdown("#### 🎯 Recomendaciones METGO (API / módulo 02)")
 
-if recomendaciones:
-    for i, rec in enumerate(recomendaciones, 1):
+if recomendaciones_api_txt:
+    for i, rec in enumerate(recomendaciones_api_txt, 1):
         with st.container():
             st.markdown(f"""
-            <div style="border-left: 4px solid #4CAF50; padding: 15px; margin: 10px 0; background-color: #f8f9fa; border-radius: 5px;">
-                <h4 style="margin: 0 0 10px 0; color: #2E7D32;">🎯 Recomendación #{i}</h4>
+            <div style="border-left: 4px solid #1565C0; padding: 15px; margin: 10px 0; background-color: #f0f7ff; border-radius: 5px;">
+                <h4 style="margin: 0 0 10px 0; color: #1565C0;">🎯 Recomendación API #{i}</h4>
                 <p style="margin: 0; color: #333;">{rec}</p>
             </div>
             """, unsafe_allow_html=True)
+else:
+    st.info("Sin recomendaciones API para esta estación. Verifique la API en el puerto 8080.")
+
+with st.expander("📐 Reglas locales por cultivo (complemento, no sustituye API)"):
+    if recomendaciones:
+        for i, rec in enumerate(recomendaciones, 1):
+            st.markdown(f"**#{i}** {rec}")
+    else:
+        st.caption("Sin reglas locales activas para las condiciones actuales.")
 
 # Descarga de reporte agrícola (HTML imprimible como PDF)
 def _generar_reporte_html(cultivo, fase, superficie, temp, humedad, precip, recs, alts):
@@ -310,7 +364,7 @@ reporte_html = _generar_reporte_html(
     temp_actual,
     humedad_actual,
     precipitacion_actual,
-    recomendaciones,
+    recomendaciones_api_txt + recomendaciones,
     alertas,
 )
 st.download_button(
@@ -424,17 +478,7 @@ with tab1:
     # Métricas adicionales
     col1, col2, col3, col4 = st.columns(4)
     
-    with col1:
-        st.metric("⏱️ Tiempo Promedio Respuesta", "2.3h", delta="-15min vs ayer")
-    
-    with col2:
-        st.metric("🎯 Tasa de Resolución", "87%", delta="+3% vs mes anterior")
-    
-    with col3:
-        st.metric("🔄 Alertas Recurrentes", "12%", delta="-2% vs semana anterior")
-    
-    with col4:
-        st.metric("⚡ Eficiencia Sistema", "94%", delta="+1% vs ayer")
+    st.caption("KPIs operativos del panel empresarial: datos ilustrativos (no conectados a API).")
 
 with tab2:
     st.markdown("#### 🎯 Recomendaciones Estratégicas Detalladas")
@@ -511,87 +555,65 @@ with tab2:
                         st.warning(f"Recomendación #{i} descartada")
 
 with tab3:
-    st.markdown("#### 📈 Tendencias y Patrones de Alertas")
+    st.markdown("#### 📈 Tendencias (histórico OpenMeteo)")
     
-    # Simulación de datos históricos para tendencias
-    fechas = pd.date_range(start=datetime.now() - timedelta(days=30), end=datetime.now(), freq='D')
+    hist_t = ctx.get("historico") or []
+    if not hist_t:
+        st.info("Sin histórico disponible. Levante la API en :8080.")
+        df_tendencias = pd.DataFrame()
+    else:
+        df_tendencias = pd.DataFrame(
+            [
+                {
+                    "fecha": r.get("fecha"),
+                    "temperatura": r.get("temperatura"),
+                    "humedad": r.get("humedad"),
+                    "precipitacion": r.get("precipitacion"),
+                }
+                for r in hist_t[-30:]
+            ]
+        )
     
-    # Generar datos de tendencia simulados
-    alertas_historicas = []
-    for fecha in fechas:
-        alertas_historicas.append({
-            'fecha': fecha,
-            'alertas_criticas': random.randint(0, 3),
-            'alertas_medias': random.randint(0, 5),
-            'alertas_bajas': random.randint(0, 8),
-            'temperatura': random.uniform(15, 25),
-            'humedad': random.uniform(40, 80)
-        })
-    
-    df_tendencias = pd.DataFrame(alertas_historicas)
-    
-    # Gráfico de tendencias de alertas
-    fig_tendencias = go.Figure()
-    
-    fig_tendencias.add_trace(go.Scatter(
-        x=df_tendencias['fecha'],
-        y=df_tendencias['alertas_criticas'],
-        mode='lines+markers',
-        name='Alertas Críticas',
-        line=dict(color='#F44336', width=3)
-    ))
-    
-    fig_tendencias.add_trace(go.Scatter(
-        x=df_tendencias['fecha'],
-        y=df_tendencias['alertas_medias'],
-        mode='lines+markers',
-        name='Alertas Medias',
-        line=dict(color='#FF9800', width=3)
-    ))
-    
-    fig_tendencias.add_trace(go.Scatter(
-        x=df_tendencias['fecha'],
-        y=df_tendencias['alertas_bajas'],
-        mode='lines+markers',
-        name='Alertas Bajas',
-        line=dict(color='#4CAF50', width=3)
-    ))
-    
-    fig_tendencias.update_layout(
-        title="Tendencia de Alertas - Últimos 30 Días",
-        xaxis_title="Fecha",
-        yaxis_title="Número de Alertas",
-        height=400,
-        hovermode='x unified'
-    )
-    
-    st.plotly_chart(fig_tendencias, use_container_width=True)
-    
-    # Análisis de correlación
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("**Correlación con Variables Climáticas:**")
-        
-        # Correlación con temperatura
-        corr_temp = df_tendencias['alertas_criticas'].corr(df_tendencias['temperatura'])
-        st.metric("🌡️ Correlación con Temperatura", f"{corr_temp:.2f}", 
-                 delta="Positiva" if corr_temp > 0 else "Negativa")
-        
-        # Correlación con humedad
-        corr_hum = df_tendencias['alertas_medias'].corr(df_tendencias['humedad'])
-        st.metric("💧 Correlación con Humedad", f"{corr_hum:.2f}", 
-                 delta="Positiva" if corr_hum > 0 else "Negativa")
-    
-    with col2:
-        st.markdown("**Patrones Identificados:**")
-        
-        # Análisis de patrones
-        promedio_criticas = df_tendencias['alertas_criticas'].mean()
-        st.metric("📊 Promedio Alertas Críticas/Día", f"{promedio_criticas:.1f}")
-        
-        dias_alta_actividad = len(df_tendencias[df_tendencias['alertas_criticas'] > promedio_criticas * 1.5])
-        st.metric("⚠️ Días de Alta Actividad", f"{dias_alta_actividad} de 30")
+    if not df_tendencias.empty:
+        fig_tendencias = go.Figure()
+        fig_tendencias.add_trace(
+            go.Scatter(
+                x=df_tendencias["fecha"],
+                y=df_tendencias["temperatura"],
+                mode="lines+markers",
+                name="T° promedio",
+                line=dict(color="#F44336", width=3),
+            )
+        )
+        fig_tendencias.add_trace(
+            go.Scatter(
+                x=df_tendencias["fecha"],
+                y=df_tendencias["humedad"],
+                mode="lines+markers",
+                name="Humedad %",
+                line=dict(color="#2196F3", width=2),
+                yaxis="y2",
+            )
+        )
+        fig_tendencias.update_layout(
+            title=f"Clima observado · {estacion_seleccionada}",
+            xaxis_title="Fecha",
+            yaxis_title="Temperatura (°C)",
+            yaxis2=dict(title="Humedad (%)", overlaying="y", side="right"),
+            height=400,
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig_tendencias, use_container_width=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            corr_th = df_tendencias["temperatura"].corr(df_tendencias["humedad"])
+            st.metric(
+                "Correlación T° / humedad",
+                f"{corr_th:.2f}" if not pd.isna(corr_th) else "—",
+            )
+        with col2:
+            st.metric("Precip. acumulada (30 d)", f"{df_tendencias['precipitacion'].sum():.1f} mm")
 
 with tab4:
     st.markdown("#### 🔧 Configuración de Acciones Automáticas")
@@ -726,7 +748,7 @@ with tab5:
         st.metric("⏳ Pendientes", pendientes)
     
     with col4:
-        tiempo_promedio = df_filtrado[df_filtrado['Estado'] == 'Resuelta']['Tiempo Resolución'].str.extract('(\d+)').astype(int).mean()[0]
+        tiempo_promedio = df_filtrado[df_filtrado['Estado'] == 'Resuelta']['Tiempo Resolución'].str.extract(r'(\d+)').astype(int).mean()[0]
         st.metric("⏱️ Tiempo Promedio", f"{tiempo_promedio:.1f}h" if not pd.isna(tiempo_promedio) else "N/A")
 
 # Análisis de cultivos
@@ -774,20 +796,32 @@ fig_condiciones.update_layout(
 
 st.plotly_chart(fig_condiciones, use_container_width=True)
 
+def _score_riesgo(humedad: float, temp: float, hum_r: tuple, temp_r: tuple) -> int:
+    hum_min, hum_max = hum_r
+    t_min, t_max = temp_r
+    score = 10
+    if humedad > hum_max:
+        score += 45
+    elif humedad < hum_min:
+        score += 20
+    if temp > t_max:
+        score += 35
+    elif temp < t_min:
+        score += 30
+    return min(95, score)
+
+
 # Análisis de plagas y enfermedades
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("#### 🐛 Análisis de Plagas")
+    st.markdown("#### 🐛 Riesgo de plagas (estimado por clima)")
     
     plagas_data = []
     for plaga in config["plagas_comunes"]:
-        riesgo = random.choice(["Bajo", "Medio", "Alto"])
-        plagas_data.append({
-            "Plaga": plaga,
-            "Riesgo": riesgo,
-            "Probabilidad": random.randint(20, 90)
-        })
+        prob = _score_riesgo(humedad_actual, temp_actual, config["humedad_optima"], config["temp_optima"])
+        riesgo = "Alto" if prob >= 70 else "Medio" if prob >= 40 else "Bajo"
+        plagas_data.append({"Plaga": plaga, "Riesgo": riesgo, "Probabilidad": prob})
     
     df_plagas = pd.DataFrame(plagas_data)
     
@@ -798,16 +832,14 @@ with col1:
     st.plotly_chart(fig_plagas, use_container_width=True)
 
 with col2:
-    st.markdown("#### 🦠 Análisis de Enfermedades")
+    st.markdown("#### 🦠 Riesgo de enfermedades (estimado por clima)")
     
     enfermedades_data = []
+    base_enf = _score_riesgo(humedad_actual, temp_actual, config["humedad_optima"], config["temp_optima"])
     for enfermedad in config["enfermedades"]:
-        riesgo = random.choice(["Bajo", "Medio", "Alto"])
-        enfermedades_data.append({
-            "Enfermedad": enfermedad,
-            "Riesgo": riesgo,
-            "Probabilidad": random.randint(15, 85)
-        })
+        prob = min(95, base_enf + (15 if "hongo" in enfermedad.lower() or "mildiu" in enfermedad.lower() else 0))
+        riesgo = "Alto" if prob >= 70 else "Medio" if prob >= 40 else "Bajo"
+        enfermedades_data.append({"Enfermedad": enfermedad, "Riesgo": riesgo, "Probabilidad": prob})
     
     df_enfermedades = pd.DataFrame(enfermedades_data)
     
@@ -903,8 +935,10 @@ if not df_cronograma.empty:
     
     st.plotly_chart(fig_cronograma, use_container_width=True)
 
+st.caption("Riesgos de plagas/enfermedades: índice derivado de humedad y temperatura observadas (no sustituye monitoreo en campo).")
+
 # Análisis de rendimiento
-st.markdown("### 📈 Análisis de Rendimiento Predicho")
+st.markdown("### 📈 Rendimiento referencial (ilustrativo)")
 
 col1, col2 = st.columns(2)
 
@@ -934,24 +968,21 @@ with col2:
         "Lechuga": 30
     }
     
-    rendimiento_estimado = rendimiento_base[cultivo_seleccionado] * (1 + random.uniform(-0.2, 0.3))
+    t_min, t_max = config["temp_optima"]
+    factor = 1.0
+    if t_min <= temp_actual <= t_max:
+        factor += 0.05
+    if config["humedad_optima"][0] <= humedad_actual <= config["humedad_optima"][1]:
+        factor += 0.05
+    rendimiento_estimado = rendimiento_base[cultivo_seleccionado] * factor
     
-    st.markdown("#### 📊 Rendimiento Estimado")
+    st.markdown("#### 📊 Rendimiento referencial")
     st.metric(
-        label=f"Producción de {cultivo_seleccionado}",
+        label=f"Referencia {cultivo_seleccionado}",
         value=f"{rendimiento_estimado:.1f} ton/ha",
-        delta=f"{rendimiento_estimado - rendimiento_base[cultivo_seleccionado]:.1f} ton/ha"
+        help="Modelo simplificado; no es predicción ML ni dato de mercado.",
     )
-    
-    st.markdown("#### 💰 Análisis Económico")
-    precio_estimado = random.uniform(800, 1500)  # $ por tonelada
-    ingreso_estimado = rendimiento_estimado * precio_estimado * superficie
-    
-    st.metric(
-        label="Ingreso Estimado",
-        value=f"${ingreso_estimado:,.0f}",
-        delta=f"Precio: ${precio_estimado:.0f}/ton"
-    )
+    st.caption("Para análisis económico real use Vue → /agricola (endpoint económico API).")
 
 # Información del cultivo
 st.markdown("### 🌱 Información del Cultivo Seleccionado")
@@ -986,7 +1017,7 @@ st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 20px;">
     <p>🌾 <strong>Sistema METGO</strong> - Gestión Agrícola Inteligente</p>
-    <p>Recomendaciones generadas por Inteligencia Artificial</p>
+    <p>Datos meteorológicos OpenMeteo · recomendaciones módulo 02 vía API</p>
     <p>Última actualización: {}</p>
 </div>
 """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)

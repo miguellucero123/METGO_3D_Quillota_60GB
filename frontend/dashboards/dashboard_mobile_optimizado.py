@@ -6,6 +6,20 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+import metgo_paths
+
+metgo_paths.setup_paths("05_api_rest")
+
+from api_rest.services import generar_alertas, historico_meteo, nombre_a_slug, resumen_meteo
+from meteo_dashboard_utils import filtrar_historico_hasta_hoy, hoy_chile
+
 from mobile_config import MobileConfig
 
 # Aplicar configuraciones móviles
@@ -43,6 +57,38 @@ with st.sidebar:
     
     # Toggle de modo oscuro
     modo_oscuro = st.toggle("🌙 Modo Oscuro", value=False)
+
+    modo_mobile = st.radio(
+        "Fuente",
+        ["API METGO", "Demo móvil"],
+        index=0,
+    )
+
+if modo_mobile.startswith("API"):
+    slug_m = nombre_a_slug(estacion)
+    with st.spinner("Sincronizando…"):
+        res_m = resumen_meteo(slug_m) or {}
+        hist_m = filtrar_historico_hasta_hoy(historico_meteo(slug_m, 7) or [])
+        alertas_m = generar_alertas(slug_m)
+    datos = {
+        "temperatura": float(res_m.get("temperatura") or 0),
+        "humedad": float(res_m.get("humedad") or 0),
+        "precipitacion": float(res_m.get("precipitacion") or 0),
+        "viento": float(res_m.get("viento") or 0),
+        "presion": float(res_m.get("presion") or 1013),
+        "rendimiento": None,
+        "calidad": None,
+        "eficiencia": None,
+        "alertas": [
+            {"tipo": a.get("nivel", "info"), "mensaje": a.get("mensaje", "")}
+            for a in alertas_m[:6]
+        ],
+        "hist": hist_m,
+        "tipo_dato": res_m.get("tipo_dato"),
+    }
+    st.caption(f"{hoy_chile()} · {estacion} · {datos['tipo_dato']} · Vue 5173")
+else:
+    datos = None
 
 # Función para generar datos móviles optimizados
 @st.cache_data
@@ -93,8 +139,9 @@ def generar_datos_mobile(estacion, vista):
         'alertas': alertas
     }
 
-# Generar datos
-datos = generar_datos_mobile(estacion, vista)
+if datos is None:
+    datos = generar_datos_mobile(estacion, vista)
+    datos["hist"] = []
 
 # Métricas principales en grid móvil
 if vista == "Resumen" or vista == "Detallada":
@@ -135,63 +182,86 @@ if vista == "Resumen" or vista == "Detallada":
 # Gráfico móvil optimizado
 if vista == "Gráficos" or vista == "Detallada":
     st.markdown("### 📈 Análisis Visual")
-    
-    # Generar datos de 24 horas para el gráfico
-    horas = list(range(24))
-    temp_horas = [datos['temperatura'] + np.sin(2 * np.pi * h / 24) * 4 + random.uniform(-1, 1) for h in horas]
-    humedad_horas = [datos['humedad'] + np.cos(2 * np.pi * h / 24) * 10 + random.uniform(-2, 2) for h in horas]
-    
-    # Gráfico optimizado para móvil
-    fig = make_subplots(
-        rows=2, cols=1,
-        subplot_titles=('Temperatura por Hora', 'Humedad por Hora'),
-        vertical_spacing=0.1
-    )
-    
-    fig.add_trace(
-        go.Scatter(x=horas, y=temp_horas, 
-                  name='Temperatura', 
-                  line=dict(color='#e74c3c', width=3),
-                  mode='lines+markers',
-                  marker=dict(size=6)),
-        row=1, col=1
-    )
-    
-    fig.add_trace(
-        go.Scatter(x=horas, y=humedad_horas, 
-                  name='Humedad', 
-                  line=dict(color='#3498db', width=3),
-                  mode='lines+markers',
-                  marker=dict(size=6)),
-        row=2, col=1
-    )
-    
-    fig.update_layout(
-        height=400,
-        showlegend=False,
-        margin=dict(l=20, r=20, t=40, b=20),
-        font=dict(size=12)
-    )
-    
-    fig.update_xaxes(title_text="Hora")
-    fig.update_yaxes(title_text="Temperatura (°C)", row=1, col=1)
-    fig.update_yaxes(title_text="Humedad (%)", row=2, col=1)
-    
-    st.plotly_chart(fig, use_container_width=True)
+
+    hist_plot = datos.get("hist") or []
+    if hist_plot:
+        fechas = [r.get("fecha") for r in hist_plot]
+        fig = make_subplots(
+            rows=2,
+            cols=1,
+            subplot_titles=("T° máx / mín (OpenMeteo)", "Humedad %"),
+            vertical_spacing=0.12,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=fechas,
+                y=[r.get("temperatura_max") for r in hist_plot],
+                name="T° máx",
+                line=dict(color="#e74c3c", width=2),
+                mode="lines+markers",
+            ),
+            row=1,
+            col=1,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=fechas,
+                y=[r.get("temperatura_min") for r in hist_plot],
+                name="T° mín",
+                line=dict(color="#3498db", width=2),
+                mode="lines+markers",
+            ),
+            row=1,
+            col=1,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=fechas,
+                y=[r.get("humedad") for r in hist_plot],
+                name="Humedad",
+                line=dict(color="#27ae60", width=2),
+                mode="lines+markers",
+            ),
+            row=2,
+            col=1,
+        )
+        fig.update_layout(height=420, showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        horas = list(range(24))
+        temp_horas = [
+            datos["temperatura"] + np.sin(2 * np.pi * h / 24) * 4 + random.uniform(-1, 1)
+            for h in horas
+        ]
+        humedad_horas = [
+            datos["humedad"] + np.cos(2 * np.pi * h / 24) * 10 + random.uniform(-2, 2)
+            for h in horas
+        ]
+        fig = make_subplots(
+            rows=2,
+            cols=1,
+            subplot_titles=("Temperatura (demo)", "Humedad (demo)"),
+            vertical_spacing=0.1,
+        )
+        fig.add_trace(go.Scatter(x=horas, y=temp_horas, line=dict(color="#e74c3c")), row=1, col=1)
+        fig.add_trace(go.Scatter(x=horas, y=humedad_horas, line=dict(color="#3498db")), row=2, col=1)
+        fig.update_layout(height=400, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
 
 # Alertas móviles
 if vista == "Alertas" or vista == "Detallada":
     st.markdown("### 🚨 Alertas y Recomendaciones")
     
-    if datos['alertas']:
-        for alerta in datos['alertas']:
-            if alerta['tipo'] == 'warning':
+    if datos["alertas"]:
+        for alerta in datos["alertas"]:
+            tipo_a = str(alerta.get("tipo", "")).lower()
+            if tipo_a in ("warning", "critical"):
                 st.markdown(f"""
                 <div class="mobile-alert warning">
                     ⚠️ <strong>Advertencia:</strong> {alerta['mensaje']}
                 </div>
                 """, unsafe_allow_html=True)
-            elif alerta['tipo'] == 'info':
+            elif tipo_a == "info":
                 st.markdown(f"""
                 <div class="mobile-alert info">
                     ℹ️ <strong>Información:</strong> {alerta['mensaje']}
@@ -205,11 +275,11 @@ if vista == "Alertas" or vista == "Detallada":
         """, unsafe_allow_html=True)
 
 # Información agrícola móvil
-if vista == "Detallada":
-    st.markdown("### 🌾 Información Agrícola")
-    
+if vista == "Detallada" and datos.get("rendimiento") is not None:
+    st.markdown("### 🌾 Información Agrícola (demo)")
+
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.markdown(f"""
         <div class="mobile-card">
@@ -218,7 +288,7 @@ if vista == "Detallada":
             <p style="font-size: 0.9rem; color: #7f8c8d;">Producción estimada</p>
         </div>
         """, unsafe_allow_html=True)
-    
+
     with col2:
         st.markdown(f"""
         <div class="mobile-card">
@@ -227,6 +297,8 @@ if vista == "Detallada":
             <p style="font-size: 0.9rem; color: #7f8c8d;">Calidad del producto</p>
         </div>
         """, unsafe_allow_html=True)
+elif vista == "Detallada":
+    st.caption("Riego y cultivos: use Vue → /agricola")
 
 # Acciones rápidas móviles
 st.markdown("### ⚡ Acciones Rápidas")

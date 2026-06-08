@@ -5,6 +5,7 @@ import { useMetgoStore } from '@/stores/metgo'
 import SectionCard from '@/components/ui/SectionCard.vue'
 import MlProjectionChart from '@/components/charts/MlProjectionChart.vue'
 import { useApiCall } from '@/composables/useApiCall'
+import { mapMlProjectionItems } from '@/utils/mlProjection'
 import {
   fetchMlModelos,
   fetchMlPrediccion,
@@ -115,23 +116,9 @@ async function cargarProyeccionesChart() {
       return
     }
     const batch = await mlPredictBatch(vars, store.estacionActiva)
-    const rows = Array.isArray(batch) ? batch : batch?.resultados || []
-    const actual = store.datosMeteo || {}
-    mlChart.value = ML_CHART_VARS.filter((v) => vars.includes(v.variable)).map((v) => {
-      const hit = rows.find((x) => x.variable === v.variable)
-      const predObj = hit?.prediccion
-      const val =
-        typeof predObj === 'object' && predObj != null
-          ? predObj.prediccion ?? predObj.valor
-          : predObj
-      return {
-        variable: v.variable,
-        label: v.label,
-        unidad: v.unidad,
-        actual: actual[v.field],
-        prediccion: val,
-      }
-    }).filter((x) => x.prediccion != null && !Number.isNaN(Number(x.prediccion)))
+    mlChart.value = mapMlProjectionItems(batch, store.datosMeteo).filter((x) =>
+      ML_CHART_VARS.some((v) => v.variable === x.variable)
+    )
   } catch {
     mlChart.value = []
   } finally {

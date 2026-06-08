@@ -22,23 +22,62 @@ def listar_cultivos() -> list[dict[str, Any]]:
     return CULTIVOS_QUILLOTA
 
 
-def recomendacion_riego(resumen_meteo: dict[str, Any], cultivo_id: str = "palto") -> dict[str, Any]:
+def recomendacion_riego(
+    resumen_meteo: dict[str, Any],
+    cultivo_id: str = "palto",
+    estacion_id: str | None = None,
+) -> dict[str, Any]:
     cultivo = next((c for c in CULTIVOS_QUILLOTA if c["id"] == cultivo_id), CULTIVOS_QUILLOTA[0])
     hum = float(resumen_meteo.get("humedad") or 50)
     precip = float(resumen_meteo.get("precipitacion") or 0)
     temp = float(resumen_meteo.get("temperatura") or resumen_meteo.get("temperatura_max") or 20)
+    t_min = float(resumen_meteo.get("temperatura_min") or 10)
     deficit = max(0, 70 - hum)
     mm = cultivo["riego_mm_dia_base"] * (1 + deficit / 100)
+    cronograma = None
+    if estacion_id:
+        try:
+            from api_rest import services
+
+            cronograma = services.cronograma_riego_inteligente(estacion_id, cultivo_id)
+        except Exception:
+            cronograma = None
+    if cronograma and cronograma.get("accion") == "posponer_riego":
+        return {
+            "cultivo": cultivo,
+            "mm_sugeridos_hoy": 0,
+            "accion": "posponer_riego",
+            "dias_posponer": cronograma.get("dias_posponer", 2),
+            "motivo": cronograma.get("motivo", "Lluvia esperada"),
+            "precipitacion_48h_mm": cronograma.get("precipitacion_48h_mm"),
+            "modulo": "02_riego_inteligente",
+            "integrado": True,
+            "fuente_pronostico": "calibrado",
+        }
+    if cronograma and cronograma.get("accion") == "suspender_riego_helada":
+        return {
+            "cultivo": cultivo,
+            "mm_sugeridos_hoy": 0,
+            "accion": "suspender_riego_helada",
+            "motivo": cronograma.get("motivo"),
+            "modulo": "02_riego_inteligente",
+            "integrado": True,
+        }
     if precip > 2:
         mm *= 0.3
     if temp > 32:
         mm *= 1.15
+    if t_min <= 4:
+        mm = 0
     accion = "riego_recomendado" if mm >= 4 else "suspender_riego"
+    motivo = f"Humedad {hum:.0f}%, precipitación {precip:.1f} mm, T {temp:.1f}°C"
+    if cronograma:
+        motivo = f"{motivo}; pronóstico 48h: {cronograma.get('precipitacion_48h_mm', 0)} mm"
     return {
         "cultivo": cultivo,
         "mm_sugeridos_hoy": round(mm, 1),
         "accion": accion,
-        "motivo": f"Humedad {hum:.0f}%, precipitación {precip:.1f} mm, T {temp:.1f}°C",
+        "motivo": motivo,
         "modulo": "02_riego_inteligente",
         "integrado": True,
     }

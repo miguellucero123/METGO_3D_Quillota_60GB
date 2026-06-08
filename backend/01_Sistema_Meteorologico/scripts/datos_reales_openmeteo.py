@@ -63,7 +63,7 @@ class OpenMeteoData:
                 ],
                 'timezone': 'America/Santiago',
                 'past_days': min(dias, 92),  # Máximo 92 días hacia atrás
-                'forecast_days': 7
+                'forecast_days': 0,
             }
             
             print(f" Conectando con OpenMeteo API...")

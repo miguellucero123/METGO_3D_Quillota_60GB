@@ -40,6 +40,7 @@ from api_rest.fase7_routes import register_fase7_routes
 from api_rest.fase8_routes import register_fase8_routes
 from api_rest.fase9_routes import register_fase9_routes
 from api_rest.fase10_routes import register_fase10_routes
+from api_rest.precipitacion_routes import register_precipitacion_routes
 from api_rest.observability import register_observability
 
 
@@ -60,6 +61,7 @@ def create_app() -> Flask:
     register_fase8_routes(app)
     register_fase9_routes(app)
     register_fase10_routes(app)
+    register_precipitacion_routes(app)
     register_docs_routes(app)
 
     @app.get("/")

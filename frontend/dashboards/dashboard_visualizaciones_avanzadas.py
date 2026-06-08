@@ -24,6 +24,13 @@ from api_rest.services import (
     nombre_a_slug,
 )
 from datos_reales_openmeteo import obtener_datos_meteorologicos_reales
+from meteo_dashboard_utils import (
+    dia_iso,
+    filtrar_historico_hasta_hoy,
+    hoy_chile,
+    nubosidad_estimada,
+    probabilidad_niebla,
+)
 
 DATOS_REALES_DISPONIBLES = True
 
@@ -176,7 +183,8 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
         "Últimos 5 años": 1825,
     }
 
-    dias = dias_map[periodo]
+    dias = min(dias_map[periodo], 92)
+    hoy = hoy_chile()
     if estacion == "Todas las Estaciones":
         estaciones_objetivo = list(ESTACIONES_TODAS)
     else:
@@ -188,14 +196,36 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
         try:
             if est in ESTACIONES_VALLE:
                 slug = nombre_a_slug(est)
-                hist = historico_meteo(slug, min(dias, 92)) or []
+                hist = filtrar_historico_hasta_hoy(historico_meteo(slug, dias) or [])
                 fuente_base = "API METGO"
+                if not hist and DATOS_REALES_DISPONIBLES:
+                    df_om = obtener_datos_meteorologicos_reales(est, "historicos", dias)
+                    if df_om is not None and not df_om.empty:
+                        for _, row in df_om.iterrows():
+                            if dia_iso(row.get("fecha")) > hoy:
+                                continue
+                            tp = float(row.get("temperatura_promedio") or 0)
+                            datos_completos.append(
+                                _fila_visual(
+                                    row["fecha"],
+                                    est,
+                                    tp,
+                                    float(row.get("temperatura_min") or tp - 4),
+                                    float(row.get("temperatura_max") or tp + 4),
+                                    float(row.get("precipitacion") or 0),
+                                    float(row.get("humedad_relativa") or 0),
+                                    float(row.get("presion_atmosferica") or 1013),
+                                    float(row.get("velocidad_viento") or 0),
+                                    tp,
+                                    "OpenMeteo",
+                                )
+                            )
+                        continue
                 if not hist:
-                    datos_simulados = generar_datos_simulados(est, dias)
-                    datos_completos.extend(datos_simulados)
+                    datos_completos.extend(generar_datos_simulados(est, dias))
                     continue
                 for row in hist:
-                    fecha = pd.to_datetime(row.get("fecha"))
+                    fecha = pd.to_datetime(dia_iso(row.get("fecha")))
                     temp_prom = float(row.get("temperatura") or row.get("temperatura_max") or 0)
                     temp_min = float(row.get("temperatura_min") or temp_prom - 4)
                     temp_max = float(row.get("temperatura_max") or temp_prom + 4)
@@ -223,6 +253,8 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
                 datos_reales = obtener_datos_meteorologicos_reales(est, "historicos", min(dias, 92))
                 if datos_reales is not None and len(datos_reales) > 0:
                     for _, row in datos_reales.iterrows():
+                        if dia_iso(row.get("fecha")) > hoy:
+                            continue
                         sensacion = row["temperatura_promedio"] * (
                             1 + (row["humedad_relativa"] - 50) * 0.01
                         ) * (1 + (row["velocidad_viento"] / 10) * 0.1)
@@ -280,8 +312,8 @@ def _fila_visual(
         "Humedad": round(float(humedad), 1),
         "Presion": round(float(presion), 1),
         "Viento": round(float(viento), 1),
-        "Nubosidad": round(np.random.uniform(20, 80), 1),
-        "Probabilidad_Niebla": round(np.random.uniform(0, 40) if humedad > 75 else 0, 1),
+        "Nubosidad": nubosidad_estimada(humedad),
+        "Probabilidad_Niebla": probabilidad_niebla(humedad),
         "Indice_Helada": round(max(0, 32 - temp_min) if temp_min < 5 else 0, 1),
         "Sensacion_Termica_Agricola": round(float(sensacion), 1),
         "Rendimiento": round(20 + temp_prom * 0.5 + humedad * 0.1, 1),
@@ -365,7 +397,10 @@ def generar_datos_simulados(estacion, dias):
     return datos_simulados
 
 # Información sobre datos reales
-st.success("🌐 **Valle de Aconcagua:** datos vía API METGO (5 estaciones) + OpenMeteo (referencia regional)")
+st.success(
+    f"🌐 **Valle de Aconcagua:** API METGO + OpenMeteo · histórico hasta **{hoy_chile()}** (Chile). "
+    "Interfaz principal: Vue http://127.0.0.1:5173/meteo/comparativo"
+)
 
 # Resumen actual multi-estación (siempre visible)
 try:
@@ -585,11 +620,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Corregir el cálculo del índice de heladas para usar temperatura mínima
-if 'Temperatura_Min' not in df.columns:
-    # Si no tenemos temperatura mínima, simularla basada en la temperatura promedio
-    df['Temperatura_Min'] = df['Temperatura'] - np.random.uniform(3, 8, len(df))
-    df['Temperatura_Max'] = df['Temperatura'] + np.random.uniform(3, 8, len(df))
+# Asegurar min/máx diarios (sin aleatoriedad; datos API ya traen el rango)
+if "Temperatura_Min" not in df.columns:
+    df["Temperatura_Min"] = df["Temperatura"] - 4
+if "Temperatura_Max" not in df.columns:
+    df["Temperatura_Max"] = df["Temperatura"] + 4
+df["Temperatura_Min"] = df["Temperatura_Min"].fillna(df["Temperatura"] - 4)
+df["Temperatura_Max"] = df["Temperatura_Max"].fillna(df["Temperatura"] + 4)
 
 # Recalcular el índice de heladas usando temperatura mínima
 df['Indice_Helada_Corregido'] = df.apply(lambda row: max(0, 32 - row['Temperatura_Min']) if row['Temperatura_Min'] < 5 else 0, axis=1)

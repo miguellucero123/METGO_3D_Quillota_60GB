@@ -21,6 +21,13 @@ export const useMetgoStore = defineStore('metgo', () => {
     estaciones.value.find((e) => e.id === estacionActiva.value)?.nombre ?? 'Quillota'
   )
 
+  function setEstacion(id) {
+    if (id && estacionActiva.value !== id) {
+      estacionActiva.value = id
+      cargarDatosMeteo()
+    }
+  }
+
   async function cargarDatosMeteo() {
     cargando.value = true
     error.value = null
@@ -76,6 +83,7 @@ export const useMetgoStore = defineStore('metgo', () => {
     tipoAnalisis,
     estacionNombre,
     cargarDatosMeteo,
+    setEstacion,
     inicializar,
   }
 })

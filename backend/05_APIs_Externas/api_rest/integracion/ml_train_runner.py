@@ -96,7 +96,7 @@ def _obtener_filas_entrenamiento(
 
     if _allow_synthetic():
         n = min(365, max(120, dias_datos))
-        return _filas_sinteticas(n), "sintetico", sync_meta
+        return _filas_sinteticas(n), "sintetico_ci", sync_meta
 
     return [], "sin_datos_reales", sync_meta
 
@@ -317,6 +317,9 @@ def entrenar_todos(
         except Exception as exc:
             errores.append({"archivo": spec["archivo"], "error": str(exc)})
 
+    fechas = sorted(
+        str(r.get("fecha", ""))[:10] for r in filas if r.get("fecha")
+    )
     manifest = {
         "actualizado": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "origen_datos": origen,
@@ -326,6 +329,16 @@ def entrenar_todos(
         "total": len(catalog),
         "entrenados": len(entrenados),
         "modelos": entrenados,
+        "provenance": {
+            "estacion_id": estacion_id,
+            "origen_datos": origen,
+            "filas_entrenamiento": len(filas),
+            "fecha_desde": fechas[0] if fechas else None,
+            "fecha_hasta": fechas[-1] if fechas else None,
+            "dias_solicitados": dias_datos,
+            "sintetico_permitido": _allow_synthetic(),
+            "sync_datos": sync_meta,
+        },
     }
     _manifest_path().write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 

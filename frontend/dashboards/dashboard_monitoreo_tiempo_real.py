@@ -14,7 +14,13 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+import metgo_paths
+
+metgo_paths.setup_paths("05_api_rest", "07_monitoreo")
+
+from api_rest.services import comparativo_estaciones, generar_alertas as alertas_meteo_api
 from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+from meteo_dashboard_utils import hoy_chile
 
 # Configuración de la página
 st.set_page_config(
@@ -59,11 +65,42 @@ sensores_config = {
 }
 
 categoria_sensor = st.sidebar.selectbox("📡 Categoría de Sensores:", list(sensores_config.keys()))
+modo_datos = st.sidebar.radio(
+    "Fuente",
+    ["Estaciones METGO (API)", "Simulación sensores"],
+    index=0,
+    help="API usa resumen OpenMeteo del valle; simulación para demo IoT.",
+)
 actualizacion_automatica = st.sidebar.checkbox("🔄 Actualización Automática", value=True)
 intervalo_actualizacion = st.sidebar.slider("⏱️ Intervalo (segundos):", 1, 60, 5)
 
-# Función para generar datos de sensores en tiempo real
-@st.cache_data(ttl=1)  # Cache por 1 segundo para simular tiempo real
+if modo_datos.startswith("Estaciones"):
+    try:
+        resumen = comparativo_estaciones()
+        alertas_api = alertas_meteo_api()
+        st.success(f"🌐 **{hoy_chile()}** · {len(resumen)} estaciones · {len(alertas_api)} alertas activas")
+        if resumen:
+            st.dataframe(
+                pd.DataFrame(resumen)[
+                    ["estacion", "temperatura", "temperatura_max", "temperatura_min", "viento", "precipitacion"]
+                ],
+                use_container_width=True,
+                hide_index=True,
+            )
+        if alertas_api:
+            for a in alertas_api[:8]:
+                nivel = a.get("nivel", "info")
+                st.warning(f"**{nivel}** · {a.get('mensaje', '')}")
+        st.caption("Monitoreo operativo en Vue: http://127.0.0.1:5173/monitoreo")
+    except Exception as e:
+        st.error(f"No se pudo conectar a la API METGO (:8080): {e}")
+    st.stop()
+
+# --- Modo simulación IoT (demo) ---
+st.markdown("### 📡 Simulación de sensores")
+
+# Función para generar datos de sensores en tiempo real (modo simulación)
+@st.cache_data(ttl=1)
 def generar_datos_tiempo_real(categoria):
     """Genera datos de sensores en tiempo real"""
     
@@ -126,11 +163,9 @@ def generar_alertas(datos):
     
     return pd.DataFrame(alertas)
 
-# Generar datos
 datos_sensores = generar_datos_tiempo_real(categoria_sensor)
 alertas = generar_alertas(datos_sensores)
 
-# Métricas principales
 st.markdown("### 📊 Estado del Sistema en Tiempo Real")
 
 col1, col2, col3, col4 = st.columns(4)

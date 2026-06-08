@@ -1,13 +1,24 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-import { BellRing, AlertTriangle, Info } from 'lucide-vue-next'
+import { ref, computed, watch, onMounted } from 'vue'
+import { BellRing, AlertTriangle, Info, Activity, Radio } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
+import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
-import { fetchAlertas, fetchAlertasHistorial } from '@/api/metgoApi'
+import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
+import {
+  fetchAlertas,
+  fetchAlertasHistorial,
+  fetchComparativo,
+  fetchIotSensores,
+} from '@/api/metgoApi'
+import { hoyChile } from '@/utils/meteoDates'
 
 const store = useMetgoStore()
 const alertas = ref([])
 const historial = ref([])
+const comparativo = ref([])
+const sensores = ref([])
+const ambito = ref('estacion')
 const cargando = ref(true)
 
 function iconFor(nivel) {
@@ -15,14 +26,41 @@ function iconFor(nivel) {
   return Info
 }
 
+const alertasFiltradas = computed(() => {
+  const list = alertas.value || []
+  if (ambito.value === 'valle') return list
+  return list.filter(
+    (a) => !a.estacion_id || a.estacion_id === store.estacionActiva
+  )
+})
+
+const conteo = computed(() => {
+  const w = alertasFiltradas.value.filter((a) => a.nivel === 'warning').length
+  const i = alertasFiltradas.value.filter((a) => a.nivel !== 'warning').length
+  return { warning: w, info: i, total: alertasFiltradas.value.length }
+})
+
+const labelsEst = computed(() => comparativo.value.map((r) => r.estacion))
+const tempsMax = computed(() => comparativo.value.map((r) => r.temperatura_max))
+
 async function cargar() {
   cargando.value = true
   try {
-    alertas.value = await fetchAlertas(store.estacionActiva)
-    historial.value = await fetchAlertasHistorial(store.estacionActiva)
+    const [a, h, c, s] = await Promise.all([
+      fetchAlertas(ambito.value === 'valle' ? null : store.estacionActiva),
+      fetchAlertasHistorial(store.estacionActiva),
+      fetchComparativo(),
+      fetchIotSensores().catch(() => []),
+    ])
+    alertas.value = a
+    historial.value = h
+    comparativo.value = c
+    sensores.value = Array.isArray(s) ? s : s?.sensores || []
   } catch {
     alertas.value = []
     historial.value = []
+    comparativo.value = []
+    sensores.value = []
   } finally {
     cargando.value = false
   }
@@ -30,6 +68,7 @@ async function cargar() {
 
 onMounted(cargar)
 watch(() => store.estacionActiva, cargar)
+watch(ambito, cargar)
 </script>
 
 <template>
@@ -37,47 +76,150 @@ watch(() => store.estacionActiva, cargar)
     <header class="page-header">
       <h2 class="page-title">Alertas y monitoreo</h2>
       <p class="page-subtitle">
-        Umbrales automáticos y personalizados · {{ store.estacionNombre }}
-        · <router-link to="/alertas/config">Configurar reglas</router-link>
+        Umbrales automáticos · {{ store.estacionNombre }} · {{ hoyChile() }}
+        ·
+        <router-link to="/alertas/config">Configurar reglas</router-link>
+        ·
+        <router-link to="/iot">Sensores IoT</router-link>
       </p>
+      <div class="page-meta">
+        <label class="inline-select">
+          Alertas:
+          <select v-model="ambito">
+            <option value="estacion">Estación activa</option>
+            <option value="valle">Todo el valle</option>
+          </select>
+        </label>
+      </div>
     </header>
+
+    <div class="card-grid">
+      <MetricCard label="Alertas activas" :value="conteo.total">
+        <template #icon><BellRing /></template>
+      </MetricCard>
+      <MetricCard
+        label="Nivel warning"
+        :value="conteo.warning"
+        variant="warning"
+      >
+        <template #icon><AlertTriangle /></template>
+      </MetricCard>
+      <MetricCard label="Informativas" :value="conteo.info">
+        <template #icon><Info /></template>
+      </MetricCard>
+      <MetricCard label="Sensores IoT" :value="sensores.length || '—'">
+        <template #icon><Radio /></template>
+      </MetricCard>
+    </div>
+
+    <SectionCard
+      v-if="comparativo.length"
+      title="Condiciones por estación (hoy)"
+      subtitle="Referencia para monitoreo multi-zona"
+    >
+      <template #icon><Activity /></template>
+      <HorizontalBarChart :labels="labelsEst" :values="tempsMax" unit="°C" kind="temp" />
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Estación</th>
+              <th>T° máx</th>
+              <th>T° mín</th>
+              <th>Lluvia</th>
+              <th>Viento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="r in comparativo" :key="r.estacion_id">
+              <td>{{ r.estacion }}</td>
+              <td>{{ r.temperatura_max }}°C</td>
+              <td>{{ r.temperatura_min }}°C</td>
+              <td>{{ r.precipitacion }} mm</td>
+              <td>{{ r.viento }} km/h</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </SectionCard>
 
     <SectionCard
       title="Estado de alertas"
-      :subtitle="`${alertas.length} notificación(es) activa(s)`"
+      :subtitle="`${alertasFiltradas.length} notificación(es)`"
     >
       <template #icon><BellRing /></template>
       <p v-if="cargando" class="skeleton">Cargando alertas…</p>
-      <ul v-else-if="alertas.length" class="alert-grid">
-        <li v-for="a in alertas" :key="a.id" :class="['alert-card', a.nivel]">
+      <ul v-else-if="alertasFiltradas.length" class="alert-grid">
+        <li
+          v-for="a in alertasFiltradas"
+          :key="a.id"
+          :class="['alert-card', a.nivel === 'warning' ? 'warning' : 'info']"
+        >
           <component :is="iconFor(a.nivel)" class="alert-card__icon" aria-hidden="true" />
           <div>
             <p class="alert-card__text">{{ a.mensaje }}</p>
-            <span v-if="a.estacion_id" class="alert-card__meta">Estación: {{ a.estacion_id }}</span>
+            <span v-if="a.estacion_id" class="alert-card__meta">{{ a.estacion_id }}</span>
           </div>
         </li>
       </ul>
-      <p v-else class="muted">No hay alertas registradas.</p>
+      <p v-else class="muted">No hay alertas para el filtro seleccionado.</p>
     </SectionCard>
 
     <SectionCard
       title="Historial de alertas"
-      :subtitle="`${historial.length} evento(s) · módulo 07`"
+      :subtitle="`${historial.length} evento(s) · ${store.estacionNombre}`"
     >
       <ul v-if="historial.length" class="hist-list">
         <li v-for="(h, i) in historial" :key="i">
           <span class="hist-time">{{ h.timestamp || h.fecha }}</span>
-          {{ h.mensaje || h.detalle || JSON.stringify(h) }}
+          {{ h.mensaje || h.detalle || '—' }}
         </li>
       </ul>
-      <p v-else class="muted">Sin historial persistido.</p>
+      <p v-else class="muted">Sin historial persistido para esta estación.</p>
     </SectionCard>
   </div>
 </template>
 
 <style scoped>
 .page {
-  max-width: 900px;
+  max-width: 1100px;
+}
+
+.page-meta {
+  margin-top: 0.5rem;
+}
+
+.inline-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.inline-select select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+}
+
+.table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .alert-grid {
@@ -134,10 +276,12 @@ watch(() => store.estacionActiva, cargar)
   padding: 0;
   font-size: 0.8rem;
 }
+
 .hist-list li {
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--color-border);
 }
+
 .hist-time {
   display: block;
   font-size: 0.7rem;

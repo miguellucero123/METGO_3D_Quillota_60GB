@@ -9,6 +9,7 @@ import contextlib
 import sys
 import time
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Any
 
@@ -110,18 +111,18 @@ def _df_sin_prints(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:
 
 
 def _fila_hoy(df: pd.DataFrame | None) -> pd.Series | None:
-    """Fila del día actual (o la más reciente pasada), no el último día del pronóstico."""
+    """Fila del día actual en Chile (o la observación más reciente ≤ hoy)."""
     if df is None or df.empty:
         return None
     work = df.copy()
     if not pd.api.types.is_datetime64_any_dtype(work["fecha"]):
         work["fecha"] = pd.to_datetime(work["fecha"])
-    hoy = pd.Timestamp.now().normalize()
-    fechas = work["fecha"].dt.normalize()
-    mask_hoy = fechas == hoy
+    hoy = _hoy_chile()
+    work["_dia"] = work["fecha"].apply(_fecha_dia)
+    mask_hoy = work["_dia"] == hoy
     if mask_hoy.any():
         return work.loc[mask_hoy].sort_values("fecha").iloc[0]
-    pasados = work[fechas <= hoy]
+    pasados = work[work["_dia"] <= hoy]
     if not pasados.empty:
         return pasados.sort_values("fecha", ascending=False).iloc[0]
     return work.sort_values("fecha", ascending=True).iloc[0]
@@ -143,19 +144,40 @@ def _fecha_dia(val: Any) -> str:
     return str(val)[:10]
 
 
+def _hoy_chile() -> str:
+    return datetime.now(ZoneInfo("America/Santiago")).date().isoformat()
+
+
 def _dedupe_historico_por_dia(filas: list[dict[str, Any]], dias: int) -> list[dict[str, Any]]:
-    """Una fila por día; OpenMeteo pisa local si hay conflicto."""
+    """Una fila por día (solo fechas ≤ hoy Chile); OpenMeteo pisa local si hay conflicto."""
+    hoy = _hoy_chile()
     por_dia: dict[str, dict[str, Any]] = {}
     for r in filas:
         dia = _fecha_dia(r.get("fecha"))
-        if dia:
+        if dia and dia <= hoy:
             por_dia[dia] = {**r, "fecha": dia}
     return sorted(por_dia.values(), key=lambda x: x["fecha"])[-dias:]
 
 
+def _dedupe_pronostico_por_dia(filas: list[dict[str, Any]], dias: int) -> list[dict[str, Any]]:
+    """Pronóstico: hoy y días siguientes (sin fechas pasadas en la tabla)."""
+    hoy = _hoy_chile()
+    por_dia: dict[str, dict[str, Any]] = {}
+    for r in filas:
+        dia = _fecha_dia(r.get("fecha"))
+        if dia and dia >= hoy:
+            por_dia[dia] = {**r, "fecha": dia}
+    return sorted(por_dia.values(), key=lambda x: x["fecha"])[:dias]
+
+
 def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
     nombre = row.get("estacion", slug_a_nombre(estacion_id))
-    return {
+    pop = row.get("probabilidad_lluvia")
+    if pop is not None and not (isinstance(pop, float) and pd.isna(pop)):
+        pop_val = round(float(pop), 0)
+    else:
+        pop_val = None
+    out = {
         "estacion_id": estacion_id,
         "estacion": str(nombre),
         "fecha": _fecha_dia(row["fecha"]),
@@ -169,15 +191,27 @@ def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
         "fuente": str(row.get("fuente_datos", "desconocida")),
         "actualizado": datetime.now().isoformat(),
     }
+    if pop_val is not None:
+        out["probabilidad_lluvia"] = pop_val
+        out["pop"] = pop_val
+    return out
 
 
 def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
+    """Resumen del día: prioriza histórico observado OpenMeteo; si no hay, pronóstico."""
     nombre = slug_a_nombre(estacion_id)
-    df = _df_sin_prints(nombre, "pronostico", 7)
-    row = _fila_hoy(df)
+    df_hist = _df_sin_prints(nombre, "historicos", 14)
+    row = _fila_hoy(df_hist)
+    tipo_dato = "observado"
+    if row is None:
+        df = _df_sin_prints(nombre, "pronostico", 7)
+        row = _fila_hoy(df)
+        tipo_dato = "pronostico"
     if row is None:
         return None
-    return _fila_a_resumen(row, estacion_id)
+    out = _fila_a_resumen(row, estacion_id)
+    out["tipo_dato"] = tipo_dato
+    return out
 
 
 def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | None:
@@ -189,7 +223,7 @@ def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | 
     registros = []
     for _, row in df.iterrows():
         registros.append(_fila_a_resumen(row, estacion_id))
-    return registros
+    return _dedupe_pronostico_por_dia(registros, dias)
 
 
 def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | None:
@@ -420,13 +454,17 @@ def comparativo_historico(dias: int = 14, tenant_id: str | None = None) -> list[
     for slug in slugs:
         hist = historico_meteo(slug, limite) or []
         nombre = slug_a_nombre(slug)
+        hoy = _hoy_chile()
         for row in hist[-limite:]:
+            dia = _fecha_dia(row.get("fecha"))
+            if dia and dia > hoy:
+                continue
             filas.append(
                 {
                     **row,
                     "estacion_id": slug,
                     "estacion": nombre,
-                    "fecha": _fecha_dia(row.get("fecha")),
+                    "fecha": dia,
                 }
             )
     return filas
@@ -435,6 +473,7 @@ def comparativo_historico(dias: int = 14, tenant_id: str | None = None) -> list[
 def metricas_globales(tenant_id: str | None = None) -> dict[str, Any]:
     """KPIs consolidados del valle (Fase 2.1)."""
     filas = comparativo_estaciones(tenant_id)
+    ref = _hoy_chile()
     if not filas:
         return {
             "estaciones_activas": 0,
@@ -442,7 +481,9 @@ def metricas_globales(tenant_id: str | None = None) -> dict[str, Any]:
             "temperatura_media_min": None,
             "precipitacion_total": 0,
             "alertas_activas": 0,
-            "actualizado": datetime.now().isoformat(),
+            "referencia_fecha": ref,
+            "detalle_estaciones": [],
+            "actualizado": datetime.now(ZoneInfo("America/Santiago")).isoformat(),
         }
     alertas = generar_alertas()
     alertas_warn = sum(1 for a in alertas if a.get("nivel") == "warning")
@@ -460,8 +501,87 @@ def metricas_globales(tenant_id: str | None = None) -> dict[str, Any]:
         "alertas_activas": len(alertas),
         "alertas_warning": alertas_warn,
         "estaciones": [f["estacion_id"] for f in filas],
-        "actualizado": datetime.now().isoformat(),
+        "referencia_fecha": ref,
+        "detalle_estaciones": filas,
+        "actualizado": datetime.now(ZoneInfo("America/Santiago")).isoformat(),
     }
+
+
+def pronostico_precipitacion_calibrado(estacion_id: str, dias: int = 7) -> dict[str, Any] | None:
+    from api_rest.precipitacion_core import pronostico_precipitacion_calibrado as _cal
+
+    return _cal(
+        estacion_id,
+        min(dias, 10),
+        pronostico_meteo,
+        historico_meteo,
+        slug_a_nombre,
+    )
+
+
+def pronostico_precipitacion_bruto(estacion_id: str, dias: int = 7) -> dict[str, Any] | None:
+    from api_rest.precipitacion_core import pronostico_precipitacion_bruto as _bruto
+
+    return _bruto(estacion_id, min(dias, 10), pronostico_meteo, slug_a_nombre)
+
+
+def generar_alertas_precipitacion(
+    estacion_id: str, cultivo: str | None = None
+) -> list[dict[str, Any]]:
+    from api_rest.precipitacion_core import generar_alertas_precipitacion as _gen
+
+    return _gen(
+        estacion_id,
+        lambda eid, d=7: pronostico_precipitacion_calibrado(eid, d),
+        cultivo,
+    )
+
+
+def pronostico_heladas(estacion_id: str, dias: int = 7) -> dict[str, Any]:
+    from api_rest.precipitacion_core import pronostico_heladas as _hel
+
+    return _hel(estacion_id, min(dias, 14), pronostico_meteo, slug_a_nombre)
+
+
+def generar_alertas_helada(estacion_id: str) -> list[dict[str, Any]]:
+    from api_rest.precipitacion_core import generar_alertas_helada as _gen
+
+    return _gen(estacion_id, pronostico_heladas)
+
+
+def obtener_acumulado_precipitacion(
+    estacion_id: str, dias_rango: int = 7
+) -> dict[str, Any]:
+    from api_rest.precipitacion_core import obtener_acumulado_precipitacion as _ac
+
+    return _ac(
+        estacion_id,
+        dias_rango,
+        pronostico_precipitacion_calibrado,
+        historico_meteo,
+        _hoy_chile,
+    )
+
+
+def obtener_historico_precipitacion(
+    estacion_id: str, desde: str, hasta: str
+) -> dict[str, Any]:
+    from api_rest.precipitacion_core import obtener_historico_precipitacion as _hist
+
+    return _hist(estacion_id, desde, hasta, historico_meteo, _hoy_chile)
+
+
+def cronograma_riego_inteligente(
+    estacion_id: str, cultivo_id: str = "palto"
+) -> dict[str, Any]:
+    from api_rest.precipitacion_core import cronograma_riego_inteligente as _cron
+
+    return _cron(
+        estacion_id,
+        cultivo_id,
+        pronostico_precipitacion_calibrado,
+        resumen_meteo,
+    )
 
 
 def health_check() -> dict[str, Any]:

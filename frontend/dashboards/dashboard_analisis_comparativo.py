@@ -13,7 +13,13 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+import metgo_paths
+
+metgo_paths.setup_paths("05_api_rest")
+
+from api_rest.services import comparativo_estaciones, comparativo_historico
 from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+from meteo_dashboard_utils import hoy_chile
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
@@ -166,13 +172,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.info(
-    "**¿Qué hace este módulo?** Compara métricas agrícolas y climáticas entre años, meses, "
-    "estaciones del Valle de Aconcagua o cultivos. Use el panel lateral para elegir el tipo "
-    "de comparación y las métricas. Los gráficos muestran tendencias, variabilidad y valores "
-    "extremos sobre datos de referencia de 5 años (simulados si no hay histórico local)."
-)
-
 # Sidebar
 with st.sidebar:
     st.markdown("### 🎛️ Panel de Comparación")
@@ -198,6 +197,85 @@ with st.sidebar:
         ["2020", "2021", "2022", "2023", "2024"],
         key="periodo_base"
     )
+
+    modo_comparativo = st.radio(
+        "Fuente de datos",
+        ["API METGO (valle)", "Series ilustrativas (5 años)"],
+        index=0,
+    )
+    dias_hist_api = st.slider("Días histórico (API)", 7, 30, 14)
+
+if modo_comparativo.startswith("API"):
+    with st.spinner("Cargando comparativo del valle (OpenMeteo)…"):
+        valle_cmp = comparativo_estaciones()
+        hist_cmp = comparativo_historico(dias_hist_api)
+
+    st.success(
+        f"**API METGO** · {hoy_chile()} · {len(valle_cmp)} estaciones · "
+        "Vue: http://127.0.0.1:5173/meteo/comparativo"
+    )
+
+    if valle_cmp:
+        df_v = pd.DataFrame(valle_cmp)
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Estaciones", len(df_v))
+        if "temperatura_max" in df_v.columns:
+            c2.metric("T° máx media", f"{df_v['temperatura_max'].mean():.1f}°C")
+            c3.metric("T° mín media", f"{df_v['temperatura_min'].mean():.1f}°C")
+        if "humedad" in df_v.columns:
+            c4.metric("Humedad media", f"{df_v['humedad'].mean():.0f}%")
+
+        fig_tmax = px.bar(
+            df_v,
+            x="estacion",
+            y="temperatura_max",
+            title="T° máxima hoy por estación",
+            color="temperatura_max",
+            color_continuous_scale="RdYlBu_r",
+        )
+        fig_tmax.update_layout(height=380, xaxis_tickangle=-25)
+        st.plotly_chart(fig_tmax, use_container_width=True, config=PLOTLY_CONFIG)
+
+        st.dataframe(
+            df_v[
+                [
+                    c
+                    for c in [
+                        "estacion",
+                        "temperatura",
+                        "temperatura_max",
+                        "temperatura_min",
+                        "humedad",
+                        "precipitacion",
+                        "viento",
+                    ]
+                    if c in df_v.columns
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    if hist_cmp:
+        df_h = pd.DataFrame(hist_cmp)
+        if {"estacion", "fecha", "temperatura"}.issubset(df_h.columns):
+            fig_hist = px.line(
+                df_h,
+                x="fecha",
+                y="temperatura",
+                color="estacion",
+                title=f"Temperatura diaria · últimos {dias_hist_api} días",
+                markers=True,
+            )
+            fig_hist.update_layout(height=420, xaxis_tickangle=-45)
+            st.plotly_chart(fig_hist, use_container_width=True, config=PLOTLY_CONFIG)
+
+    st.stop()
+
+st.info(
+    "**Modo ilustrativo:** comparación multi-año simulada. Para datos reales del valle, "
+    "elija **API METGO** en el panel lateral o use Vue en `/meteo/comparativo`."
+)
 
 # Función para generar datos comparativos de 5 años
 @st.cache_data

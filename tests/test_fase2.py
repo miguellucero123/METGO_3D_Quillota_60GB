@@ -91,6 +91,19 @@ def test_comparativo_y_metricas(client):
     assert client.get("/api/meteo/comparativo", headers=h).status_code == 200
     body = client.get("/api/metricas/globales", headers=h).get_json()
     assert "estaciones_activas" in body
+    assert "referencia_fecha" in body
+    assert "detalle_estaciones" in body
+    if body.get("estaciones_activas", 0) > 0:
+        assert len(body["detalle_estaciones"]) == body["estaciones_activas"]
+
+
+def test_resumen_meteo_tipo_dato():
+    from api_rest import services
+
+    data = services.resumen_meteo("quillota")
+    if data:
+        assert "tipo_dato" in data
+        assert data["tipo_dato"] in ("observado", "pronostico")
 
 
 def test_streamlit_iniciar_requiere_operador(client):

@@ -55,6 +55,8 @@ def test_predecir_solo_servible(monkeypatch):
     if "error" not in r:
         assert r.get("servible") is True
         assert "prediccion" in r
+        assert "valor_actual" in r
+        assert r.get("tipo_dato") in ("observado", "pronostico", None)
 
 
 def test_api_registry_sync(client):

@@ -1,4 +1,4 @@
-cd /d "%~dp0..\.."
+cd /d "%~dp0..\.."
 @echo off
 echo ========================================
 echo    CONFIGURACION DE ACCESO EXTERNO

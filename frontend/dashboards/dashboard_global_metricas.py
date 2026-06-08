@@ -13,7 +13,13 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+import metgo_paths
+
+metgo_paths.setup_paths("05_api_rest")
+
+from api_rest.services import metricas_globales
 from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+from meteo_dashboard_utils import hoy_chile
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
@@ -274,12 +280,48 @@ def generar_datos_globales_5_anos(periodo, granularidad):
     
     return pd.DataFrame(datos)
 
-# Generar datos
-with st.spinner('📈 Generando datos globales de 5 años...'):
+# KPIs en vivo (API) — mismo contrato que Vue /metricas
+try:
+    mg = metricas_globales()
+    if mg.get("estaciones_activas", 0) > 0:
+        st.markdown("### 🌍 Valle de Aconcagua · datos en vivo")
+        st.caption(f"Día de referencia **{mg.get('referencia_fecha', hoy_chile())}** · Vue http://127.0.0.1:5173/metricas")
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
+        c1.metric("Estaciones", mg["estaciones_activas"])
+        c2.metric("T° máx media", f"{mg.get('temperatura_media_max')}°C")
+        c3.metric("T° mín media", f"{mg.get('temperatura_media_min')}°C")
+        c4.metric("Precip. total", f"{mg.get('precipitacion_total')} mm")
+        c5.metric("Viento máx", f"{mg.get('viento_max')} km/h")
+        c6.metric("Alertas", mg.get("alertas_activas", 0))
+        if mg.get("detalle_estaciones"):
+            st.dataframe(
+                pd.DataFrame(mg["detalle_estaciones"])[
+                    [
+                        "estacion",
+                        "temperatura_max",
+                        "temperatura_min",
+                        "precipitacion",
+                        "viento",
+                        "humedad",
+                    ]
+                ],
+                use_container_width=True,
+                hide_index=True,
+            )
+except Exception as e:
+    st.warning(f"API METGO no disponible para KPIs en vivo: {e}")
+
+# Generar datos (series largas ilustrativas / ETL CSV)
+with st.spinner("📈 Generando series históricas extendidas…"):
     df_global = generar_datos_globales_5_anos(periodo_global, granularidad)
 
+st.info(
+    "Las gráficas de tendencia multi-año siguen siendo **series ilustrativas** "
+    "hasta integrar el CSV histórico vía ETL. Los KPIs del valle arriba son **OpenMeteo/API**."
+)
+
 # KPIs principales con diseño profesional
-st.markdown("### 🎯 Indicadores Clave de Rendimiento (KPIs)")
+st.markdown("### 🎯 Indicadores históricos extendidos (ilustrativo)")
 
 col1, col2, col3, col4 = st.columns(4)
 

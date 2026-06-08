@@ -140,14 +140,29 @@ def auditar_manifest() -> dict[str, Any]:
 
 def auditar_huérfanos() -> dict[str, Any]:
     if not MANIFEST_PATH.is_file():
-        return {"huérfanos_joblib": [], "huérfanos_pkl": []}
+        return {
+            "activos_manifest": [],
+            "huérfanos_joblib": [],
+            "pkl_legacy": [],
+            "archivo_residual": [],
+        }
 
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    en_manifest = {m.get("archivo") for m in manifest.get("modelos", [])}
-    en_manifest |= {Path(m.get("modelo_path", "")).name for m in manifest.get("modelos", [])}
+    activos_manifest = []
+    en_manifest = set()
+    for m in manifest.get("modelos", []):
+        rel = m.get("modelo_path") or f"{m.get('paquete')}/{m.get('archivo')}"
+        en_manifest.add(m.get("archivo"))
+        en_manifest.add(Path(rel).name)
+        activos_manifest.append(rel)
 
     joblib_todos = {p.name for p in MODELOS_ROOT.rglob("*.joblib")}
     pkl_todos = {p.relative_to(MODELOS_ROOT).as_posix() for p in MODELOS_ROOT.rglob("*.pkl")}
+    archivo_residual = sorted(
+        p.relative_to(MODELOS_ROOT).as_posix()
+        for p in MODELOS_ROOT.rglob("*")
+        if p.is_dir() and p.name.lower() in {"deep_learning", "deprecated", "archive", "archivo"}
+    )
 
     huérfanos_joblib = sorted(
         p.relative_to(MODELOS_ROOT).as_posix()
@@ -164,10 +179,11 @@ def auditar_huérfanos() -> dict[str, Any]:
     ]
 
     return {
+        "activos_manifest": activos_manifest,
         "joblib_en_disco": len(joblib_todos),
         "pkl_legacy": sorted(pkl_todos),
         "huérfanos_joblib": huérfanos_joblib,
-        "carpeta_deep_learning_residual": (MODELOS_ROOT / "modelos" / "deep_learning").is_dir(),
+        "archivo_residual": archivo_residual,
     }
 
 

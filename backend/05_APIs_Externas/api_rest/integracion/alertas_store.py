@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +18,9 @@ UMBRALES_01 = {
     "humedad_alta": 90.0,
     "humedad_baja": 30.0,
 }
+
+# Frecuencia operativa: una misma alerta relevante no se re-emite dentro de 6 horas
+CADENCIA_ALERTAS = timedelta(hours=6)
 
 
 def _path() -> Path:
@@ -45,6 +48,47 @@ def _save(items: list[dict[str, Any]]) -> None:
         json.dumps(items[-500:], ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
+
+def _parse_ts(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(value))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _alerta_clave(alerta: dict[str, Any]) -> tuple[str, str]:
+    return (
+        str(alerta.get("estacion_id") or alerta.get("estacion") or "quillota"),
+        str(alerta.get("mensaje") or ""),
+    )
+
+
+def _ya_emitida_en_ventana(alerta: dict[str, Any], ventana: timedelta = CADENCIA_ALERTAS) -> bool:
+    """Evita repetir la misma alerta durante la ventana operativa."""
+    key_estacion, key_mensaje = _alerta_clave(alerta)
+    ahora = datetime.now(timezone.utc)
+    for item in _load():
+        if _alerta_clave(item) != (key_estacion, key_mensaje):
+            continue
+        ts = _parse_ts(item.get("registrado_en"))
+        if ts and ahora - ts < ventana:
+            return True
+    return False
+
+
+def filtrar_por_cadencia(alertas: list[dict[str, Any]], ventana: timedelta = CADENCIA_ALERTAS) -> list[dict[str, Any]]:
+    """Retorna solo alertas nuevas respecto a la última emisión de la misma señal."""
+    salida: list[dict[str, Any]] = []
+    for alerta in alertas:
+        if not _ya_emitida_en_ventana(alerta, ventana):
+            salida.append(alerta)
+    return salida
 
 
 def evaluar_umbrales_01(resumen: dict[str, Any], estacion_id: str) -> list[dict[str, Any]]:
@@ -87,7 +131,7 @@ def registrar_alertas(alertas: list[dict[str, Any]]) -> None:
         from api_rest.integracion import notificaciones
     except ImportError:
         notificaciones = None
-    for a in alertas:
+    for a in filtrar_por_cadencia(alertas):
         if a.get("nivel") == "info" and "normales" in (a.get("mensaje") or "").lower():
             continue
         items.append({**a, "registrado_en": ts})

@@ -6,7 +6,8 @@ Todos los comandos de ejecución local viven aquí. Los `.bat` hacen `cd` a la r
 
 | Archivo | Uso |
 |---------|-----|
-| `iniciar_metgo_desarrollo.bat` | API :8080 + Vue :5173 |
+| `iniciar_metgo_desarrollo.bat` | API :8080 + Vue :5173 (`METGO_ML_AUTO_TRAIN=0`) |
+| `iniciar_stack_local.bat` | API + Vue + Streamlit 8502, 8503, 8505 y 8506 |
 | `iniciar_api_rest.py` | Solo API Flask |
 | `iniciar_frontend_vue.bat` | Solo frontend Vue |
 

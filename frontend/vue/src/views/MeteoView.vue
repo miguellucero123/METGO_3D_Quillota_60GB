@@ -17,12 +17,17 @@ import MetricCard from '@/components/ui/MetricCard.vue'
 import SectionCard from '@/components/ui/SectionCard.vue'
 import WeatherScene from '@/components/meteo/WeatherScene.vue'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
+import PronosticoHeladasPanel from '@/components/meteo/PronosticoHeladasPanel.vue'
 import { riesgoHelada } from '@/utils/agroInsights'
 import { fetchPronostico, fetchHistorico } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
+import { hoyChile, seriesHistoricoPorDia } from '@/utils/meteoDates'
+import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const store = useMetgoStore()
 const favorites = useFavoritesStore()
+const prefs = usePreferencesStore()
 const { formatTemperatura } = useFormatTemp()
 const pronostico = ref([])
 const historico = ref([])
@@ -36,12 +41,22 @@ const estacionInfo = computed(() =>
 const d = computed(() => store.datosMeteo)
 const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
 const viento = computed(() => condicionViento(d.value?.viento))
-const lluviaHist = computed(() => acumuladoPrecipitacion(historico.value))
+const historicoFiltrado = computed(() => seriesHistoricoPorDia(historico.value, 14))
+const lluviaHist = computed(() => acumuladoPrecipitacion(historicoFiltrado.value))
 const lluviaPron = computed(() => acumuladoPrecipitacion(pronostico.value))
 const rangoTermico = computed(() => {
   if (!d.value) return '—'
   return `${formatTemperatura(d.value.temperatura_min)} / ${formatTemperatura(d.value.temperatura_max)}`
 })
+
+const tempUnit = computed(() => (prefs.tempUnit === 'F' ? '°F' : '°C'))
+const labelsPron = computed(() => pronostico.value.map((r) => r.fecha))
+const tempsPronMax = computed(() => pronostico.value.map((r) => r.temperatura_max))
+const tempsPronMin = computed(() => pronostico.value.map((r) => r.temperatura_min))
+const labelsHist = computed(() => historicoFiltrado.value.map((r) => r.fecha))
+const tempsHistMax = computed(() => historicoFiltrado.value.map((r) => r.temperatura_max))
+const tempsHistMin = computed(() => historicoFiltrado.value.map((r) => r.temperatura_min))
+const lluviaHistSerie = computed(() => historicoFiltrado.value.map((r) => r.precipitacion))
 
 async function cargar() {
   cargandoPron.value = true
@@ -138,10 +153,72 @@ watch(() => store.estacionActiva, cargar)
       <span class="insight-chip">{{ viento.label }}</span>
       <span class="insight-chip">Pronóstico 7d: {{ lluviaPron.toFixed(1) }} mm</span>
       <span class="insight-chip">Histórico 14d: {{ lluviaHist.toFixed(1) }} mm</span>
+      <span v-if="d?.pop != null || d?.probabilidad_lluvia != null" class="insight-chip">
+        PoP: {{ d.pop ?? d.probabilidad_lluvia }}%
+      </span>
+      <router-link to="/meteo/precipitacion" class="insight-link">Análisis precipitación →</router-link>
     </div>
 
+    <SectionCard
+      title="Banda térmica · pronóstico 7 días"
+      subtitle="Máxima y mínima diaria (OpenMeteo)"
+    >
+      <template #icon><Thermometer /></template>
+      <p v-if="cargandoPron" class="skeleton">Cargando…</p>
+      <TimeSeriesChart
+        v-else-if="labelsPron.length"
+        :labels="labelsPron"
+        :values="tempsPronMax"
+        :values-min="tempsPronMin"
+        :unit="tempUnit"
+        :height="240"
+        show-band
+        :show-area="false"
+        y-axis-title="Temperatura"
+        color="#c45c26"
+        fill-color="rgba(196, 92, 38, 0.12)"
+      />
+      <p v-else class="muted">Sin pronóstico.</p>
+    </SectionCard>
+
+    <SectionCard
+      title="Histórico observado"
+      :subtitle="`${labelsHist.length} días hasta ${hoyChile()}`"
+    >
+      <template #icon><Sun /></template>
+      <p v-if="cargandoHist" class="skeleton">Cargando histórico…</p>
+      <TimeSeriesChart
+        v-else-if="labelsHist.length"
+        :labels="labelsHist"
+        :values="tempsHistMax"
+        :values-min="tempsHistMin"
+        unit="°C"
+        :height="240"
+        show-band
+        :show-area="false"
+        y-axis-title="T° máx / mín"
+      />
+      <p v-else class="muted">Sin histórico.</p>
+    </SectionCard>
+
     <div class="layout-split">
-      <SectionCard title="Pronóstico 7 días" subtitle="Temperatura, humedad, viento y lluvia">
+      <PronosticoHeladasPanel />
+    </div>
+
+    <SectionCard title="Precipitación histórica" subtitle="mm por día">
+      <TimeSeriesChart
+        v-if="labelsHist.length && !cargandoHist"
+        :labels="labelsHist"
+        :values="lluviaHistSerie"
+        unit=" mm"
+        :height="200"
+        y-axis-title="Lluvia"
+        color="var(--color-sky)"
+      />
+    </SectionCard>
+
+    <div class="layout-split">
+      <SectionCard title="Pronóstico 7 días" subtitle="Tabla detallada">
         <template #icon><CloudRain /></template>
         <p v-if="cargandoPron" class="skeleton">Cargando pronóstico…</p>
         <div v-else-if="pronostico.length" class="table-wrap">
@@ -173,10 +250,13 @@ watch(() => store.estacionActiva, cargar)
         <p v-else class="muted">Sin datos de pronóstico.</p>
       </SectionCard>
 
-      <SectionCard title="Histórico reciente" subtitle="Últimos 14 días">
+      <SectionCard
+        title="Histórico reciente"
+        :subtitle="`Últimos 14 días hasta hoy (${hoyChile()})`"
+      >
         <template #icon><Thermometer /></template>
         <p v-if="cargandoHist" class="skeleton">Cargando histórico…</p>
-        <div v-else-if="historico.length" class="table-wrap table-wrap--scroll">
+        <div v-else-if="historicoFiltrado.length" class="table-wrap table-wrap--scroll">
           <table class="data-table">
             <thead>
               <tr>
@@ -188,8 +268,8 @@ watch(() => store.estacionActiva, cargar)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in historico.slice(-10)" :key="row.fecha">
-                <td>{{ row.fecha?.slice(0, 10) }}</td>
+              <tr v-for="row in [...historicoFiltrado].reverse()" :key="row.fecha">
+                <td>{{ row.fecha }}</td>
                 <td>{{ row.temperatura }}°</td>
                 <td>{{ row.temperatura_max }}°</td>
                 <td>{{ row.temperatura_min }}°</td>
@@ -281,6 +361,15 @@ watch(() => store.estacionActiva, cargar)
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
 }
+
+.insight-link {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+  color: var(--color-sky-deep, #0284c7);
+  text-decoration: none;
+  font-weight: 600;
+}
+.insight-link:hover { text-decoration: underline; }
 
 .table-wrap {
   overflow-x: auto;

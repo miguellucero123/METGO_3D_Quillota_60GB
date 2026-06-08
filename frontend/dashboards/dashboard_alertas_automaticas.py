@@ -13,7 +13,13 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+import metgo_paths
+
+metgo_paths.setup_paths("05_api_rest")
+
+from api_rest.services import generar_alertas as alertas_meteo_api
 from metgo.streamlit_theme import bootstrap_dashboard, frost_badge_html, PLOTLY_CONFIG
+from meteo_dashboard_utils import hoy_chile
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
@@ -211,6 +217,75 @@ with st.sidebar:
         ["Última hora", "Últimas 24 horas", "Última semana", "Último mes"],
         key="periodo_alerta"
     )
+
+    modo_alertas = st.radio(
+        "Fuente",
+        ["Alertas METGO (API)", "Historial simulado (demo)"],
+        index=0,
+    )
+
+_NIVEL_UI = {
+    "critical": ("🔴", "alerta-critica", "Críticas"),
+    "warning": ("🟡", "alerta-advertencia", "Advertencias"),
+    "info": ("🔵", "alerta-info", "Informativas"),
+    "success": ("🟢", "alerta-success", "Exitosas"),
+}
+
+
+def _tipo_ui(nivel: str) -> str:
+    return _NIVEL_UI.get(str(nivel or "info").lower(), _NIVEL_UI["info"])[2]
+
+
+if modo_alertas.startswith("Alertas METGO"):
+    try:
+        alertas_api = alertas_meteo_api()
+    except Exception as e:
+        st.error(f"No se pudo conectar a la API METGO (:8080): {e}")
+        st.stop()
+
+    st.success(
+        f"**{hoy_chile()}** · {len(alertas_api)} alertas activas · "
+        "Config en Vue: http://127.0.0.1:5173/alertas/config"
+    )
+
+    filtradas = alertas_api
+    if tipo_alerta != "Todas":
+        filtradas = [a for a in filtradas if _tipo_ui(a.get("nivel")) == tipo_alerta]
+
+    if not filtradas:
+        st.info("Sin alertas para el filtro seleccionado.")
+    else:
+        for a in filtradas:
+            icono, css_cls, _ = _NIVEL_UI.get(
+                str(a.get("nivel", "info")).lower(), _NIVEL_UI["info"]
+            )
+            est = a.get("estacion") or a.get("estacion_id") or "Valle"
+            st.markdown(
+                f"""
+                <div class="alerta-card {css_cls}">
+                    <div class="alerta-titulo">{icono} {a.get('tipo', 'Alerta')} · {est}</div>
+                    <div class="alerta-mensaje">{a.get('mensaje', '')}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        df_al = pd.DataFrame(
+            [
+                {
+                    "nivel": a.get("nivel"),
+                    "tipo": a.get("tipo"),
+                    "estacion": a.get("estacion") or a.get("estacion_id"),
+                    "mensaje": a.get("mensaje"),
+                }
+                for a in filtradas
+            ]
+        )
+        st.dataframe(df_al, use_container_width=True, hide_index=True)
+
+    st.stop()
+
+st.sidebar.caption("Modo demo: alertas aleatorias de ejemplo")
 
 # Función para generar alertas automáticas
 @st.cache_data
