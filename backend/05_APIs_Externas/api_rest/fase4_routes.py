@@ -53,6 +53,17 @@ def register_fase4_routes(app: Flask) -> None:
     def agricola_economico(estacion_id: str):
         return jsonify(agricola_extra.analisis_economico(estacion_id))
 
+    @app.get("/api/agricola/<estacion_id>/<cultivo>/cronograma")
+    @auth_required
+    def agricola_cronograma(estacion_id: str, cultivo: str):
+        """Cronograma de riego dinámico 7 días por cultivo."""
+        try:
+            return jsonify(services.cronograma_riego(estacion_id, cultivo))
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     @app.get("/api/alertas/historial")
     @auth_required
     def alertas_historial():

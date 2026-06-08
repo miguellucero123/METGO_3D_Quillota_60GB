@@ -11,8 +11,10 @@ from typing import Any
 
 CULTIVOS_QUILLOTA = [
     {"id": "palto", "nombre": "Palto", "riego_mm_dia_base": 8},
-    {"id": "uva", "nombre": "Uva de mesa", "riego_mm_dia_base": 6},
+    {"id": "vid", "nombre": "Vid", "riego_mm_dia_base": 5},
     {"id": "citricos", "nombre": "Cítricos", "riego_mm_dia_base": 7},
+    {"id": "tomate", "nombre": "Tomate", "riego_mm_dia_base": 10},
+    {"id": "lechuga", "nombre": "Lechuga", "riego_mm_dia_base": 6},
     {"id": "hortalizas", "nombre": "Hortalizas", "riego_mm_dia_base": 5},
     {"id": "cereales", "nombre": "Cereales", "riego_mm_dia_base": 4},
 ]

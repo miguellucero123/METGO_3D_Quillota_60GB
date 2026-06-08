@@ -66,6 +66,7 @@ export function cultivoHeladaSlug(cultivo) {
 }
 
 export function cultivoApiSlug(cultivo) {
+  if (cultivo === 'uva') return 'vid'
   return cultivo
 }
 

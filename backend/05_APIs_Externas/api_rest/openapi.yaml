@@ -357,6 +357,32 @@ paths:
       responses:
         "200":
           description: Recomendación posponer/suspender riego
+  /api/agricola/{estacion_id}/{cultivo}/cronograma:
+    get:
+      tags: [agricola]
+      summary: Cronograma de riego dinámico 7 días
+      description: |
+        Próximos 7 días de recomendación de riego por cultivo,
+        ajustando por pronóstico de lluvia y riesgo de helada (OpenMeteo).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [quillota, los_nogales, hijuelas, limache, olmue]
+        - name: cultivo
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [palto, citricos, vid, tomate, lechuga, hortalizas, cereales]
+      responses:
+        "200":
+          description: Cronograma generado
+        "400":
+          description: Cultivo no válido
   /api/meteo/comparativo:
     get:
       tags: [meteo]

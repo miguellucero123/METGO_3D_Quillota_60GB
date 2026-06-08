@@ -637,6 +637,80 @@ def cronograma_riego_inteligente(
     )
 
 
+CULTIVOS_CRONOGRAMA = frozenset(
+    {"palto", "citricos", "vid", "tomate", "lechuga", "hortalizas", "cereales"}
+)
+
+MM_RIEGO_REF: dict[str, int] = {
+    "palto": 8,
+    "citricos": 7,
+    "vid": 5,
+    "tomate": 10,
+    "lechuga": 6,
+    "hortalizas": 6,
+    "cereales": 4,
+}
+
+
+def cronograma_riego(estacion_id: str, cultivo_slug: str) -> dict[str, Any]:
+    """Cronograma de riego dinámico 7 días desde pronóstico OpenMeteo."""
+    cultivo_slug = cultivo_slug.lower().replace("-", "_")
+    if cultivo_slug not in CULTIVOS_CRONOGRAMA:
+        raise ValueError(f"Cultivo no válido: {cultivo_slug}")
+    mm_base = MM_RIEGO_REF.get(cultivo_slug, 6)
+    dias_pronostico = pronostico_meteo(estacion_id, 7) or []
+    hoy = datetime.now(ZoneInfo("America/Santiago")).date()
+    cronograma: list[dict[str, Any]] = []
+    for dia in dias_pronostico:
+        fecha_str = str(dia.get("fecha", ""))[:10]
+        try:
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+        t_min = float(dia.get("temperatura_min") or 20)
+        lluvia = float(dia.get("precipitacion") or 0)
+        if t_min <= 3:
+            regar = False
+            mm = 0
+            razon = f"Riesgo helada (mín {t_min:.1f}°C) — evitar riego por aspersión"
+            categoria = "suspender_riego_helada"
+        elif lluvia >= 5:
+            regar = False
+            mm = 0
+            razon = f"Lluvia suficiente ({lluvia:.1f} mm) — suspender riego"
+            categoria = "lluvia_cubre"
+        elif lluvia > 0:
+            mm_reducido = max(0, round(mm_base - lluvia))
+            regar = mm_reducido > 0
+            mm = mm_reducido
+            razon = f"Lluvia parcial ({lluvia:.1f} mm) — riego reducido"
+            categoria = "riego_reducido"
+        else:
+            regar = True
+            mm = mm_base
+            razon = "Sin lluvia prevista — riego normal"
+            categoria = "riego_normal"
+        cronograma.append(
+            {
+                "fecha": fecha_str,
+                "es_hoy": fecha == hoy,
+                "regar": regar,
+                "mm_sugeridos": mm,
+                "t_min": round(t_min, 1),
+                "lluvia": round(lluvia, 1),
+                "razon": razon,
+                "categoria": categoria,
+            }
+        )
+    return {
+        "estacion": estacion_id,
+        "cultivo": cultivo_slug,
+        "mm_base": mm_base,
+        "generado": datetime.now(ZoneInfo("America/Santiago")).isoformat(),
+        "cronograma": cronograma,
+    }
+
+
 def health_check() -> dict[str, Any]:
     t0 = time.perf_counter()
     om = OpenMeteoData()

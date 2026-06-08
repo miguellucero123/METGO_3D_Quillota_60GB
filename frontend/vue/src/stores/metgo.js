@@ -1,6 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { fetchEstaciones, fetchResumenMeteo, fetchHealth, wakeApi } from '@/api/metgoApi'
+import {
+  fetchEstaciones,
+  fetchResumenMeteo,
+  fetchHealth,
+  wakeApi,
+  fetchComparativo,
+  fetchCronogramaRiego,
+  fetchAgricolaRiego,
+  fetchRecomendacionesAgricolas,
+} from '@/api/metgoApi'
+import { CULTIVOS_CATALOG } from '@/utils/agroColors'
 
 export const useMetgoStore = defineStore('metgo', () => {
   const estaciones = ref([
@@ -17,9 +27,17 @@ export const useMetgoStore = defineStore('metgo', () => {
   const apiOnline = ref(false)
   const tipoAnalisis = ref('pronostico')
 
+  const comparativoEstaciones = ref({})
+  const riegoPorCultivo = ref({})
+  const recomendacionesAgricolas = ref([])
+  const cronogramaRiego = ref(null)
+  const loadingCronograma = ref(false)
+
   const estacionNombre = computed(() =>
     estaciones.value.find((e) => e.id === estacionActiva.value)?.nombre ?? 'Quillota'
   )
+
+  const resumenMeteo = computed(() => datosMeteo.value)
 
   function setEstacion(id) {
     if (id && estacionActiva.value !== id) {
@@ -41,6 +59,60 @@ export const useMetgoStore = defineStore('metgo', () => {
     }
   }
 
+  async function fetchComparativoEstaciones() {
+    try {
+      const rows = await fetchComparativo()
+      const map = {}
+      for (const r of rows || []) {
+        const id = r.estacion_id || r.id
+        if (id) map[id] = r
+      }
+      comparativoEstaciones.value = map
+      return map
+    } catch {
+      comparativoEstaciones.value = {}
+      return {}
+    }
+  }
+
+  async function fetchRiegoPorCultivo(estacionId = estacionActiva.value) {
+    const out = {}
+    for (const c of CULTIVOS_CATALOG) {
+      try {
+        const r = await fetchAgricolaRiego(estacionId, c.slug)
+        out[c.slug] = Number(r.mm_sugeridos_hoy) || 0
+      } catch {
+        out[c.slug] = 0
+      }
+    }
+    riegoPorCultivo.value = out
+    return out
+  }
+
+  async function fetchRecomendaciones(estacionId = estacionActiva.value) {
+    try {
+      recomendacionesAgricolas.value = await fetchRecomendacionesAgricolas(estacionId)
+    } catch {
+      recomendacionesAgricolas.value = []
+    }
+    return recomendacionesAgricolas.value
+  }
+
+  async function fetchCronograma(estacionId, cultivoSlug) {
+    loadingCronograma.value = true
+    try {
+      const data = await fetchCronogramaRiego(estacionId, cultivoSlug)
+      cronogramaRiego.value = data
+      return data
+    } catch (e) {
+      console.error('fetchCronograma error:', e)
+      cronogramaRiego.value = { cronograma: [] }
+      return { cronograma: [] }
+    } finally {
+      loadingCronograma.value = false
+    }
+  }
+
   async function inicializar() {
     const token = localStorage.getItem('metgo_access_token')
     if (!token) {
@@ -54,7 +126,7 @@ export const useMetgoStore = defineStore('metgo', () => {
         try {
           await wakeApi()
         } catch {
-          /* cold start Render: reintento en fetchHealth */
+          /* cold start Render */
         }
       }
       const health = await fetchHealth()
@@ -77,13 +149,23 @@ export const useMetgoStore = defineStore('metgo', () => {
     estaciones,
     estacionActiva,
     datosMeteo,
+    resumenMeteo,
     cargando,
     error,
     apiOnline,
     tipoAnalisis,
     estacionNombre,
+    comparativoEstaciones,
+    riegoPorCultivo,
+    recomendacionesAgricolas,
+    cronogramaRiego,
+    loadingCronograma,
     cargarDatosMeteo,
     setEstacion,
     inicializar,
+    fetchComparativoEstaciones,
+    fetchRiegoPorCultivo,
+    fetchRecomendaciones,
+    fetchCronograma,
   }
 })

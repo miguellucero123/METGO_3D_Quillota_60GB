@@ -195,9 +195,8 @@ export async function fetchPrecipitacionAcumulado(estacionId, rango = '7d') {
 }
 
 export async function fetchCronogramaRiego(estacionId, cultivo = 'palto') {
-  const { data } = await api.get(`/agricola/${estacionId}/cronograma-riego`, {
-    params: { cultivo },
-  })
+  const slug = cultivo === 'uva' ? 'vid' : cultivo
+  const { data } = await api.get(`/agricola/${estacionId}/${slug}/cronograma`)
   return data
 }
 
