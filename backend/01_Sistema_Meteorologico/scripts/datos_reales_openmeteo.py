@@ -9,10 +9,13 @@ import pandas as pd
 import numpy as np
 import requests
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from zoneinfo import ZoneInfo
 import time
 import warnings
 warnings.filterwarnings('ignore')
+
+TZ_CHILE = ZoneInfo('America/Santiago')
 
 class OpenMeteoData:
     """Clase para obtener datos reales de OpenMeteo API"""
@@ -59,8 +62,12 @@ class OpenMeteoData:
                     'relative_humidity_2m_max',
                     'precipitation_sum',
                     'wind_speed_10m_max',
-                    'pressure_msl_mean'
+                    'pressure_msl_mean',
+                    'cloud_cover_mean',
+                    'shortwave_radiation_sum',
+                    'wind_direction_10m_dominant',
                 ],
+                'hourly': ['visibility', 'cloud_cover'],
                 'timezone': 'America/Santiago',
                 'past_days': min(dias, 92),  # Máximo 92 días hacia atrás
                 'forecast_days': 0,
@@ -74,11 +81,11 @@ class OpenMeteoData:
                 return self._procesar_datos_openmeteo(data, estacion)
             else:
                 print(f"ERROR - Error HTTP {response.status_code}")
-                return self._crear_datos_sinteticos(estacion, dias)
+                return self._crear_datos_sinteticos(estacion, dias, modo='historicos')
                 
         except Exception as e:
             print(f"ERROR - Error conectando con OpenMeteo: {e}")
-            return self._crear_datos_sinteticos(estacion, dias)
+            return self._crear_datos_sinteticos(estacion, dias, modo='historicos')
     
     def obtener_datos_pronostico(self, estacion='Quillota', dias=7):
         """Obtiene datos de pronóstico de OpenMeteo"""
@@ -104,8 +111,12 @@ class OpenMeteoData:
                     'precipitation_sum',
                     'wind_speed_10m_max',
                     'pressure_msl_mean',
-                    'precipitation_probability_max'
+                    'precipitation_probability_max',
+                    'cloud_cover_mean',
+                    'shortwave_radiation_sum',
+                    'wind_direction_10m_dominant',
                 ],
+                'hourly': ['visibility', 'cloud_cover'],
                 'timezone': 'America/Santiago',
                 'forecast_days': min(dias, 16)  # Máximo 16 días de pronóstico
             }
@@ -121,12 +132,121 @@ class OpenMeteoData:
                 return df
             else:
                 print(f"ERROR - Error HTTP {response.status_code}")
-                return self._crear_datos_sinteticos(estacion, dias)
+                return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')
                 
         except Exception as e:
             print(f"ERROR - Error obteniendo pronóstico: {e}")
-            return self._crear_datos_sinteticos(estacion, dias)
+            return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')
+
+    def obtener_viento_horario_pronostico(self, estacion='Quillota', dias=7):
+        """Obtiene pronóstico horario de viento (dirección y velocidad).
+
+        Devuelve arrays paralelos para graficar una rosa de vientos más fina.
+        """
+        if estacion not in self.estaciones:
+            return {
+                "estacion": estacion,
+                "direcciones": [],
+                "velocidades": [],
+                "unidad": "m/s",
+                "fuente_datos": "openmeteo_pronostico_hourly",
+            }
+
+        coords = self.estaciones[estacion]
+        dias = max(1, int(dias))
+
+        try:
+            url = f"{self.api_base}/forecast"
+            params = {
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "hourly": ["wind_speed_10m", "wind_direction_10m"],
+                "timezone": "America/Santiago",
+                "forecast_days": min(dias, 16),  # OpenMeteo máximo razonable
+            }
+
+            response = requests.get(url, params=params, timeout=self.timeout)
+            if response.status_code != 200:
+                return {
+                    "estacion": estacion,
+                    "direcciones": [],
+                    "velocidades": [],
+                    "unidad": "m/s",
+                    "fuente_datos": "openmeteo_pronostico_hourly",
+                }
+
+            data = response.json()
+            hourly = data.get("hourly") or {}
+            times = hourly.get("time") or []
+            dirs = hourly.get("wind_direction_10m") or []
+            speeds = hourly.get("wind_speed_10m") or []
+
+            if not times:
+                return {
+                    "estacion": estacion,
+                    "direcciones": [],
+                    "velocidades": [],
+                    "unidad": "m/s",
+                    "fuente_datos": "openmeteo_pronostico_hourly",
+                }
+
+            start_date = pd.to_datetime(times[0]).date()
+            end_date = (pd.to_datetime(times[0]).date() + timedelta(days=dias))
+
+            out_dirs: list[float] = []
+            out_speeds: list[float] = []
+            for i, t in enumerate(times):
+                if i >= len(dirs) or i >= len(speeds):
+                    break
+                ts = pd.to_datetime(t)
+                if ts.date() < start_date or ts.date() >= end_date:
+                    continue
+                dval = dirs[i]
+                sval = speeds[i]
+                if dval is None or sval is None:
+                    continue
+                out_dirs.append(round(float(dval), 1))
+                out_speeds.append(round(float(sval), 2))
+
+            return {
+                "estacion": estacion,
+                "direcciones": out_dirs,
+                "velocidades": out_speeds,
+                "unidad": "m/s",
+                "fuente_datos": "openmeteo_pronostico_hourly",
+            }
+        except Exception:
+            # Importante: evitamos caer en datos sintéticos con aleatoriedad aquí.
+            return {
+                "estacion": estacion,
+                "direcciones": [],
+                "velocidades": [],
+                "unidad": "m/s",
+                "fuente_datos": "openmeteo_pronostico_hourly",
+            }
     
+    def _visibilidad_diaria_desde_hourly(self, data):
+        """Agrega visibilidad mínima diaria (km) y mínima 3–6 AM desde hourly OpenMeteo."""
+        stats = {}
+        hourly = data.get('hourly') or {}
+        times = hourly.get('time') or []
+        vis_list = hourly.get('visibility') or []
+        for i, t in enumerate(times):
+            if i >= len(vis_list) or vis_list[i] is None:
+                continue
+            ts = pd.to_datetime(t)
+            km = float(vis_list[i]) / 1000.0
+            key = ts.normalize()
+            if key not in stats:
+                madrugada = km if 3 <= ts.hour <= 6 else None
+                stats[key] = {'min': km, 'madrugada': madrugada}
+            else:
+                stats[key]['min'] = min(stats[key]['min'], km)
+                if 3 <= ts.hour <= 6:
+                    prev = stats[key].get('madrugada')
+                    stats[key]['madrugada'] = km if prev is None else min(prev, km)
+        return stats
+
     def _procesar_datos_openmeteo(self, data, estacion):
         """Procesa los datos recibidos de OpenMeteo"""
         try:
@@ -142,7 +262,8 @@ class OpenMeteoData:
                 return None
             
             print(f"OK - Datos recibidos: {len(times)} días")
-            
+            vis_stats = self._visibilidad_diaria_desde_hourly(data)
+
             registros = []
             for i, fecha_str in enumerate(times):
                 try:
@@ -160,10 +281,21 @@ class OpenMeteoData:
                         'fuente_datos': 'openmeteo_real'
                     }
                     
-                    # Agregar probabilidad de precipitación si está disponible
                     if 'precipitation_probability_max' in daily_data:
                         registro['probabilidad_lluvia'] = daily_data.get('precipitation_probability_max', [None]*len(times))[i]
-                    
+                    if 'cloud_cover_mean' in daily_data:
+                        registro['cobertura_nubosa'] = daily_data.get('cloud_cover_mean', [None]*len(times))[i]
+                    if 'shortwave_radiation_sum' in daily_data:
+                        registro['radiacion_solar_sum'] = daily_data.get('shortwave_radiation_sum', [None]*len(times))[i]
+                    if 'wind_direction_10m_dominant' in daily_data:
+                        registro['direccion_viento'] = daily_data.get('wind_direction_10m_dominant', [None]*len(times))[i]
+                    vkey = pd.to_datetime(fecha_str).normalize()
+                    if vkey in vis_stats:
+                        registro['visibilidad'] = round(vis_stats[vkey]['min'], 2)
+                        mad = vis_stats[vkey].get('madrugada')
+                        if mad is not None:
+                            registro['visibilidad_madrugada'] = round(mad, 2)
+
                     # Solo agregar si tiene al menos temperatura
                     if registro['temperatura_max'] is not None:
                         registros.append(registro)
@@ -176,9 +308,12 @@ class OpenMeteoData:
                 df = pd.DataFrame(registros)
                 
                 # Convertir a numérico
-                cols_numericas = ['temperatura_max', 'temperatura_min', 'temperatura_promedio',
-                                'humedad_relativa', 'precipitacion', 'velocidad_viento', 
-                                'presion_atmosferica']
+                cols_numericas = [
+                    'temperatura_max', 'temperatura_min', 'temperatura_promedio',
+                    'humedad_relativa', 'precipitacion', 'velocidad_viento',
+                    'presion_atmosferica', 'cobertura_nubosa', 'radiacion_solar_sum',
+                    'direccion_viento', 'probabilidad_lluvia', 'visibilidad', 'visibilidad_madrugada',
+                ]
                 
                 for col in cols_numericas:
                     if col in df.columns:
@@ -200,21 +335,30 @@ class OpenMeteoData:
             print(f"ERROR - Error procesando datos OpenMeteo: {e}")
             return None
     
-    def _crear_datos_sinteticos(self, estacion, dias):
-        """Crea datos sintéticos como respaldo"""
-        print(f" Creando datos sintéticos para {estacion} ({dias} días)")
+    def _crear_datos_sinteticos(self, estacion, dias, modo='historicos'):
+        """Crea datos sintéticos como respaldo.
+
+        modo='historicos' → ventana hacia atrás (≤ hoy Chile).
+        modo='pronostico' → hoy y días futuros (evita pronóstico vacío en API).
+        """
+        print(f" Creando datos sintéticos ({modo}) para {estacion} ({dias} días)")
         
         if estacion not in self.estaciones:
             estacion = 'Quillota'
         
         registros = []
-        fecha_inicio = datetime.now() - timedelta(days=dias)
+        hoy = datetime.now(TZ_CHILE).date()
+        if modo == 'pronostico':
+            fecha_inicio = hoy
+        else:
+            fecha_inicio = hoy - timedelta(days=max(dias - 1, 0))
         
         # Parámetros base según la estación
         params_base = self._obtener_parametros_estacion(estacion)
         
         for i in range(dias):
-            fecha = fecha_inicio + timedelta(days=i)
+            dia = fecha_inicio + timedelta(days=i)
+            fecha = datetime.combine(dia, datetime.min.time(), tzinfo=TZ_CHILE)
             
             # Estacionalidad (hemisferio sur)
             dia_año = fecha.timetuple().tm_yday

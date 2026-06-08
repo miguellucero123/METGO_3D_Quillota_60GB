@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { seriesHistoricoPorDia, filtrarPronosticoDesdeHoy } from '@/utils/meteoDates'
+import { seriesHistoricoPorDia, seriePronosticoPorDia } from '@/utils/meteoDates'
 
 const TOKEN_KEY = 'metgo_access_token'
 
@@ -133,6 +133,48 @@ export async function fetchPronosticoHeladas(estacionId, dias = 7) {
   return data
 }
 
+export async function fetchPronosticoHeladaAvanzado(estacionId, dias = 7, cultivo = 'palto') {
+  const { data } = await api.get(`/meteo/${estacionId}/helada`, { params: { dias, cultivo } })
+  return data
+}
+
+export async function fetchAnalisisNubosidad(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/nubosidad`, { params: { dias } })
+  return data
+}
+
+export async function fetchPronosticoNiebla(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/niebla`, { params: { dias } })
+  return data
+}
+
+export async function fetchVariablesMeteoCompletas(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/variables-completas`, { params: { dias } })
+  return data
+}
+
+export async function fetchMapaGlobal(variable, params = {}) {
+  const { data } = await api.get(`/mapas/global/${variable}`, { params })
+  return data
+}
+
+export async function fetchMapaRegional(estacionId, variable, params = {}) {
+  const { data } = await api.get(`/mapas/regional/${estacionId}/${variable}`, { params })
+  return data
+}
+
+export async function fetchMapaRegionalAnimacion(estacionId, variable, params = {}) {
+  const { data } = await api.get(`/mapas/regional/${estacionId}/${variable}/animacion`, { params })
+  return data
+}
+
+export async function fetchComparacionModelos(estacionId, variable, dias = 7) {
+  const { data } = await api.get(`/mapas/comparacion-modelos/${estacionId}/${variable}`, {
+    params: { dias },
+  })
+  return data
+}
+
 export async function fetchAlertasHelada(estacionId) {
   const { data } = await api.get('/alertas/helada', {
     params: estacionId ? { estacion: estacionId } : {},
@@ -163,15 +205,12 @@ export async function fetchPronostico(estacionId, dias = 7) {
   const { data } = await api.get(`/meteo/${estacionId}/pronostico`, {
     params: { dias },
   })
-  const porDia = new Map()
-  for (const r of filtrarPronosticoDesdeHoy(data)) {
-    const dia = String(r?.fecha ?? '').slice(0, 10)
-    if (dia.length === 10) porDia.set(dia, { ...r, fecha: dia })
-  }
-  return [...porDia.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(0, dias)
-    .map(([, row]) => row)
+  return seriePronosticoPorDia(data, dias)
+}
+
+export async function fetchVientoHorario(estacionId, dias = 7) {
+  const { data } = await api.get(`/meteo/${estacionId}/viento-horario`, { params: { dias } })
+  return data
 }
 
 /** Una fila por YYYY-MM-DD; excluye días futuros (OpenMeteo forecast mezclado). */

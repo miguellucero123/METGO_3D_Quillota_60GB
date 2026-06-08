@@ -30,6 +30,28 @@ export function filtrarPronosticoDesdeHoy(rows) {
   })
 }
 
+/**
+ * Pronóstico: una fila por día (hoy + futuro), orden cronológico.
+ * Si el filtro por hoy Chile deja vacío pero la API trae filas, usa la API
+ * (evita “Sin pronóstico” por desfase de zona o caché antigua).
+ */
+export function seriePronosticoPorDia(rows, dias = 7) {
+  const fuente = Array.isArray(rows) ? rows : []
+  let candidatos = filtrarPronosticoDesdeHoy(fuente)
+  if (!candidatos.length && fuente.length) {
+    candidatos = fuente
+  }
+  const porDia = new Map()
+  for (const r of candidatos) {
+    const dia = diaDeFila(r)
+    if (dia.length === 10) porDia.set(dia, { ...r, fecha: dia })
+  }
+  return [...porDia.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(0, dias)
+    .map(([, row]) => row)
+}
+
 /** Una fila por día, orden cronológico, últimos N días hasta hoy. */
 export function seriesHistoricoPorDia(rows, dias = 30) {
   const porDia = new Map()

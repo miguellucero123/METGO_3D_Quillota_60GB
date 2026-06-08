@@ -23,6 +23,7 @@ import MlProjectionChart from '@/components/charts/MlProjectionChart.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import { fetchPronostico, fetchAlertas, fetchRecomendacionesAgricolas, mlPredictBatch } from '@/api/metgoApi'
 import { mapMlProjectionItems, ML_VARS_DASHBOARD } from '@/utils/mlProjection'
+import { diaDeFila } from '@/utils/meteoDates'
 import {
   riesgoHelada,
   necesidadRiego,
@@ -38,8 +39,11 @@ const recomendaciones = ref([])
 const cargandoExtra = ref(false)
 const mlProyecciones = ref([])
 const cargandoMl = ref(false)
+const pronosticoError = ref('')
 
-const labelsPron = computed(() => pronostico.value.map((r) => r.fecha))
+const labelsPron = computed(() =>
+  pronostico.value.map((r) => diaDeFila(r) || String(r.fecha ?? '').slice(0, 10))
+)
 const tempsPronMax = computed(() => pronostico.value.map((r) => r.temperatura_max))
 const tempsPronMin = computed(() => pronostico.value.map((r) => r.temperatura_min))
 
@@ -51,22 +55,26 @@ const lluvia7d = computed(() => acumuladoPrecipitacion(pronostico.value))
 async function cargarResumen() {
   cargandoExtra.value = true
   cargandoMl.value = true
-  try {
-    const [p, a, r] = await Promise.all([
-      fetchPronostico(store.estacionActiva, 7),
-      fetchAlertas(store.estacionActiva),
-      fetchRecomendacionesAgricolas(store.estacionActiva),
-    ])
-    pronostico.value = p
-    alertas.value = a.slice(0, 4)
-    recomendaciones.value = r.slice(0, 3)
-  } catch {
-    pronostico.value = []
-    alertas.value = []
-    recomendaciones.value = []
-  } finally {
-    cargandoExtra.value = false
+  const [pRes, aRes, rRes] = await Promise.allSettled([
+    fetchPronostico(store.estacionActiva, 7),
+    fetchAlertas(store.estacionActiva),
+    fetchRecomendacionesAgricolas(store.estacionActiva),
+  ])
+  pronostico.value = pRes.status === 'fulfilled' ? pRes.value : []
+  if (pRes.status === 'rejected') {
+    pronosticoError.value = pRes.reason?.message || 'Error al cargar pronóstico'
+  } else if (!pronostico.value.length) {
+    pronosticoError.value =
+      'La API no devolvió días futuros (OpenMeteo o caché; pruebe Actualizar)'
+  } else {
+    pronosticoError.value = ''
   }
+  alertas.value =
+    aRes.status === 'fulfilled' ? (aRes.value || []).slice(0, 4) : []
+  recomendaciones.value =
+    rRes.status === 'fulfilled' ? (rRes.value || []).slice(0, 3) : []
+  cargandoExtra.value = false
+
   try {
     const batch = await mlPredictBatch(
       ML_VARS_DASHBOARD.map((v) => v.variable),
@@ -85,7 +93,7 @@ async function actualizarTodo() {
   await cargarResumen()
 }
 
-onMounted(cargarResumen)
+onMounted(actualizarTodo)
 watch(() => store.estacionActiva, cargarResumen)
 </script>
 
@@ -182,40 +190,45 @@ watch(() => store.estacionActiva, cargarResumen)
         <SectionCard title="Pronóstico próximos días" subtitle="OpenMeteo · banda térmica diaria">
           <template #icon><CloudRain /></template>
           <p v-if="cargandoExtra" class="muted">Cargando…</p>
-          <TimeSeriesChart
-            v-else-if="labelsPron.length"
-            :labels="labelsPron"
-            :values="tempsPronMax"
-            :values-min="tempsPronMin"
-            :unit="tempUnit === 'F' ? '°F' : '°C'"
-            :height="220"
-            show-band
-            :show-area="false"
-            y-axis-title="Temperatura"
-            color="#c45c26"
-            fill-color="rgba(196, 92, 38, 0.15)"
-          />
-          <table v-if="!cargandoExtra && pronostico.length" class="data-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Media</th>
-                <th>Máx</th>
-                <th>Mín</th>
-                <th>Lluvia</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in pronostico.slice(0, 5)" :key="row.fecha">
-                <td>{{ row.fecha?.slice(0, 10) }}</td>
-                <td>{{ row.temperatura }}°</td>
-                <td>{{ row.temperatura_max }}°</td>
-                <td>{{ row.temperatura_min }}°</td>
-                <td>{{ row.precipitacion }} mm</td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-else class="muted">Sin pronóstico disponible.</p>
+          <template v-else-if="pronostico.length">
+            <TimeSeriesChart
+              :labels="labelsPron"
+              :values="tempsPronMax"
+              :values-min="tempsPronMin"
+              :unit="tempUnit === 'F' ? '°F' : '°C'"
+              :height="220"
+              show-band
+              :show-area="false"
+              y-axis-title="Temperatura"
+              color="#c45c26"
+              fill-color="rgba(196, 92, 38, 0.15)"
+              :export-name="`dashboard_pron_${store.estacionActiva}`"
+            />
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Media</th>
+                  <th>Máx</th>
+                  <th>Mín</th>
+                  <th>Lluvia</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in pronostico.slice(0, 5)" :key="row.fecha">
+                  <td>{{ row.fecha?.slice(0, 10) }}</td>
+                  <td>{{ row.temperatura }}°</td>
+                  <td>{{ row.temperatura_max }}°</td>
+                  <td>{{ row.temperatura_min }}°</td>
+                  <td>{{ row.precipitacion }} mm</td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
+          <p v-else class="muted">
+            Sin pronóstico disponible.
+            <span v-if="pronosticoError" class="error-hint"> {{ pronosticoError }}</span>
+          </p>
         </SectionCard>
 
         <div class="stack">
@@ -408,5 +421,12 @@ watch(() => store.estacionActiva, cargarResumen)
 .btn-icon {
   width: 1rem;
   height: 1rem;
+}
+
+.error-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #dc2626;
 }
 </style>

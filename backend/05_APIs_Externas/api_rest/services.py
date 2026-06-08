@@ -167,6 +167,12 @@ def _dedupe_pronostico_por_dia(filas: list[dict[str, Any]], dias: int) -> list[d
         dia = _fecha_dia(r.get("fecha"))
         if dia and dia >= hoy:
             por_dia[dia] = {**r, "fecha": dia}
+    if not por_dia and filas:
+        # Respaldo: caché/sintético antiguo con fechas pasadas — usar últimos N días disponibles
+        for r in sorted(filas, key=lambda x: _fecha_dia(x.get("fecha"))):
+            dia = _fecha_dia(r.get("fecha"))
+            if dia:
+                por_dia[dia] = {**r, "fecha": dia}
     return sorted(por_dia.values(), key=lambda x: x["fecha"])[:dias]
 
 
@@ -194,6 +200,19 @@ def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
     if pop_val is not None:
         out["probabilidad_lluvia"] = pop_val
         out["pop"] = pop_val
+    for src, dst in (
+        ("cobertura_nubosa", "cobertura_nubosa"),
+        ("radiacion_solar_sum", "radiacion_solar_sum"),
+        ("direccion_viento", "direccion_viento"),
+        ("visibilidad", "visibilidad"),
+        ("visibilidad_madrugada", "visibilidad_madrugada"),
+    ):
+        raw = row.get(src)
+        if raw is not None and not (isinstance(raw, float) and pd.isna(raw)):
+            out[dst] = round(float(raw), 1)
+    if out.get("radiacion_solar_sum") is not None:
+        mj = float(out["radiacion_solar_sum"])
+        out["radiacion_solar"] = round((mj * 1e6) / (12 * 3600), 0)
     return out
 
 
@@ -223,7 +242,29 @@ def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | 
     registros = []
     for _, row in df.iterrows():
         registros.append(_fila_a_resumen(row, estacion_id))
-    return _dedupe_pronostico_por_dia(registros, dias)
+    out = _dedupe_pronostico_por_dia(registros, dias)
+    return out if out else None
+
+
+def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | None:
+    """Rosa de vientos: serie horaria (dirección+velocidad) desde OpenMeteo forecast."""
+    try:
+        nombre = slug_a_nombre(estacion_id)
+        om = OpenMeteoData()
+        data = om.obtener_viento_horario_pronostico(nombre, dias)
+        if not data:
+            return {"direcciones": [], "velocidades": [], "unidad": "m/s", "fuente": "openmeteo_hourly"}
+        # Normaliza claves al formato esperado por el frontend.
+        return {
+            "estacion_id": estacion_id,
+            "estacion": data.get("estacion", nombre),
+            "direcciones": data.get("direcciones") or [],
+            "velocidades": data.get("velocidades") or [],
+            "unidad": data.get("unidad") or "m/s",
+            "fuente": data.get("fuente_datos") or "openmeteo_hourly",
+        }
+    except Exception:
+        return {"direcciones": [], "velocidades": [], "unidad": "m/s", "fuente": "openmeteo_hourly_error"}
 
 
 def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | None:
