@@ -423,7 +423,23 @@ class OpenMeteoData:
             'Casablanca': {
                 'temp_base': 14.0, 'temp_amplitud': 7, 'temp_variacion': 3.5, 'temp_diferencia': 8,
                 'humedad_base': 75, 'precip_base': 2.2, 'viento_base': 4.5, 'presion_base': 1014.00
-            }
+            },
+            'Los Nogales': {
+                'temp_base': 15.5, 'temp_amplitud': 7, 'temp_variacion': 2.5, 'temp_diferencia': 6,
+                'humedad_base': 68, 'precip_base': 2.0, 'viento_base': 3.5, 'presion_base': 1013.00
+            },
+            'Hijuelas': {
+                'temp_base': 17.0, 'temp_amplitud': 8, 'temp_variacion': 3, 'temp_diferencia': 7,
+                'humedad_base': 62, 'precip_base': 1.8, 'viento_base': 4.0, 'presion_base': 1012.50
+            },
+            'Limache': {
+                'temp_base': 15.0, 'temp_amplitud': 6, 'temp_variacion': 2.5, 'temp_diferencia': 6,
+                'humedad_base': 78, 'precip_base': 2.5, 'viento_base': 5.0, 'presion_base': 1012.00
+            },
+            'Olmue': {
+                'temp_base': 16.5, 'temp_amplitud': 7.5, 'temp_variacion': 3, 'temp_diferencia': 7,
+                'humedad_base': 72, 'precip_base': 2.2, 'viento_base': 4.2, 'presion_base': 1013.50
+            },
         }
         
         return parametros.get(estacion, parametros['Quillota'])

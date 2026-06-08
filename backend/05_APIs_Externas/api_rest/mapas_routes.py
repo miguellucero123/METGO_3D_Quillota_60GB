@@ -7,7 +7,6 @@ from __future__ import annotations
 import logging
 import math
 from datetime import datetime, timezone
-from functools import lru_cache
 from typing import Any
 
 from flask import jsonify, request
@@ -41,13 +40,26 @@ UNIDADES = {
 
 
 def _valor_desde_fila(variable: str, row: dict[str, Any]) -> float:
+    temp = row.get("temperatura")
+    if temp is None:
+        tmax, tmin = row.get("temperatura_max"), row.get("temperatura_min")
+        if tmax is not None and tmin is not None:
+            temp = (float(tmax) + float(tmin)) / 2
+        else:
+            temp = tmax
+    rad = row.get("radiacion_solar")
+    if rad is None and row.get("radiacion_solar_sum") is not None:
+        mj = float(row["radiacion_solar_sum"])
+        rad = (mj * 1e6) / (12 * 3600)
+    if rad is None:
+        rad = max(120.0, 650.0 - abs(-32.9) * 8)
     m = {
-        "temperatura": row.get("temperatura_max"),
+        "temperatura": temp,
         "humedad": row.get("humedad"),
         "presion": row.get("presion"),
         "precipitacion": row.get("precipitacion"),
-        "radiacion": row.get("radiacion_solar") or 500,
-        "nubosidad": row.get("cobertura_nubosa") or 50,
+        "radiacion": rad,
+        "nubosidad": row.get("cobertura_nubosa"),
         "viento_velocidad": row.get("viento"),
     }
     return float(m.get(variable) or 0)
@@ -85,12 +97,10 @@ def _idw(
     return num / den if den else puntos[0][2]
 
 
-@lru_cache(maxsize=32)
-def _grilla_valle_determinista(
-    variable: str, resolucion: float, dia_idx: int = 0
-) -> tuple[tuple[float, ...], tuple[float, ...], tuple[tuple[float, ...], ...], float, float, str | None]:
-    """Grilla regional Valle de Aconcagua interpolada desde estaciones METGO."""
-    puntos_valor: list[tuple[float, float, float]] = []
+def _puntos_estaciones_mapa(
+    variable: str, dia_idx: int = 0
+) -> tuple[list[dict[str, Any]], str | None]:
+    puntos: list[dict[str, Any]] = []
     fecha_frame: str | None = None
     for slug in ESTACIONES_PRINCIPALES:
         pron = pronostico_meteo(slug, 7) or []
@@ -101,7 +111,24 @@ def _grilla_valle_determinista(
         if fecha_frame is None:
             fecha_frame = row.get("fecha")
         c = COORDS_ESTACIONES[slug]
-        puntos_valor.append((c["lat"], c["lon"], val))
+        puntos.append(
+            {
+                "estacion_id": slug,
+                "nombre": slug.replace("_", " ").title(),
+                "lat": c["lat"],
+                "lon": c["lon"],
+                "valor": round(val, 2),
+            }
+        )
+    return puntos, fecha_frame
+
+
+def _grilla_valle_determinista(
+    variable: str, resolucion: float, dia_idx: int = 0
+) -> tuple[tuple[float, ...], tuple[float, ...], tuple[tuple[float, ...], ...], float, float, str | None, list[dict[str, Any]]]:
+    """Grilla regional Valle de Aconcagua interpolada desde estaciones METGO."""
+    puntos_meta, fecha_frame = _puntos_estaciones_mapa(variable, dia_idx)
+    puntos_valor = [(p["lat"], p["lon"], p["valor"]) for p in puntos_meta]
 
     lat_min, lat_max = -33.15, -32.75
     lon_min, lon_max = -71.35, -71.05
@@ -121,7 +148,7 @@ def _grilla_valle_determinista(
         valores.append(fila)
 
     flat = [v for fila in valores for v in fila]
-    return lats, lons, tuple(tuple(f) for f in valores), min(flat), max(flat), fecha_frame
+    return lats, lons, tuple(tuple(f) for f in valores), min(flat), max(flat), fecha_frame, puntos_meta
 
 
 def _grilla_global_fisica(
@@ -173,8 +200,9 @@ def obtener_datos_mapa(
 ) -> dict[str, Any]:
     res = float(resolucion)
     fecha_frame = None
+    puntos_estacion: list[dict[str, Any]] = []
     if ambito == "regional":
-        lats, lons, valores, vmin, vmax, fecha_frame = _grilla_valle_determinista(
+        lats, lons, valores, vmin, vmax, fecha_frame, puntos_estacion = _grilla_valle_determinista(
             variable, res, dia_idx
         )
         modelo = "METGO-IDW"
@@ -198,6 +226,14 @@ def obtener_datos_mapa(
     }
     if fecha_frame:
         out["fecha_frame"] = fecha_frame
+    if puntos_estacion:
+        out["puntos_estacion"] = puntos_estacion
+        out["bounds"] = {
+            "lat_min": -33.15,
+            "lat_max": -32.75,
+            "lon_min": -71.35,
+            "lon_max": -71.05,
+        }
     return out
 
 
@@ -240,7 +276,7 @@ def register_mapas_routes(app) -> None:
             validar_estacion(estacion_id)
             if variable not in VARIABLES_MAPA:
                 return jsonify({"error": f"Variable {variable} no válida"}), 400
-            resolucion = request.args.get("resolucion", "0.1")
+            resolucion = request.args.get("resolucion", "0.02")
             datos = obtener_datos_mapa(variable, resolucion, "regional")
             meta = COORDS_ESTACIONES[estacion_id.lower()]
             datos["estacion_id"] = estacion_id
@@ -285,7 +321,7 @@ def register_mapas_routes(app) -> None:
             validar_estacion(estacion_id)
             if variable not in VARIABLES_MAPA:
                 return jsonify({"error": f"Variable {variable} no válida"}), 400
-            resolucion = request.args.get("resolucion", "0.1")
+            resolucion = request.args.get("resolucion", "0.02")
             dias = request.args.get("dias", 7, type=int)
             return jsonify(
                 obtener_animacion_regional(estacion_id, variable, resolucion, dias)

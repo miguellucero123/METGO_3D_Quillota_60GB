@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useMetgoStore } from '@/stores/metgo'
 import { fetchMapaGlobal, fetchMapaRegionalAnimacion } from '@/api/metgoApi'
+import { colorMapa, rangoMapa, valorANormalizado } from '@/utils/mapColorScale'
 
 const store = useMetgoStore()
 
@@ -25,19 +26,15 @@ const reproduciendo = ref(false)
 let timer = null
 
 const nombreVar = computed(() => variables.find((v) => v.id === variable.value)?.nombre ?? '')
+const unidadVar = computed(() => variables.find((v) => v.id === variable.value)?.unidad ?? '')
 const fechaFrame = computed(() => grilla.value?.fecha_frame?.slice?.(0, 10) ?? '')
+const escala = computed(() => rangoMapa(variable.value))
 
-function colorNorm(t, vid) {
-  const palettes = {
-    temperatura: (n) => `hsl(${n * 60}, 90%, 50%)`,
-    humedad: (n) => `hsl(${220 - n * 120}, 80%, 50%)`,
-    precipitacion: (n) => `hsl(220, ${40 + n * 60}%, ${35 + n * 25}%)`,
-    radiacion: (n) => `hsl(${45 + n * 30}, 95%, 55%)`,
-    nubosidad: (n) => `hsl(0, 0%, ${20 + n * 60}%)`,
-    viento_velocidad: (n) => `hsl(${200 + n * 80}, 85%, 50%)`,
-  }
-  const fn = palettes[vid] || palettes.temperatura
-  return fn(Math.max(0, Math.min(1, t)))
+function latLonToXY(lat, lon, bounds, w, h) {
+  const { lat_min, lat_max, lon_min, lon_max } = bounds
+  const x = ((lon - lon_min) / (lon_max - lon_min || 1)) * w
+  const y = ((lat_max - lat) / (lat_max - lat_min || 1)) * h
+  return { x, y }
 }
 
 async function cargar() {
@@ -48,7 +45,7 @@ async function cargar() {
       animacion.value = await fetchMapaRegionalAnimacion(
         store.estacionActiva,
         variable.value,
-        { resolucion: '0.1', dias: 7 }
+        { resolucion: '0.02', dias: 7 }
       )
       grilla.value = animacion.value?.frames?.[0] ?? null
     } else {
@@ -67,22 +64,47 @@ function render() {
   const data = grilla.value
   if (!canvas || !data) return
   const ctx = canvas.getContext('2d')
-  const { lats, lons, valores, minVal, maxVal } = data
+  const { lats, lons, valores } = data
   const w = canvas.width
   const h = canvas.height
   ctx.fillStyle = '#0f172a'
   ctx.fillRect(0, 0, w, h)
-  const range = maxVal - minVal || 1
-  for (let i = 0; i < lats.length - 1; i++) {
-    for (let j = 0; j < lons.length - 1; j++) {
+
+  const nLat = lats.length
+  const nLon = lons.length
+  const cellW = w / nLon
+  const cellH = h / nLat
+
+  for (let i = 0; i < nLat; i++) {
+    for (let j = 0; j < nLon; j++) {
       const val = valores[i]?.[j]
       if (val == null) continue
-      const n = (val - minVal) / range
-      ctx.fillStyle = colorNorm(n, variable.value)
-      const x = (j / (lons.length - 1)) * w
-      const y = (i / (lats.length - 1)) * h
-      ctx.fillRect(x, y, w / (lons.length - 1) + 1, h / (lats.length - 1) + 1)
+      const n = valorANormalizado(variable.value, val)
+      ctx.fillStyle = colorMapa(variable.value, n)
+      ctx.fillRect(j * cellW, i * cellH, cellW + 1, cellH + 1)
     }
+  }
+
+  const bounds = data.bounds || {
+    lat_min: Math.min(...lats),
+    lat_max: Math.max(...lats),
+    lon_min: Math.min(...lons),
+    lon_max: Math.max(...lons),
+  }
+
+  for (const p of data.puntos_estacion || []) {
+    const { x, y } = latLonToXY(p.lat, p.lon, bounds, w, h)
+    ctx.beginPath()
+    ctx.arc(x, y, 6, 0, Math.PI * 2)
+    ctx.fillStyle = '#fff'
+    ctx.fill()
+    ctx.strokeStyle = '#111827'
+    ctx.lineWidth = 2
+    ctx.stroke()
+    ctx.fillStyle = '#fff'
+    ctx.font = 'bold 11px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(String(p.valor), x, y - 10)
   }
 }
 
@@ -93,15 +115,14 @@ function onMove(e) {
   const rect = canvas.getBoundingClientRect()
   const li = Math.min(
     data.lats.length - 1,
-    Math.floor(((e.clientY - rect.top) / rect.height) * data.lats.length)
+    Math.max(0, Math.floor(((e.clientY - rect.top) / rect.height) * data.lats.length))
   )
   const lj = Math.min(
     data.lons.length - 1,
-    Math.floor(((e.clientX - rect.left) / rect.width) * data.lons.length)
+    Math.max(0, Math.floor(((e.clientX - rect.left) / rect.width) * data.lons.length))
   )
   const val = data.valores[li]?.[lj]
-  const unidad = variables.find((v) => v.id === variable.value)?.unidad ?? ''
-  if (val != null) hoverVal.value = `${val.toFixed(1)} ${unidad}`
+  if (val != null) hoverVal.value = `${val.toFixed(1)} ${unidadVar.value}`
 }
 
 function setFrame(idx) {
@@ -181,9 +202,14 @@ onMounted(cargar)
         <strong>{{ hoverVal }}</strong>
         <span v-if="fechaFrame">Día: {{ fechaFrame }}</span>
       </div>
+      <div class="colorbar">
+        <span>{{ escala.min }}{{ unidadVar }}</span>
+        <div class="bar" />
+        <span>{{ escala.max }}{{ unidadVar }}</span>
+      </div>
     </div>
     <p class="fuente">
-      Regional: pronóstico OpenMeteo interpolado · Global: modelo físico determinístico
+      Regional: pronóstico OpenMeteo interpolado (IDW) · Puntos blancos = estaciones METGO
     </p>
   </div>
 </template>
@@ -229,6 +255,26 @@ canvas { display: block; width: 100%; height: auto; max-height: 400px; }
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+}
+.colorbar {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  color: #e5e7eb;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+.colorbar .bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #1e40af, #22c55e, #eab308, #ef4444);
 }
 .fuente { font-size: 0.72rem; color: #0c4a6e; margin-top: 0.5rem; background: #f0f9ff; padding: 0.5rem; border-radius: 6px; }
 </style>
