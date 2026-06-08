@@ -1,18 +1,24 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import ChartTooltip from '@/components/charts/ChartTooltip.vue'
+import { exportarSvgPng } from '@/utils/exportChart'
+import { exportarDatosCSV } from '@/utils/exportData'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
+  exportName: { type: String, default: 'ml_proyeccion' },
 })
 
-/** Dominio físico por variable (escala independiente por panel). */
+const svgRef = ref(null)
+const tip = ref({ visible: false, x: 0, y: 0, row: null, slot: '' })
+
 const DOMAIN = {
   temperatura_max: { label: 'T. máx', unit: '°C', min: 0, max: 38 },
   temperatura_min: { label: 'T. mín', unit: '°C', min: -6, max: 22 },
   humedad: { label: 'Humedad', unit: '%', min: 0, max: 100 },
   precipitacion: { label: 'Lluvia', unit: 'mm', min: 0, max: 30 },
   presion: { label: 'Presión', unit: 'hPa', min: 990, max: 1035 },
-  viento: { label: 'Viento', unit: 'km/h', min: 0, max: 60 },
+  viento: { label: 'Viento', unit: 'm/s', min: 0, max: 20 },
 }
 
 const W = 720
@@ -54,6 +60,7 @@ const rows = computed(() =>
         ymin,
         ymax,
         delta,
+        predColor: predBarColor(delta, meta.unit),
       }
     })
 )
@@ -64,6 +71,19 @@ const panelW = computed(() => {
 })
 
 const innerH = computed(() => H - pad.t - pad.b)
+
+function predBarColor(delta, unit) {
+  if (delta == null) return '#3d7ab8'
+  const abs = Math.abs(delta)
+  const warn =
+    (unit === '%' && abs > 8) ||
+    (unit === '°C' && abs > 3) ||
+    (unit === 'mm' && abs > 5) ||
+    (unit === 'hPa' && abs > 5) ||
+    (unit === 'm/s' && abs > 3)
+  if (warn) return abs > (unit === '%' ? 15 : 6) ? '#dc2626' : '#f97316'
+  return '#3d7ab8'
+}
 
 function yAt(v, ymin, ymax) {
   const t = (Number(v) - ymin) / (ymax - ymin)
@@ -106,15 +126,58 @@ function fmtVal(v, unit) {
   if (unit === '%') return `${n.toFixed(0)}`
   return `${n.toFixed(1)}`
 }
+
+function onBarEnter(e, row, slot) {
+  tip.value = { visible: true, x: e.clientX, y: e.clientY, row, slot }
+}
+function onBarMove(e) {
+  if (tip.value.visible) {
+    tip.value.x = e.clientX
+    tip.value.y = e.clientY
+  }
+}
+function onBarLeave() {
+  tip.value.visible = false
+}
+
+function exportPng() {
+  if (svgRef.value) exportarSvgPng(svgRef.value, props.exportName)
+}
+
+function exportCsv() {
+  exportarDatosCSV(
+    rows.value.map((r) => ({
+      variable: r.key,
+      observado: r.actual,
+      modelo_ml: r.prediccion,
+      delta: r.delta,
+      unidad: r.unit,
+    })),
+    props.exportName
+  )
+}
 </script>
 
 <template>
   <div v-if="rows.length" class="ml-chart" role="img" aria-label="Comparación observado vs modelo ML por variable">
-    <div class="ml-chart__legend">
-      <span><i class="swatch swatch--actual" /> Observado (hoy)</span>
-      <span><i class="swatch swatch--pred" /> Modelo ML</span>
+    <div class="ml-chart__head">
+      <div class="ml-chart__legend">
+        <span><i class="swatch swatch--actual" /> Observado (hoy)</span>
+        <span><i class="swatch swatch--pred" /> Modelo ML</span>
+        <span class="warn-note">Naranja/rojo = error alto</span>
+      </div>
+      <span class="actions">
+        <button type="button" @click="exportCsv">CSV</button>
+        <button type="button" @click="exportPng">PNG</button>
+      </span>
     </div>
-    <svg class="ml-chart__svg" :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="xMidYMid meet">
+    <svg
+      ref="svgRef"
+      class="ml-chart__svg"
+      :viewBox="`0 0 ${W} ${H}`"
+      preserveAspectRatio="xMidYMid meet"
+      @mouseleave="onBarLeave"
+    >
       <g v-for="(row, pi) in rows" :key="row.key">
         <rect
           :x="pad.l + pi * panelW + 2"
@@ -142,22 +205,13 @@ function fmtVal(v, unit) {
             :y2="tick.y"
           />
         </g>
-        <g class="ml-chart__yticks">
-          <text
-            v-for="(tick, ti) in yTicks(row.ymin, row.ymax).filter((_, i) => i % 2 === 0 || i === 4)"
-            :key="'y' + tick.v"
-            :x="pad.l + pi * panelW + 4"
-            :y="tick.y + 3"
-            text-anchor="start"
-          >
-            {{ tick.v }}{{ row.unit === '°C' ? '°' : row.unit === '%' ? '%' : '' }}
-          </text>
-        </g>
         <template v-if="row.actual != null">
           <rect
             v-bind="barRect(row.actual, row.ymin, row.ymax, pi, 'actual')"
             class="ml-chart__bar ml-chart__bar--actual"
             rx="3"
+            @mouseenter="onBarEnter($event, row, 'actual')"
+            @mousemove="onBarMove"
           />
           <text
             :x="barRect(row.actual, row.ymin, row.ymax, pi, 'actual').cx"
@@ -170,8 +224,11 @@ function fmtVal(v, unit) {
         </template>
         <rect
           v-bind="barRect(row.prediccion, row.ymin, row.ymax, pi, 'pred')"
-          class="ml-chart__bar ml-chart__bar--pred"
+          class="ml-chart__bar"
+          :fill="row.predColor"
           rx="3"
+          @mouseenter="onBarEnter($event, row, 'pred')"
+          @mousemove="onBarMove"
         />
         <text
           :x="barRect(row.prediccion, row.ymin, row.ymax, pi, 'pred').cx"
@@ -182,52 +239,58 @@ function fmtVal(v, unit) {
           {{ fmtVal(row.prediccion, row.unit) }}
         </text>
         <text
-          :x="pad.l + pi * panelW + panelW * 0.34"
-          :y="H - 26"
-          text-anchor="middle"
-          class="ml-chart__xlab"
-        >
-          Obs.
-        </text>
-        <text
-          :x="pad.l + pi * panelW + panelW * 0.66"
-          :y="H - 26"
-          text-anchor="middle"
-          class="ml-chart__xlab"
-        >
-          ML
-        </text>
-        <text
-          v-if="row.delta != null"
           :x="pad.l + pi * panelW + panelW / 2"
           :y="H - 10"
           text-anchor="middle"
-          :class="['ml-chart__delta', Math.abs(row.delta) > 5 && row.unit === '%' ? 'ml-chart__delta--warn' : '']"
+          :class="['ml-chart__delta', row.delta != null && Math.abs(row.delta) > 5 && row.unit === '%' ? 'ml-chart__delta--warn' : '']"
         >
-          Δ {{ row.delta > 0 ? '+' : '' }}{{ row.delta.toFixed(1) }}{{ row.unit }}
+          <template v-if="row.delta != null">Δ {{ row.delta > 0 ? '+' : '' }}{{ row.delta.toFixed(1) }}{{ row.unit }}</template>
         </text>
       </g>
     </svg>
-    <p v-if="rows[0]?.tipoDato" class="ml-chart__note">
-      Referencia: {{ rows[0].fechaReferencia || 'hoy' }} · {{ rows[0].tipoDato }} (OpenMeteo).
-    </p>
+    <ChartTooltip :x="tip.x" :y="tip.y" :visible="tip.visible && tip.row">
+      <strong>{{ tip.row?.label }}</strong>
+      {{ tip.slot === 'actual' ? 'Observado' : 'Modelo ML' }}:
+      {{ fmtVal(tip.slot === 'actual' ? tip.row?.actual : tip.row?.prediccion, tip.row?.unit) }}
+      {{ tip.row?.unit }}<br />
+      <template v-if="tip.row?.delta != null">
+        Δ {{ tip.row.delta > 0 ? '+' : '' }}{{ tip.row.delta.toFixed(1) }}{{ tip.row.unit }}
+      </template>
+    </ChartTooltip>
     <p class="ml-chart__note">
-      Cada panel usa su propia escala (°C, %, mm o hPa). No comparar alturas entre variables distintas.
+      Cada panel usa su propia escala. No comparar alturas entre variables distintas.
     </p>
   </div>
   <p v-else class="muted">Sin proyecciones ML disponibles.</p>
 </template>
 
 <style scoped>
-.ml-chart {
-  width: 100%;
+.ml-chart { width: 100%; position: relative; }
+.ml-chart__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 .ml-chart__legend {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
   font-size: 0.75rem;
   color: var(--color-muted);
-  margin-bottom: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.warn-note { font-size: 0.68rem; color: #c45c26; }
+.actions button {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.68rem;
+  margin-left: 0.25rem;
 }
 .swatch {
   display: inline-block;
@@ -237,72 +300,30 @@ function fmtVal(v, unit) {
   margin-right: 0.35rem;
   vertical-align: middle;
 }
-.swatch--actual {
-  background: #1a5f4a;
-}
-.swatch--pred {
-  background: #3d7ab8;
-}
-.ml-chart__svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
+.swatch--actual { background: #1a5f4a; }
+.swatch--pred { background: #3d7ab8; }
+.ml-chart__svg { width: 100%; height: auto; display: block; }
 .ml-chart__panel-bg {
   fill: rgba(26, 95, 74, 0.04);
   stroke: var(--color-border);
   stroke-width: 1;
 }
-.ml-chart__title {
-  font-size: 12px;
-  font-weight: 700;
-  fill: var(--color-text);
-}
+.ml-chart__title { font-size: 12px; font-weight: 700; fill: var(--color-text); }
 .ml-chart__grid line {
   stroke: var(--color-border);
   stroke-width: 1;
   stroke-dasharray: 3 4;
 }
-.ml-chart__yticks text {
-  font-size: 9px;
-  fill: var(--color-muted);
-}
-.ml-chart__bar--actual {
-  fill: #1a5f4a;
-}
-.ml-chart__bar--pred {
-  fill: #3d7ab8;
-  opacity: 0.92;
-}
-.ml-chart__val {
-  font-size: 10px;
-  font-weight: 700;
-  fill: #1a5f4a;
-}
-.ml-chart__val--pred {
-  fill: #2a5f8f;
-}
-.ml-chart__xlab {
-  font-size: 9px;
-  fill: var(--color-muted);
-}
-.ml-chart__delta {
-  font-size: 9px;
-  fill: var(--color-text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-.ml-chart__delta--warn {
-  fill: #c45c26;
-  font-weight: 600;
-}
+.ml-chart__bar--actual { fill: #1a5f4a; }
+.ml-chart__val { font-size: 10px; font-weight: 700; fill: #1a5f4a; }
+.ml-chart__val--pred { fill: #2a5f8f; }
+.ml-chart__delta { font-size: 9px; fill: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+.ml-chart__delta--warn { fill: #c45c26; font-weight: 600; }
 .ml-chart__note {
   margin: 0.4rem 0 0;
   font-size: 0.68rem;
   color: var(--color-muted);
   text-align: center;
 }
-.muted {
-  color: var(--color-muted);
-  font-size: 0.8rem;
-}
+.muted { color: var(--color-muted); font-size: 0.8rem; }
 </style>

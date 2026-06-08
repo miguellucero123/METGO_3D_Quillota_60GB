@@ -4,21 +4,30 @@ import { History } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import SectionCard from '@/components/ui/SectionCard.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import SkeletonLoader from '@/components/ui/SkeletonLoader.vue'
+import WindRoseChart from '@/components/charts/WindRoseChart.vue'
 import { useApiCall } from '@/composables/useApiCall'
 import { fetchHistorico, syncDatosEtl, fetchMeteoStore } from '@/api/metgoApi'
 import { hoyChile, seriesHistoricoPorDia } from '@/utils/meteoDates'
 
 const store = useMetgoStore()
-const dias = 30
+const dias = ref(30)
 const storeInfo = ref(null)
 const etlMsg = ref('')
 const etlBusy = ref(false)
 
 const { data: historico, loading, error, run } = useApiCall(() =>
-  fetchHistorico(store.estacionActiva, dias)
+  fetchHistorico(store.estacionActiva, dias.value)
 )
 
-const serie = computed(() => seriesHistoricoPorDia(historico.value, dias))
+const serie = computed(() => seriesHistoricoPorDia(historico.value, dias.value))
+
+const vientoDirs = computed(() =>
+  serie.value.map((r) => r.direccion_viento).filter((v) => v != null)
+)
+const vientoSpeeds = computed(() =>
+  serie.value.filter((r) => r.direccion_viento != null).map((r) => r.viento)
+)
 
 const labels = computed(() => serie.value.map((r) => r.fecha))
 const tempsMax = computed(() => serie.value.map((r) => r.temperatura_max))
@@ -37,7 +46,7 @@ async function sincronizarEtl() {
   etlBusy.value = true
   etlMsg.value = ''
   try {
-    const r = await syncDatosEtl(dias, true)
+    const r = await syncDatosEtl(dias.value, true)
     etlMsg.value = `Sync OK: ${r.store?.registros ?? '?'} registros en BD local`
     await run()
     await cargarStore()
@@ -55,6 +64,9 @@ onMounted(async () => {
 watch(() => store.estacionActiva, async () => {
   await run()
 })
+watch(dias, async () => {
+  await run()
+})
 </script>
 
 <template>
@@ -62,9 +74,17 @@ watch(() => store.estacionActiva, async () => {
     <header class="page-header">
       <h2 class="page-title">Histórico meteorológico</h2>
       <p class="page-subtitle">
-        Últimos {{ dias }} días hasta hoy ({{ hoyChile() }}) · {{ store.estacionNombre }}
+        Histórico hasta hoy ({{ hoyChile() }}) · {{ store.estacionNombre }}
         <span class="badge badge--neutral">Fase 4A · ETL local</span>
       </p>
+      <label class="range-sel">
+        Ventana:
+        <select v-model.number="dias">
+          <option :value="7">7 días</option>
+          <option :value="14">14 días</option>
+          <option :value="30">30 días</option>
+        </select>
+      </label>
       <button type="button" class="btn btn-sm btn-primary" :disabled="etlBusy" @click="sincronizarEtl">
         Sincronizar OpenMeteo + CSV → store
       </button>
@@ -79,7 +99,7 @@ watch(() => store.estacionActiva, async () => {
       :subtitle="`${serie.length} días con datos · máx y mín`"
     >
       <template #icon><History /></template>
-      <p v-if="loading" class="skeleton">Cargando histórico…</p>
+      <SkeletonLoader v-if="loading" :height="220" />
       <p v-else-if="error" class="error-text">{{ error }}</p>
       <TimeSeriesChart
         v-else-if="labels.length"
@@ -95,6 +115,14 @@ watch(() => store.estacionActiva, async () => {
         fill-color="rgba(26, 95, 74, 0.15)"
       />
       <p v-else class="muted">Sin datos históricos. Use sincronizar ETL o revise la estación.</p>
+    </SectionCard>
+
+    <SectionCard
+      v-if="vientoDirs.length"
+      title="Rosa de vientos"
+      :subtitle="`Dirección dominante · ${vientoDirs.length} días con dato`"
+    >
+      <WindRoseChart :directions="vientoDirs" :speeds="vientoSpeeds" />
     </SectionCard>
 
     <SectionCard title="Precipitación diaria" :subtitle="`${serie.length} días · mm acumulados por día`">
@@ -130,7 +158,7 @@ watch(() => store.estacionActiva, async () => {
               <td>{{ row.temperatura_max }}°</td>
               <td>{{ row.temperatura_min }}°</td>
               <td>{{ row.precipitacion }} mm</td>
-              <td>{{ row.viento }} km/h</td>
+              <td>{{ row.viento }} m/s</td>
             </tr>
           </tbody>
         </table>
@@ -147,6 +175,16 @@ watch(() => store.estacionActiva, async () => {
 .small {
   font-size: 0.75rem;
   margin-top: 0.35rem;
+}
+.range-sel {
+  display: inline-block;
+  font-size: 0.85rem;
+  margin-right: 0.75rem;
+}
+.range-sel select {
+  margin-left: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
 }
 .table-wrap {
   overflow-x: auto;

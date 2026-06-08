@@ -1,6 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { formatoDiaCorto } from '@/utils/meteoDates'
+import ChartTooltip from '@/components/charts/ChartTooltip.vue'
+import { exportarSvgPng } from '@/utils/exportChart'
 
 const props = defineProps({
   labels: { type: Array, default: () => [] },
@@ -13,7 +15,19 @@ const props = defineProps({
   showBand: { type: Boolean, default: false },
   showArea: { type: Boolean, default: true },
   yAxisTitle: { type: String, default: '' },
+  seriesMaxLabel: { type: String, default: 'Máxima' },
+  seriesMinLabel: { type: String, default: 'Mínima' },
+  exportName: { type: String, default: '' },
 })
+
+const showMax = ref(true)
+const showMin = ref(true)
+const svgRef = ref(null)
+const tip = ref({ visible: false, x: 0, y: 0, i: -1 })
+
+function exportPng() {
+  if (svgRef.value) exportarSvgPng(svgRef.value, props.exportName || 'serie_temporal')
+}
 
 const W = 640
 const H = computed(() => props.height)
@@ -25,7 +39,10 @@ const numsMin = computed(() =>
 )
 
 const yRange = computed(() => {
-  const all = [...nums.value, ...(props.showBand ? numsMin.value : [])]
+  const all = [
+    ...(showMax.value ? nums.value : []),
+    ...(props.showBand && showMin.value ? numsMin.value : []),
+  ]
   if (!all.length) return { min: 0, max: 1 }
   let lo = Math.min(...all)
   let hi = Math.max(...all)
@@ -52,6 +69,7 @@ function yAt(v) {
 }
 
 const linePath = computed(() => {
+  if (!showMax.value) return ''
   const n = props.labels.length
   if (!n) return ''
   return props.values
@@ -63,8 +81,21 @@ const linePath = computed(() => {
     .join(' ')
 })
 
+const lineMinPath = computed(() => {
+  if (!props.showBand || !showMin.value) return ''
+  const n = props.labels.length
+  if (!n) return ''
+  return props.valuesMin
+    .map((v, i) => {
+      const x = xAt(i, n)
+      const y = yAt(v)
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
+    })
+    .join(' ')
+})
+
 const areaPath = computed(() => {
-  if (!props.showArea || !props.labels.length || !linePath.value) return ''
+  if (!props.showArea || !props.labels.length || !linePath.value || props.showBand) return ''
   const n = props.labels.length
   const baseY = pad.t + innerH.value
   const pts = props.values
@@ -76,7 +107,7 @@ const areaPath = computed(() => {
 })
 
 const bandPath = computed(() => {
-  if (!props.showBand || !props.labels.length) return ''
+  if (!props.showBand || !props.labels.length || !showMax.value || !showMin.value) return ''
   const n = props.labels.length
   const top = props.values
     .map((v, i) => `${xAt(i, n).toFixed(1)},${yAt(v).toFixed(1)}`)
@@ -104,14 +135,43 @@ const xTickIndices = computed(() => {
   const pick = [0, Math.floor(n / 3), Math.floor((2 * n) / 3), n - 1]
   return [...new Set(pick)]
 })
+
+function onDotEnter(e, i) {
+  tip.value = { visible: true, x: e.clientX, y: e.clientY, i }
+}
+
+function onDotMove(e) {
+  if (tip.value.visible) {
+    tip.value.x = e.clientX
+    tip.value.y = e.clientY
+  }
+}
+
+function onDotLeave() {
+  tip.value.visible = false
+  tip.value.i = -1
+}
 </script>
 
 <template>
   <div class="ts-chart" role="img" :aria-label="`Serie temporal, ${labels.length} puntos`">
+    <div class="ts-head">
+      <div v-if="showBand" class="ts-legend">
+        <button type="button" :class="{ off: !showMax }" @click="showMax = !showMax">
+          <span class="dot" :style="{ background: color }" /> {{ seriesMaxLabel }}
+        </button>
+        <button type="button" :class="{ off: !showMin }" @click="showMin = !showMin">
+          <span class="dot dot--min" /> {{ seriesMinLabel }}
+        </button>
+      </div>
+      <button v-if="exportName" type="button" class="ts-export" @click="exportPng">PNG</button>
+    </div>
     <svg
+      ref="svgRef"
       class="ts-chart__svg"
       :viewBox="`0 0 ${W} ${H}`"
       preserveAspectRatio="xMidYMid meet"
+      @mouseleave="onDotLeave"
     >
       <g class="ts-chart__grid">
         <line
@@ -143,19 +203,38 @@ const xTickIndices = computed(() => {
       >
         {{ yAxisTitle }}
       </text>
-      <path v-if="showArea && areaPath && !showBand" class="ts-chart__area" :d="areaPath" :fill="fillColor" />
-      <path v-if="showBand && bandPath" class="ts-chart__band" :d="bandPath" :fill="fillColor" />
-      <path class="ts-chart__line" :d="linePath" :stroke="color" fill="none" />
+      <path v-if="showArea && areaPath" class="ts-chart__area" :d="areaPath" :fill="fillColor" />
+      <path v-if="bandPath" class="ts-chart__band" :d="bandPath" :fill="fillColor" />
+      <path v-if="lineMinPath" class="ts-chart__line ts-chart__line--min" :d="lineMinPath" stroke="#3b82f6" fill="none" />
+      <path v-if="linePath" class="ts-chart__line" :d="linePath" :stroke="color" fill="none" />
       <g class="ts-chart__dots">
         <circle
           v-for="(v, i) in values"
-          :key="i"
+          v-show="showMax"
+          :key="'max' + i"
           :cx="xAt(i, labels.length)"
           :cy="yAt(v)"
-          r="4"
+          r="5"
           :fill="color"
           stroke="#fff"
           stroke-width="1.5"
+          class="ts-dot"
+          @mouseenter="onDotEnter($event, i)"
+          @mousemove="onDotMove"
+        />
+        <circle
+          v-for="(v, i) in valuesMin"
+          v-show="showBand && showMin"
+          :key="'min' + i"
+          :cx="xAt(i, labels.length)"
+          :cy="yAt(v)"
+          r="4"
+          fill="#3b82f6"
+          stroke="#fff"
+          stroke-width="1.5"
+          class="ts-dot"
+          @mouseenter="onDotEnter($event, i)"
+          @mousemove="onDotMove"
         />
       </g>
       <g class="ts-chart__xlabels">
@@ -174,17 +253,75 @@ const xTickIndices = computed(() => {
       {{ formatoDiaCorto(labels[0]) }} — {{ formatoDiaCorto(labels[labels.length - 1]) }}
       · {{ labels.length }} días
     </p>
+
+    <ChartTooltip :x="tip.x" :y="tip.y" :visible="tip.visible && tip.i >= 0">
+      <strong>{{ formatoDiaCorto(labels[tip.i]) }}</strong>
+      <template v-if="showMax && values[tip.i] != null">
+        {{ seriesMaxLabel }}: {{ values[tip.i] }}{{ unit }}<br />
+      </template>
+      <template v-if="showBand && valuesMin[tip.i] != null">
+        {{ seriesMinLabel }}: {{ valuesMin[tip.i] }}{{ unit }}
+      </template>
+    </ChartTooltip>
   </div>
 </template>
 
 <style scoped>
 .ts-chart {
   width: 100%;
+  position: relative;
+}
+.ts-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  gap: 0.5rem;
+}
+.ts-export {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.68rem;
+}
+.ts-legend {
+  display: flex;
+  gap: 0.65rem;
+  font-size: 0.72rem;
+}
+.ts-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  color: var(--color-text);
+}
+.ts-legend button.off {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+.dot--min {
+  background: #3b82f6;
 }
 .ts-chart__svg {
   width: 100%;
   height: auto;
   display: block;
+}
+.ts-dot {
+  cursor: crosshair;
 }
 .ts-chart__grid line {
   stroke: var(--color-border);
@@ -209,6 +346,10 @@ const xTickIndices = computed(() => {
   stroke-width: 2.75;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.ts-chart__line--min {
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
 }
 .ts-chart__band {
   stroke: none;

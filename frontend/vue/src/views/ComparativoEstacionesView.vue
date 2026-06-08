@@ -1,10 +1,13 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { GitCompare, BarChart3, Star } from 'lucide-vue-next'
 import SectionCard from '@/components/ui/SectionCard.vue'
 import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import SkeletonLoader from '@/components/ui/SkeletonLoader.vue'
+import ValleEstacionesMeteoMap from '@/components/maps/ValleEstacionesMeteoMap.vue'
+import SparklineGrid from '@/components/charts/SparklineGrid.vue'
 import { useApiCall } from '@/composables/useApiCall'
 import { fetchComparativo, fetchComparativoHistorico } from '@/api/metgoApi'
 import { useFavoritesStore } from '@/stores/favorites'
@@ -17,19 +20,22 @@ const favorites = useFavoritesStore()
 const metgo = useMetgoStore()
 const { formatTemperatura, unit } = useFormatTemp()
 
+const diasHist = ref(14)
+
 const { data: resumen, loading, error, run: runResumen } = useApiCall(fetchComparativo)
 const {
   data: historico,
   loading: loadingHist,
   error: errorHist,
   run: runHistorico,
-} = useApiCall(() => fetchComparativoHistorico(14))
+} = useApiCall(() => fetchComparativoHistorico(diasHist.value))
 
 async function cargar() {
   await Promise.all([runResumen(), runHistorico()])
 }
 
 onMounted(cargar)
+watch(diasHist, () => runHistorico())
 
 const estacionesResumen = computed(() => resumen.value || [])
 
@@ -41,6 +47,17 @@ const valuesTempMax = computed(() =>
 )
 const valuesPrecip = computed(() =>
   estacionesResumen.value.map((r) => Number(r.precipitacion) || 0)
+)
+const stationIds = computed(() =>
+  estacionesResumen.value.map((r) => r.estacion_id)
+)
+const barHints = computed(() =>
+  estacionesResumen.value.map(
+    (r) => `Fuente: ${r.fuente || 'openmeteo'} · ${String(r.fecha || '').slice(0, 10)}`
+  )
+)
+const valuesNubosidad = computed(() =>
+  estacionesResumen.value.map((r) => Number(r.cobertura_nubosa) || 0)
 )
 
 /** Promedio T° máx por estación en ventana histórica (solo días ≤ hoy). */
@@ -90,12 +107,36 @@ const serieValle = computed(() => {
 const labelsValle = computed(() => serieValle.value.map((r) => r.fecha))
 const tempsValle = computed(() => serieValle.value.map((r) => r.temperatura_max))
 
+const mapaVariable = ref('temperatura')
+
+/** Small multiples: serie T° máx por estación desde histórico multi-estación. */
+const sparkSeries = computed(() => {
+  const porEst = new Map()
+  for (const r of historico.value || []) {
+    const id = r.estacion_id
+    const dia = String(r.fecha ?? '').slice(0, 10)
+    if (!id || dia > hoyChile()) continue
+    if (!porEst.has(id)) {
+      porEst.set(id, { id, nombre: r.estacion, fechas: [], valores: [], unidad: '°C' })
+    }
+    const acc = porEst.get(id)
+    acc.fechas.push(dia)
+    acc.valores.push(Number(r.temperatura_max) || 0)
+  }
+  return [...porEst.values()].sort((a, b) => a.nombre.localeCompare(b.nombre))
+})
+
 const tempUnitLabel = computed(() => (unit.value === 'F' ? '°F' : '°C'))
 
 function irEstacion(id) {
-  metgo.estacionActiva = id
+  if (!id) return
+  metgo.setEstacion(id)
   metgo.cargarDatosMeteo()
   router.push('/meteo')
+}
+
+function onBarClick({ stationId }) {
+  irEstacion(stationId)
 }
 </script>
 
@@ -113,7 +154,7 @@ function irEstacion(id) {
       subtitle="Condiciones del día en las 5 estaciones principales"
     >
       <template #icon><GitCompare /></template>
-      <p v-if="loading" class="skeleton">Cargando estaciones…</p>
+      <SkeletonLoader v-if="loading" :height="160" :lines="5" />
       <p v-else-if="error" class="error-text">{{ error }}</p>
       <template v-else>
         <p v-if="!estacionesResumen.length" class="muted">Sin datos comparativos.</p>
@@ -150,13 +191,22 @@ function irEstacion(id) {
                 <td>{{ formatTemperatura(r.temperatura_max) }}</td>
                 <td>{{ formatTemperatura(r.temperatura_min) }}</td>
                 <td>{{ r.precipitacion }} mm</td>
-                <td>{{ r.viento }} km/h</td>
+                <td>{{ r.viento }} m/s</td>
                 <td>{{ r.humedad }}%</td>
               </tr>
             </tbody>
           </table>
         </div>
       </template>
+    </SectionCard>
+
+    <SectionCard title="Mapa del valle" subtitle="Pins por estación · clic para detalle">
+      <div class="mapa-vars">
+        <button type="button" :class="{ active: mapaVariable === 'temperatura' }" @click="mapaVariable = 'temperatura'">T°</button>
+        <button type="button" :class="{ active: mapaVariable === 'precipitacion' }" @click="mapaVariable = 'precipitacion'">Lluvia</button>
+        <button type="button" :class="{ active: mapaVariable === 'nubosidad' }" @click="mapaVariable = 'nubosidad'">Nubes</button>
+      </div>
+      <ValleEstacionesMeteoMap :variable="mapaVariable" />
     </SectionCard>
 
     <div class="chart-grid">
@@ -166,8 +216,12 @@ function irEstacion(id) {
           v-if="labelsTempMax.length && !loading"
           :labels="labelsTempMax"
           :values="valuesTempMax"
+          :station-ids="stationIds"
+          :hints="barHints"
           :unit="tempUnitLabel"
           kind="temp"
+          clickable
+          @bar-click="onBarClick"
         />
       </SectionCard>
 
@@ -176,8 +230,30 @@ function irEstacion(id) {
           v-if="labelsTempMax.length && !loading"
           :labels="labelsTempMax"
           :values="valuesPrecip"
+          :station-ids="stationIds"
+          :hints="barHints"
           unit=" mm"
           kind="precip"
+          clickable
+          @bar-click="onBarClick"
+        />
+      </SectionCard>
+
+      <SectionCard
+        v-if="valuesNubosidad.some((v) => v > 0)"
+        title="Nubosidad hoy"
+        subtitle="% cobertura por estación"
+      >
+        <HorizontalBarChart
+          v-if="labelsTempMax.length && !loading"
+          :labels="labelsTempMax"
+          :values="valuesNubosidad"
+          :station-ids="stationIds"
+          :hints="barHints"
+          unit=" %"
+          kind="humedad"
+          clickable
+          @bar-click="onBarClick"
         />
       </SectionCard>
     </div>
@@ -186,7 +262,17 @@ function irEstacion(id) {
       title="Evolución del valle (T° máx media)"
       :subtitle="`${labelsValle.length} días · promedio de las estaciones activas`"
     >
-      <p v-if="loadingHist" class="skeleton">Cargando histórico…</p>
+      <div class="range-sel">
+        <label>
+          Ventana:
+          <select v-model.number="diasHist">
+            <option :value="7">7 días</option>
+            <option :value="14">14 días</option>
+            <option :value="30">30 días</option>
+          </select>
+        </label>
+      </div>
+      <SkeletonLoader v-if="loadingHist" :height="200" />
       <p v-else-if="errorHist" class="error-text">{{ errorHist }}</p>
       <TimeSeriesChart
         v-else-if="labelsValle.length"
@@ -195,12 +281,21 @@ function irEstacion(id) {
         :unit="tempUnitLabel"
         :height="220"
         y-axis-title="T° máx media"
+        export-name="comparativo_valle"
       />
       <p v-else class="muted">Sin histórico multi-estación.</p>
     </SectionCard>
 
     <SectionCard
-      title="T° máxima promedio · 2 semanas"
+      v-if="sparkSeries.length"
+      title="Small multiples · T° máx por estación"
+      :subtitle="`Tendencia ${diasHist} días`"
+    >
+      <SparklineGrid :series="sparkSeries" kind="temp" />
+    </SectionCard>
+
+    <SectionCard
+      :title="`T° máxima promedio · ${diasHist} días`"
       subtitle="Por estación (barras relativas al rango del período)"
     >
       <HorizontalBarChart
@@ -257,6 +352,33 @@ function irEstacion(id) {
 .fav-cell--on {
   color: var(--color-warning);
   fill: var(--color-warning);
+}
+.range-sel {
+  margin-bottom: 0.65rem;
+  font-size: 0.8rem;
+}
+.mapa-vars {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+.mapa-vars button {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.mapa-vars button.active {
+  background: #0284c7;
+  color: #fff;
+  border-color: #0284c7;
+}
+.range-sel select {
+  margin-left: 0.35rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
 }
 .link-est {
   border: none;

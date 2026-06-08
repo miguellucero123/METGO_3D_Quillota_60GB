@@ -91,6 +91,24 @@ paths:
           description: Sin token
         "404":
           description: Sin datos
+  /api/meteo/{estacion_id}/viento-horario:
+    get:
+      tags: [meteo]
+      summary: Rosa de vientos horaria (dirección+velocidad) OpenMeteo forecast
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: quillota }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, minimum: 1, maximum: 16 }
+      responses:
+        "200":
+          description: Arrays paralelos `direcciones` y `velocidades` (unidad m/s)
+        "404":
+          description: Sin datos de viento
   /api/alertas:
     get:
       tags: [sistema]
@@ -154,6 +172,151 @@ paths:
       responses:
         "200":
           description: Riesgo helada por día y cultivo
+  /api/meteo/{estacion_id}/helada:
+    get:
+      tags: [meteo]
+      summary: Pronóstico avanzado helada radiativa (6 factores)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+        - name: cultivo
+          in: query
+          schema: { type: string, enum: [palto, vid, citricos, tomate, lechuga], default: palto }
+      responses:
+        "200":
+          description: Probabilidad helada, factores y recomendaciones
+  /api/meteo/{estacion_id}/nubosidad:
+    get:
+      tags: [meteo]
+      summary: Análisis cobertura nubosa y radiación solar
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: Nubosidad, radiación e impacto térmico
+  /api/meteo/{estacion_id}/niebla:
+    get:
+      tags: [meteo]
+      summary: Predicción de nieblas y visibilidad
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: PoP niebla, severidad y visibilidad
+  /api/meteo/variables-catalogo:
+    get:
+      tags: [meteo]
+      summary: Catálogo de variables meteorológicas (base + extensiones)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: VARIABLES_ACTUALES y VARIABLES_NUEVAS
+  /api/meteo/{estacion_id}/variables-completas:
+    get:
+      tags: [meteo]
+      summary: Conjunto de 15+ variables meteorológicas
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: Variables base y derivadas agrícolas
+  /api/mapas/global/{variable}:
+    get:
+      tags: [mapas]
+      summary: Grilla global por variable (modelo físico)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: variable
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [temperatura, humedad, presion, precipitacion, radiacion, nubosidad, viento_velocidad]
+        - name: resolucion
+          in: query
+          schema: { type: string, default: "1.0" }
+      responses:
+        "200":
+          description: Grilla lats/lons/valores para canvas
+  /api/mapas/regional/{estacion_id}/{variable}/animacion:
+    get:
+      tags: [mapas]
+      summary: Animación 7 días mapa regional (IDW pronóstico)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: variable
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: Serie de frames con grilla por día
+  /api/mapas/regional/{estacion_id}/{variable}:
+    get:
+      tags: [mapas]
+      summary: Mapa regional Valle (IDW estaciones METGO)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Grilla regional interpolada
+  /api/mapas/comparacion-modelos/{estacion_id}/{variable}:
+    get:
+      tags: [mapas]
+      summary: Comparación GFS vs ECMWF (OpenMeteo multi-modelo)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: variable
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [temperatura, temperatura_max, temperatura_min, humedad, precipitacion, nubosidad, viento_velocidad]
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, maximum: 16 }
+      responses:
+        "200":
+          description: Serie diaria gfs_seamless vs ecmwf_ifs04
+        "404":
+          description: Estación o variable inválida
   /api/precip/{estacion_id}/calibrado:
     get:
       tags: [meteo]

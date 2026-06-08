@@ -41,6 +41,8 @@ from api_rest.fase8_routes import register_fase8_routes
 from api_rest.fase9_routes import register_fase9_routes
 from api_rest.fase10_routes import register_fase10_routes
 from api_rest.precipitacion_routes import register_precipitacion_routes
+from api_rest.meteo_avanzada_routes import register_meteo_avanzada_routes
+from api_rest.mapas_routes import register_mapas_routes
 from api_rest.observability import register_observability
 
 
@@ -62,6 +64,8 @@ def create_app() -> Flask:
     register_fase9_routes(app)
     register_fase10_routes(app)
     register_precipitacion_routes(app)
+    register_meteo_avanzada_routes(app)
+    register_mapas_routes(app)
     register_docs_routes(app)
 
     @app.get("/")
@@ -124,6 +128,15 @@ def create_app() -> Flask:
         data = services.pronostico_meteo(estacion_id, dias)
         if data is None:
             return jsonify({"error": "Sin pronostico"}), 404
+        return jsonify(data)
+
+    @app.get("/api/meteo/<estacion_id>/viento-horario")
+    @auth_required
+    def meteo_viento_horario(estacion_id: str):
+        dias = request.args.get("dias", 7, type=int)
+        data = services.viento_horario_meteo(estacion_id, dias)
+        if not data:
+            return jsonify({"error": "Sin datos de viento"}), 404
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/historico")

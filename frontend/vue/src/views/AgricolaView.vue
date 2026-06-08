@@ -10,12 +10,15 @@ import {
   fetchAgricolaRiego,
   fetchAgricolaCultivos,
   fetchAgricolaEconomico,
+  fetchCronogramaRiego,
 } from '@/api/metgoApi'
 import {
   CULTIVOS_QUILLOTA,
-  riesgoHelada,
+  riesgoHeladaPorCultivo,
   necesidadRiego,
   condicionViento,
+  cultivoHeladaSlug,
+  cultivoApiSlug,
 } from '@/utils/agroInsights'
 import { hoyChile } from '@/utils/meteoDates'
 
@@ -25,11 +28,14 @@ const cultivosApi = ref([])
 const riegoApi = ref(null)
 const riegoPorCultivo = ref([])
 const economico = ref(null)
+const cronograma = ref(null)
 const cultivoSel = ref('palto')
 const cargando = ref(false)
 
 const d = computed(() => store.datosMeteo)
-const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
+const helada = computed(() =>
+  riesgoHeladaPorCultivo(d.value?.temperatura_min, cultivoHeladaSlug(cultivoSel.value))
+)
 const riego = computed(() => necesidadRiego(d.value?.humedad, d.value?.precipitacion))
 const viento = computed(() => condicionViento(d.value?.viento))
 
@@ -55,7 +61,7 @@ async function cargarRiegoTodos() {
   const filas = []
   for (const c of opcionesCultivo.value) {
     try {
-      const r = await fetchAgricolaRiego(store.estacionActiva, c.id)
+      const r = await fetchAgricolaRiego(store.estacionActiva, cultivoApiSlug(c.id))
       filas.push({
         id: c.id,
         nombre: c.nombre,
@@ -74,8 +80,19 @@ async function cargar() {
   try {
     recomendaciones.value = await fetchRecomendacionesAgricolas(store.estacionActiva)
     cultivosApi.value = await fetchAgricolaCultivos()
-    riegoApi.value = await fetchAgricolaRiego(store.estacionActiva, cultivoSel.value)
+    riegoApi.value = await fetchAgricolaRiego(
+      store.estacionActiva,
+      cultivoApiSlug(cultivoSel.value)
+    )
     economico.value = await fetchAgricolaEconomico(store.estacionActiva)
+    try {
+      cronograma.value = await fetchCronogramaRiego(
+        store.estacionActiva,
+        cultivoApiSlug(cultivoSel.value)
+      )
+    } catch {
+      cronograma.value = null
+    }
     await cargarRiegoTodos()
   } catch {
     recomendaciones.value = []
@@ -90,7 +107,18 @@ async function cargar() {
 
 async function onCultivoChange() {
   try {
-    riegoApi.value = await fetchAgricolaRiego(store.estacionActiva, cultivoSel.value)
+    riegoApi.value = await fetchAgricolaRiego(
+      store.estacionActiva,
+      cultivoApiSlug(cultivoSel.value)
+    )
+    try {
+      cronograma.value = await fetchCronogramaRiego(
+        store.estacionActiva,
+        cultivoApiSlug(cultivoSel.value)
+      )
+    } catch {
+      cronograma.value = null
+    }
   } catch {
     riegoApi.value = null
   }
@@ -211,6 +239,24 @@ watch(cultivoSel, onCultivoChange)
     </div>
 
     <SectionCard
+      v-if="cronograma"
+      title="Cronograma de riego inteligente"
+      subtitle="Ajustado por lluvia y helada (próximas 72 h)"
+    >
+      <template #icon><Droplets /></template>
+      <p class="cron-accion"><strong>{{ cronograma.accion || cronograma.recomendacion }}</strong></p>
+      <p v-if="cronograma.motivo" class="muted">{{ cronograma.motivo }}</p>
+      <ul v-if="cronograma.dias?.length" class="cron-list">
+        <li v-for="(dia, i) in cronograma.dias" :key="i">
+          <strong>{{ dia.fecha || dia.dia }}</strong> — {{ dia.accion || dia.riego_mm }} mm
+          <span v-if="dia.nota" class="muted"> ({{ dia.nota }})</span>
+        </li>
+      </ul>
+      <p v-else-if="cronograma.resumen" class="muted">{{ cronograma.resumen }}</p>
+      <router-link to="/meteo/precipitacion" class="link-meteo">Ver precipitación y heladas →</router-link>
+    </SectionCard>
+
+    <SectionCard
       v-if="economico"
       title="Proyección económica"
       subtitle="Módulo 02 · referencia regional"
@@ -316,5 +362,23 @@ watch(cultivoSel, onCultivoChange)
 .small {
   font-size: 0.75rem;
   margin-top: 0.35rem;
+}
+
+.cron-accion {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.cron-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+}
+
+.link-meteo {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-primary);
 }
 </style>

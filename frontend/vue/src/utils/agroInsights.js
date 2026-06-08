@@ -51,11 +51,22 @@ export function necesidadRiego(humedad, precipitacion) {
   return { nivel: 'low', label: 'Humedad adecuada' }
 }
 
+/** Umbrales en m/s (OpenMeteo wind_speed_10m_max). */
 export function condicionViento(viento) {
   if (viento == null) return { nivel: 'unknown', label: 'Sin dato' }
-  if (viento >= 40) return { nivel: 'high', label: 'Viento fuerte — cautela en aplicaciones' }
-  if (viento >= 25) return { nivel: 'medium', label: 'Viento moderado' }
+  if (viento >= 11) return { nivel: 'high', label: 'Viento fuerte — cautela en aplicaciones' }
+  if (viento >= 7) return { nivel: 'medium', label: 'Viento moderado' }
   return { nivel: 'low', label: 'Condiciones de viento favorables' }
+}
+
+/** Slug API heladas (vid) vs catálogo riego (uva). */
+export function cultivoHeladaSlug(cultivo) {
+  if (cultivo === 'uva') return 'vid'
+  return cultivo
+}
+
+export function cultivoApiSlug(cultivo) {
+  return cultivo
 }
 
 export const CULTIVOS_QUILLOTA = [

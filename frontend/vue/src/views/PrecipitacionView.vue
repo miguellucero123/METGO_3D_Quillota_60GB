@@ -40,12 +40,21 @@ watch(() => store.estacionActiva, cargarAlertas)
       </label>
     </header>
 
+    <aside class="avanzada-banner">
+      <div>
+        <strong>Meteo avanzada</strong>
+        <p>Heladas radiativas, nieblas, nubosidad, mapas animados y comparación GFS/ECMWF.</p>
+      </div>
+      <router-link to="/meteo/avanzado" class="banner-link">Abrir meteo avanzada →</router-link>
+    </aside>
+
     <nav class="tabs">
       <button type="button" :class="{ active: tab === 'pronostico' }" @click="tab = 'pronostico'">Pronóstico</button>
       <button type="button" :class="{ active: tab === 'historico' }" @click="tab = 'historico'">Histórico</button>
       <button type="button" :class="{ active: tab === 'alertas' }" @click="tab = 'alertas'">Alertas</button>
       <button type="button" :class="{ active: tab === 'mapas' }" @click="tab = 'mapas'">Mapas</button>
       <button type="button" :class="{ active: tab === 'heladas' }" @click="tab = 'heladas'">Heladas</button>
+      <router-link to="/meteo/avanzado" class="tab-link">Meteo avanzada →</router-link>
     </nav>
 
     <section v-show="tab === 'pronostico'">
@@ -76,6 +85,25 @@ watch(() => store.estacionActiva, cargarAlertas)
 
 <style scoped>
 .precip-page { padding: 1rem 1.25rem; }
+.avanzada-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+}
+.avanzada-banner p { margin: 0.2rem 0 0; font-size: 0.8rem; color: #0369a1; }
+.banner-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0284c7;
+  white-space: nowrap;
+}
 .page-subtitle { color: #6b7280; margin: 0.25rem 0 0.75rem; }
 .estacion-sel { font-size: 0.85rem; }
 .estacion-sel select { margin-left: 0.35rem; padding: 0.25rem 0.5rem; border-radius: 6px; }
@@ -90,6 +118,7 @@ watch(() => store.estacionActiva, cargarAlertas)
   color: #6b7280;
 }
 .tabs button.active { color: #0284c7; border-bottom-color: #0284c7; }
+.tab-link { margin-left: auto; font-size: 0.8rem; color: #0284c7; text-decoration: none; align-self: center; }
 .alertas-sec { display: grid; gap: 0.65rem; }
 .alerta-card {
   border: 1px solid #e5e7eb;

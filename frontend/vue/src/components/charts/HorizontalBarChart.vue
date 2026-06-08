@@ -1,14 +1,23 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import ChartTooltip from '@/components/charts/ChartTooltip.vue'
 
 const props = defineProps({
   labels: { type: Array, default: () => [] },
   values: { type: Array, default: () => [] },
+  /** IDs de estación (mismo orden que labels) para clic */
+  stationIds: { type: Array, default: () => [] },
   unit: { type: String, default: '' },
   color: { type: String, default: '' },
-  /** temp | precip | humedad — paleta y escala meteorológica */
   kind: { type: String, default: 'default' },
+  clickable: { type: Boolean, default: false },
+  /** Texto secundario por barra: fuente, fecha, etc. */
+  hints: { type: Array, default: () => [] },
 })
+
+const emit = defineEmits(['bar-click'])
+
+const tip = ref({ visible: false, x: 0, y: 0, i: -1 })
 
 const nums = computed(() => props.values.map(Number).filter((n) => !Number.isNaN(n)))
 
@@ -50,11 +59,42 @@ function barColor(v, i) {
   const hues = ['#1a5f4a', '#2d7a5f', '#3d8a6e', '#5a9b72']
   return hues[i % hues.length]
 }
+
+function onEnter(e, i) {
+  tip.value = { visible: true, x: e.clientX, y: e.clientY, i }
+}
+
+function onMove(e) {
+  if (tip.value.visible) {
+    tip.value.x = e.clientX
+    tip.value.y = e.clientY
+  }
+}
+
+function onLeave() {
+  tip.value.visible = false
+  tip.value.i = -1
+}
+
+function onClick(i) {
+  if (!props.clickable) return
+  const id = props.stationIds[i]
+  emit('bar-click', { index: i, stationId: id, label: props.labels[i], value: props.values[i] })
+}
 </script>
 
 <template>
   <div class="h-bar-chart" role="img" :aria-label="`Gráfico meteorológico, ${labels.length} estaciones`">
-    <div v-for="(label, i) in labels" :key="label" class="h-bar-row">
+    <div
+      v-for="(label, i) in labels"
+      :key="label"
+      class="h-bar-row"
+      :class="{ 'h-bar-row--click': clickable }"
+      @mouseenter="onEnter($event, i)"
+      @mousemove="onMove"
+      @mouseleave="onLeave"
+      @click="onClick(i)"
+    >
       <span class="h-bar-label" :title="label">{{ label }}</span>
       <div class="h-bar-track">
         <div
@@ -64,7 +104,15 @@ function barColor(v, i) {
       </div>
       <span class="h-bar-value">{{ values[i] }}{{ unit }}</span>
     </div>
-    <p v-if="kind === 'temp'" class="h-bar-hint">Escala relativa al rango del mapa (más cálido → tono cálido).</p>
+    <p v-if="kind === 'temp'" class="h-bar-hint">
+      Escala relativa al rango del mapa. {{ clickable ? 'Clic en barra → detalle estación.' : '' }}
+    </p>
+
+    <ChartTooltip :x="tip.x" :y="tip.y" :visible="tip.visible && tip.i >= 0">
+      <strong>{{ labels[tip.i] }}</strong>
+      {{ values[tip.i] }}{{ unit }}
+      <span v-if="hints[tip.i]"><br />{{ hints[tip.i] }}</span>
+    </ChartTooltip>
   </div>
 </template>
 
@@ -73,12 +121,23 @@ function barColor(v, i) {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  position: relative;
 }
 .h-bar-row {
   display: grid;
   grid-template-columns: minmax(5.5rem, 30%) 1fr 4rem;
   align-items: center;
   gap: 0.65rem;
+}
+.h-bar-row--click {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.15rem 0.25rem;
+  margin: -0.15rem -0.25rem;
+  transition: background 0.15s;
+}
+.h-bar-row--click:hover {
+  background: rgba(2, 132, 199, 0.06);
 }
 .h-bar-label {
   font-size: 0.82rem;

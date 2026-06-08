@@ -63,6 +63,12 @@ const routes = [
     meta: { title: 'Precipitación y heladas' },
   },
   {
+    path: '/meteo/avanzado',
+    name: 'meteo-avanzado',
+    component: () => import('@/views/MeteoAvanzadoView.vue'),
+    meta: { title: 'Meteorología avanzada' },
+  },
+  {
     path: '/favoritos',
     name: 'favoritos',
     component: () => import('@/views/FavoritosView.vue'),

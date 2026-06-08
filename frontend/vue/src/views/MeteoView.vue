@@ -9,6 +9,8 @@ import {
   MapPin,
   Sun,
   Star,
+  Cloud,
+  Eye,
 } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import { useFavoritesStore } from '@/stores/favorites'
@@ -19,10 +21,12 @@ import WeatherScene from '@/components/meteo/WeatherScene.vue'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
 import PronosticoHeladasPanel from '@/components/meteo/PronosticoHeladasPanel.vue'
 import { riesgoHelada } from '@/utils/agroInsights'
-import { fetchPronostico, fetchHistorico } from '@/api/metgoApi'
+import { fetchPronostico, fetchHistorico, fetchVientoHorario } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
-import { hoyChile, seriesHistoricoPorDia } from '@/utils/meteoDates'
+import { hoyChile, seriesHistoricoPorDia, diaDeFila } from '@/utils/meteoDates'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import ComboMeteoChart from '@/components/charts/ComboMeteoChart.vue'
+import WindRoseChart from '@/components/charts/WindRoseChart.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 
 const store = useMetgoStore()
@@ -33,6 +37,8 @@ const pronostico = ref([])
 const historico = ref([])
 const cargandoPron = ref(false)
 const cargandoHist = ref(false)
+const vientoHorario = ref(null)
+const cargandoViento = ref(false)
 
 const estacionInfo = computed(() =>
   store.estaciones.find((e) => e.id === store.estacionActiva)
@@ -50,31 +56,45 @@ const rangoTermico = computed(() => {
 })
 
 const tempUnit = computed(() => (prefs.tempUnit === 'F' ? '°F' : '°C'))
-const labelsPron = computed(() => pronostico.value.map((r) => r.fecha))
+const labelsPron = computed(() =>
+  pronostico.value.map((r) => diaDeFila(r) || String(r.fecha ?? '').slice(0, 10))
+)
 const tempsPronMax = computed(() => pronostico.value.map((r) => r.temperatura_max))
 const tempsPronMin = computed(() => pronostico.value.map((r) => r.temperatura_min))
-const labelsHist = computed(() => historicoFiltrado.value.map((r) => r.fecha))
+const precipPron = computed(() => pronostico.value.map((r) => r.precipitacion))
+const labelsHist = computed(() =>
+  historicoFiltrado.value.map((r) => diaDeFila(r) || String(r.fecha ?? '').slice(0, 10))
+)
 const tempsHistMax = computed(() => historicoFiltrado.value.map((r) => r.temperatura_max))
 const tempsHistMin = computed(() => historicoFiltrado.value.map((r) => r.temperatura_min))
 const lluviaHistSerie = computed(() => historicoFiltrado.value.map((r) => r.precipitacion))
+const nubosidadSerie = computed(() => pronostico.value.map((r) => r.cobertura_nubosa ?? 0))
+const vientoDirsPron = computed(() =>
+  Array.isArray(vientoHorario.value?.direcciones) && vientoHorario.value.direcciones.length
+    ? vientoHorario.value.direcciones
+    : pronostico.value.map((r) => r.direccion_viento).filter((v) => v != null)
+)
+const vientoSpeedsPron = computed(() =>
+  Array.isArray(vientoHorario.value?.velocidades) && vientoHorario.value.velocidades.length
+    ? vientoHorario.value.velocidades
+    : pronostico.value.filter((r) => r.direccion_viento != null).map((r) => r.viento)
+)
 
 async function cargar() {
   cargandoPron.value = true
   cargandoHist.value = true
-  try {
-    const [p, h] = await Promise.all([
-      fetchPronostico(store.estacionActiva, 7),
-      fetchHistorico(store.estacionActiva, 14),
-    ])
-    pronostico.value = p
-    historico.value = h
-  } catch {
-    pronostico.value = []
-    historico.value = []
-  } finally {
-    cargandoPron.value = false
-    cargandoHist.value = false
-  }
+  cargandoViento.value = true
+  const [pRes, hRes, vRes] = await Promise.allSettled([
+    fetchPronostico(store.estacionActiva, 7),
+    fetchHistorico(store.estacionActiva, 14),
+    fetchVientoHorario(store.estacionActiva, 7),
+  ])
+  pronostico.value = pRes.status === 'fulfilled' ? pRes.value : []
+  historico.value = hRes.status === 'fulfilled' ? hRes.value : []
+  vientoHorario.value = vRes.status === 'fulfilled' ? vRes.value : null
+  cargandoPron.value = false
+  cargandoHist.value = false
+  cargandoViento.value = false
 }
 
 onMounted(cargar)
@@ -147,6 +167,15 @@ watch(() => store.estacionActiva, cargar)
       <MetricCard v-if="d.presion" label="Presión" :value="d.presion" unit="hPa">
         <template #icon><Gauge /></template>
       </MetricCard>
+      <MetricCard v-if="d.cobertura_nubosa != null" label="Nubosidad" :value="d.cobertura_nubosa" unit="%">
+        <template #icon><Cloud /></template>
+      </MetricCard>
+      <MetricCard v-if="d.radiacion_solar != null" label="Radiación solar" :value="d.radiacion_solar" unit="W/m²">
+        <template #icon><Sun /></template>
+      </MetricCard>
+      <MetricCard v-if="d.visibilidad != null" label="Visibilidad" :value="d.visibilidad" unit="km">
+        <template #icon><Eye /></template>
+      </MetricCard>
     </div>
 
     <div class="insight-row">
@@ -156,8 +185,25 @@ watch(() => store.estacionActiva, cargar)
       <span v-if="d?.pop != null || d?.probabilidad_lluvia != null" class="insight-chip">
         PoP: {{ d.pop ?? d.probabilidad_lluvia }}%
       </span>
-      <router-link to="/meteo/precipitacion" class="insight-link">Análisis precipitación →</router-link>
+      <router-link to="/meteo/precipitacion" class="insight-link">Precipitación →</router-link>
+      <router-link to="/meteo/avanzado" class="insight-link">Meteo avanzada →</router-link>
     </div>
+
+    <SectionCard
+      title="Combo lluvia + temperatura · 7 días"
+      subtitle="Doble escala: barras (mm) y línea (T° máx)"
+    >
+      <template #icon><CloudRain /></template>
+      <p v-if="cargandoPron" class="skeleton">Cargando…</p>
+      <ComboMeteoChart
+        v-else-if="labelsPron.length"
+        :labels="labelsPron"
+        :temperaturas="tempsPronMax"
+        :precipitacion="precipPron"
+        :temp-unit="tempUnit"
+        :export-name="`combo_${store.estacionActiva}`"
+      />
+    </SectionCard>
 
     <SectionCard
       title="Banda térmica · pronóstico 7 días"
@@ -177,8 +223,26 @@ watch(() => store.estacionActiva, cargar)
         y-axis-title="Temperatura"
         color="#c45c26"
         fill-color="rgba(196, 92, 38, 0.12)"
+        :export-name="`banda_${store.estacionActiva}`"
       />
       <p v-else class="muted">Sin pronóstico.</p>
+    </SectionCard>
+
+    <SectionCard
+      v-if="nubosidadSerie.some((v) => v > 0)"
+      title="Nubosidad y radiación · pronóstico"
+      subtitle="Cobertura nubosa diaria (OpenMeteo)"
+    >
+      <template #icon><Cloud /></template>
+      <TimeSeriesChart
+        v-if="labelsPron.length && !cargandoPron"
+        :labels="labelsPron"
+        :values="nubosidadSerie"
+        unit=" %"
+        :height="180"
+        y-axis-title="Nubosidad"
+        color="#60a5fa"
+      />
     </SectionCard>
 
     <SectionCard
@@ -197,12 +261,25 @@ watch(() => store.estacionActiva, cargar)
         show-band
         :show-area="false"
         y-axis-title="T° máx / mín"
+        :export-name="`historico_${store.estacionActiva}`"
       />
       <p v-else class="muted">Sin histórico.</p>
     </SectionCard>
 
     <div class="layout-split">
       <PronosticoHeladasPanel />
+      <SectionCard
+        v-if="vientoDirsPron.length"
+        title="Rosa de vientos · pronóstico"
+        :subtitle="
+          Array.isArray(vientoHorario?.direcciones) && vientoHorario?.direcciones?.length
+            ? 'Serie horaria (OpenMeteo)'
+            : 'Dirección dominante 7 días'
+        "
+      >
+        <template #icon><Wind /></template>
+        <WindRoseChart :directions="vientoDirsPron" :speeds="vientoSpeedsPron" />
+      </SectionCard>
     </div>
 
     <SectionCard title="Precipitación histórica" subtitle="mm por día">
@@ -232,6 +309,8 @@ watch(() => store.estacionActiva, cargar)
                 <th>Humedad</th>
                 <th>Lluvia</th>
                 <th>Viento</th>
+                <th>Nubes</th>
+                <th>Visib.</th>
               </tr>
             </thead>
             <tbody>
@@ -242,7 +321,9 @@ watch(() => store.estacionActiva, cargar)
                 <td>{{ row.temperatura_min }}°</td>
                 <td>{{ row.humedad }}%</td>
                 <td>{{ row.precipitacion }} mm</td>
-                <td>{{ row.viento }} km/h</td>
+                <td>{{ row.viento }} m/s</td>
+                <td>{{ row.cobertura_nubosa ?? '—' }}%</td>
+                <td>{{ row.visibilidad ?? '—' }} km</td>
               </tr>
             </tbody>
           </table>
