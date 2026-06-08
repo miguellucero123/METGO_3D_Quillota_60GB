@@ -127,9 +127,11 @@ class OpenMeteoData:
             if response.status_code == 200:
                 data = response.json()
                 df = self._procesar_datos_openmeteo(data, estacion)
-                if df is not None:
+                if df is not None and not df.empty:
                     df['fuente_datos'] = 'openmeteo_pronostico'
-                return df
+                    return df
+                print('WARN - OpenMeteo 200 sin filas válidas; usando respaldo sintético')
+                return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')
             else:
                 print(f"ERROR - Error HTTP {response.status_code}")
                 return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')

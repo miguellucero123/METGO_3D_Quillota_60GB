@@ -233,16 +233,28 @@ def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
     return out
 
 
+def _registros_desde_df(df: pd.DataFrame, estacion_id: str) -> list[dict[str, Any]]:
+    registros: list[dict[str, Any]] = []
+    for _, row in df.sort_values("fecha").iterrows():
+        registros.append(_fila_a_resumen(row, estacion_id))
+    return registros
+
+
 def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | None:
     nombre = slug_a_nombre(estacion_id)
-    df = _df_sin_prints(nombre, "pronostico", min(dias, 16))
-    if df is None or df.empty:
-        return None
-    df = df.sort_values("fecha")
-    registros = []
-    for _, row in df.iterrows():
-        registros.append(_fila_a_resumen(row, estacion_id))
+    ventana = min(dias, 16)
+    df = _df_sin_prints(nombre, "pronostico", ventana)
+    registros: list[dict[str, Any]] = []
+    if df is not None and not df.empty:
+        registros = _registros_desde_df(df, estacion_id)
     out = _dedupe_pronostico_por_dia(registros, dias)
+    if not out:
+        om = OpenMeteoData()
+        df_syn = om._crear_datos_sinteticos(nombre, ventana, modo="pronostico")
+        if df_syn is not None and not df_syn.empty:
+            out = _dedupe_pronostico_por_dia(_registros_desde_df(df_syn, estacion_id), dias)
+            for r in out:
+                r["fuente"] = "respaldo_sintetico_pronostico"
     return out if out else None
 
 
