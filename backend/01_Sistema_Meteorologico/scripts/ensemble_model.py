@@ -14,7 +14,7 @@ class EnsembleMeteorologico:
         self.lat = lat
         self.lon = lon
         # Utilizamos 5 modelos globales de altísima calidad
-        self.modelos = ['ecmwf_ifs04', 'gfs_seamless', 'icon_seamless', 'gem_seamless', 'meteofrance_seamless']
+        self.modelos = ['ecmwf_ifs04', 'gfs_seamless', 'icon_seamless']
         self.base_url = "https://api.open-meteo.com/v1/forecast"
 
     def obtener_ensemble_diario(self, dias=7):
