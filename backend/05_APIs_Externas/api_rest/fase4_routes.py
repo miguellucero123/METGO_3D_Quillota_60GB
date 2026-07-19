@@ -129,6 +129,40 @@ def register_fase4_routes(app: Flask) -> None:
     def reporte_detalle(nombre: str):
         return jsonify(reportes_bridge.leer_reporte(nombre))
 
+    @app.get("/api/reportes/tecnico/generar")
+    def generar_reporte_tecnico():
+        import sys
+        import os
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        scripts_dir = os.path.join(backend_dir, "01_Sistema_Meteorologico", "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.append(scripts_dir)
+            
+        try:
+            from ensemble_model import EnsembleMeteorologico
+            from generador_informes import GeneradorInformesTecnicos
+            
+            # Obtener datos reales
+            motor = EnsembleMeteorologico()
+            datos = motor.obtener_ensemble_diario(dias=1)
+            
+            mediana_lluvia = 0.0
+            if datos and len(datos) > 0:
+                mediana_lluvia = datos[0]['precipitacion']['mediana']
+                
+            # Observación mockeada por ahora (luego se conectará a BD)
+            observacion_hoy = mediana_lluvia + 2.3 
+            
+            generador = GeneradorInformesTecnicos()
+            informe_txt = generador.generar_informe_precipitacion(
+                observacion=observacion_hoy, 
+                pronostico_mediana=mediana_lluvia, 
+                modelos_count=5
+            )
+            return jsonify({"informe": informe_txt})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     @app.get("/api/notificaciones/config")
     @auth_required
     def notif_config_get():
@@ -198,3 +232,24 @@ def register_fase4_routes(app: Flask) -> None:
             "cobertura_pct": round(100 * len(migrados) / len(st)) if st else 100,
             "modulos": st,
         })
+
+    @app.get("/api/ensemble")
+    def get_ensemble():
+        """Retorna el consenso de 5 modelos climáticos globales (Ensemble)"""
+        import sys
+        import os
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        scripts_dir = os.path.join(backend_dir, "01_Sistema_Meteorologico", "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.append(scripts_dir)
+            
+        try:
+            from ensemble_model import EnsembleMeteorologico
+            motor = EnsembleMeteorologico()
+            datos = motor.obtener_ensemble_diario(dias=7)
+            if datos is None:
+                return jsonify({"error": "Error extrayendo datos del ensemble"}), 500
+            return jsonify(datos)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+

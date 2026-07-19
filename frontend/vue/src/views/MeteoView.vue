@@ -24,9 +24,9 @@ import { riesgoHelada } from '@/utils/agroInsights'
 import { fetchPronostico, fetchHistorico, fetchVientoHorario } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
 import { hoyChile, seriesHistoricoPorDia, diaDeFila } from '@/utils/meteoDates'
-import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import ComboMeteoChart from '@/components/charts/ComboMeteoChart.vue'
 import WindRoseChart from '@/components/charts/WindRoseChart.vue'
+import EnsemblePredictivoPanel from '@/components/meteo/EnsemblePredictivoPanel.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 
 const store = useMetgoStore()
@@ -190,8 +190,16 @@ watch(() => store.estacionActiva, cargar)
     </div>
 
     <SectionCard
+      title="Motor Predictivo Multi-Modelo (Ensemble)"
+      subtitle="Consenso de ECMWF, GFS, ICON, GEM y MeteoFrance (Medianas y Probabilidades)"
+    >
+      <template #icon><CloudRain /></template>
+      <EnsemblePredictivoPanel />
+    </SectionCard>
+
+    <SectionCard
       title="Combo lluvia + temperatura · 7 días"
-      subtitle="Doble escala: barras (mm) y línea (T° máx)"
+      subtitle="Doble escala: barras (mm) y línea (T° máx) (Modelo Simple)"
     >
       <template #icon><CloudRain /></template>
       <p v-if="cargandoPron" class="skeleton">Cargando…</p>

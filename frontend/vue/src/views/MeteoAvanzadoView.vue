@@ -4,7 +4,7 @@ import { useMetgoStore } from '@/stores/metgo'
 import PronosticoHeladaAvanzado from '@/components/charts/PronosticoHeladaAvanzado.vue'
 import AnalizadorNubosidad from '@/components/charts/AnalizadorNubosidad.vue'
 import PredictorNiebla from '@/components/charts/PredictorNiebla.vue'
-import MapasMeteoGlobales from '@/components/maps/MapasMeteoGlobales.vue'
+import MapaHeladas3D from '@/components/maps/MapaHeladas3D.vue'
 import VariablesCompletasPanel from '@/components/meteo/VariablesCompletasPanel.vue'
 import ComparacionModelosChart from '@/components/charts/ComparacionModelosChart.vue'
 
@@ -40,7 +40,13 @@ const tab = ref('helada')
     <section v-show="tab === 'nubosidad'"><AnalizadorNubosidad /></section>
     <section v-show="tab === 'niebla'"><PredictorNiebla /></section>
     <section v-show="tab === 'variables'"><VariablesCompletasPanel /></section>
-    <section v-show="tab === 'mapas'"><MapasMeteoGlobales /></section>
+    <section v-show="tab === 'mapas'">
+      <div style="margin-bottom: 1rem;">
+        <h3 style="color: var(--color-primary); font-size: 1.1rem; margin-bottom: 0.5rem;">Simulación Termodinámica en 3D (Valle de Aconcagua)</h3>
+        <p style="color: var(--color-muted); font-size: 0.9rem;">Interactúa con el mapa usando el botón derecho o Shift+Click para rotar e inclinar el terreno en tres dimensiones.</p>
+      </div>
+      <MapaHeladas3D />
+    </section>
     <section v-show="tab === 'modelos'"><ComparacionModelosChart /></section>
   </div>
 </template>

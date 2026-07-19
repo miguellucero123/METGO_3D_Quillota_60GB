@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.3.7",
+    "@deck.gl/core": "^9.3.7",
+    "@deck.gl/geo-layers": "^9.3.7",
     "axios": "^1.7.9",
     "leaflet": "^1.9.4",
     "lucide-vue-next": "^0.469.0",

@@ -499,6 +499,74 @@ paths:
           description: Detalle por estación y estadísticas store
         "401":
           description: Sin token
+  /api/cron/sync:
+    get:
+      tags:
+        - Automatización ETL
+      summary: Sincroniza datos meteorológicos (Requiere token)
+      security: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sincronización exitosa
+        '401':
+          description: No autorizado
+  /api/ensemble:
+    get:
+      tags:
+        - Modelos Predictivos
+      summary: Retorna el consenso de 5 modelos climáticos globales (Ensemble)
+      responses:
+        '200':
+          description: Datos del ensemble procesados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    fecha:
+                      type: string
+                      format: date
+                    precipitacion:
+                      type: object
+                      properties:
+                        mediana:
+                          type: number
+                        best_match:
+                          type: number
+                        probabilidad:
+                          type: number
+                    temperatura:
+                      type: object
+                      properties:
+                        min_mediana:
+                          type: number
+                        alerta_helada:
+                          type: boolean
+                        tipo_helada:
+                          type: string
+  /api/reportes/tecnico/generar:
+    get:
+      tags:
+        - Reportes
+      summary: Genera un informe técnico formal automatizado (Text-to-Data)
+      responses:
+        '200':
+          description: Informe generado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  informe:
+                    type: string
   /api/catalogo:
     get:
       tags: [sistema]
