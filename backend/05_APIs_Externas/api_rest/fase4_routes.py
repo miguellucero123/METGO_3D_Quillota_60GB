@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import os
 from flask import Flask, g, jsonify, request
 
 from api_rest.auth_routes import auth_required
@@ -92,6 +93,18 @@ def register_fase4_routes(app: Flask) -> None:
                 dias=int(dias), incluir_csv=bool(incluir_csv), origen="rest"
             )
         )
+
+    @app.get("/api/cron/sync")
+    def cron_sync():
+        secret = request.args.get("token")
+        # El cron secret es obligatorio para que nadie sature la API externamente
+        if not secret or secret != os.getenv("CRON_SECRET"):
+            return jsonify({"error": "No autorizado"}), 401
+        
+        # Por defecto bajamos 3 días de OpenMeteo.
+        # No se procesa CSV porque es un trabajo en batch ligero de OpenMeteo
+        res = etl_sync.sincronizar_estaciones(dias=3, incluir_csv=False, origen="cron")
+        return jsonify(res)
 
     @app.get("/api/datos/etl/status")
     def datos_etl_status():
