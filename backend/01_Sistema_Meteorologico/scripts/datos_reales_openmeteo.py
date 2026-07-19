@@ -66,6 +66,7 @@ class OpenMeteoData:
                     'cloud_cover_mean',
                     'shortwave_radiation_sum',
                     'wind_direction_10m_dominant',
+                    'et0_fao_evapotranspiration',
                 ],
                 'hourly': ['visibility', 'cloud_cover'],
                 'timezone': 'America/Santiago',
@@ -87,7 +88,7 @@ class OpenMeteoData:
             print(f"ERROR - Error conectando con OpenMeteo: {e}")
             return self._crear_datos_sinteticos(estacion, dias, modo='historicos')
     
-    def obtener_datos_pronostico(self, estacion='Quillota', dias=7):
+    def obtener_datos_pronostico(self, estacion='Quillota', dias=16):
         """Obtiene datos de pronóstico de OpenMeteo"""
         print(f" Obteniendo pronóstico para {estacion} ({dias} días)")
         
@@ -115,6 +116,7 @@ class OpenMeteoData:
                     'cloud_cover_mean',
                     'shortwave_radiation_sum',
                     'wind_direction_10m_dominant',
+                    'et0_fao_evapotranspiration',
                 ],
                 'hourly': ['visibility', 'cloud_cover'],
                 'timezone': 'America/Santiago',
@@ -426,12 +428,25 @@ class OpenMeteoData:
                         registro['radiacion_solar_sum'] = daily_data.get('shortwave_radiation_sum', [None]*len(times))[i]
                     if 'wind_direction_10m_dominant' in daily_data:
                         registro['direccion_viento'] = daily_data.get('wind_direction_10m_dominant', [None]*len(times))[i]
+                    if 'et0_fao_evapotranspiration' in daily_data:
+                        registro['evapotranspiracion'] = daily_data.get('et0_fao_evapotranspiration', [None]*len(times))[i]
+                        
+                    # Lógica de Heladas y Niebla
+                    tmin = registro['temperatura_min']
+                    registro['helada'] = True if (tmin is not None and tmin <= 0) else False
+                    registro['niebla'] = False
+                    
                     vkey = pd.to_datetime(fecha_str).normalize()
                     if vkey in vis_stats:
-                        registro['visibilidad'] = round(vis_stats[vkey]['min'], 2)
+                        vis = round(vis_stats[vkey]['min'], 2)
+                        registro['visibilidad'] = vis
+                        if vis < 1.0: # menos de 1 km
+                            registro['niebla'] = True
                         mad = vis_stats[vkey].get('madrugada')
                         if mad is not None:
                             registro['visibilidad_madrugada'] = round(mad, 2)
+                            if mad < 1.0:
+                                registro['niebla'] = True
 
                     # Solo agregar si tiene al menos temperatura
                     if registro['temperatura_max'] is not None:
@@ -450,6 +465,7 @@ class OpenMeteoData:
                     'humedad_relativa', 'precipitacion', 'velocidad_viento',
                     'presion_atmosferica', 'cobertura_nubosa', 'radiacion_solar_sum',
                     'direccion_viento', 'probabilidad_lluvia', 'visibilidad', 'visibilidad_madrugada',
+                    'evapotranspiracion'
                 ]
                 
                 for col in cols_numericas:
