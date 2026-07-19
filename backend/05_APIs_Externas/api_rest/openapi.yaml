@@ -151,9 +151,16 @@ paths:
         - name: dias
           in: query
           schema: { type: integer, default: 7, maximum: 10 }
+        - name: intervalo
+          in: query
+          description: dia = acumulado diario; 3h = ventanas de 3 horas OpenMeteo hourly
+          schema:
+            type: string
+            enum: [dia, 3h]
+            default: 3h
       responses:
         "200":
-          description: PoP, intensidad, percentiles p10/p90
+          description: PoP, intensidad, percentiles p10/p90 (diario o cada 3 h)
         "404":
           description: Sin pronóstico
   /api/meteo/{estacion_id}/heladas:
@@ -325,6 +332,24 @@ paths:
       responses:
         "200":
           description: Pronóstico calibrado
+  /api/precip/{estacion_id}/pronostico-3h:
+    get:
+      tags: [meteo]
+      summary: Pronóstico precipitación en ventanas de 3 h (calibrado)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, maximum: 10 }
+      responses:
+        "200":
+          description: Serie 3h con PoP, mm ventana e intensidad mm/h
+        "404":
+          description: Sin pronóstico
   /api/precip/{estacion_id}/alertas:
     get:
       tags: [alertas]

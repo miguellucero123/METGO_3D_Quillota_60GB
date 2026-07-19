@@ -104,9 +104,9 @@ export async function fetchResumenMeteo(estacionId, tipo = 'pronostico') {
   return data
 }
 
-export async function fetchPrecipitacionCalibrada(estacionId, dias = 7) {
+export async function fetchPrecipitacionCalibrada(estacionId, dias = 7, intervalo = '3h') {
   const { data } = await api.get(`/meteo/${estacionId}/precipitacion-calibrada`, {
-    params: { dias },
+    params: { dias, intervalo },
   })
   return data
 }

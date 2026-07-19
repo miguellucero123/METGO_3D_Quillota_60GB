@@ -17,9 +17,22 @@ def register_precipitacion_routes(app) -> None:
     @auth_required
     def meteo_precipitacion_calibrada(estacion_id: str):
         dias = request.args.get("dias", 7, type=int)
-        data = services.pronostico_precipitacion_calibrado(estacion_id, dias)
+        intervalo = request.args.get("intervalo", "3h")
+        if intervalo == "3h":
+            data = services.pronostico_precipitacion_3h_calibrado(estacion_id, dias)
+        else:
+            data = services.pronostico_precipitacion_calibrado(estacion_id, dias)
         if data is None:
             return jsonify({"error": "Sin pronostico de precipitacion"}), 404
+        return jsonify(data)
+
+    @app.get("/api/precip/<estacion_id>/pronostico-3h")
+    @auth_required
+    def precip_pronostico_3h(estacion_id: str):
+        dias = request.args.get("dias", 7, type=int)
+        data = services.pronostico_precipitacion_3h_calibrado(estacion_id, dias)
+        if data is None:
+            return jsonify({"error": "Sin pronostico 3h"}), 404
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/heladas")

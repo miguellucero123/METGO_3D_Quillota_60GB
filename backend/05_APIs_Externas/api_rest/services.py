@@ -572,6 +572,30 @@ def pronostico_precipitacion_calibrado(estacion_id: str, dias: int = 7) -> dict[
     )
 
 
+def precipitacion_horaria_3h_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any]:
+    nombre = slug_a_nombre(estacion_id)
+    om = OpenMeteoData()
+    return om.obtener_precipitacion_horaria_3h(nombre, min(dias, 16))
+
+
+def pronostico_precipitacion_3h_calibrado(
+    estacion_id: str, dias: int = 7
+) -> dict[str, Any] | None:
+    from api_rest.precipitacion_core import pronostico_precipitacion_3h_calibrado as _cal3
+
+    def _fetch(eid: str, d: int) -> dict[str, Any]:
+        return precipitacion_horaria_3h_meteo(eid, d)
+
+    return _cal3(
+        estacion_id,
+        min(dias, 10),
+        _fetch,
+        pronostico_meteo,
+        historico_meteo,
+        slug_a_nombre,
+    )
+
+
 def pronostico_precipitacion_bruto(estacion_id: str, dias: int = 7) -> dict[str, Any] | None:
     from api_rest.precipitacion_core import pronostico_precipitacion_bruto as _bruto
 
@@ -711,23 +735,32 @@ def cronograma_riego(estacion_id: str, cultivo_slug: str) -> dict[str, Any]:
     }
 
 
+_ULTIMA_VERIFICACION = 0.0
+_ULTIMO_ESTADO_OM = True
+_ULTIMA_LATENCIA = 0
+
 def health_check() -> dict[str, Any]:
+    global _ULTIMA_VERIFICACION, _ULTIMO_ESTADO_OM, _ULTIMA_LATENCIA
     t0 = time.perf_counter()
-    om = OpenMeteoData()
-    with contextlib.redirect_stdout(io.StringIO()):
-        ok = om.verificar_conexion()
-    latencia_ms = int((time.perf_counter() - t0) * 1000)
+    ahora = time.time()
+    
+    if ahora - _ULTIMA_VERIFICACION > 60:
+        om = OpenMeteoData()
+        with contextlib.redirect_stdout(io.StringIO()):
+            _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=2)
+        _ULTIMA_LATENCIA = int((time.perf_counter() - t0) * 1000)
+        _ULTIMA_VERIFICACION = ahora
+
     stats = {"cache_hits": 0, "cache_misses": 0}
     try:
         from cache_openmeteo import cache_stats
-
         stats = cache_stats()
     except ImportError:
         pass
     return {
-        "status": "ok" if ok else "degraded",
-        "openmeteo": ok,
-        "latencia_openmeteo_ms": latencia_ms,
+        "status": "ok" if _ULTIMO_ESTADO_OM else "degraded",
+        "openmeteo": _ULTIMO_ESTADO_OM,
+        "latencia_openmeteo_ms": _ULTIMA_LATENCIA,
         "timestamp": datetime.now().isoformat(),
         **stats,
     }

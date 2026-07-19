@@ -69,6 +69,32 @@ MOCK_CAL = {
     "alerta_lluvia_fuerte": True,
 }
 
+MOCK_3H_RAW = {
+    "fechas": ["2026-06-10T00:00", "2026-06-10T03:00", "2026-06-10T06:00"],
+    "precipitacion": [0.5, 2.0, 0.0],
+    "pop": [30, 70, 10],
+    "fuente_datos": "openmeteo_hourly_3h",
+}
+
+MOCK_3H_CAL = {
+    "estacion_id": "quillota",
+    "resolucion": "3h",
+    "fechas": MOCK_3H_RAW["fechas"],
+    "precipitacion_calibrada": [0.46, 1.84, 0.0],
+    "precipitacion_p10": [0.35, 1.38, 0.0],
+    "precipitacion_p90": [0.6, 2.39, 0.0],
+    "pop": [30, 70, 10],
+    "intensidad": [0.17, 0.67, 0.0],
+    "datos": {
+        "precipitacion": [0.5, 2.0, 0.0],
+        "pop": [30, 70, 10],
+        "intensidad": [0.17, 0.67, 0.0],
+    },
+    "metadatos": {"calibrado": True, "tipo_dato": "pronostico_calibrado_3h"},
+    "alerta_lluvia_fuerte": False,
+    "factor_bias": 0.92,
+}
+
 
 def test_pronostico_precipitacion_sin_fechas_futuras_en_historico():
     from api_rest import services
@@ -120,14 +146,53 @@ def test_pronostico_heladas_estructura():
     assert any(d["severidad"] in ("critico", "alto", "moderado", "bajo") for d in data["dias"])
 
 
+def test_calibracion_3h_estructura():
+    from api_rest.precipitacion_core import pronostico_precipitacion_3h_calibrado
+
+    with patch("api_rest.services.pronostico_meteo", return_value=MOCK_PRON):
+        with patch("api_rest.services.historico_meteo", return_value=[]):
+            out = pronostico_precipitacion_3h_calibrado(
+                "quillota",
+                2,
+                lambda e, d: MOCK_3H_RAW,
+                lambda e, d: MOCK_PRON,
+                lambda e, d: [],
+                lambda e: "Quillota",
+            )
+    assert out is not None
+    assert out["resolucion"] == "3h"
+    assert len(out["precipitacion_calibrada"]) == 3
+    assert out["metadatos"]["tipo_dato"] == "pronostico_calibrado_3h"
+
+
 def test_endpoint_precipitacion_calibrada(client):
     tok = _token(client)
     h = {"Authorization": f"Bearer {tok}"}
     with patch("api_rest.services.pronostico_precipitacion_calibrado", return_value=MOCK_CAL):
-        r = client.get("/api/meteo/quillota/precipitacion-calibrada?dias=2", headers=h)
+        r = client.get(
+            "/api/meteo/quillota/precipitacion-calibrada?dias=2&intervalo=dia",
+            headers=h,
+        )
     assert r.status_code == 200
     body = r.get_json()
     assert body["precipitacion_calibrada"][0] == 25.0
+
+
+def test_endpoint_precipitacion_3h(client):
+    tok = _token(client)
+    h = {"Authorization": f"Bearer {tok}"}
+    with patch(
+        "api_rest.services.pronostico_precipitacion_3h_calibrado",
+        return_value=MOCK_3H_CAL,
+    ):
+        r = client.get(
+            "/api/meteo/quillota/precipitacion-calibrada?dias=7&intervalo=3h",
+            headers=h,
+        )
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["resolucion"] == "3h"
+    assert len(body["fechas"]) == 3
 
 
 def test_endpoint_alertas_precipitacion(client):

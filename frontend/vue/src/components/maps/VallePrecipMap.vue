@@ -20,7 +20,7 @@ async function cargar() {
       let lluvia = 0
       let alerta = 'verde'
       try {
-        const cal = await fetchPrecipitacionCalibrada(e.id, 1)
+        const cal = await fetchPrecipitacionCalibrada(e.id, 1, 'dia')
         lluvia = cal?.precipitacion_calibrada?.[0] ?? cal?.datos?.precipitacion?.[0] ?? 0
         const al = await fetchAlertasPrecipitacion(e.id)
         const roja = al?.alertas_activas?.find((a) => a.nivel_severidad === 'rojo')

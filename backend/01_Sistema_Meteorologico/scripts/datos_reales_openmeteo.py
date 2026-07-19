@@ -226,6 +226,141 @@ class OpenMeteoData:
                 "unidad": "m/s",
                 "fuente_datos": "openmeteo_pronostico_hourly",
             }
+
+    def obtener_precipitacion_horaria_3h(self, estacion='Quillota', dias=7):
+        """Pronóstico de precipitación en ventanas de 3 h (suma mm + PoP máx)."""
+        vacio = {
+            "estacion": estacion,
+            "resolucion": "3h",
+            "fechas": [],
+            "precipitacion": [],
+            "pop": [],
+            "unidad": "mm",
+            "fuente_datos": "openmeteo_hourly_3h",
+        }
+        if estacion not in self.estaciones:
+            return vacio
+
+        coords = self.estaciones[estacion]
+        dias = max(1, min(int(dias), 16))
+
+        try:
+            url = f"{self.api_base}/forecast"
+            params = {
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "hourly": ["precipitation", "precipitation_probability"],
+                "timezone": "America/Santiago",
+                "forecast_days": dias,
+            }
+            response = requests.get(url, params=params, timeout=self.timeout)
+            if response.status_code != 200:
+                return self._precip_3h_desde_diario(estacion, dias)
+
+            data = response.json()
+            hourly = data.get("hourly") or {}
+            times = hourly.get("time") or []
+            prec = hourly.get("precipitation") or []
+            pops = hourly.get("precipitation_probability") or []
+            if not times:
+                return self._precip_3h_desde_diario(estacion, dias)
+
+            hoy = datetime.now(TZ_CHILE).replace(minute=0, second=0, microsecond=0)
+            fechas_out: list[str] = []
+            precip_out: list[float] = []
+            pop_out: list[float] = []
+
+            i = 0
+            n = len(times)
+            while i < n:
+                chunk_times = times[i : i + 3]
+                if len(chunk_times) < 3 and i > 0:
+                    break
+                ts0 = pd.to_datetime(chunk_times[0])
+                if ts0.tzinfo is None:
+                    ts0 = ts0.tz_localize("America/Santiago")
+                else:
+                    ts0 = ts0.tz_convert("America/Santiago")
+                if ts0 < hoy - timedelta(hours=3):
+                    i += 3
+                    continue
+                limite = hoy + timedelta(days=dias)
+                if ts0 >= limite:
+                    break
+                mm = 0.0
+                pop_max = 0.0
+                for j in range(3):
+                    idx = i + j
+                    if idx >= n:
+                        break
+                    pval = prec[idx] if idx < len(prec) else 0
+                    popv = pops[idx] if idx < len(pops) else 0
+                    mm += float(pval or 0)
+                    pop_max = max(pop_max, float(popv or 0))
+                fechas_out.append(ts0.strftime("%Y-%m-%dT%H:%M"))
+                precip_out.append(round(mm, 2))
+                pop_out.append(round(pop_max, 0))
+                i += 3
+
+            if not fechas_out:
+                return self._precip_3h_desde_diario(estacion, dias)
+
+            return {
+                "estacion": estacion,
+                "resolucion": "3h",
+                "fechas": fechas_out,
+                "precipitacion": precip_out,
+                "pop": pop_out,
+                "unidad": "mm",
+                "fuente_datos": "openmeteo_hourly_3h",
+            }
+        except Exception:
+            return self._precip_3h_desde_diario(estacion, dias)
+
+    def _precip_3h_desde_diario(self, estacion, dias):
+        """Respaldo determinista: reparte mm diarios del pronóstico en 8 bloques de 3 h."""
+        df = self.obtener_datos_pronostico(estacion, dias)
+        vacio = {
+            "estacion": estacion,
+            "resolucion": "3h",
+            "fechas": [],
+            "precipitacion": [],
+            "pop": [],
+            "unidad": "mm",
+            "fuente_datos": "pronostico_diario_repartido_3h",
+        }
+        if df is None or df.empty:
+            return vacio
+        hoy = datetime.now(TZ_CHILE).date()
+        fechas_out: list[str] = []
+        precip_out: list[float] = []
+        pop_out: list[float] = []
+        for _, row in df.sort_values("fecha").iterrows():
+            dia = row["fecha"]
+            if hasattr(dia, "date"):
+                d = dia.date() if hasattr(dia, "tzinfo") and dia.tzinfo else pd.Timestamp(dia).date()
+            else:
+                d = pd.to_datetime(dia).date()
+            if d < hoy:
+                continue
+            if d >= hoy + timedelta(days=dias):
+                break
+            mm_dia = float(row.get("precipitacion") or 0)
+            pop_d = float(row.get("probabilidad_lluvia") or row.get("pop") or 0)
+            por_bloque = round(mm_dia / 8.0, 2) if mm_dia else 0.0
+            for h in range(0, 24, 3):
+                fechas_out.append(f"{d.isoformat()}T{h:02d}:00")
+                precip_out.append(por_bloque)
+                pop_out.append(round(pop_d, 0))
+        return {
+            "estacion": estacion,
+            "resolucion": "3h",
+            "fechas": fechas_out,
+            "precipitacion": precip_out,
+            "pop": pop_out,
+            "unidad": "mm",
+            "fuente_datos": "pronostico_diario_repartido_3h",
+        }
     
     def _visibilidad_diaria_desde_hourly(self, data):
         """Agrega visibilidad mínima diaria (km) y mínima 3–6 AM desde hourly OpenMeteo."""
@@ -444,7 +579,7 @@ class OpenMeteoData:
         
         return parametros.get(estacion, parametros['Quillota'])
     
-    def verificar_conexion(self):
+    def verificar_conexion(self, timeout_sec=10):
         """Verifica la conectividad con OpenMeteo"""
         print(" Verificando conectividad con OpenMeteo...")
         
@@ -457,7 +592,7 @@ class OpenMeteoData:
                 'forecast_days': 1
             }
             
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, timeout=timeout_sec)
             
             if response.status_code == 200:
                 print("OK - Conexión con OpenMeteo exitosa")

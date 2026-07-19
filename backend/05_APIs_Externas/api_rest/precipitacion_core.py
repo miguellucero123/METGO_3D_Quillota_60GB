@@ -50,6 +50,13 @@ def intensidad_mm_h(precip_dia: float) -> float:
     return round(precip_dia / 6.0, 2)
 
 
+def intensidad_mm_h_ventana(precip_3h: float) -> float:
+    """Intensidad media en ventana de 3 h."""
+    if precip_3h <= 0:
+        return 0.0
+    return round(precip_3h / 3.0, 2)
+
+
 def severidad_precip(mm: float) -> str:
     if mm > 40:
         return "morado"
@@ -129,6 +136,85 @@ def pronostico_precipitacion_bruto(
             "fuente": "openmeteo",
             "modelos": ["gfs"],
             "fecha_solicitud": datetime.now(TZ).isoformat(),
+        },
+    }
+
+
+def pronostico_precipitacion_3h_bruto(
+    estacion_id: str,
+    dias: int,
+    precip_3h_fn,
+    slug_a_nombre_fn,
+) -> dict[str, Any] | None:
+    raw = precip_3h_fn(estacion_id, dias)
+    if not raw or not raw.get("fechas"):
+        return None
+    precip = [float(p) for p in raw.get("precipitacion") or []]
+    pop = [float(p) for p in raw.get("pop") or []]
+    intensidad = [intensidad_mm_h_ventana(p) for p in precip]
+    return {
+        "estacion_id": estacion_id,
+        "estacion_nombre": slug_a_nombre_fn(estacion_id),
+        "resolucion": "3h",
+        "fechas": raw["fechas"],
+        "datos": {
+            "precipitacion": [round(p, 2) for p in precip],
+            "pop": [round(p, 0) for p in pop],
+            "intensidad": intensidad,
+            "intensidad_clase": [clasificar_intensidad(p) for p in precip],
+        },
+        "metadatos": {
+            "calibrado": False,
+            "fuente": raw.get("fuente_datos", "openmeteo_hourly_3h"),
+            "modelos": ["gfs"],
+            "intervalo_horas": 3,
+            "fecha_solicitud": datetime.now(TZ).isoformat(),
+        },
+    }
+
+
+def pronostico_precipitacion_3h_calibrado(
+    estacion_id: str,
+    dias: int,
+    precip_3h_fn,
+    pronostico_diario_fn,
+    historico_fn,
+    slug_a_nombre_fn,
+) -> dict[str, Any] | None:
+    bruto = pronostico_precipitacion_3h_bruto(
+        estacion_id, dias, precip_3h_fn, slug_a_nombre_fn
+    )
+    if not bruto:
+        return None
+    bias = _calcular_bias(estacion_id, pronostico_diario_fn, historico_fn)
+    precip_raw = bruto["datos"]["precipitacion"]
+    calibrada = [round(max(0.0, p * bias), 2) for p in precip_raw]
+    p10 = [round(max(0.0, c * 0.75), 2) for c in calibrada]
+    p90 = [round(c * 1.3, 2) for c in calibrada]
+    alerta_lluvia_fuerte = any(p >= 12 for p in calibrada[:8])
+    return {
+        **bruto,
+        "precipitacion_calibrada": calibrada,
+        "precipitacion_p10": p10,
+        "precipitacion_p50": calibrada,
+        "precipitacion_p90": p90,
+        "pop": bruto["datos"]["pop"],
+        "intensidad": bruto["datos"]["intensidad"],
+        "incertidumbre": {
+            "desvio_estandar": [
+                round((hi - lo) / 3.92, 2) for lo, hi in zip(p10, p90)
+            ],
+            "intervalo_confianza_90": [
+                {"bajo": lo, "alto": hi} for lo, hi in zip(p10, p90)
+            ],
+        },
+        "metodo_calibracion": "bias_historico_local",
+        "factor_bias": round(bias, 3),
+        "alerta_lluvia_fuerte": alerta_lluvia_fuerte,
+        "metadatos": {
+            **bruto["metadatos"],
+            "calibrado": True,
+            "tipo_dato": "pronostico_calibrado_3h",
         },
     }
 

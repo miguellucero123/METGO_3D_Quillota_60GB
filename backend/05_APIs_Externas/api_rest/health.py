@@ -13,10 +13,17 @@ from typing import Any
 _APP_START = time.time()
 
 
+_CACHED_GIT_SHA = None
+
 def _git_sha() -> str:
+    global _CACHED_GIT_SHA
+    if _CACHED_GIT_SHA is not None:
+        return _CACHED_GIT_SHA
+        
     sha = os.getenv("METGO_GIT_SHA", "").strip()
     if sha:
-        return sha[:7]
+        _CACHED_GIT_SHA = sha[:7]
+        return _CACHED_GIT_SHA
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
@@ -26,10 +33,12 @@ def _git_sha() -> str:
             check=False,
         )
         if out.returncode == 0:
-            return out.stdout.strip()[:7]
+            _CACHED_GIT_SHA = out.stdout.strip()[:7]
+            return _CACHED_GIT_SHA
     except Exception:
         pass
-    return "dev"
+    _CACHED_GIT_SHA = "dev"
+    return _CACHED_GIT_SHA
 
 
 def build_health_payload(services_health_fn) -> dict[str, Any]:

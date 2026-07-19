@@ -42,6 +42,19 @@ def _init_db(conn: sqlite3.Connection) -> None:
 
 
 def guardar_registros(estacion_id: str, filas: list[dict[str, Any]], fuente: str = "openmeteo") -> int:
+    import os
+    if os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_KEY"):
+        try:
+            import sys
+            import importlib
+            sys.path.append(str(_db_path().parent.parent.parent.parent)) # add backend to path if not there
+            meteo_repository = importlib.import_module("08_Gestion_Datos.supabase.meteo_repository")
+            client_module = importlib.import_module("08_Gestion_Datos.supabase.client")
+            if client_module.get_supabase_client():
+                return meteo_repository.guardar_registros(estacion_id, filas, fuente)
+        except ImportError as e:
+            pass
+            
     if not filas:
         return 0
     path = _db_path()
@@ -81,6 +94,17 @@ def guardar_registros(estacion_id: str, filas: list[dict[str, Any]], fuente: str
 
 
 def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
+    import os
+    if os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_KEY"):
+        try:
+            import importlib
+            meteo_repository = importlib.import_module("08_Gestion_Datos.supabase.meteo_repository")
+            client_module = importlib.import_module("08_Gestion_Datos.supabase.client")
+            if client_module.get_supabase_client():
+                return meteo_repository.leer_registros(estacion_id, dias)
+        except ImportError:
+            pass
+            
     path = _db_path()
     if not path.is_file():
         return []
@@ -114,6 +138,17 @@ def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
 
 
 def estadisticas_store() -> dict[str, Any]:
+    import os
+    if os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_KEY"):
+        try:
+            import importlib
+            meteo_repository = importlib.import_module("08_Gestion_Datos.supabase.meteo_repository")
+            client_module = importlib.import_module("08_Gestion_Datos.supabase.client")
+            if client_module.get_supabase_client():
+                return meteo_repository.estadisticas_store()
+        except ImportError:
+            pass
+            
     path = _db_path()
     if not path.is_file():
         return {"registros": 0, "estaciones": 0, "db": str(path)}
