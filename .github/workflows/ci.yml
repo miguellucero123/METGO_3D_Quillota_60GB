@@ -55,5 +55,5 @@ jobs:
       - name: Build Vue
         working-directory: frontend/vue
         run: |
-          npm ci
+          npm install
           npm run build
