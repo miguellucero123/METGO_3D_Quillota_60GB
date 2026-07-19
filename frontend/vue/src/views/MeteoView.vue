@@ -27,6 +27,7 @@ import { hoyChile, seriesHistoricoPorDia, diaDeFila } from '@/utils/meteoDates'
 import ComboMeteoChart from '@/components/charts/ComboMeteoChart.vue'
 import WindRoseChart from '@/components/charts/WindRoseChart.vue'
 import EnsemblePredictivoPanel from '@/components/meteo/EnsemblePredictivoPanel.vue'
+import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import { usePreferencesStore } from '@/stores/preferences'
 
 const store = useMetgoStore()
