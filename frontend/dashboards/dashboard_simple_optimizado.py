@@ -1,4 +1,6 @@
-import streamlit as st
+﻿import streamlit as st
+from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -258,8 +260,7 @@ fig_temp.add_trace(go.Scatter(
     marker=dict(size=6)
 ))
 
-fig_temp.update_layout(
-    title='Temperatura por Hora',
+fig_temp.update_layout(**plotly_layout(height=400), title='Temperatura por Hora',
     xaxis_title='Hora del Día',
     yaxis_title='Temperatura (°C)',
     height=400,
@@ -402,3 +403,4 @@ st.markdown("""
     <p>Última actualización: {}</p>
 </div>
 """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)
+

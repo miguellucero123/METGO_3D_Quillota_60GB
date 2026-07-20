@@ -181,7 +181,7 @@ watch(
               :class="{ active: seleccionado === s.id }"
               @click="abrirVisor(s.id, { iniciarSiLocal: !esSitioPublico })"
             >
-              <span class="port-num">:{{ s.puerto }}</span>
+              <!-- Puerto oculto -->
               <span class="port-name">{{ s.nombre }}</span>
               <ChevronRight class="port-chevron" />
             </button>
@@ -194,7 +194,7 @@ watch(
         <div v-if="moduloActual" class="viewer-toolbar">
           <div>
             <strong>{{ moduloActual.nombre }}</strong>
-            <span class="muted"> · puerto {{ moduloActual.puerto }}</span>
+            <!-- Puerto oculto -->
           </div>
           <div class="toolbar-actions">
             <button

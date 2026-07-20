@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -155,8 +155,7 @@ if modo_ml.startswith("Registry"):
                         textposition="outside",
                     )
                 )
-                fig.update_layout(
-                    barmode="group",
+                fig.update_layout(**plotly_layout(height=400), barmode="group",
                     height=280,
                     title=str(row["variable"]),
                     yaxis_title=str(row.get("unidad") or "").strip() or "valor",
@@ -553,3 +552,4 @@ st.markdown("""
     <p>Última actualización: {}</p>
 </div>
 """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)
+

@@ -1,4 +1,6 @@
-import streamlit as st
+﻿import streamlit as st
+from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -635,3 +637,4 @@ st.markdown("""
     <p>Última actualización: {}</p>
 </div>
 """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)
+

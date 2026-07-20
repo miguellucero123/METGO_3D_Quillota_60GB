@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -229,7 +229,7 @@ fig_barras = px.bar(datos_sensores, x='Sensor', y='Valor',
                    text='Valor')
 
 fig_barras.update_traces(texttemplate='%{text:.1f}', textposition='outside')
-fig_barras.update_layout(height=500)
+fig_barras.update_layout(**plotly_layout(height=400), height=500)
 st.plotly_chart(fig_barras, use_container_width=True)
 
 # Gráfico de evolución temporal (simulado)
@@ -259,7 +259,7 @@ fig_evolucion = px.line(df_historico, x='Timestamp', y='Valor',
                        color='Sensor',
                        title=f'Evolución 24h - {categoria_sensor}')
 
-fig_evolucion.update_layout(height=400)
+fig_evolucion.update_layout(**plotly_layout(height=400), height=400)
 st.plotly_chart(fig_evolucion, use_container_width=True)
 
 # Tabla detallada de sensores
@@ -380,3 +380,4 @@ st.markdown("""
     <p>Última actualización: {}</p>
 </div>
 """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)
+

@@ -789,9 +789,9 @@ fig_condiciones.add_trace(go.Bar(
 ))
 
 fig_condiciones.update_layout(
+    **plotly_layout(height=400),
     title=f'🌾 Condiciones para {cultivo_seleccionado} - {fase_actual}',
     barmode='group',
-    height=400
 )
 
 st.plotly_chart(fig_condiciones, use_container_width=True)
