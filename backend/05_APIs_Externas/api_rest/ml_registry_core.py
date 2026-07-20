@@ -506,6 +506,18 @@ def sincronizar_registro(forzar: bool = False) -> dict[str, Any]:
     }
     path = _registry_path()
     path.write_text(json.dumps(reg, ensure_ascii=False, indent=2), encoding="utf-8")
+    
+    try:
+        from api_rest.integracion.supabase_store import get_supabase_client
+        client = get_supabase_client()
+        if client:
+            # We insert the registry as a single document if the table supports it, 
+            # or try to upsert models individually.
+            # We'll just try to upsert the summary into ml_registry
+            client.table("ml_registry").upsert({"id": 1, "datos": reg}).execute()
+    except Exception as e:
+        print(f"Error guardando ml_registry en Supabase: {e}")
+
     _CACHE = reg
     _CACHE_MTIME = path.stat().st_mtime
     return reg
@@ -513,6 +525,21 @@ def sincronizar_registro(forzar: bool = False) -> dict[str, Any]:
 
 def leer_registro(recargar: bool = False) -> dict[str, Any]:
     global _CACHE, _CACHE_MTIME
+    
+    if not recargar and _CACHE is not None:
+        return _CACHE
+        
+    try:
+        from api_rest.integracion.supabase_store import get_supabase_client
+        client = get_supabase_client()
+        if client:
+            res = client.table("ml_registry").select("datos").eq("id", 1).execute()
+            if res.data and len(res.data) > 0:
+                _CACHE = res.data[0].get("datos", {})
+                return _CACHE
+    except Exception as e:
+        print(f"Error leyendo ml_registry desde Supabase: {e}")
+
     path = _registry_path()
     if not path.is_file() or recargar:
         return sincronizar_registro()

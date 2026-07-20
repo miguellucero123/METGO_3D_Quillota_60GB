@@ -82,7 +82,7 @@ def severidad_helada(t_min: float, cultivo: str = "palto") -> str:
 
 def _calcular_bias(estacion_id: str, pronostico_fn, historico_fn) -> float:
     """Factor multiplicativo histórico (obs/pred) en días con lluvia pronosticada."""
-    hist = historico_fn(estacion_id, 90) or []
+    hist = historico_fn(estacion_id, 30) or []
     pron = pronostico_fn(estacion_id, 14) or []
     if not hist:
         return 0.92

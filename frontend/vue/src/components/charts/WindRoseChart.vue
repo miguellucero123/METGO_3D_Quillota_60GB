@@ -52,15 +52,15 @@ function wedgePath(i, ratio) {
 <template>
   <div class="wind-rose" role="img" aria-label="Rosa de vientos">
     <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`">
-      <circle :cx="cx" :cy="cy" :r="rMax" fill="none" stroke="#e5e7eb" stroke-width="1" />
-      <circle :cx="cx" :cy="cy" :r="rMax * 0.66" fill="none" stroke="#f3f4f6" stroke-width="1" />
-      <circle :cx="cx" :cy="cy" :r="rMax * 0.33" fill="none" stroke="#f3f4f6" stroke-width="1" />
+      <circle :cx="cx" :cy="cy" :r="rMax" fill="none" stroke="var(--color-border, #e5e7eb)" stroke-width="1" />
+      <circle :cx="cx" :cy="cy" :r="rMax * 0.66" fill="none" stroke="var(--color-border, #f3f4f6)" stroke-width="1" />
+      <circle :cx="cx" :cy="cy" :r="rMax * 0.33" fill="none" stroke="var(--color-border, #f3f4f6)" stroke-width="1" />
       <path
         v-for="(b, i) in buckets"
         :key="b.label"
         :d="wedgePath(i, b.ratio)"
-        :fill="b.count ? `rgba(2, 132, 199, ${0.25 + b.ratio * 0.55})` : 'transparent'"
-        stroke="#0284c7"
+        :fill="b.count ? `var(--color-primary, rgba(2, 132, 199, ${0.25 + b.ratio * 0.55}))` : 'transparent'"
+        stroke="var(--color-primary, #0284c7)"
         stroke-width="0.5"
       />
       <text :x="cx" :y="14" text-anchor="middle" class="lbl">N</text>

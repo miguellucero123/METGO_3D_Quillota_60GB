@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Leaf, LogIn } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
@@ -16,6 +16,11 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const cargando = ref(false)
+
+onMounted(() => {
+  // Despertar la API de forma silenciosa al entrar a la página (Render Cold Start)
+  wakeApi().catch(() => {})
+})
 
 async function onSubmit() {
   error.value = ''

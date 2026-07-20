@@ -82,7 +82,7 @@ const barras = computed(() => {
       </div>
 
       <svg viewBox="0 0 100 95" class="chart-svg" role="img" aria-label="Helada 7 días">
-        <line x1="0" y1="85" x2="100" y2="85" stroke="#e5e7eb" />
+        <line x1="0" y1="85" x2="100" y2="85" stroke="var(--color-border, #334155)" />
         <rect
           v-for="(b, i) in barras"
           :key="i"
@@ -100,7 +100,7 @@ const barras = computed(() => {
           stroke="#3b82f6"
           stroke-width="0.8"
         />
-        <text v-for="(b, i) in barras" :key="'l' + i" :x="b.x + b.w / 2" y="93" text-anchor="middle" font-size="2.2" fill="#6b7280">
+        <text v-for="(b, i) in barras" :key="'l' + i" :x="b.x + b.w / 2" y="93" text-anchor="middle" font-size="2.2" fill="var(--color-text-muted, #94a3b8)">
           {{ fmt(b.fecha_pronostico).split(' ')[0] }}
         </text>
       </svg>
@@ -140,27 +140,27 @@ const barras = computed(() => {
 </template>
 
 <style scoped>
-.helada-av { background: #fff; border-radius: 8px; padding: 1rem; }
+.helada-av { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
 .helada-av__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 .helada-av__head h3 { margin: 0; font-size: 1rem; }
 .cultivo-sel { font-size: 0.8rem; padding: 0.25rem 0.5rem; border-radius: 6px; }
 .resumen { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
 .card { flex: 1; text-align: center; padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; }
 .card strong { display: block; font-size: 1.1rem; }
-.card.sev { background: #fef2f2; border-left: 3px solid #ef4444; }
-.card.mod { background: #fff7ed; border-left: 3px solid #f97316; }
-.card.min { background: #f0fdf4; border-left: 3px solid #22c55e; }
+.card.sev { background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; }
+.card.mod { background: rgba(249, 115, 22, 0.1); border-left: 3px solid #f97316; }
+.card.min { background: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; }
 .chart-svg { width: 100%; height: 220px; margin-bottom: 0.75rem; }
 .tabla { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.tabla th, .tabla td { padding: 0.45rem; border-bottom: 1px solid #e5e7eb; text-align: left; }
-.tabla tr.alto { background: #fef2f2; }
-.badge { padding: 0.15rem 0.4rem; border-radius: 4px; color: #fff; font-weight: 600; font-size: 0.72rem; }
+.tabla th, .tabla td { padding: 0.45rem; border-bottom: 1px solid var(--color-border, #334155); text-align: left; }
+.tabla tr.alto { background: rgba(239, 68, 68, 0.15); }
+.badge { padding: 0.15rem 0.4rem; border-radius: 4px; color: var(--color-background, #0f172a); font-weight: 600; font-size: 0.72rem; }
 .badge.ok { background: #22c55e; }
 .badge.riesgo { background: #f59e0b; }
 .badge.crit { background: #ef4444; }
 .badge.ext { background: #7c3aed; }
 .factores { margin-top: 0.75rem; }
-.exp-btn { width: 100%; text-align: left; padding: 0.5rem; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 6px; margin-bottom: 0.35rem; cursor: pointer; font-size: 0.8rem; }
-.exp-body { padding: 0.5rem; background: #fafafa; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.78rem; }
-.loading, .empty { padding: 1.5rem; text-align: center; color: #6b7280; }
+.exp-btn { width: 100%; text-align: left; padding: 0.5rem; border: 1px solid var(--color-border, #334155); background: rgba(255, 255, 255, 0.05); border-radius: 6px; margin-bottom: 0.35rem; cursor: pointer; font-size: 0.8rem; }
+.exp-body { padding: 0.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--color-border, #334155); border-radius: 6px; font-size: 0.78rem; }
+.loading, .empty { padding: 1.5rem; text-align: center; color: var(--color-text-muted, #94a3b8); }
 </style>

@@ -149,7 +149,7 @@ function onClick(i) {
 }
 .h-bar-track {
   height: 1.5rem;
-  background: linear-gradient(180deg, #f4f6f8 0%, #e8ecef 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--color-border);

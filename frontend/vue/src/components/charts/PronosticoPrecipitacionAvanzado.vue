@@ -150,7 +150,7 @@ function exportCsv() {
           role="img"
           aria-label="Gráfico precipitación"
         >
-          <line x1="8" y1="75" :x2="chartWidth - 2" y2="75" stroke="#e5e7eb" stroke-width="0.3" />
+          <line x1="8" y1="75" :x2="chartWidth - 2" y2="75" stroke="var(--color-border, #334155)" stroke-width="0.3" />
           <template v-if="modo === 'precip'">
             <rect
               v-for="(b, i) in barras"
@@ -160,7 +160,7 @@ function exportCsv() {
               :width="b.w"
               :height="b.h"
               :fill="b.color"
-              rx="0.3"
+              rx="1.5"
               @mouseenter="showTip($event, b)"
               @mouseleave="tooltip = null"
             />
@@ -168,17 +168,17 @@ function exportCsv() {
               v-if="p10.length"
               :points="barras.map((b, i) => `${b.x + b.w / 2},${75 - (p10[i] / maxY) * 70}`).join(' ')"
               fill="none"
-              stroke="#94a3b8"
-              stroke-width="0.35"
-              stroke-dasharray="1 1"
+              stroke="var(--color-text-muted, #94a3b8)"
+              stroke-width="0.5"
+              stroke-dasharray="2 2"
             />
             <polyline
               v-if="p90.length"
               :points="barras.map((b, i) => `${b.x + b.w / 2},${75 - (p90[i] / maxY) * 70}`).join(' ')"
               fill="none"
-              stroke="#64748b"
-              stroke-width="0.35"
-              stroke-dasharray="1 1"
+              stroke="var(--color-text, #e2e8f0)"
+              stroke-width="0.5"
+              stroke-dasharray="2 2"
             />
           </template>
           <template v-else-if="modo === 'acum'">
@@ -208,8 +208,8 @@ function exportCsv() {
             :x="b.x + b.w / 2"
             y="82"
             text-anchor="middle"
-            :font-size="es3h ? '2' : '2.2'"
-            fill="#6b7280"
+            :font-size="es3h ? '2.5' : '2.8'"
+            fill="var(--color-text-muted, #94a3b8)"
           >
             {{ b.label }}
           </text>
@@ -249,8 +249,8 @@ function exportCsv() {
 
 <style scoped>
 .precip-chart {
-  background: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #1e293b);
+  border: 1px solid var(--color-border, #334155);
   border-radius: 10px;
   padding: 1rem;
   position: relative;
@@ -272,8 +272,8 @@ function exportCsv() {
   color: #6b7280;
 }
 .badge--cal {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.2);
+  color: #60a5fa;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   margin-left: 0.35rem;
@@ -285,8 +285,9 @@ function exportCsv() {
 }
 .controls button {
   padding: 0.35rem 0.65rem;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--color-border, #334155);
+  background: var(--color-surface, #1e293b);
+  color: var(--color-text, #f1f5f9);
   border-radius: 6px;
   font-size: 0.78rem;
   cursor: pointer;
@@ -297,17 +298,27 @@ function exportCsv() {
   border-color: #0284c7;
 }
 .controls .export {
-  background: #f3f4f6;
+  background: var(--color-border, #334155);
 }
 .chart-scroll {
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 4px;
 }
+.chart-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.chart-scroll::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+.chart-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
 .chart-scroll--wide {
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 6px;
-  background: #fafafa;
+  background: var(--color-background, rgba(15, 23, 42, 0.4));
 }
 .chart-svg {
   display: block;
@@ -316,9 +327,12 @@ function exportCsv() {
 }
 .skeleton,
 .empty {
-  padding: 2rem;
+  padding: 3rem 2rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--color-text-muted, #94a3b8);
+  background: var(--color-surface, #1e293b);
+  border-radius: 8px;
+  border: 1px dashed var(--color-border);
 }
 .stats {
   display: grid;
@@ -327,7 +341,7 @@ function exportCsv() {
   margin-top: 0.75rem;
 }
 .stat {
-  background: #f0f9ff;
+  background: rgba(2, 132, 199, 0.1);
   border-left: 3px solid #0284c7;
   padding: 0.5rem 0.65rem;
   border-radius: 6px;
@@ -336,14 +350,14 @@ function exportCsv() {
 .stat strong {
   display: block;
   font-size: 1rem;
-  color: #0369a1;
+  color: #38bdf8;
 }
 .stat--alert {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.1);
   border-color: #ef4444;
 }
 .stat--alert strong {
-  color: #b91c1c;
+  color: #f87171;
 }
 .leyenda {
   display: flex;

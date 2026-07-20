@@ -160,26 +160,26 @@ onMounted(cargar)
 </template>
 
 <style scoped>
-.cmp-modelos { background: #fff; border-radius: 8px; padding: 1rem; }
+.cmp-modelos { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
 .cmp-modelos header h3 { margin: 0; font-size: 1rem; }
 .cmp-modelos header p { margin: 0.25rem 0 0.75rem; font-size: 0.75rem; color: #6b7280; }
 .vars { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
 .vars button {
   padding: 0.35rem 0.65rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   font-size: 0.75rem;
   cursor: pointer;
 }
 .vars button.active { background: #0284c7; color: #fff; border-color: #0284c7; }
 .legend { display: flex; gap: 1rem; font-size: 0.72rem; color: #6b7280; margin-bottom: 0.35rem; }
 .swatch { display: inline-block; width: 12px; height: 3px; margin-right: 0.35rem; vertical-align: middle; }
-.swatch.gfs, .line.gfs, .dot.gfs { stroke: #1a5f4a; fill: #1a5f4a; }
-.swatch.ecmwf, .line.ecmwf, .dot.ecmwf { stroke: #7c3aed; fill: #7c3aed; }
+.swatch.gfs, .line.gfs, .dot.gfs { stroke: #22d3ee; fill: #22d3ee; }
+.swatch.ecmwf, .line.ecmwf, .dot.ecmwf { stroke: #a78bfa; fill: #a78bfa; }
 .line { stroke-width: 2.5; }
 .cmp-svg { width: 100%; height: auto; display: block; }
-.xlab { font-size: 9px; fill: #6b7280; }
+.xlab { font-size: 9px; fill: #9ca3af; }
 .nota, .muted { font-size: 0.72rem; color: #6b7280; margin-top: 0.5rem; }
 .error { color: #dc2626; font-size: 0.85rem; }
 </style>

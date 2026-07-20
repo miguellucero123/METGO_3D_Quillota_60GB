@@ -23,7 +23,7 @@ defineProps({
 }
 .skel-block,
 .skel-line {
-  background: linear-gradient(90deg, #e8ecef 25%, #f4f6f8 50%, #e8ecef 75%);
+  background: linear-gradient(90deg, var(--color-border, #334155) 25%, var(--color-surface, #1e293b) 50%, var(--color-border, #334155) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease infinite;
   border-radius: 6px;

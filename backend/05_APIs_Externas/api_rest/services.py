@@ -20,7 +20,7 @@ from datos_reales_openmeteo import OpenMeteoData, obtener_datos_meteorologicos_r
 # Caché OpenMeteo (Fase 1.4)
 _CACHE_MOD = None
 for _p in Path(__file__).resolve().parents:
-    _gd = _p / "08_Gestion_Datos"
+    _gd = _p / "backend" / "08_Gestion_Datos"
     if (_p / "metgo_paths.py").exists() and _gd.is_dir():
         if str(_gd) not in sys.path:
             sys.path.insert(0, str(_gd))
@@ -149,23 +149,34 @@ def _hoy_chile() -> str:
 
 
 def _dedupe_historico_por_dia(filas: list[dict[str, Any]], dias: int) -> list[dict[str, Any]]:
-    """Una fila por día (solo fechas ≤ hoy Chile); OpenMeteo pisa local si hay conflicto."""
+    """Una fila por día (solo fechas <= hoy Chile); prefiere datos reales sobre sintéticos."""
     hoy = _hoy_chile()
     por_dia: dict[str, dict[str, Any]] = {}
     for r in filas:
         dia = _fecha_dia(r.get("fecha"))
         if dia and dia <= hoy:
+            es_sintetico = "sintetico" in str(r.get("fuente", "")).lower()
+            if dia in por_dia:
+                ya_es_sintetico = "sintetico" in str(por_dia[dia].get("fuente", "")).lower()
+                # Si el nuevo es sintético y el existente es real, no sobreescribir
+                if es_sintetico and not ya_es_sintetico:
+                    continue
             por_dia[dia] = {**r, "fecha": dia}
     return sorted(por_dia.values(), key=lambda x: x["fecha"])[-dias:]
 
 
 def _dedupe_pronostico_por_dia(filas: list[dict[str, Any]], dias: int) -> list[dict[str, Any]]:
-    """Pronóstico: hoy y días siguientes (sin fechas pasadas en la tabla)."""
+    """Pronóstico: hoy y días siguientes; prefiere datos reales sobre sintéticos."""
     hoy = _hoy_chile()
     por_dia: dict[str, dict[str, Any]] = {}
     for r in filas:
         dia = _fecha_dia(r.get("fecha"))
         if dia and dia >= hoy:
+            es_sintetico = "sintetico" in str(r.get("fuente", "")).lower()
+            if dia in por_dia:
+                ya_es_sintetico = "sintetico" in str(por_dia[dia].get("fuente", "")).lower()
+                if es_sintetico and not ya_es_sintetico:
+                    continue
             por_dia[dia] = {**r, "fecha": dia}
     if not por_dia and filas:
         # Respaldo: caché/sintético antiguo con fechas pasadas — usar últimos N días disponibles
@@ -248,13 +259,6 @@ def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | 
     if df is not None and not df.empty:
         registros = _registros_desde_df(df, estacion_id)
     out = _dedupe_pronostico_por_dia(registros, dias)
-    if not out:
-        om = OpenMeteoData()
-        df_syn = om._crear_datos_sinteticos(nombre, ventana, modo="pronostico")
-        if df_syn is not None and not df_syn.empty:
-            out = _dedupe_pronostico_por_dia(_registros_desde_df(df_syn, estacion_id), dias)
-            for r in out:
-                r["fuente"] = "respaldo_sintetico_pronostico"
     return out if out else None
 
 
@@ -290,6 +294,7 @@ def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | 
         from api_rest.integracion.meteo_store import guardar_registros, leer_registros
 
         if registros:
+            # Solo guardar datos reales en Supabase/DB local
             guardar_registros(estacion_id, registros)
         local = leer_registros(estacion_id, dias)
         merged: list[dict[str, Any]] = []

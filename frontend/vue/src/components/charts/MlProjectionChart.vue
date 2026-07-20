@@ -285,9 +285,9 @@ function exportCsv() {
 .warn-note { font-size: 0.68rem; color: #c45c26; }
 .actions button {
   padding: 0.2rem 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   cursor: pointer;
   font-size: 0.68rem;
   margin-left: 0.25rem;
@@ -300,25 +300,25 @@ function exportCsv() {
   margin-right: 0.35rem;
   vertical-align: middle;
 }
-.swatch--actual { background: #1a5f4a; }
-.swatch--pred { background: #3d7ab8; }
+.swatch--actual { background: #10b981; }
+.swatch--pred { background: #38bdf8; }
 .ml-chart__svg { width: 100%; height: auto; display: block; }
 .ml-chart__panel-bg {
-  fill: rgba(26, 95, 74, 0.04);
-  stroke: var(--color-border);
+  fill: var(--color-surface, #0f172a);
+  stroke: var(--color-border, #1f2937);
   stroke-width: 1;
 }
-.ml-chart__title { font-size: 12px; font-weight: 700; fill: var(--color-text); }
+.ml-chart__title { font-size: 12px; font-weight: 600; fill: #e2e8f0; }
 .ml-chart__grid line {
-  stroke: var(--color-border);
+  stroke: var(--color-border, #1f2937);
   stroke-width: 1;
   stroke-dasharray: 3 4;
 }
-.ml-chart__bar--actual { fill: #1a5f4a; }
-.ml-chart__val { font-size: 10px; font-weight: 700; fill: #1a5f4a; }
-.ml-chart__val--pred { fill: #2a5f8f; }
-.ml-chart__delta { font-size: 9px; fill: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
-.ml-chart__delta--warn { fill: #c45c26; font-weight: 600; }
+.ml-chart__bar--actual { fill: #10b981; }
+.ml-chart__val { font-size: 10px; font-weight: 700; fill: #34d399; }
+.ml-chart__val--pred { fill: #38bdf8; }
+.ml-chart__delta { font-size: 9px; fill: #9ca3af; font-variant-numeric: tabular-nums; }
+.ml-chart__delta--warn { fill: #ef4444; font-weight: 600; }
 .ml-chart__note {
   margin: 0.4rem 0 0;
   font-size: 0.68rem;

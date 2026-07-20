@@ -8,27 +8,27 @@ from __future__ import annotations
 
 import os
 
-# Paleta Vue (main.css)
-PRIMARY = "#3d6b52"
-PRIMARY_HOVER = "#325a45"
-ACCENT = "#5a9b72"
-ACCENT_LIGHT = "#c5e0ce"
-BG = "#f5f9f6"
-SURFACE = "#ffffff"
-BORDER = "#d8e8dc"
-TEXT = "#1a2e22"
-TEXT_SECONDARY = "#3d5248"
-MUTED = "#6b7f74"
-SUCCESS = "#2d6a4f"
-WARNING = "#9a6b2e"
-DANGER = "#9b3d3d"
-INFO_BG = "#e8f2eb"
+# Paleta Vue (Dark Mode)
+PRIMARY = "#059669"
+PRIMARY_HOVER = "#047857"
+ACCENT = "#10b981"
+ACCENT_LIGHT = "#34d399"
+BG = "#0f172a"
+SURFACE = "#1e293b"
+BORDER = "#334155"
+TEXT = "#f8fafc"
+TEXT_SECONDARY = "#cbd5e1"
+MUTED = "#94a3b8"
+SUCCESS = "#10b981"
+WARNING = "#f59e0b"
+DANGER = "#ef4444"
+INFO_BG = "#334155"
 
 # Light blue (meteo / ML — alineado con Vue main.css)
-SKY = "#5b9bd5"
-SKY_DEEP = "#3a7ca5"
-SKY_LIGHT = "#dbeef8"
-SKY_MUTED = "#c5e4f3"
+SKY = "#38bdf8"
+SKY_DEEP = "#0ea5e9"
+SKY_LIGHT = "#0284c7"
+SKY_MUTED = "#0369a1"
 
 # Acentos por módulo (familia verde, distinguibles)
 MODULE_COLORS = {

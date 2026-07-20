@@ -28,8 +28,8 @@ function fmt(f) {
 function cobColor(c) {
   if (c < 10) return '#fbbf24'
   if (c < 50) return '#60a5fa'
-  if (c < 80) return '#6b7280'
-  return '#1f2937'
+  if (c < 80) return 'var(--color-text-muted, #94a3b8)'
+  return 'var(--color-background, #0f172a)'
 }
 
 const maxRad = computed(() => Math.max(100, ...datos.value.map((d) => d.radiacion || 0)))
@@ -87,15 +87,15 @@ const maxRad = computed(() => Math.max(100, ...datos.value.map((d) => d.radiacio
 </template>
 
 <style scoped>
-.nub-panel { background: #fff; border-radius: 8px; padding: 1rem; }
+.nub-panel { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
 .nub-panel h3 { margin: 0 0 0.75rem; font-size: 1rem; }
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
-.mini-chart { width: 100%; height: 120px; background: #f9fafb; border-radius: 6px; }
+.mini-chart { width: 100%; height: 120px; background: var(--color-background, rgba(15, 23, 42, 0.4)); border-radius: 6px; border: 1px solid var(--color-border, #334155); }
 .tabla { width: 100%; font-size: 0.78rem; border-collapse: collapse; }
-.tabla th, .tabla td { padding: 0.4rem; border-bottom: 1px solid #e5e7eb; }
+.tabla th, .tabla td { padding: 0.4rem; border-bottom: 1px solid var(--color-border, #334155); }
 .neg { color: #ef4444; }
 .pos { color: #10b981; }
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem; }
-.info { font-size: 0.75rem; background: #f0f9ff; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #0284c7; }
-.loading, .empty { text-align: center; padding: 1.5rem; color: #6b7280; }
+.info { font-size: 0.75rem; background: rgba(2, 132, 199, 0.1); padding: 0.5rem; border-radius: 6px; border-left: 3px solid #0284c7; }
+.loading, .empty { text-align: center; padding: 1.5rem; color: var(--color-text-muted, #94a3b8); }
 </style>

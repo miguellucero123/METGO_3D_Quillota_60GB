@@ -107,7 +107,7 @@ function exportCsv() {
           :x2="W - pad.r"
           :y1="pad.t + (innerH * (i - 1)) / 4"
           :y2="pad.t + (innerH * (i - 1)) / 4"
-          stroke="#e5e7eb"
+          stroke="var(--color-border, #334155)"
           stroke-dasharray="4 4"
         />
       </g>
@@ -119,21 +119,21 @@ function exportCsv() {
           :y="yPrecip(p)"
           :width="barW"
           :height="Math.max(0, pad.t + innerH - yPrecip(p))"
-          :fill="p > 0 ? '#2980b9' : '#d1d5db'"
+          :fill="p > 0 ? '#3b82f6' : 'var(--color-surface, #1e293b)'"
           rx="2"
           opacity="0.85"
           @mouseenter="onEnter($event, i)"
           @mousemove="onMove"
         />
       </g>
-      <path :d="linePath" fill="none" stroke="#c45c26" stroke-width="2.5" stroke-linecap="round" />
+      <path :d="linePath" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" />
       <g v-for="(t, i) in temperaturas" :key="'d' + i">
         <circle
           :cx="xCenter(i)"
           :cy="yTemp(Number(t))"
-          r="5"
-          fill="#c45c26"
-          stroke="#fff"
+          r="4"
+          fill="#f97316"
+          stroke="var(--color-background, #0f172a)"
           stroke-width="1.5"
           @mouseenter="onEnter($event, i)"
           @mousemove="onMove"
@@ -177,18 +177,19 @@ function exportCsv() {
   border-radius: 2px;
   margin-right: 0.25rem;
 }
-.swatch--temp { background: #c45c26; }
-.swatch--rain { background: #2980b9; }
+.swatch--temp { background: #f97316; }
+.swatch--rain { background: #3b82f6; }
 .actions button {
   margin-left: 0.35rem;
   padding: 0.2rem 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
+  color: var(--color-text, #f1f5f9);
   cursor: pointer;
   font-size: 0.68rem;
 }
 .combo-chart__svg { width: 100%; height: auto; display: block; }
-.axis-lbl { font-size: 9px; fill: #6b7280; font-weight: 600; }
-.xlabels text { font-size: 10px; fill: #6b7280; }
+.axis-lbl { font-size: 11px; fill: var(--color-text-muted, #94a3b8); font-weight: 600; }
+.xlabels text { font-size: 11px; fill: var(--color-text-muted, #94a3b8); }
 </style>

@@ -216,7 +216,7 @@ function onDotLeave() {
           :cy="yAt(v)"
           r="5"
           :fill="color"
-          stroke="#fff"
+          stroke="var(--color-background, #0f172a)"
           stroke-width="1.5"
           class="ts-dot"
           @mouseenter="onDotEnter($event, i)"
@@ -230,7 +230,7 @@ function onDotLeave() {
           :cy="yAt(v)"
           r="4"
           fill="#3b82f6"
-          stroke="#fff"
+          stroke="var(--color-background, #0f172a)"
           stroke-width="1.5"
           class="ts-dot"
           @mouseenter="onDotEnter($event, i)"
@@ -280,9 +280,9 @@ function onDotLeave() {
 }
 .ts-export {
   padding: 0.2rem 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   cursor: pointer;
   font-size: 0.68rem;
 }
@@ -296,7 +296,7 @@ function onDotLeave() {
   align-items: center;
   gap: 0.35rem;
   border: 1px solid var(--color-border);
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   cursor: pointer;
@@ -316,17 +316,19 @@ function onDotLeave() {
   background: #3b82f6;
 }
 .ts-chart__svg {
-  width: 100%;
-  height: auto;
   display: block;
+  width: 100%;
+  height: 200px;
 }
 .ts-dot {
   cursor: crosshair;
 }
 .ts-chart__grid line {
-  stroke: var(--color-border);
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
+  stroke: var(--color-border, #334155);
+}
+.ts-chart__grid text {
+  fill: var(--color-text-muted, #94a3b8);
+  font-size: 10px;
 }
 .ts-chart__ylabels text,
 .ts-chart__xlabels text {

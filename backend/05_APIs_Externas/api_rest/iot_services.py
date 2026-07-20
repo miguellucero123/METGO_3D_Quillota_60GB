@@ -22,21 +22,39 @@ def _store_path() -> Path:
 
 
 def _load() -> list[dict[str, Any]]:
-    path = _store_path()
-    if not path.is_file():
-        return _seed()
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return data if isinstance(data, list) else _seed()
-    except (json.JSONDecodeError, OSError):
-        return _seed()
+        from api_rest.integracion.supabase_store import get_supabase_client
+        client = get_supabase_client()
+        if client:
+            res = client.table("datos_iot").select("*").order("timestamp", desc=True).limit(500).execute()
+            if res.data:
+                return res.data
+    except Exception as e:
+        print(f"Error cargando iot de Supabase: {e}")
+    return _seed()
 
 
 def _save(items: list[dict[str, Any]]) -> None:
-    _store_path().write_text(
-        json.dumps(items[-500:], ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    try:
+        from api_rest.integracion.supabase_store import get_supabase_client
+        client = get_supabase_client()
+        if client and items:
+            nuevos = []
+            for item in items:
+                # Filtrar campos que quizas no existan en tabla
+                data = {
+                    "sensor_id": item.get("sensor_id"),
+                    "tipo": item.get("tipo"),
+                    "estacion_id": item.get("estacion_id"),
+                    "valor": item.get("valor"),
+                    "unidad": item.get("unidad"),
+                    "fuente": item.get("fuente"),
+                    "timestamp": item.get("timestamp")
+                }
+                nuevos.append(data)
+            client.table("datos_iot").insert(nuevos).execute()
+    except Exception as e:
+        print(f"Error guardando iot en Supabase: {e}")
 
 
 def _seed() -> list[dict[str, Any]]:
@@ -139,9 +157,7 @@ def registrar_lectura(payload: dict[str, Any]) -> dict[str, Any]:
         "fuente": payload.get("fuente", "iot_api"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
-    items = _load()
-    items.append(item)
-    _save(items)
+    _save([item])
     return item
 
 
@@ -152,13 +168,14 @@ def refrescar_simulacion() -> int:
 
         lecturas = generar_lecturas_modulo03(6)
         if lecturas:
-            items.extend(lecturas)
-            _save(items)
+            _save(lecturas)
             return len(lecturas)
     except ImportError:
         pass
+    nuevas = []
     for s in listar_sensores():
         if s.get("activo"):
-            items.append(_generar_lectura(s["id"], s["tipo"], s["estacion_id"]))
-    _save(items)
+            nuevas.append(_generar_lectura(s["id"], s["tipo"], s["estacion_id"]))
+    if nuevas:
+        _save(nuevas)
     return len(listar_sensores())

@@ -56,7 +56,7 @@ const tab = ref('helada')
 .page-subtitle { color: #6b7280; margin: 0.25rem 0 0.75rem; }
 .estacion-sel { font-size: 0.85rem; }
 .estacion-sel select { margin-left: 0.35rem; padding: 0.25rem 0.5rem; border-radius: 6px; }
-.tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-border, #334155); padding-bottom: 0.5rem; }
 .tabs button {
   padding: 0.45rem 0.85rem;
   border: none;

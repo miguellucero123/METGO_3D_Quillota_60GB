@@ -93,7 +93,7 @@ watch(() => store.estacionActiva, cargarAlertas)
   flex-wrap: wrap;
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: var(--color-surface, #1e293b);
   border: 1px solid #bae6fd;
   border-radius: 8px;
 }
@@ -107,7 +107,7 @@ watch(() => store.estacionActiva, cargarAlertas)
 .page-subtitle { color: #6b7280; margin: 0.25rem 0 0.75rem; }
 .estacion-sel { font-size: 0.85rem; }
 .estacion-sel select { margin-left: 0.35rem; padding: 0.25rem 0.5rem; border-radius: 6px; }
-.tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-border, #334155); padding-bottom: 0.5rem; }
 .tabs button {
   padding: 0.45rem 0.85rem;
   border: none;
@@ -121,11 +121,11 @@ watch(() => store.estacionActiva, cargarAlertas)
 .tab-link { margin-left: auto; font-size: 0.8rem; color: #0284c7; text-decoration: none; align-self: center; }
 .alertas-sec { display: grid; gap: 0.65rem; }
 .alerta-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-left: 4px solid #f97316;
   border-radius: 8px;
   padding: 0.75rem;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
 }
 .alerta-card.sev-rojo { border-left-color: #ef4444; background: #fef2f2; }
 .alerta-card h4 { margin: 0 0 0.35rem; font-size: 0.9rem; }

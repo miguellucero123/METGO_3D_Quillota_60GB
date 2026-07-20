@@ -60,7 +60,7 @@ const stroke = computed(() => (props.kind === 'precip' ? '#2980b9' : '#c45c26'))
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 0.45rem 0.55rem;
-  background: #fafafa;
+  background: rgba(255, 255, 255, 0.02);
 }
 .spark-card header {
   display: flex;

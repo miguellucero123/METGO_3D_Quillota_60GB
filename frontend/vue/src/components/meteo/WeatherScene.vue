@@ -174,7 +174,7 @@ const label = computed(() => WEATHER_LABELS[estado.value] || estado.value)
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--color-text-secondary);
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.85));
+  background: linear-gradient(180deg, transparent, var(--color-surface, #1e293b));
   text-align: center;
 }
 @keyframes sun-pulse {

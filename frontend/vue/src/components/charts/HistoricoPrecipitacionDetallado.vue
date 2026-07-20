@@ -55,6 +55,7 @@ function fmt(f) {
 
     <div v-if="cargando" class="loading">Cargando histórico…</div>
     <svg v-else viewBox="0 0 100 60" class="chart">
+      <line x1="2" y1="55" x2="98" y2="55" stroke="var(--color-border, #334155)" stroke-width="0.5" />
       <rect
         v-for="(d, i) in datos"
         :key="d.fecha"
@@ -63,7 +64,7 @@ function fmt(f) {
         :width="96 / Math.max(datos.length, 1) - 0.5"
         :height="(d.precipitacion / maxP) * 48"
         :fill="precipColor(d.precipitacion)"
-        rx="0.3"
+        rx="0.5"
       >
         <title>{{ fmt(d.fecha) }}: {{ d.precipitacion }} mm</title>
       </rect>
@@ -83,15 +84,29 @@ function fmt(f) {
 .rango { display: flex; gap: 0.35rem; }
 .rango button, .hist-precip__ctrl > button {
   padding: 0.35rem 0.6rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
+  color: var(--color-text, #f1f5f9);
   font-size: 0.78rem;
   cursor: pointer;
 }
-.rango button.active { background: #0284c7; color: #fff; }
-.chart { width: 100%; height: 160px; }
-.stats { display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.8rem; }
-.stats strong { display: block; }
-.loading { padding: 1.5rem; text-align: center; color: #6b7280; }
+.rango button.active { background: #0284c7; color: #fff; border-color: #0284c7; }
+.chart { width: 100%; height: 160px; margin-top: 0.5rem; }
+.stats { 
+  display: flex; gap: 1rem; margin-top: 1rem; 
+  font-size: 0.8rem; 
+  background: var(--color-background, rgba(15, 23, 42, 0.4));
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+.stats div span { color: var(--color-text-muted); }
+.stats strong { display: block; font-size: 1.1rem; color: #38bdf8; margin-top: 0.2rem; }
+.loading { 
+  padding: 2.5rem; text-align: center; color: var(--color-text-muted, #94a3b8);
+  background: var(--color-surface, #1e293b);
+  border-radius: 8px;
+  border: 1px dashed var(--color-border);
+}
 </style>

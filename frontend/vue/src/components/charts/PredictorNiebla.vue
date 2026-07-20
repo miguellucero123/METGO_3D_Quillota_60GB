@@ -84,12 +84,12 @@ function tipoLabel(t) {
 </template>
 
 <style scoped>
-.niebla-panel { background: #fff; border-radius: 8px; padding: 1rem; }
+.niebla-panel { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
 .niebla-panel h3 { margin: 0 0 0.75rem; font-size: 1rem; }
 .resumen { font-size: 0.8rem; color: #4b5563; margin-bottom: 0.5rem; }
 .chart-svg { width: 100%; height: 140px; margin-bottom: 0.75rem; }
 .tabla { width: 100%; font-size: 0.78rem; border-collapse: collapse; }
-.tabla th, .tabla td { padding: 0.4rem; border-bottom: 1px solid #e5e7eb; }
+.tabla th, .tabla td { padding: 0.4rem; border-bottom: 1px solid var(--color-border, #334155); }
 .tabla tr.crit { background: #fef2f2; }
 .seguridad { margin-top: 0.75rem; font-size: 0.75rem; background: #fef2f2; padding: 0.5rem; border-radius: 6px; border-left: 3px solid #ef4444; }
 .loading, .empty { text-align: center; padding: 1.5rem; color: #6b7280; }

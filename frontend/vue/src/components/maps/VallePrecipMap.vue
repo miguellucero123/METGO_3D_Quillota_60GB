@@ -1,18 +1,28 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useMetgoStore } from '@/stores/metgo'
 import { fetchPrecipitacionCalibrada, fetchAlertasPrecipitacion } from '@/api/metgoApi'
 import { precipColor, severidadAlertaColor } from '@/utils/colorScale'
+import QuillotaMap3D from '@/components/maps/QuillotaMap3D.vue'
 
 const store = useMetgoStore()
 const estaciones = [
-  { id: 'quillota', nombre: 'Quillota', x: 48, y: 52 },
-  { id: 'los_nogales', nombre: 'Los Nogales', x: 62, y: 28 },
-  { id: 'hijuelas', nombre: 'Hijuelas', x: 78, y: 42 },
-  { id: 'limache', nombre: 'Limache', x: 35, y: 72 },
-  { id: 'olmue', nombre: 'Olmue', x: 70, y: 68 },
+  { id: 'quillota', nombre: 'Quillota' },
+  { id: 'los_nogales', nombre: 'Los Nogales' },
+  { id: 'hijuelas', nombre: 'Hijuelas' },
+  { id: 'limache', nombre: 'Limache' },
+  { id: 'olmue', nombre: 'Olmue' },
 ]
 const puntos = ref([])
+
+const hexToRgb = (hex) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? [
+    parseInt(result[1], 16),
+    parseInt(result[2], 16),
+    parseInt(result[3], 16)
+  ] : [14, 165, 233];
+}
 
 async function cargar() {
   const results = await Promise.all(
@@ -29,10 +39,26 @@ async function cargar() {
       } catch {
         /* ignore */
       }
-      return { ...e, lluvia, alerta, color: precipColor(lluvia) }
+      
+      const cHex = precipColor(lluvia)
+      
+      return { 
+        ...e, 
+        lluvia, 
+        alerta,
+        value: lluvia,
+        text: `${lluvia} mm`,
+        color: hexToRgb(cHex)
+      }
     })
   )
   puntos.value = results
+}
+
+const mapLegend = {
+  title: 'Precipitación',
+  gradient: 'linear-gradient(to right, #9ca3af, #60a5fa, #3b82f6, #1d4ed8)',
+  labels: ['0mm', '5mm', '15mm', '>25mm']
 }
 
 onMounted(cargar)
@@ -40,47 +66,49 @@ onMounted(cargar)
 
 <template>
   <div class="valle-map">
-    <h4>Mapa precipitación — Valle de Aconcagua</h4>
-    <svg viewBox="0 0 100 100" class="map-svg" role="img" aria-label="Mapa estaciones precipitación">
-      <rect width="100" height="100" fill="#ecfdf5" rx="4" />
-      <ellipse cx="55" cy="50" rx="38" ry="32" fill="#d1fae5" opacity="0.6" />
-      <g v-for="p in puntos" :key="p.id">
-        <circle
-          :cx="p.x"
-          :cy="p.y"
-          :r="6 + Math.min(p.lluvia, 20) * 0.15"
-          :fill="p.color"
-          stroke="#fff"
-          stroke-width="1"
-          class="station-dot"
-          @click="store.setEstacion(p.id)"
-        />
-        <text :x="p.x" :y="p.y + 12" text-anchor="middle" font-size="3.5" fill="#374151">{{ p.nombre }}</text>
-        <text :x="p.x" :y="p.y - 9" text-anchor="middle" font-size="3" fill="#1f2937">{{ p.lluvia }} mm</text>
-        <circle
-          v-if="p.alerta !== 'verde'"
-          :cx="p.x + 7"
-          :cy="p.y - 7"
-          r="2.5"
-          :fill="severidadAlertaColor(p.alerta)"
-        />
-      </g>
-    </svg>
-    <button type="button" class="refresh" @click="cargar">Actualizar mapa</button>
+    <div class="map-header">
+      <h4>Mapa precipitación — Valle de Aconcagua</h4>
+      <button type="button" class="refresh" @click="cargar">Actualizar mapa</button>
+    </div>
+    <div class="map-wrapper">
+      <QuillotaMap3D
+        :estaciones="puntos"
+        :legend="mapLegend"
+        layerType="column"
+        @estacion-click="id => store.setEstacion(id)"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
-.valle-map h4 { margin: 0 0 0.5rem; font-size: 0.9rem; }
-.map-svg { width: 100%; max-height: 280px; border-radius: 8px; border: 1px solid #e5e7eb; }
-.station-dot { cursor: pointer; }
+.valle-map {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.map-header h4 { margin: 0; font-size: 0.95rem; color: var(--color-text); }
+.map-wrapper {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
 .refresh {
-  margin-top: 0.5rem;
   padding: 0.35rem 0.65rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   font-size: 0.78rem;
   cursor: pointer;
+  transition: all 0.2s;
+}
+.refresh:hover {
+  background: var(--color-surface-hover);
 }
 </style>

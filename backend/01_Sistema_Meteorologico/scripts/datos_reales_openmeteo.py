@@ -82,11 +82,11 @@ class OpenMeteoData:
                 return self._procesar_datos_openmeteo(data, estacion)
             else:
                 print(f"ERROR - Error HTTP {response.status_code}")
-                return self._crear_datos_sinteticos(estacion, dias, modo='historicos')
+                return None
                 
         except Exception as e:
             print(f"ERROR - Error conectando con OpenMeteo: {e}")
-            return self._crear_datos_sinteticos(estacion, dias, modo='historicos')
+            return None
     
     def obtener_datos_pronostico(self, estacion='Quillota', dias=16):
         """Obtiene datos de pronóstico de OpenMeteo"""
@@ -132,15 +132,15 @@ class OpenMeteoData:
                 if df is not None and not df.empty:
                     df['fuente_datos'] = 'openmeteo_pronostico'
                     return df
-                print('WARN - OpenMeteo 200 sin filas válidas; usando respaldo sintético')
-                return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')
+                print('WARN - OpenMeteo 200 sin filas válidas')
+                return None
             else:
                 print(f"ERROR - Error HTTP {response.status_code}")
-                return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')
+                return None
                 
         except Exception as e:
             print(f"ERROR - Error obteniendo pronóstico: {e}")
-            return self._crear_datos_sinteticos(estacion, dias, modo='pronostico')
+            return None
 
     def obtener_viento_horario_pronostico(self, estacion='Quillota', dias=7):
         """Obtiene pronóstico horario de viento (dirección y velocidad).

@@ -33,21 +33,15 @@ def _path() -> Path:
 
 
 def _load() -> list[dict[str, Any]]:
-    path = _path()
-    if not path.is_file():
-        return []
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return data if isinstance(data, list) else []
-    except (json.JSONDecodeError, OSError):
-        return []
-
-
-def _save(items: list[dict[str, Any]]) -> None:
-    _path().write_text(
-        json.dumps(items[-500:], ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+        from api_rest.integracion.supabase_store import get_supabase_client
+        client = get_supabase_client()
+        if client:
+            res = client.table("alertas").select("*").order("registrado_en", desc=True).limit(500).execute()
+            return res.data
+    except Exception as e:
+        print(f"Error cargando alertas de Supabase: {e}")
+    return []
 
 
 def _parse_ts(value: Any) -> datetime | None:
@@ -131,16 +125,26 @@ def registrar_alertas(alertas: list[dict[str, Any]]) -> None:
         from api_rest.integracion import notificaciones
     except ImportError:
         notificaciones = None
+    nuevas_alertas = []
     for a in filtrar_por_cadencia(alertas):
         if a.get("nivel") == "info" and "normales" in (a.get("mensaje") or "").lower():
             continue
-        items.append({**a, "registrado_en": ts})
+        alerta = {**a, "registrado_en": ts}
+        nuevas_alertas.append(alerta)
         if notificaciones:
             try:
                 notificaciones.enviar_alerta_critica(a)
             except Exception:
                 pass
-    _save(items)
+                
+    if nuevas_alertas:
+        try:
+            from api_rest.integracion.supabase_store import get_supabase_client
+            client = get_supabase_client()
+            if client:
+                client.table("alertas").insert(nuevas_alertas).execute()
+        except Exception as e:
+            print(f"Error guardando alertas en Supabase: {e}")
 
 
 def listar_historial(estacion_id: str | None = None, limite: int = 50) -> list[dict[str, Any]]:

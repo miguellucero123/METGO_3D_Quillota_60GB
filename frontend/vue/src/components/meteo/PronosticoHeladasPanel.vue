@@ -77,10 +77,10 @@ const peor = computed(() => data.value?.peor_dia)
 
 <style scoped>
 .heladas-panel {
-  border: 1px solid var(--color-border, #e5e7eb);
+  border: 1px solid var(--color-border, #334155);
   border-radius: 10px;
   padding: 1rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  background: var(--color-surface, #1e293b);
 }
 .heladas-panel__head {
   display: flex;
@@ -92,9 +92,9 @@ const peor = computed(() => data.value?.peor_dia)
 }
 .title-row { display: flex; align-items: center; gap: 0.5rem; }
 .title-row h3 { margin: 0; font-size: 0.95rem; }
-.cultivo-sel { font-size: 0.8rem; padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid #e5e7eb; }
+.cultivo-sel { font-size: 0.8rem; padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--color-border, #334155); }
 .alerta-helada {
-  background: #fef2f2;
+  background: var(--color-alert-bg, rgba(239, 68, 68, 0.1));
   border-left: 3px solid #ef4444;
   padding: 0.5rem 0.65rem;
   border-radius: 6px;
@@ -107,7 +107,7 @@ const peor = computed(() => data.value?.peor_dia)
   grid-template-columns: 1fr auto auto;
   gap: 0.5rem;
   padding: 0.4rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border, #334155);
   font-size: 0.82rem;
 }
 .badge { padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 600; font-size: 0.72rem; }

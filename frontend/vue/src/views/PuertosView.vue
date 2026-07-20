@@ -494,7 +494,7 @@ watch(
   width: 100%;
   min-height: 480px;
   border: none;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
 }
 
 .viewer-placeholder {

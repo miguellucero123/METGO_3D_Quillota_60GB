@@ -196,7 +196,7 @@ onBeforeUnmount(() => {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
 }
 .map-leaflet {
   width: 100%;
@@ -235,7 +235,7 @@ onBeforeUnmount(() => {
   height: 32px;
   border: none;
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   font-size: 1rem;
@@ -268,8 +268,8 @@ onBeforeUnmount(() => {
   padding: 0.4rem 0.65rem;
   font-size: 0.7rem;
   color: #64748b;
-  background: #f8fafc;
-  border-top: 1px solid #e5e7eb;
+  background: var(--color-surface, #1e293b);
+  border-top: 1px solid var(--color-border, #334155);
 }
 :deep(.leaflet-control-layers) {
   font-size: 0.78rem;

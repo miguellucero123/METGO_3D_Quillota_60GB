@@ -364,9 +364,9 @@ function onBarClick({ stationId }) {
 }
 .mapa-vars button {
   padding: 0.3rem 0.55rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   font-size: 0.75rem;
   cursor: pointer;
 }

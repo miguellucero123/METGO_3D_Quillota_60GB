@@ -70,8 +70,22 @@ api.interceptors.response.use(
 )
 
 /** Despierta el servicio en Render antes del login (cold start). */
-export async function wakeApi() {
-  await api.get('/health', { timeout: 120000 })
+export async function wakeApi(maxRetries = 12) {
+  const baseUrl = resolveApiBaseURL()
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await axios.get(`${baseUrl}/health`, { timeout: 10000 })
+      return true
+    } catch (err) {
+      if (i === maxRetries - 1) {
+        throw new Error(
+          'La API en Render está iniciando o tardó demasiado (plan gratuito). ' +
+          'Espere 60 s, abra https://metgo-api.onrender.com/api/health en otra pestaña y vuelva a intentar.'
+        )
+      }
+      await new Promise(r => setTimeout(r, 5000))
+    }
+  }
 }
 
 export async function login(username, password) {

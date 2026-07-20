@@ -140,15 +140,15 @@ onMounted(cargar)
 </template>
 
 <style scoped>
-.mapas-glob { background: #fff; border-radius: 8px; padding: 1rem; }
+.mapas-glob { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
 .mapas-glob header h3 { margin: 0; font-size: 1rem; }
 .mapas-glob header p { margin: 0.25rem 0 0.75rem; font-size: 0.78rem; color: #6b7280; }
 .ambito { display: flex; gap: 0.35rem; margin-bottom: 0.5rem; }
 .ambito button, .anim-controls button {
   padding: 0.35rem 0.65rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   font-size: 0.75rem;
   cursor: pointer;
 }
@@ -156,9 +156,9 @@ onMounted(cargar)
 .vars { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
 .vars button {
   padding: 0.35rem 0.65rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #1e293b);
   font-size: 0.75rem;
   cursor: pointer;
 }

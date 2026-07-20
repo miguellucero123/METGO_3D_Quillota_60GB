@@ -83,12 +83,12 @@ function exportCsv() {
 </template>
 
 <style scoped>
-.vars-panel { background: #fff; border-radius: 8px; padding: 1rem; }
+.vars-panel { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
 .vars-panel__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 .vars-panel__head h3 { margin: 0; font-size: 1rem; }
-.btn-export { font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; }
+.btn-export { font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 6px; border: 1px solid var(--color-border, #334155); cursor: pointer; }
 .tabla { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.tabla th, .tabla td { padding: 0.45rem; border-bottom: 1px solid #e5e7eb; text-align: left; }
+.tabla th, .tabla td { padding: 0.45rem; border-bottom: 1px solid var(--color-border, #334155); text-align: left; }
 .table-wrap { overflow-x: auto; }
 .loading, .empty { text-align: center; padding: 1.5rem; color: #6b7280; }
 </style>
