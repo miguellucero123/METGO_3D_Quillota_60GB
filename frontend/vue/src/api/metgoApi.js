@@ -7,11 +7,11 @@ const TOKEN_KEY = 'metgo_access_token'
 const RENDER_API_BASE = 'https://metgo-api.onrender.com/api'
 
 function resolveApiBaseURL() {
-  const fromEnv = import.meta.env.VITE_METGO_API
-  if (fromEnv) return fromEnv
   if (typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')) {
     return RENDER_API_BASE
   }
+  const fromEnv = import.meta.env.VITE_METGO_API
+  if (fromEnv) return fromEnv
   return '/api'
 }
 

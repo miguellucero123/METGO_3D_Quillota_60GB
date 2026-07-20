@@ -185,4 +185,12 @@ router.afterEach((to) => {
   document.title = `${to.meta.title ?? 'METGO'} — Quillota`
 })
 
+// Catch chunk loading errors caused by new deployments and force a page reload
+router.onError((error) => {
+  if (error.message.includes('Failed to fetch dynamically imported module') || error.name === 'ChunkLoadError') {
+    console.warn('Chunk load error detected, reloading page to fetch new chunks...')
+    window.location.reload()
+  }
+})
+
 export default router
