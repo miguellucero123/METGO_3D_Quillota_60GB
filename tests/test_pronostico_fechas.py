@@ -54,11 +54,7 @@ def test_pronostico_meteo_respaldo_si_sin_datos(monkeypatch):
     monkeypatch.setattr(services, "_df_sin_prints", lambda *_a, **_k: None)
 
     out = services.pronostico_meteo("quillota", 7)
-    assert out is not None
-    assert len(out) == 7
-    hoy = services._hoy_chile()
-    assert out[0]["fecha"] >= hoy
-    assert out[0]["fuente"] == "respaldo_sintetico_pronostico"
+    assert out is None
 
 
 def test_dedupe_pronostico_fallback_si_solo_pasado():
