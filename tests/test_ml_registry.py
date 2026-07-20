@@ -27,8 +27,6 @@ def client(tmp_path, monkeypatch):
     os.environ["METGO_API_AUTH_REQUIRED"] = "1"
     os.environ.setdefault("METGO_PASSWORD_ADMIN", "admin123")
     reg = tmp_path / "ml_registry.json"
-    monkeypatch.setattr("api_rest.ml_registry_core._registry_path", lambda: reg)
-    monkeypatch.setattr("api_rest.integracion.ml_registry._registry_path", lambda: reg)
     from api_rest.app import create_app
 
     return create_app().test_client()
