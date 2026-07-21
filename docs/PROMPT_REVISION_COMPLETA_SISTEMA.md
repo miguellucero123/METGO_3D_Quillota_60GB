@@ -1,6 +1,6 @@
-# PROMPT — Revisión completa del sistema METGO 3D (flujo OpenMeteo → Supabase)
+﻿# PROMPT â€” RevisiÃ³n completa del sistema METGO 3D (flujo OpenMeteo â†’ Supabase)
 
-> Copiar y pegar este prompt completo en Cursor (modo Agente) para ejecutar la revisión.
+> Copiar y pegar este prompt completo en Cursor (modo Agente) para ejecutar la revisiÃ³n.
 > Requiere: Python del proyecto, `.env` con `SUPABASE_URL`/`SUPABASE_KEY` (opcional pero recomendado).
 
 ---
@@ -8,26 +8,26 @@
 ## CONTEXTO
 
 Eres un ingeniero senior full-stack del proyecto **METGO 3D** (`d:\METGO_3D_Quillota_60GB`).
-La arquitectura de datos es: **Frontend Vue → API Flask (Render) → OpenMeteo → validación → Supabase → cálculos y vistas desde Supabase**, con actualización programada a las **00 y 12 UTC** (GitHub Actions `.github/workflows/etl-meteo-cron.yml` → `GET /api/cron/sync?token=CRON_SECRET`).
+La arquitectura de datos es: **Frontend Vue â†’ API Flask (Render) â†’ OpenMeteo â†’ validaciÃ³n â†’ Supabase â†’ cÃ¡lculos y vistas desde Supabase**, con actualizaciÃ³n programada a las **00 y 12 UTC** (GitHub Actions `.github/workflows/etl-meteo-cron.yml` â†’ `GET /api/cron/sync?token=CRON_SECRET`).
 
 Cadena de resiliencia implementada (en este orden):
 
 1. **OpenMeteo en vivo** con reintentos/backoff (`datos_reales_openmeteo.py`, `_get_json`, env `METGO_OPENMETEO_TIMEOUT`/`METGO_OPENMETEO_RETRIES`).
-2. **Caché disco TTL 15 min** + **"último dato bueno" ≤48 h** (`backend/08_Gestion_Datos/cache_openmeteo.py`: `get_meteo_cached`, `get_json_cached`).
-3. **Supabase** (`backend/08_Gestion_Datos/supabase/meteo_repository.py`):
-   - `meteo_registros` (histórico observado) — `guardar_registros`/`leer_registros`
-   - `meteo_pronostico` (pronóstico diario) — `guardar_pronostico`/`leer_pronostico`
-   - `meteo_series` (series JSON: viento horario, precip 3h) — `guardar_serie`/`leer_serie`
-   - SQL: `backend/08_Gestion_Datos/supabase/meteo_pronostico.sql`
-4. **Nunca datos sintéticos** en producción: `_persistir_pronostico` filtra `fuente` con "sintetico"; todo dato servido desde caché/BD lleva `desde_cache: true`.
+2. **CachÃ© disco TTL 15 min** + **"Ãºltimo dato bueno" â‰¤48 h** (`backend/08_Gestion_Datos/cache_openmeteo.py`: `get_meteo_cached`, `get_json_cached`).
+3. **Supabase** (`backend/08_Gestion_Datos/supabase_db/meteo_repository.py`):
+   - `meteo_registros` (histÃ³rico observado) â€” `guardar_registros`/`leer_registros`
+   - `meteo_pronostico` (pronÃ³stico diario) â€” `guardar_pronostico`/`leer_pronostico`
+   - `meteo_series` (series JSON: viento horario, precip 3h) â€” `guardar_serie`/`leer_serie`
+   - SQL: `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`
+4. **Nunca datos sintÃ©ticos** en producciÃ³n: `_persistir_pronostico` filtra `fuente` con "sintetico"; todo dato servido desde cachÃ©/BD lleva `desde_cache: true`.
 
 ## TAREA
 
-Ejecuta una revisión completa de extremo a extremo y reporta resultados. **No modifiques código salvo que encuentres un bug; en ese caso corrígelo y documenta el cambio.**
+Ejecuta una revisiÃ³n completa de extremo a extremo y reporta resultados. **No modifiques cÃ³digo salvo que encuentres un bug; en ese caso corrÃ­gelo y documenta el cambio.**
 
-### Paso 1 — Script de humo (funciones de servicio reales)
+### Paso 1 â€” Script de humo (funciones de servicio reales)
 
-Crea `_smoke_revision.py` en la raíz del repo con el contenido de abajo, ejecútalo con `python _smoke_revision.py`, captura la salida completa y **elimínalo al terminar**.
+Crea `_smoke_revision.py` en la raÃ­z del repo con el contenido de abajo, ejecÃºtalo con `python _smoke_revision.py`, captura la salida completa y **elimÃ­nalo al terminar**.
 
 ```python
 #!/usr/bin/env python3
@@ -59,7 +59,7 @@ def check(nombre, fn):
 from api_rest import services  # noqa: E402
 import cache_openmeteo as cache  # noqa: E402
 
-# 1. Datos en vivo (o caché/BD si OpenMeteo falla; mirar 'desde_cache')
+# 1. Datos en vivo (o cachÃ©/BD si OpenMeteo falla; mirar 'desde_cache')
 check("resumen_meteo", lambda: (
     lambda r: {k: r.get(k) for k in ("fecha", "temperatura", "fuente", "tipo_dato", "desde_cache")} if r else None
 )(services.resumen_meteo("quillota")))
@@ -84,7 +84,7 @@ check("precip_3h(7)", lambda: (
 check("precip_calibrada(7)", lambda: bool(services.pronostico_precipitacion_calibrado("quillota", 7)))
 check("heladas(7)", lambda: bool(services.pronostico_heladas("quillota", 7)))
 
-# 2. Fallback de caché: fetcher que SIEMPRE falla debe servir 'último dato bueno'
+# 2. Fallback de cachÃ©: fetcher que SIEMPRE falla debe servir 'Ãºltimo dato bueno'
 def _fallback_cache():
     df = cache.get_meteo_cached("Quillota", "pronostico", 7, lambda *a: None)
     if df is None or df.empty:
@@ -102,7 +102,7 @@ def _supabase():
     return {"store": stats, "pronostico_filas": len(pron), "serie_precip3h": bool(serie)}
 check("supabase_store", _supabase)
 
-# 4. API completa vía test_client (rutas reales con JWT)
+# 4. API completa vÃ­a test_client (rutas reales con JWT)
 def _api():
     import os
     os.environ.setdefault("METGO_PASSWORD_ADMIN", "admin123")
@@ -131,17 +131,17 @@ print(f"\nTotal: {len(RESULTADOS)} checks, fallos: {len(fallos)} {fallos}")
 sys.exit(1 if fallos else 0)
 ```
 
-**Importante:** ejecutar el script **dos veces**. La primera puebla caché y Supabase; la segunda valida `fallback_cache_lastgood: true`.
+**Importante:** ejecutar el script **dos veces**. La primera puebla cachÃ© y Supabase; la segunda valida `fallback_cache_lastgood: true`.
 
-### Paso 2 — Tests del repositorio
+### Paso 2 â€” Tests del repositorio
 
 ```powershell
 python -m pytest tests/test_pronostico_fechas.py -q
 ```
 
-Si hay más tests que toquen meteo/ETL (`Grep "pronostico|etl|meteo" tests/`), correrlos también.
+Si hay mÃ¡s tests que toquen meteo/ETL (`Grep "pronostico|etl|meteo" tests/`), correrlos tambiÃ©n.
 
-### Paso 3 — Producción (Render + Supabase + cron)
+### Paso 3 â€” ProducciÃ³n (Render + Supabase + cron)
 
 ```powershell
 curl.exe -s "https://metgo-api.onrender.com/api/health"          # esperar "openmeteo": true|false y "version" == commit actual
@@ -151,24 +151,25 @@ curl.exe -s "https://metgo-api.onrender.com/api/datos/etl/status" # "ultimo" deb
 
 Checklist manual:
 
-- [ ] Tablas `meteo_pronostico` y `meteo_series` creadas en Supabase (SQL `backend/08_Gestion_Datos/supabase/meteo_pronostico.sql`).
-- [ ] Render: env `SUPABASE_URL`, `SUPABASE_KEY`, `CRON_SECRET` configuradas; redeploy con el último commit de `main`.
+- [ ] Tablas `meteo_pronostico` y `meteo_series` creadas en Supabase (SQL `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`).
+- [ ] Render: env `SUPABASE_URL`, `SUPABASE_KEY`, `CRON_SECRET` configuradas; redeploy con el Ãºltimo commit de `main`.
 - [ ] GitHub: secret `CRON_SECRET` (mismo valor que Render); workflow `ETL Meteo (00 y 12 UTC)` habilitado en Actions.
 - [ ] Correr el workflow una vez con "Run workflow" (workflow_dispatch) y verificar HTTP 200.
 
-### Paso 4 — Reporte final
+### Paso 4 â€” Reporte final
 
-Entregar en español:
+Entregar en espaÃ±ol:
 
 1. Tabla de checks del script de humo (ok/fallo + detalle).
 2. Resultado de pytest.
-3. Estado de producción (health, versión desplegada, ETL status).
-4. Lista de bugs encontrados y corregidos (archivo:línea).
+3. Estado de producciÃ³n (health, versiÃ³n desplegada, ETL status).
+4. Lista de bugs encontrados y corregidos (archivo:lÃ­nea).
 5. Pendientes de ops que no se pueden automatizar (envs Render, SQL Supabase, secret GitHub).
 
-## CRITERIOS DE ÉXITO
+## CRITERIOS DE Ã‰XITO
 
 - Todos los endpoints meteo devuelven 200 con datos reales (`fuente` contiene "openmeteo" o "supabase"; nunca "sintetico").
-- Con OpenMeteo caído (simulado), el sistema sirve datos con `desde_cache: true` en lugar de 404/503.
+- Con OpenMeteo caÃ­do (simulado), el sistema sirve datos con `desde_cache: true` en lugar de 404/503.
 - `meteo_pronostico` y `meteo_series` en Supabase se actualizan tras cada llamada fresca y tras el cron 00/12 UTC.
 - CI verde.
+

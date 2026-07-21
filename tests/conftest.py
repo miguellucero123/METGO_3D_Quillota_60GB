@@ -104,6 +104,6 @@ def mock_supabase(monkeypatch):
     _mock_safely("api_rest.integracion.supabase_store.get_supabase_client")
     _mock_safely("api_rest.iot_services.get_supabase_client")
     _mock_safely("api_rest.ml_registry_core.get_supabase_client")
-    _mock_safely("backend.08_Gestion_Datos.supabase.client.get_supabase_client")
+    _mock_safely("backend.08_Gestion_Datos.supabase_db.client.get_supabase_client")
     
     return client

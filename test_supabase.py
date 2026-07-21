@@ -4,8 +4,8 @@ import sys
 import importlib
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "backend"))
-client_module = importlib.import_module("08_Gestion_Datos.supabase.client")
-repo_module = importlib.import_module("08_Gestion_Datos.supabase.meteo_repository")
+client_module = importlib.import_module("08_Gestion_Datos.supabase_db.client")
+repo_module = importlib.import_module("08_Gestion_Datos.supabase_db.meteo_repository")
 
 # Cargar variables de entorno del archivo .env
 load_dotenv()

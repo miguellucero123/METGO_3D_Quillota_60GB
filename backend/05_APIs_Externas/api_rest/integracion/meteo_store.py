@@ -51,8 +51,8 @@ def guardar_registros(estacion_id: str, filas: list[dict[str, Any]], fuente: str
 
     try:
         sys.path.append(str(_db_path().parent.parent.parent.parent))
-        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase.meteo_repository")
-        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase.client")
+        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase_db.meteo_repository")
+        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase_db.client")
         if client_module.get_supabase_client():
             return meteo_repository.guardar_registros(estacion_id, filas, fuente)
     except ImportError as e:
@@ -69,8 +69,8 @@ def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
     import importlib
     try:
         sys.path.append(str(_db_path().parent.parent.parent.parent))
-        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase.meteo_repository")
-        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase.client")
+        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase_db.meteo_repository")
+        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase_db.client")
         if client_module.get_supabase_client():
             return meteo_repository.leer_registros(estacion_id, dias)
     except ImportError as e:
@@ -89,8 +89,8 @@ def _repositorio():
 
     try:
         sys.path.append(str(_db_path().parent.parent.parent.parent))
-        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase.meteo_repository")
-        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase.client")
+        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase_db.meteo_repository")
+        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase_db.client")
         return meteo_repository, bool(client_module.get_supabase_client())
     except ImportError as e:
         print(f"Error al importar módulos de Supabase: {e}")
@@ -146,8 +146,8 @@ def estadisticas_store() -> dict[str, Any]:
     import importlib
     try:
         sys.path.append(str(_db_path().parent.parent.parent.parent))
-        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase.meteo_repository")
-        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase.client")
+        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase_db.meteo_repository")
+        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase_db.client")
         if client_module.get_supabase_client():
             return meteo_repository.estadisticas_store()
     except ImportError as e:

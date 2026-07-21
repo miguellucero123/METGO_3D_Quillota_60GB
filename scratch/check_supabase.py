@@ -27,7 +27,9 @@ except Exception as e:
 
 # Check supabase directly
 try:
-    from backend.08_Gestion_Datos.supabase.meteo_repository import leer_registros, estadisticas_store
+    import importlib
+    _repo = importlib.import_module("backend.08_Gestion_Datos.supabase_db.meteo_repository")
+    leer_registros, estadisticas_store = _repo.leer_registros, _repo.estadisticas_store
     print("\nSupabase Stats:")
     print(estadisticas_store())
 except Exception as e:
