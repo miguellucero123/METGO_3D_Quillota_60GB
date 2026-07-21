@@ -5,6 +5,7 @@ Autor: Sistema METGO
 Fecha: 2025-10-10
 """
 
+import os
 import pandas as pd
 import numpy as np
 import requests
@@ -22,8 +23,10 @@ class OpenMeteoData:
     
     def __init__(self):
         self.api_base = 'https://api.open-meteo.com/v1'
-        self.timeout = 30
-        self.max_retries = 3
+        # En Render (plan free) la salida a OpenMeteo puede ser lenta o intermitente;
+        # timeout y reintentos configurables por entorno para reducir fallos transitorios.
+        self.timeout = int(os.getenv('METGO_OPENMETEO_TIMEOUT', '25'))
+        self.max_retries = int(os.getenv('METGO_OPENMETEO_RETRIES', '3'))
         
         # Coordenadas de las estaciones METGO
         self.estaciones = {
@@ -38,6 +41,34 @@ class OpenMeteoData:
             'Olmue': {'lat': -33.0000, 'lon': -71.2167}
         }
     
+    def _get_json(self, url, params, intentos=None, timeout=None):
+        """GET a OpenMeteo con reintentos y backoff exponencial.
+
+        Devuelve (status_code, json|None). status_code=0 indica error de red.
+        Reintenta ante 429/5xx y errores de red (típicos en Render free).
+        """
+        intentos = intentos or self.max_retries
+        timeout = timeout or self.timeout
+        ultimo_error = None
+        for intento in range(1, intentos + 1):
+            try:
+                response = requests.get(url, params=params, timeout=timeout)
+                if response.status_code == 200:
+                    return 200, response.json()
+                if response.status_code in (429, 500, 502, 503, 504) and intento < intentos:
+                    time.sleep(min(2 ** intento, 8))
+                    continue
+                print(f"ERROR - OpenMeteo HTTP {response.status_code} (intento {intento}/{intentos})")
+                return response.status_code, None
+            except Exception as e:
+                ultimo_error = e
+                if intento < intentos:
+                    time.sleep(min(2 ** intento, 8))
+                    continue
+        if ultimo_error:
+            print(f"ERROR - Error de red OpenMeteo tras {intentos} intentos: {ultimo_error}")
+        return 0, None
+
     def obtener_datos_historicos(self, estacion='Quillota', dias=30):
         """Obtiene datos históricos de OpenMeteo"""
         print(f"Obteniendo datos historicos para {estacion} ({dias} dias)")
@@ -75,15 +106,13 @@ class OpenMeteoData:
             }
             
             print(f" Conectando con OpenMeteo API...")
-            response = requests.get(url, params=params, timeout=self.timeout)
-            
-            if response.status_code == 200:
-                data = response.json()
+            status, data = self._get_json(url, params)
+
+            if status == 200 and data:
                 return self._procesar_datos_openmeteo(data, estacion)
-            else:
-                print(f"ERROR - Error HTTP {response.status_code}")
-                return None
-                
+            print(f"ERROR - No se obtuvieron historicos (status {status})")
+            return None
+
         except Exception as e:
             print(f"ERROR - Error conectando con OpenMeteo: {e}")
             return None
@@ -124,20 +153,18 @@ class OpenMeteoData:
             }
             
             print(f" Obteniendo pronóstico de OpenMeteo...")
-            response = requests.get(url, params=params, timeout=self.timeout)
-            
-            if response.status_code == 200:
-                data = response.json()
+            status, data = self._get_json(url, params)
+
+            if status == 200 and data:
                 df = self._procesar_datos_openmeteo(data, estacion)
                 if df is not None and not df.empty:
                     df['fuente_datos'] = 'openmeteo_pronostico'
                     return df
                 print('WARN - OpenMeteo 200 sin filas válidas')
                 return None
-            else:
-                print(f"ERROR - Error HTTP {response.status_code}")
-                return None
-                
+            print(f"ERROR - No se obtuvo pronostico (status {status})")
+            return None
+
         except Exception as e:
             print(f"ERROR - Error obteniendo pronóstico: {e}")
             return None
@@ -169,8 +196,8 @@ class OpenMeteoData:
                 "forecast_days": min(dias, 16),  # OpenMeteo máximo razonable
             }
 
-            response = requests.get(url, params=params, timeout=self.timeout)
-            if response.status_code != 200:
+            status, data = self._get_json(url, params)
+            if status != 200 or not data:
                 return {
                     "estacion": estacion,
                     "direcciones": [],
@@ -179,7 +206,6 @@ class OpenMeteoData:
                     "fuente_datos": "openmeteo_pronostico_hourly",
                 }
 
-            data = response.json()
             hourly = data.get("hourly") or {}
             times = hourly.get("time") or []
             dirs = hourly.get("wind_direction_10m") or []
@@ -255,11 +281,10 @@ class OpenMeteoData:
                 "timezone": "America/Santiago",
                 "forecast_days": dias,
             }
-            response = requests.get(url, params=params, timeout=self.timeout)
-            if response.status_code != 200:
+            status, data = self._get_json(url, params)
+            if status != 200 or not data:
                 return self._precip_3h_desde_diario(estacion, dias)
 
-            data = response.json()
             hourly = data.get("hourly") or {}
             times = hourly.get("time") or []
             prec = hourly.get("precipitation") or []
@@ -607,16 +632,15 @@ class OpenMeteoData:
                 'daily': 'temperature_2m_max',
                 'forecast_days': 1
             }
-            
-            response = requests.get(url, params=params, timeout=timeout_sec)
-            
-            if response.status_code == 200:
+
+            status, _ = self._get_json(url, params, timeout=timeout_sec)
+
+            if status == 200:
                 print("OK - Conexión con OpenMeteo exitosa")
                 return True
-            else:
-                print(f"ERROR - Error de conexión: {response.status_code}")
-                return False
-                
+            print(f"ERROR - Error de conexión: {status}")
+            return False
+
         except Exception as e:
             print(f"ERROR - Error de conectividad: {e}")
             return False

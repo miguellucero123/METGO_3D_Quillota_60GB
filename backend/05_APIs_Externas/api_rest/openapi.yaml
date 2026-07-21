@@ -93,6 +93,48 @@ paths:
           description: Sin datos
         "503":
           description: Servicio de OpenMeteo temporalmente no disponible
+  /api/meteo/{estacion_id}/pronostico:
+    get:
+      tags: [meteo]
+      summary: Pronóstico diario (OpenMeteo persistido en Supabase; fallback desde BD)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: quillota }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, minimum: 1, maximum: 16 }
+      responses:
+        "200":
+          description: Lista diaria; `desde_cache=true` si se sirvió desde caché/BD
+        "401":
+          description: Sin token
+        "404":
+          description: Estación no encontrada
+        "503":
+          description: OpenMeteo no disponible y sin datos persistidos
+  /api/meteo/{estacion_id}/historico:
+    get:
+      tags: [meteo]
+      summary: Histórico diario (OpenMeteo + registros persistidos en Supabase)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: quillota }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 30, minimum: 1, maximum: 92 }
+      responses:
+        "200":
+          description: Lista diaria deduplicada (reales sobre sintéticos)
+        "401":
+          description: Sin token
+        "503":
+          description: OpenMeteo no disponible y sin datos persistidos
   /api/meteo/{estacion_id}/viento-horario:
     get:
       tags: [meteo]

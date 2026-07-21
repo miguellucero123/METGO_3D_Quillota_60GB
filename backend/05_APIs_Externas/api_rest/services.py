@@ -19,6 +19,7 @@ from datos_reales_openmeteo import OpenMeteoData, obtener_datos_meteorologicos_r
 
 # Caché OpenMeteo (Fase 1.4)
 _CACHE_MOD = None
+_CACHE_JSON = None
 for _p in Path(__file__).resolve().parents:
     _gd = _p / "backend" / "08_Gestion_Datos"
     if (_p / "metgo_paths.py").exists() and _gd.is_dir():
@@ -28,6 +29,12 @@ for _p in Path(__file__).resolve().parents:
             from cache_openmeteo import get_meteo_cached as _get_meteo_cached
 
             _CACHE_MOD = _get_meteo_cached
+        except ImportError:
+            pass
+        try:
+            from cache_openmeteo import get_json_cached as _get_json_cached
+
+            _CACHE_JSON = _get_json_cached
         except ImportError:
             pass
         break
@@ -227,11 +234,69 @@ def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
     if out.get("radiacion_solar_sum") is not None:
         mj = float(out["radiacion_solar_sum"])
         out["radiacion_solar"] = round((mj * 1e6) / (12 * 3600), 0)
+    # Propaga la marca de caché (dato real, servido desde caché por fallo de OpenMeteo).
+    dc = row.get("desde_cache")
+    if dc is not None and not (isinstance(dc, float) and pd.isna(dc)) and bool(dc):
+        out["desde_cache"] = True
+        edad = row.get("cache_edad_horas")
+        if edad is not None and not (isinstance(edad, float) and pd.isna(edad)):
+            out["cache_edad_horas"] = round(float(edad), 1)
     return out
 
 
+def _num(val: Any) -> float:
+    try:
+        if val is None:
+            return 0.0
+        return round(float(val), 1)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
+    """Fallback: último registro REAL persistido en meteo_store (Supabase).
+
+    Se usa solo cuando OpenMeteo (en vivo) y la caché local no devuelven datos.
+    No inventa datos: si no hay registros almacenados, devuelve None.
+    """
+    try:
+        from api_rest.integracion.meteo_store import leer_registros, leer_pronostico
+    except ImportError:
+        return None
+    try:
+        registros = leer_registros(estacion_id, 14)
+    except Exception:
+        registros = []
+    if not registros:
+        try:
+            registros = leer_pronostico(estacion_id, 2)
+        except Exception:
+            registros = []
+    if not registros:
+        return None
+    reciente = sorted(registros, key=lambda r: str(r.get("fecha") or ""))[-1]
+    return {
+        "estacion_id": estacion_id,
+        "estacion": slug_a_nombre(estacion_id),
+        "fecha": str(reciente.get("fecha") or "")[:10],
+        "temperatura": _num(reciente.get("temperatura_promedio") or reciente.get("temperatura")),
+        "temperatura_max": _num(reciente.get("temperatura_max")),
+        "temperatura_min": _num(reciente.get("temperatura_min")),
+        "humedad": _num(reciente.get("humedad")),
+        "viento": _num(reciente.get("viento")),
+        "precipitacion": _num(reciente.get("precipitacion")),
+        "presion": _num(reciente.get("presion")),
+        "fuente": str(reciente.get("fuente") or "supabase_db"),
+        "actualizado": datetime.now().isoformat(),
+        "tipo_dato": "observado",
+        "desde_cache": True,
+        "origen_fallback": "meteo_store",
+    }
+
+
 def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
-    """Resumen del día: prioriza histórico observado OpenMeteo; si no hay, pronóstico."""
+    """Resumen del día: prioriza histórico observado OpenMeteo; si no hay, pronóstico;
+    y si OpenMeteo/caché fallan, el último dato REAL persistido en Supabase."""
     nombre = slug_a_nombre(estacion_id)
     df_hist = _df_sin_prints(nombre, "historicos", 14)
     row = _fila_hoy(df_hist)
@@ -241,7 +306,8 @@ def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
         row = _fila_hoy(df)
         tipo_dato = "pronostico"
     if row is None:
-        return None
+        # Último recurso: base de datos persistida (datos reales, sin inventar).
+        return _resumen_desde_store(estacion_id)
     out = _fila_a_resumen(row, estacion_id)
     out["tipo_dato"] = tipo_dato
     return out
@@ -254,7 +320,52 @@ def _registros_desde_df(df: pd.DataFrame, estacion_id: str) -> list[dict[str, An
     return registros
 
 
+def _persistir_pronostico(estacion_id: str, registros: list[dict[str, Any]]) -> None:
+    """Guarda en Supabase solo filas con datos reales de OpenMeteo (nunca sintéticos)."""
+    reales = [
+        r for r in registros
+        if "sintetico" not in str(r.get("fuente", "")).lower()
+    ]
+    if not reales:
+        return
+    try:
+        from api_rest.integracion.meteo_store import guardar_pronostico
+
+        guardar_pronostico(estacion_id, reales)
+    except ImportError:
+        pass
+    except Exception:
+        pass
+
+
+def _pronostico_desde_store(estacion_id: str, dias: int) -> list[dict[str, Any]] | None:
+    """Fallback: pronóstico REAL persistido en Supabase (última sincronización)."""
+    try:
+        from api_rest.integracion.meteo_store import leer_pronostico
+    except ImportError:
+        return None
+    try:
+        filas = leer_pronostico(estacion_id, dias)
+    except Exception:
+        return None
+    if not filas:
+        return None
+    out = []
+    for r in filas:
+        out.append({
+            **r,
+            "estacion": slug_a_nombre(estacion_id),
+            "desde_cache": True,
+            "origen_fallback": "meteo_store",
+        })
+    return out
+
+
 def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | None:
+    """Pronóstico diario: OpenMeteo (validado) → persiste en Supabase → sirve.
+
+    Si OpenMeteo/caché fallan, sirve el último pronóstico REAL guardado en Supabase.
+    """
     nombre = slug_a_nombre(estacion_id)
     ventana = min(dias, 16)
     df = _df_sin_prints(nombre, "pronostico", ventana)
@@ -262,7 +373,34 @@ def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | 
     if df is not None and not df.empty:
         registros = _registros_desde_df(df, estacion_id)
     out = _dedupe_pronostico_por_dia(registros, dias)
-    return out if out else None
+    if out:
+        # Dato fresco de OpenMeteo: persistir en Supabase para servir desde BD.
+        if not any(r.get("desde_cache") for r in out):
+            _persistir_pronostico(estacion_id, out)
+        return out
+    return _pronostico_desde_store(estacion_id, dias)
+
+
+def _guardar_serie_supabase(estacion_id: str, tipo: str, payload: dict[str, Any]) -> None:
+    try:
+        from api_rest.integracion.meteo_store import guardar_serie
+
+        guardar_serie(estacion_id, tipo, payload)
+    except ImportError:
+        pass
+    except Exception:
+        pass
+
+
+def _leer_serie_supabase(estacion_id: str, tipo: str) -> dict[str, Any] | None:
+    try:
+        from api_rest.integracion.meteo_store import leer_serie
+
+        return leer_serie(estacion_id, tipo)
+    except ImportError:
+        return None
+    except Exception:
+        return None
 
 
 def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | None:
@@ -270,11 +408,29 @@ def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | No
     try:
         nombre = slug_a_nombre(estacion_id)
         om = OpenMeteoData()
-        data = om.obtener_viento_horario_pronostico(nombre, dias)
+
+        def _fetch_viento():
+            return om.obtener_viento_horario_pronostico(nombre, dias)
+
+        if _CACHE_JSON:
+            data = _CACHE_JSON(
+                f"viento_horario|{nombre}|{dias}",
+                _fetch_viento,
+                es_valido=lambda d: bool(d and d.get("direcciones")),
+            )
+        else:
+            data = _fetch_viento()
+        # Persistir dato fresco en Supabase; si no hubo dato, intentar desde Supabase.
+        if data and data.get("direcciones") and not data.get("desde_cache"):
+            _guardar_serie_supabase(estacion_id, f"viento_horario_{dias}", data)
+        if not data or not data.get("direcciones"):
+            desde_db = _leer_serie_supabase(estacion_id, f"viento_horario_{dias}")
+            if desde_db and desde_db.get("direcciones"):
+                data = desde_db
         if not data:
             return {"direcciones": [], "velocidades": [], "unidad": "m/s", "fuente": "openmeteo_hourly"}
         # Normaliza claves al formato esperado por el frontend.
-        return {
+        out = {
             "estacion_id": estacion_id,
             "estacion": data.get("estacion", nombre),
             "direcciones": data.get("direcciones") or [],
@@ -282,6 +438,9 @@ def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | No
             "unidad": data.get("unidad") or "m/s",
             "fuente": data.get("fuente_datos") or "openmeteo_hourly",
         }
+        if data.get("desde_cache"):
+            out["desde_cache"] = True
+        return out
     except Exception:
         return {"direcciones": [], "velocidades": [], "unidad": "m/s", "fuente": "openmeteo_hourly_error"}
 
@@ -583,7 +742,27 @@ def pronostico_precipitacion_calibrado(estacion_id: str, dias: int = 7) -> dict[
 def precipitacion_horaria_3h_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any]:
     nombre = slug_a_nombre(estacion_id)
     om = OpenMeteoData()
-    return om.obtener_precipitacion_horaria_3h(nombre, min(dias, 16))
+    ventana = min(dias, 16)
+
+    def _fetch_3h():
+        return om.obtener_precipitacion_horaria_3h(nombre, ventana)
+
+    if _CACHE_JSON:
+        data = _CACHE_JSON(
+            f"precip_3h|{nombre}|{ventana}",
+            _fetch_3h,
+            es_valido=lambda d: bool(d and d.get("fechas")),
+        )
+    else:
+        data = _fetch_3h()
+    # Persistir dato fresco en Supabase; si no hubo dato, intentar desde Supabase.
+    if data and data.get("fechas") and not data.get("desde_cache"):
+        _guardar_serie_supabase(estacion_id, f"precip_3h_{ventana}", data)
+    if not data or not data.get("fechas"):
+        desde_db = _leer_serie_supabase(estacion_id, f"precip_3h_{ventana}")
+        if desde_db and desde_db.get("fechas"):
+            return desde_db
+    return data
 
 
 def pronostico_precipitacion_3h_calibrado(

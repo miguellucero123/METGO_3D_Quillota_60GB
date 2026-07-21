@@ -1,0 +1,39 @@
+# ETL meteorológico programado: OpenMeteo → Supabase vía /api/cron/sync
+# Corre a las 00:00 y 12:00 UTC (modelos globales actualizan en esos ciclos).
+# Requiere el secret CRON_SECRET (mismo valor que la env CRON_SECRET en Render).
+name: ETL Meteo (00 y 12 UTC)
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Despertar API (cold start Render)
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://metgo-api.onrender.com/api/health" || true)
+            echo "health intento $i -> HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 15
+          done
+          echo "La API no respondió tras 12 intentos" && exit 1
+
+      - name: Sincronizar OpenMeteo -> Supabase
+        run: |
+          resp=$(curl -s -w "\n%{http_code}" --max-time 600 \
+            "https://metgo-api.onrender.com/api/cron/sync?token=${{ secrets.CRON_SECRET }}")
+          body=$(echo "$resp" | head -n -1)
+          code=$(echo "$resp" | tail -n 1)
+          echo "HTTP $code"
+          echo "$body"
+          [ "$code" = "200" ] || exit 1
+
+      - name: Verificar estado ETL
+        run: |
+          curl -s --max-time 60 "https://metgo-api.onrender.com/api/datos/etl/status"

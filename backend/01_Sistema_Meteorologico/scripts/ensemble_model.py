@@ -1,3 +1,4 @@
+import time
 import requests
 import pandas as pd
 import numpy as np
@@ -29,14 +30,19 @@ class EnsembleMeteorologico:
             'models': ','.join(self.modelos)
         }
         
-        try:
-            response = requests.get(self.base_url, params=params, timeout=15)
-            response.raise_for_status()
-            datos = response.json()
-            return self._procesar_estadisticas_diarias(datos)
-        except Exception as e:
-            print(f"[ERROR] Fallo en la extracción del Ensemble: {e}")
-            return None
+        ultimo_error = None
+        for intento in range(1, 4):
+            try:
+                response = requests.get(self.base_url, params=params, timeout=20)
+                response.raise_for_status()
+                datos = response.json()
+                return self._procesar_estadisticas_diarias(datos)
+            except Exception as e:
+                ultimo_error = e
+                if intento < 3:
+                    time.sleep(min(2 ** intento, 8))
+        print(f"[ERROR] Fallo en la extracción del Ensemble tras 3 intentos: {ultimo_error}")
+        return None
 
     def _procesar_estadisticas_diarias(self, datos_crudos):
         """Procesa los arrays de los diferentes modelos en un dataframe estadístico"""

@@ -82,6 +82,65 @@ def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
     return []
 
 
+def _repositorio():
+    """Devuelve (meteo_repository, client_activo) o (None, False) si Supabase no está disponible."""
+    import sys
+    import importlib
+
+    try:
+        sys.path.append(str(_db_path().parent.parent.parent.parent))
+        meteo_repository = importlib.import_module("backend.08_Gestion_Datos.supabase.meteo_repository")
+        client_module = importlib.import_module("backend.08_Gestion_Datos.supabase.client")
+        return meteo_repository, bool(client_module.get_supabase_client())
+    except ImportError as e:
+        print(f"Error al importar módulos de Supabase: {e}")
+        return None, False
+
+
+def guardar_pronostico(estacion_id: str, filas: list[dict[str, Any]], fuente: str = "openmeteo_pronostico") -> int:
+    if not filas:
+        return 0
+    repo, activo = _repositorio()
+    if repo and activo:
+        try:
+            return repo.guardar_pronostico(estacion_id, filas, fuente)
+        except Exception as e:
+            print(f"Error al guardar pronostico en Supabase: {e}")
+    return 0
+
+
+def leer_pronostico(estacion_id: str, dias: int = 7) -> list[dict[str, Any]]:
+    repo, activo = _repositorio()
+    if repo and activo:
+        try:
+            return repo.leer_pronostico(estacion_id, dias)
+        except Exception as e:
+            print(f"Error al leer pronostico de Supabase: {e}")
+    return []
+
+
+def guardar_serie(estacion_id: str, tipo: str, payload: dict[str, Any]) -> bool:
+    if not payload:
+        return False
+    repo, activo = _repositorio()
+    if repo and activo:
+        try:
+            return repo.guardar_serie(estacion_id, tipo, payload)
+        except Exception as e:
+            print(f"Error al guardar serie en Supabase: {e}")
+    return False
+
+
+def leer_serie(estacion_id: str, tipo: str, max_edad_horas: int = 48) -> dict[str, Any] | None:
+    repo, activo = _repositorio()
+    if repo and activo:
+        try:
+            return repo.leer_serie(estacion_id, tipo, max_edad_horas)
+        except Exception as e:
+            print(f"Error al leer serie de Supabase: {e}")
+    return None
+
+
 def estadisticas_store() -> dict[str, Any]:
     import sys
     import importlib

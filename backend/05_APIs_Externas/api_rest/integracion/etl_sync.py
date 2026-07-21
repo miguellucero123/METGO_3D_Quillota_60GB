@@ -12,7 +12,12 @@ from pathlib import Path
 from typing import Any
 
 from api_rest.integracion import meteo_store
-from api_rest.services import SLUG_A_NOMBRE, ESTACIONES_PRINCIPALES, historico_meteo
+from api_rest.services import (
+    SLUG_A_NOMBRE,
+    ESTACIONES_PRINCIPALES,
+    historico_meteo,
+    pronostico_meteo,
+)
 
 
 def _runtime_dir() -> Path:
@@ -152,8 +157,9 @@ def _float(v: Any) -> float | None:
 
 
 def sincronizar_estaciones(dias: int = 30, incluir_csv: bool = True, origen: str = "api") -> dict[str, Any]:
-    """Pobla el store desde OpenMeteo para todas las estaciones principales."""
+    """Pobla el store desde OpenMeteo (histórico + pronóstico) para todas las estaciones."""
     detalle: dict[str, int] = {}
+    detalle_pronostico: dict[str, int] = {}
     errores: list[str] = []
     for slug in ESTACIONES_PRINCIPALES:
         try:
@@ -162,10 +168,18 @@ def sincronizar_estaciones(dias: int = 30, incluir_csv: bool = True, origen: str
         except Exception as e:
             errores.append(f"{slug}: {e}")
             detalle[slug] = 0
+        try:
+            # pronostico_meteo persiste en Supabase (meteo_pronostico) al obtener datos frescos
+            pron = pronostico_meteo(slug, dias=7)
+            detalle_pronostico[slug] = len(pron) if pron else 0
+        except Exception as e:
+            errores.append(f"{slug} (pronostico): {e}")
+            detalle_pronostico[slug] = 0
     csv_res = importar_csv_historico() if incluir_csv else {"importados": 0, "omitido": True}
     stats = meteo_store.estadisticas_store()
     out = {
         "estaciones_sync": detalle,
+        "pronostico_sync": detalle_pronostico,
         "csv": csv_res,
         "store": stats,
         "errores": errores,
