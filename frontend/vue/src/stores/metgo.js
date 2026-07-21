@@ -46,13 +46,19 @@ export const useMetgoStore = defineStore('metgo', () => {
     }
   }
 
-  async function cargarDatosMeteo() {
+  async function cargarDatosMeteo(retry = true) {
     cargando.value = true
     error.value = null
     try {
       datosMeteo.value = await fetchResumenMeteo(estacionActiva.value, tipoAnalisis.value)
     } catch (e) {
-      error.value = e.message ?? 'Error al cargar datos'
+      const msg = e.message ?? 'Error al cargar datos'
+      // Retry automático si Render está en cold start (404 transitorio)
+      if (retry && msg.includes('iniciando')) {
+        await new Promise((r) => setTimeout(r, 3000))
+        return cargarDatosMeteo(false)
+      }
+      error.value = msg
       datosMeteo.value = null
     } finally {
       cargando.value = false

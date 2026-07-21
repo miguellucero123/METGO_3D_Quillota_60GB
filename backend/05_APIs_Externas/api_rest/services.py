@@ -755,7 +755,7 @@ def health_check() -> dict[str, Any]:
     if ahora - _ULTIMA_VERIFICACION > 60:
         om = OpenMeteoData()
         with contextlib.redirect_stdout(io.StringIO()):
-            _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=2)
+            _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=5)
         _ULTIMA_LATENCIA = int((time.perf_counter() - t0) * 1000)
         _ULTIMA_VERIFICACION = ahora
 

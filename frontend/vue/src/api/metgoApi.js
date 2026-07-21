@@ -56,6 +56,7 @@ api.interceptors.response.use(
     if (status === 403 && onForbidden) {
       onForbidden()
     }
+    const url = err.config?.url ?? ''
     let msg =
       err.response?.data?.error ??
       err.message ??
@@ -64,8 +65,17 @@ api.interceptors.response.use(
       msg =
         'La API en Render está iniciando o tardó demasiado (plan gratuito). ' +
         'Espere 60 s, abra https://metgo-api.onrender.com/api/health en otra pestaña y vuelva a intentar.'
+    } else if (status === 404 && url.includes('/meteo/')) {
+      // Render (plan free) devuelve 404 durante cold start antes de que Flask arranque.
+      // Si el body tiene "estacion_id" es un 404 real de validación; si no, es cold start.
+      const esRealNotFound = err.response?.data?.estacion_id
+      if (!esRealNotFound) {
+        msg =
+          'La API en Render aún está iniciando (plan gratuito). ' +
+          'Recargue la página en 30 segundos.'
+      }
     } else if (status === 503) {
-      msg = err.response?.data?.error ?? 'El servicio meteorológico (OpenMeteo) alcanzó su límite o no está disponible temporalmente. Espere unos minutos y recargue.'
+      msg = err.response?.data?.error ?? 'El servicio meteorológico (OpenMeteo) no está disponible temporalmente. Recargue en unos minutos.'
     }
     return Promise.reject(new Error(msg))
   }
