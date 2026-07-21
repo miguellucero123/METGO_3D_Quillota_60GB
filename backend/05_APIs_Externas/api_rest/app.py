@@ -98,6 +98,10 @@ def create_app() -> Flask:
     @app.get("/api/public/meteo/<estacion_id>")
     def public_meteo(estacion_id: str):
         """Resumen meteorológico público (solo lectura, sin JWT)."""
+        key = estacion_id.lower().replace("-", "_")
+        if key not in services.SLUG_A_NOMBRE:
+            return jsonify({"error": "No encontrado"}), 404
+
         data = services.resumen_meteo(estacion_id)
         if data is None:
             return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
@@ -111,6 +115,10 @@ def create_app() -> Flask:
     @app.get("/api/meteo/<estacion_id>")
     @auth_required
     def meteo_resumen(estacion_id: str):
+        key = estacion_id.lower().replace("-", "_")
+        if key not in services.SLUG_A_NOMBRE:
+            return jsonify({"error": "No encontrado"}), 404
+
         tipo = request.args.get("tipo", "pronostico")
         if tipo == "historico":
             hist = services.historico_meteo(estacion_id, 7)
