@@ -1,10 +1,30 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { LineChart } from 'echarts/charts'
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  MarkLineComponent,
+} from 'echarts/components'
+import VChart from 'vue-echarts'
 import { useMetgoStore } from '@/stores/metgo'
 import { fetchPronosticoHeladas } from '@/api/metgoApi'
 import { riesgoHeladaPorCultivo } from '@/utils/agroInsights'
 import { severidadAlertaColor } from '@/utils/colorScale'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
+import {
+  CHART_COLORS,
+  tooltipOscuro,
+  grillaBase,
+  ejeCategoria,
+  ejeValor,
+  serieLineaVerde,
+} from '@/utils/echartsTheme'
+
+use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent])
 
 const store = useMetgoStore()
 const data = ref(null)
@@ -34,6 +54,42 @@ const diasFiltrados = computed(() => {
 })
 
 const peor = computed(() => data.value?.peor_dia)
+
+const chartOption = computed(() => {
+  const dias = data.value?.dias ?? []
+  const labels = dias.map((d) => d.fecha)
+  const tmins = dias.map((d) => d.temperatura_min)
+  return {
+    backgroundColor: 'transparent',
+    tooltip: tooltipOscuro((params) => {
+      const p = params[0]
+      return `<div style="font-weight:bold;margin-bottom:5px;border-bottom:1px solid #4b5563;padding-bottom:5px;">${p.axisValue}</div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:${p.color};margin-right:15px;">● T. Mínima</span>
+                <b>${p.value} °C</b>
+              </div>`
+    }),
+    grid: { ...grillaBase(), bottom: '8%' },
+    xAxis: [ejeCategoria(labels)],
+    yAxis: [
+      ejeValor('Temperatura (°C)', CHART_COLORS.verde, {
+        position: 'left',
+        axisLabel: { formatter: '{value} °C', color: CHART_COLORS.texto },
+      }),
+    ],
+    series: [
+      serieLineaVerde('T. Mínima', tmins, {
+        symbolSize: 8,
+        markLine: {
+          silent: true,
+          data: [{ yAxis: 0, name: 'Helada' }],
+          lineStyle: { color: CHART_COLORS.rojo, type: 'dashed' },
+          label: { position: 'start', formatter: 'Helada (0°C)', color: CHART_COLORS.texto },
+        },
+      }),
+    ],
+  }
+})
 </script>
 
 <template>
@@ -57,6 +113,9 @@ const peor = computed(() => data.value?.peor_dia)
     <template v-else>
       <div v-if="data.alerta_activa && peor" class="alerta-helada">
         <strong>Alerta activa:</strong> mín {{ peor.temperatura_min }}°C el {{ peor.fecha }}
+      </div>
+      <div class="chart-wrap">
+        <v-chart class="chart" :option="chartOption" autoresize />
       </div>
       <ul class="dias-list">
         <li v-for="d in diasFiltrados" :key="d.fecha" class="dia-item">
@@ -101,6 +160,8 @@ const peor = computed(() => data.value?.peor_dia)
   font-size: 0.82rem;
   margin-bottom: 0.65rem;
 }
+.chart-wrap { width: 100%; height: 300px; margin-bottom: 0.75rem; }
+.chart { width: 100%; height: 100%; }
 .dias-list { list-style: none; margin: 0; padding: 0; }
 .dia-item {
   display: grid;

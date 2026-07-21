@@ -1,9 +1,39 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { LineChart, BarChart } from 'echarts/charts'
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  DataZoomComponent,
+} from 'echarts/components'
+import VChart from 'vue-echarts'
 import { useMetgoStore } from '@/stores/metgo'
 import { fetchPrecipitacionHistorico } from '@/api/metgoApi'
-import { precipColor } from '@/utils/colorScale'
 import { exportarDatosCSV } from '@/utils/exportData'
+import {
+  CHART_COLORS,
+  tooltipOscuro,
+  leyendaSuperior,
+  zoomSlider,
+  grillaBase,
+  ejeCategoria,
+  ejeValor,
+  serieBarrasAzules,
+  serieLineaVerde,
+} from '@/utils/echartsTheme'
+
+use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  DataZoomComponent,
+])
 
 const store = useMetgoStore()
 const diasRango = ref(30)
@@ -38,11 +68,52 @@ async function cargar() {
 watch(() => store.estacionActiva, cargar, { immediate: true })
 watch(diasRango, cargar)
 
-const maxP = computed(() => Math.max(1, ...datos.value.map((d) => d.precipitacion)))
-
 function fmt(f) {
   return new Date(f).toLocaleDateString('es-CL', { month: 'short', day: 'numeric' })
 }
+
+const chartOption = computed(() => {
+  const labels = datos.value.map((d) => fmt(d.fecha))
+  const precip = datos.value.map((d) => d.precipitacion)
+  let s = 0
+  const acumulado = precip.map((p) => {
+    s += p || 0
+    return Math.round(s * 10) / 10
+  })
+
+  return {
+    backgroundColor: 'transparent',
+    tooltip: tooltipOscuro((params) => {
+      let html = `<div style="font-weight:bold;margin-bottom:5px;border-bottom:1px solid #4b5563;padding-bottom:5px;">${params[0].axisValue}</div>`
+      params.forEach((p) => {
+        html += `<div style="display:flex;justify-content:space-between;margin-top:2px;">
+                   <span style="color:${p.color};margin-right:15px;">● ${p.seriesName}</span>
+                   <b>${p.value ?? 0} mm</b>
+                 </div>`
+      })
+      return html
+    }),
+    legend: leyendaSuperior(['Precipitación diaria', 'Acumulado']),
+    dataZoom: zoomSlider(),
+    grid: grillaBase(),
+    xAxis: [ejeCategoria(labels)],
+    yAxis: [
+      ejeValor('Lluvia (mm)', CHART_COLORS.azul, {
+        position: 'left',
+        axisLabel: { formatter: '{value} mm', color: CHART_COLORS.texto },
+      }),
+      ejeValor('Acumulado (mm)', CHART_COLORS.verde, {
+        position: 'right',
+        splitLine: { show: false },
+        axisLabel: { formatter: '{value} mm', color: CHART_COLORS.texto },
+      }),
+    ],
+    series: [
+      serieBarrasAzules('Precipitación diaria', precip, { yAxisIndex: 0 }),
+      serieLineaVerde('Acumulado', acumulado, { yAxisIndex: 1, symbolSize: 4 }),
+    ],
+  }
+})
 </script>
 
 <template>
@@ -58,21 +129,10 @@ function fmt(f) {
 
     <div v-if="cargando" class="loading">Cargando histórico…</div>
     <div v-else-if="errorMsg" class="loading error-msg">{{ errorMsg }}</div>
-    <svg v-else-if="datos.length > 0" viewBox="0 0 100 60" class="chart">
-      <line x1="2" y1="55" x2="98" y2="55" stroke="var(--color-border, #334155)" stroke-width="0.5" />
-      <rect
-        v-for="(d, i) in datos"
-        :key="d.fecha"
-        :x="(i / Math.max(datos.length, 1)) * 96 + 2"
-        :y="55 - (d.precipitacion / maxP) * 48"
-        :width="96 / Math.max(datos.length, 1) - 0.5"
-        :height="(d.precipitacion / maxP) * 48"
-        :fill="precipColor(d.precipitacion)"
-        rx="0.5"
-      >
-        <title>{{ fmt(d.fecha) }}: {{ d.precipitacion }} mm</title>
-      </rect>
-    </svg>
+    <div v-else-if="datos.length > 0" class="chart-wrap">
+      <v-chart class="chart" :option="chartOption" autoresize />
+    </div>
+    <div v-else class="loading">Sin datos de precipitación en el rango</div>
 
     <div v-if="estadisticas" class="stats">
       <div><span>Total</span><strong>{{ estadisticas.precipitacion_total }} mm</strong></div>
@@ -96,10 +156,18 @@ function fmt(f) {
   cursor: pointer;
 }
 .rango button.active { background: #0284c7; color: #fff; border-color: #0284c7; }
-.chart { width: 100%; height: 160px; margin-top: 0.5rem; }
-.stats { 
-  display: flex; gap: 1rem; margin-top: 1rem; 
-  font-size: 0.8rem; 
+.chart-wrap {
+  width: 100%;
+  height: 380px;
+  background: var(--color-surface, #1e293b);
+  border: 1px solid var(--color-border, #334155);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.chart { width: 100%; height: 100%; }
+.stats {
+  display: flex; gap: 1rem; margin-top: 1rem;
+  font-size: 0.8rem;
   background: var(--color-background, rgba(15, 23, 42, 0.4));
   padding: 0.75rem;
   border-radius: 8px;
@@ -107,7 +175,7 @@ function fmt(f) {
 }
 .stats div span { color: var(--color-text-muted); }
 .stats strong { display: block; font-size: 1.1rem; color: #38bdf8; margin-top: 0.2rem; }
-.loading { 
+.loading {
   padding: 2.5rem; text-align: center; color: var(--color-text-muted, #94a3b8);
   background: var(--color-surface, #1e293b);
   border-radius: 8px;

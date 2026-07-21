@@ -94,10 +94,10 @@ watch(() => store.estacionActiva, cargarAlertas)
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
   background: var(--color-surface, #1e293b);
-  border: 1px solid #bae6fd;
+  border: 1px solid var(--color-border, #334155);
   border-radius: 8px;
 }
-.avanzada-banner p { margin: 0.2rem 0 0; font-size: 0.8rem; color: #0369a1; }
+.avanzada-banner p { margin: 0.2rem 0 0; font-size: 0.8rem; color: #94a3b8; }
 .banner-link {
   font-size: 0.82rem;
   font-weight: 600;
@@ -127,8 +127,8 @@ watch(() => store.estacionActiva, cargarAlertas)
   padding: 0.75rem;
   background: var(--color-surface, #1e293b);
 }
-.alerta-card.sev-rojo { border-left-color: #ef4444; background: #fef2f2; }
+.alerta-card.sev-rojo { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 .alerta-card h4 { margin: 0 0 0.35rem; font-size: 0.9rem; }
-.alerta-card .mm { font-size: 0.8rem; color: #4b5563; }
+.alerta-card .mm { font-size: 0.8rem; color: #94a3b8; }
 .sin-alertas { padding: 1.5rem; text-align: center; color: #10b981; font-weight: 600; }
 </style>
