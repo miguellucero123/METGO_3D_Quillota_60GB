@@ -100,7 +100,7 @@ def create_app() -> Flask:
         """Resumen meteorológico público (solo lectura, sin JWT)."""
         data = services.resumen_meteo(estacion_id)
         if data is None:
-            return jsonify({"error": "Sin datos para la estacion"}), 404
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
 
     @app.get("/api/estaciones")
@@ -118,7 +118,7 @@ def create_app() -> Flask:
         else:
             data = services.resumen_meteo(estacion_id)
         if data is None:
-            return jsonify({"error": "Sin datos para la estacion"}), 404
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/pronostico")
@@ -127,7 +127,7 @@ def create_app() -> Flask:
         dias = request.args.get("dias", 7, type=int)
         data = services.pronostico_meteo(estacion_id, dias)
         if data is None:
-            return jsonify({"error": "Sin pronostico"}), 404
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/viento-horario")
@@ -136,7 +136,7 @@ def create_app() -> Flask:
         dias = request.args.get("dias", 7, type=int)
         data = services.viento_horario_meteo(estacion_id, dias)
         if not data:
-            return jsonify({"error": "Sin datos de viento"}), 404
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/historico")
@@ -145,7 +145,7 @@ def create_app() -> Flask:
         dias = request.args.get("dias", 30, type=int)
         data = services.historico_meteo(estacion_id, dias)
         if data is None:
-            return jsonify({"error": "Sin historico"}), 404
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
 
     @app.get("/api/alertas")

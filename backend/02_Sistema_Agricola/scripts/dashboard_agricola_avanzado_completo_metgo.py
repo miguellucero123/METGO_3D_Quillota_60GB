@@ -491,7 +491,7 @@ class DashboardAgricolaAvanzadoCompleto:
                 showlegend=False,
                 height=600,
                 template='plotly_white'
-            )
+            , showlegend=False)
             
             st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
             
@@ -628,7 +628,7 @@ class DashboardAgricolaAvanzadoCompleto:
             showlegend=True,
             height=400,
             template='plotly_white'
-        )
+        , showlegend=False)
         
         st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
         

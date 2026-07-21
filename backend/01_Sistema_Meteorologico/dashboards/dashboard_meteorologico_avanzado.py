@@ -229,7 +229,7 @@ def crear_grafico_temperaturas_avanzado(df):
     fig.update_layout(
         title='🌡️ Evolución de Temperaturas - Quillota',
         xaxis_title='Fecha',
-        yaxis_title='Temperatura (°C)',
+        yaxis_title='Temperatura (°C, showlegend=False, showlegend=False)',
         hovermode='x unified',
         height=450,
         showlegend=True
@@ -265,7 +265,7 @@ def crear_grafico_precipitacion_avanzado(df):
     fig.update_layout(
         title='🌧️ Precipitación Diaria y Acumulada',
         xaxis_title='Fecha',
-        yaxis=dict(title='Precipitación Diaria (mm)', side='left'),
+        yaxis=dict(title='Precipitación Diaria (mm, showlegend=False, showlegend=False)', side='left'),
         yaxis2=dict(title='Precipitación Acumulada (mm)', side='right', overlaying='y'),
         height=400,
         hovermode='x unified'
@@ -294,7 +294,7 @@ def crear_grafico_viento_rosa(df):
     fig.update_layout(
         title='💨 Rosa de Vientos - Distribución por Dirección',
         xaxis_title='Dirección',
-        yaxis_title='Frecuencia (días)',
+        yaxis_title='Frecuencia (días, showlegend=False, showlegend=False)',
         height=350
     )
     
@@ -323,7 +323,7 @@ def crear_grafico_humedad_presion(df):
     fig.update_layout(
         title='💧 Humedad Relativa y Presión Atmosférica',
         xaxis_title='Fecha',
-        yaxis=dict(title='Humedad Relativa (%)', side='left'),
+        yaxis=dict(title='Humedad Relativa (%, showlegend=False, showlegend=False)', side='left'),
         yaxis2=dict(title='Presión Atmosférica (hPa)', side='right', overlaying='y'),
         height=400,
         hovermode='x unified'
@@ -468,13 +468,13 @@ def main():
         col1, col2 = st.columns(2)
         
         with col1:
-            st.plotly_chart(crear_grafico_temperaturas_avanzado(df_filtrado), use_container_width=True)
+            st.plotly_chart(crear_grafico_temperaturas_avanzado(df_filtrado), config=PLOTLY_CONFIG, use_container_width=True)
         
         with col2:
-            st.plotly_chart(crear_grafico_precipitacion_avanzado(df_filtrado), use_container_width=True)
+            st.plotly_chart(crear_grafico_precipitacion_avanzado(df_filtrado), config=PLOTLY_CONFIG, use_container_width=True)
         
         # Gráfico de humedad y presión
-        st.plotly_chart(crear_grafico_humedad_presion(df_filtrado), use_container_width=True)
+        st.plotly_chart(crear_grafico_humedad_presion(df_filtrado), config=PLOTLY_CONFIG, use_container_width=True)
         
         # Alertas
         mostrar_alertas_meteorologicas(df_filtrado)
@@ -508,10 +508,10 @@ def main():
                 title='Distribución de Temperaturas Promedio',
                 labels={'temperatura_promedio': 'Temperatura (°C)', 'count': 'Frecuencia'}
             )
-            st.plotly_chart(fig_hist, use_container_width=True)
+            st.plotly_chart(fig_hist, config=PLOTLY_CONFIG, use_container_width=True)
         
         # Gráfico de temperaturas
-        st.plotly_chart(crear_grafico_temperaturas_avanzado(df_filtrado), use_container_width=True)
+        st.plotly_chart(crear_grafico_temperaturas_avanzado(df_filtrado), config=PLOTLY_CONFIG, use_container_width=True)
     
     elif vista == "🌧️ Análisis de Precipitación":
         st.subheader("🌧️ Análisis Detallado de Precipitación")
@@ -545,10 +545,10 @@ def main():
                 title='Precipitación Acumulada',
                 labels={'precip_acumulada': 'Precipitación Acumulada (mm)'}
             )
-            st.plotly_chart(fig_acum, use_container_width=True)
+            st.plotly_chart(fig_acum, config=PLOTLY_CONFIG, use_container_width=True)
         
         # Gráfico de precipitación
-        st.plotly_chart(crear_grafico_precipitacion_avanzado(df_filtrado), use_container_width=True)
+        st.plotly_chart(crear_grafico_precipitacion_avanzado(df_filtrado), config=PLOTLY_CONFIG, use_container_width=True)
     
     elif vista == "💨 Análisis de Viento":
         st.subheader("💨 Análisis Detallado de Viento")
@@ -570,7 +570,7 @@ def main():
         
         with col2:
             # Rosa de vientos
-            st.plotly_chart(crear_grafico_viento_rosa(df_filtrado), use_container_width=True)
+            st.plotly_chart(crear_grafico_viento_rosa(df_filtrado), config=PLOTLY_CONFIG, use_container_width=True)
         
         # Gráfico de velocidad de viento
         fig_viento = px.line(
@@ -580,7 +580,7 @@ def main():
             title='Evolución de la Velocidad del Viento',
             labels={'viento_velocidad': 'Velocidad (km/h)'}
         )
-        st.plotly_chart(fig_viento, use_container_width=True)
+        st.plotly_chart(fig_viento, config=PLOTLY_CONFIG, use_container_width=True)
     
     elif vista == "📈 Tendencias":
         st.subheader("📈 Análisis de Tendencias")
@@ -622,7 +622,7 @@ def main():
                 trendline="ols",
                 title='Tendencia de Temperatura con Regresión Lineal'
             )
-            st.plotly_chart(fig_temp_trend, use_container_width=True)
+            st.plotly_chart(fig_temp_trend, config=PLOTLY_CONFIG, use_container_width=True)
         
         with col2:
             fig_precip_trend = px.scatter(
@@ -632,7 +632,7 @@ def main():
                 trendline="ols",
                 title='Tendencia de Precipitación con Regresión Lineal'
             )
-            st.plotly_chart(fig_precip_trend, use_container_width=True)
+            st.plotly_chart(fig_precip_trend, config=PLOTLY_CONFIG, use_container_width=True)
     
     elif vista == "🔍 Datos Detallados":
         st.subheader("🔍 Datos Meteorológicos Detallados")
@@ -659,7 +659,7 @@ def main():
                     aspect="auto",
                     title="Matriz de Correlaciones"
                 )
-                st.plotly_chart(fig_corr, use_container_width=True)
+                st.plotly_chart(fig_corr, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Footer
     st.markdown("---")

@@ -290,7 +290,7 @@ class SistemaAlertasVisualesIntegrado:
             )
             fig.update_layout(
                 title="Estado de Alertas Meteorológicas",
-                xaxis=dict(showgrid=False, showticklabels=False, showlegend=False),
+                xaxis=dict(showgrid=False, showticklabels=False, showlegend=False, showlegend=False),
                 yaxis=dict(showgrid=False, showticklabels=False),
                 height=300
             )
@@ -323,7 +323,7 @@ class SistemaAlertasVisualesIntegrado:
             yaxis_title="Valor",
             height=400,
             showlegend=False
-        )
+        , showlegend=False)
         
         return fig
     
@@ -374,7 +374,7 @@ class SistemaAlertasVisualesIntegrado:
             xaxis_title="Variables Meteorológicas",
             yaxis_title="Estaciones",
             height=400
-        , showlegend=False)
+        , showlegend=False, showlegend=False)
         
         return fig
     

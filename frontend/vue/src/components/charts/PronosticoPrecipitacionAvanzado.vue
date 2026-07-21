@@ -10,18 +10,21 @@ const cargando = ref(false)
 const modo = ref('precip')
 const resolucion = ref('3h')
 const datos = ref(null)
+const errorMsg = ref(null)
 const tooltip = ref(null)
 
 async function cargar() {
   cargando.value = true
+  errorMsg.value = null
   try {
     datos.value = await fetchPrecipitacionCalibrada(
       store.estacionActiva,
       7,
       resolucion.value
     )
-  } catch {
+  } catch (err) {
     datos.value = null
+    errorMsg.value = err.message
   } finally {
     cargando.value = false
   }
@@ -139,6 +142,7 @@ function exportCsv() {
     </header>
 
     <div v-if="cargando" class="skeleton">Cargando pronóstico…</div>
+    <div v-else-if="errorMsg" class="empty error-msg">{{ errorMsg }}</div>
     <div v-else-if="!datos" class="empty">Sin datos de precipitación</div>
 
     <template v-else>

@@ -64,6 +64,8 @@ api.interceptors.response.use(
       msg =
         'La API en Render está iniciando o tardó demasiado (plan gratuito). ' +
         'Espere 60 s, abra https://metgo-api.onrender.com/api/health en otra pestaña y vuelva a intentar.'
+    } else if (status === 503) {
+      msg = err.response?.data?.error ?? 'El servicio meteorológico (OpenMeteo) alcanzó su límite o no está disponible temporalmente. Espere unos minutos y recargue.'
     }
     return Promise.reject(new Error(msg))
   }

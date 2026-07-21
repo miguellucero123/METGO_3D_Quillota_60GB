@@ -69,13 +69,13 @@ PLOTLY_CONFIG = {
                 contenido = contenido.replace('use_container_width=True', "width='stretch'")
                 cambios_realizados.append('Corregido use_container_width')
             
-            # 3. Corregir config={'displayModeBar': False} por config=PLOTLY_CONFIG
-            if "config={'displayModeBar': False}" in contenido:
-                contenido = contenido.replace("config={'displayModeBar': False}", 'config=PLOTLY_CONFIG')
+            # 3. Corregir config=PLOTLY_CONFIG por config=PLOTLY_CONFIG
+            if "config=PLOTLY_CONFIG" in contenido:
+                contenido = contenido.replace("config=PLOTLY_CONFIG", 'config=PLOTLY_CONFIG')
                 cambios_realizados.append('Corregido config displayModeBar False')
             
-            if "config={'displayModeBar': True}" in contenido:
-                contenido = contenido.replace("config={'displayModeBar': True}", 'config=PLOTLY_CONFIG')
+            if "config=PLOTLY_CONFIG" in contenido:
+                contenido = contenido.replace("config=PLOTLY_CONFIG", 'config=PLOTLY_CONFIG')
                 cambios_realizados.append('Corregido config displayModeBar True')
             
             # 4. Agregar config=PLOTLY_CONFIG a st.plotly_chart si no tiene config
@@ -86,7 +86,7 @@ PLOTLY_CONFIG = {
             for match in matches:
                 if 'config=' not in match:
                     nueva_llamada = f'st.plotly_chart({match}, config=PLOTLY_CONFIG)'
-                    contenido = contenido.replace(f'st.plotly_chart({match})', nueva_llamada)
+                    contenido = contenido.replace(f'st.plotly_chart({match})', config=PLOTLY_CONFIG, use_container_width=True)
                     cambios_realizados.append('Agregado config a st.plotly_chart')
             
             # 5. Corregir fig.update_layout para agregar showlegend si falta
@@ -97,8 +97,8 @@ PLOTLY_CONFIG = {
             for match in matches:
                 if 'showlegend' not in match and ')' not in match.split(',')[-1]:
                     # Agregar showlegend=False al final
-                    nueva_llamada = f'fig.update_layout({match}, showlegend=False)'
-                    contenido = contenido.replace(f'fig.update_layout({match})', nueva_llamada)
+                    nueva_llamada = f'fig.update_layout({match}, showlegend=False, showlegend=False)'
+                    contenido = contenido.replace(f'fig.update_layout({match}, showlegend=False, showlegend=False)', nueva_llamada)
                     cambios_realizados.append('Agregado showlegend a update_layout')
             
             # 6. Corregir make_subplots con subplot_titles_font_size (parámetro inválido)

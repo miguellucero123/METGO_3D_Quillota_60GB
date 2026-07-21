@@ -155,7 +155,7 @@ if modo_ml.startswith("Registry"):
                         textposition="outside",
                     )
                 )
-                fig.update_layout(**plotly_layout(height=400), barmode="group",
+                fig.update_layout(**plotly_layout(height=400, showlegend=False, showlegend=False), barmode="group",
                     height=280,
                     title=str(row["variable"]),
                     yaxis_title=str(row.get("unidad") or "").strip() or "valor",
@@ -362,7 +362,7 @@ fig_importancias = px.bar(df_importancias, x='Importancia', y='Variable',
                          color_continuous_scale='Viridis')
 
 fig_importancias.update_layout(height=400)
-st.plotly_chart(fig_importancias, use_container_width=True)
+st.plotly_chart(fig_importancias, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Predicciones en tiempo real
 st.markdown("### 🔮 Predicciones en Tiempo Real")
@@ -442,7 +442,7 @@ fig_rendimiento.add_hline(y=90, line_dash="dash", line_color="red",
                          annotation_text="Umbral de Calidad")
 fig_rendimiento.update_layout(height=400)
 
-st.plotly_chart(fig_rendimiento, use_container_width=True)
+st.plotly_chart(fig_rendimiento, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Comparación de modelos
 st.markdown("### 🏆 Comparación de Modelos")
@@ -466,7 +466,7 @@ with col1:
                           color='Precision',
                           color_continuous_scale='RdYlGn')
     fig_precision.update_layout(height=400)
-    st.plotly_chart(fig_precision, use_container_width=True)
+    st.plotly_chart(fig_precision, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     fig_variables = px.scatter(df_comparacion, x='Variables', y='Precision',
@@ -475,7 +475,7 @@ with col2:
                               title='Precisión vs Número de Variables',
                               color='Precision',
                               color_continuous_scale='Viridis')
-    st.plotly_chart(fig_variables, use_container_width=True)
+    st.plotly_chart(fig_variables, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Alertas y recomendaciones de IA
 st.markdown("### 🤖 Alertas y Recomendaciones de IA")

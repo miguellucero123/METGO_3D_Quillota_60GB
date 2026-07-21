@@ -457,7 +457,7 @@ fig_unificado.update_yaxes(title_text="Rendimiento (t/ha)", row=1, col=2)
 fig_unificado.update_yaxes(title_text="Sensores Activos", row=2, col=1)
 fig_unificado.update_yaxes(title_text="Eficiencia (%)", row=2, col=2)
 
-st.plotly_chart(fig_unificado, use_container_width=True)
+st.plotly_chart(fig_unificado, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de integración
 st.markdown('<h2 class="section-title-unificado">🔗 Análisis de Integración</h2>', unsafe_allow_html=True)
@@ -484,7 +484,7 @@ with col1:
                         title="Correlación entre Sistemas",
                         color_continuous_scale='RdBu_r')
     fig_corr.update_layout(height=400)
-    st.plotly_chart(fig_corr, use_container_width=True)
+    st.plotly_chart(fig_corr, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Estado de integración
@@ -511,7 +511,7 @@ with col2:
         height=400
     )
     
-    st.plotly_chart(fig_integracion, use_container_width=True)
+    st.plotly_chart(fig_integracion, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Alertas y recomendaciones unificadas
 st.markdown('<h2 class="section-title-unificado">🚨 Alertas y Recomendaciones Unificadas</h2>', unsafe_allow_html=True)

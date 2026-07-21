@@ -433,7 +433,7 @@ fig_tendencias.update_yaxes(title_text="Rendimiento (t/ha)", row=1, col=2)
 fig_tendencias.update_yaxes(title_text="Ingresos (K$)", row=2, col=1)
 fig_tendencias.update_yaxes(title_text="Eficiencia (%)", row=2, col=2)
 
-st.plotly_chart(fig_tendencias, use_container_width=True)
+st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis por categorías
 st.markdown('<h2 class="section-title">📊 Análisis por Categorías</h2>', unsafe_allow_html=True)
@@ -471,7 +471,7 @@ with col1:
     )
     
     fig_meteo.update_layout(height=500, showlegend=False)
-    st.plotly_chart(fig_meteo, use_container_width=True)
+    st.plotly_chart(fig_meteo, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Métricas ambientales
@@ -496,7 +496,7 @@ with col2:
     )
     
     fig_ambiental.update_layout(height=500, showlegend=False)
-    st.plotly_chart(fig_ambiental, use_container_width=True)
+    st.plotly_chart(fig_ambiental, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis comparativo anual
 st.markdown('<h2 class="section-title">📅 Análisis Comparativo Anual</h2>', unsafe_allow_html=True)
@@ -518,7 +518,7 @@ with col1:
                             title='📊 Comparación Anual de Métricas Principales',
                             color_discrete_sequence=['#e74c3c', '#27ae60', '#3498db'])
     fig_comparacion.update_layout(height=400)
-    st.plotly_chart(fig_comparacion, use_container_width=True)
+    st.plotly_chart(fig_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Tendencias de crecimiento
@@ -527,7 +527,7 @@ with col2:
                              line_shape='spline')
     fig_crecimiento.update_traces(line=dict(color='#f39c12', width=4))
     fig_crecimiento.update_layout(height=400)
-    st.plotly_chart(fig_crecimiento, use_container_width=True)
+    st.plotly_chart(fig_crecimiento, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Resumen ejecutivo
 st.markdown('<h2 class="section-title">📋 Resumen Ejecutivo</h2>', unsafe_allow_html=True)

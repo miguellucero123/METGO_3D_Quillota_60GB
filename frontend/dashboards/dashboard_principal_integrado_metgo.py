@@ -326,7 +326,7 @@ class DashboardPrincipalIntegrado:
             template="plotly_white",
             paper_bgcolor="#ffffff",
             plot_bgcolor="#ffffff",
-            margin=dict(l=20, r=20, t=70, b=20),
+            margin=dict(l=20, r=20, t=70, b=20, showlegend=False),
             font=dict(family="Inter, Segoe UI, Arial, sans-serif", size=13),
         )
         return fig
@@ -380,7 +380,7 @@ class DashboardPrincipalIntegrado:
             title='Tendencias agrícolas de corto plazo',
             hovermode='x unified',
             height=420,
-            margin=dict(l=30, r=30, t=60, b=35),
+            margin=dict(l=30, r=30, t=60, b=35, showlegend=False, showlegend=False),
             legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
             xaxis=dict(title='Hora', showgrid=False),
             yaxis=dict(title='Precipitación (mm)', showgrid=False),
@@ -422,7 +422,7 @@ class DashboardPrincipalIntegrado:
         fig.update_layout(
             template='plotly_white',
             height=460,
-            margin=dict(l=30, r=30, t=70, b=35),
+            margin=dict(l=30, r=30, t=70, b=35, showlegend=False, showlegend=False),
             xaxis=dict(title='Temperatura (°C)', zeroline=False),
             yaxis=dict(title='Humedad relativa (%)', zeroline=False),
             coloraxis_colorbar=dict(title='Riesgo'),

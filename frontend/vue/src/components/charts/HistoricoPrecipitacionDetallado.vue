@@ -10,9 +10,11 @@ const diasRango = ref(30)
 const cargando = ref(false)
 const datos = ref([])
 const estadisticas = ref(null)
+const errorMsg = ref(null)
 
 async function cargar() {
   cargando.value = true
+  errorMsg.value = null
   const hasta = new Date()
   const desde = new Date()
   desde.setDate(desde.getDate() - diasRango.value)
@@ -24,9 +26,10 @@ async function cargar() {
     )
     datos.value = res.datos ?? []
     estadisticas.value = res.estadisticas ?? null
-  } catch {
+  } catch (err) {
     datos.value = []
     estadisticas.value = null
+    errorMsg.value = err.message
   } finally {
     cargando.value = false
   }
@@ -54,7 +57,8 @@ function fmt(f) {
     </div>
 
     <div v-if="cargando" class="loading">Cargando histórico…</div>
-    <svg v-else viewBox="0 0 100 60" class="chart">
+    <div v-else-if="errorMsg" class="loading error-msg">{{ errorMsg }}</div>
+    <svg v-else-if="datos.length > 0" viewBox="0 0 100 60" class="chart">
       <line x1="2" y1="55" x2="98" y2="55" stroke="var(--color-border, #334155)" stroke-width="0.5" />
       <rect
         v-for="(d, i) in datos"

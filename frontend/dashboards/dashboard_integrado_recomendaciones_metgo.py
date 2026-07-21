@@ -353,7 +353,7 @@ class DashboardIntegradoRecomendaciones:
             height=600, 
             title_text="Condiciones Meteorológicas para Agricultura",
             showlegend=False
-        )
+        , showlegend=False)
         return fig
 
 def main():

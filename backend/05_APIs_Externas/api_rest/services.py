@@ -96,11 +96,14 @@ def listar_estaciones(tenant_id: str | None = None) -> list[dict[str, Any]]:
 
 
 def _fetch_meteo_raw(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:
-    buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
+    try:
         return obtener_datos_meteorologicos_reales(
             estacion=estacion, tipo=tipo, dias=dias
         )
+    except Exception as e:
+        with open("openmeteo_error.log", "a") as f:
+            f.write(f"ERROR OpenMeteo {estacion} {tipo}: {e}\n")
+        return None
 
 
 def _df_sin_prints(estacion: str, tipo: str, dias: int) -> pd.DataFrame | None:

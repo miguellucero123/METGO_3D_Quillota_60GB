@@ -382,14 +382,14 @@ if tipo_comparacion == "Año vs Año":
                                    title='📊 Evolución Anual de Métricas',
                                    markers=True)
     fig_comparacion_anual.update_layout(height=500)
-    st.plotly_chart(fig_comparacion_anual, use_container_width=True)
+    st.plotly_chart(fig_comparacion_anual, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Gráfico de barras comparativo
     fig_barras_comparacion = px.bar(df_comparison, x='Año', y=metricas_comparar,
                                    title='📊 Comparación Anual - Gráfico de Barras',
                                    barmode='group')
     fig_barras_comparacion.update_layout(height=500)
-    st.plotly_chart(fig_barras_comparacion, use_container_width=True)
+    st.plotly_chart(fig_barras_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_comparacion == "Estación vs Estación":
     # Comparación por estaciones
@@ -399,7 +399,7 @@ elif tipo_comparacion == "Estación vs Estación":
                            title='🌍 Comparación por Estaciones Meteorológicas',
                            barmode='group')
     fig_estaciones.update_layout(height=500)
-    st.plotly_chart(fig_estaciones, use_container_width=True)
+    st.plotly_chart(fig_estaciones, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_comparacion == "Cultivo vs Cultivo":
     # Comparación por cultivos
@@ -409,7 +409,7 @@ elif tipo_comparacion == "Cultivo vs Cultivo":
                          title='🌱 Comparación por Tipos de Cultivo',
                          barmode='group')
     fig_cultivos.update_layout(height=500)
-    st.plotly_chart(fig_cultivos, use_container_width=True)
+    st.plotly_chart(fig_cultivos, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de correlaciones
 st.markdown('<h2 class="section-title-comparativo">🔗 Análisis de Correlaciones</h2>', unsafe_allow_html=True)
@@ -424,7 +424,7 @@ fig_corr = px.imshow(corr_matrix,
                     title="🔗 Matriz de Correlación entre Métricas",
                     color_continuous_scale='RdBu_r')
 fig_corr.update_layout(height=600)
-st.plotly_chart(fig_corr, use_container_width=True)
+st.plotly_chart(fig_corr, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de tendencias
 st.markdown('<h2 class="section-title-comparativo">📈 Análisis de Tendencias</h2>', unsafe_allow_html=True)
@@ -439,7 +439,7 @@ with col1:
                             title='📈 Tendencias Anuales',
                             markers=True)
     fig_tendencias.update_layout(height=400)
-    st.plotly_chart(fig_tendencias, use_container_width=True)
+    st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Tendencias estacionales
@@ -449,7 +449,7 @@ with col2:
                             title='🌍 Tendencias Estacionales',
                             markers=True)
     fig_estacional.update_layout(height=400)
-    st.plotly_chart(fig_estacional, use_container_width=True)
+    st.plotly_chart(fig_estacional, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de variabilidad
 st.markdown('<h2 class="section-title-comparativo">📊 Análisis de Variabilidad</h2>', unsafe_allow_html=True)
@@ -471,7 +471,7 @@ for i, metrica in enumerate(metricas_comparar[:4]):
     )
 
 fig_variabilidad.update_layout(height=600, title_text="📊 Distribución y Variabilidad de Métricas")
-st.plotly_chart(fig_variabilidad, use_container_width=True)
+st.plotly_chart(fig_variabilidad, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de outliers
 st.markdown('<h2 class="section-title-comparativo">🎯 Análisis de Valores Extremos</h2>', unsafe_allow_html=True)
@@ -503,7 +503,7 @@ fig_outliers = px.bar(df_outliers, x='Metrica', y='Porcentaje',
                      color='Porcentaje',
                      color_continuous_scale='Reds')
 fig_outliers.update_layout(height=400)
-st.plotly_chart(fig_outliers, use_container_width=True)
+st.plotly_chart(fig_outliers, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Resumen estadístico comparativo
 st.markdown('<h2 class="section-title-comparativo">📋 Resumen Estadístico Comparativo</h2>', unsafe_allow_html=True)

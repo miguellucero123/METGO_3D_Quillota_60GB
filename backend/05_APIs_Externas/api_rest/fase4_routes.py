@@ -248,7 +248,7 @@ def register_fase4_routes(app: Flask) -> None:
             motor = EnsembleMeteorologico()
             datos = motor.obtener_ensemble_diario(dias=7)
             if datos is None:
-                return jsonify({"error": "Error extrayendo datos del ensemble"}), 500
+                return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible (Ensemble)"}), 503
             return jsonify(datos)
         except Exception as e:
             return jsonify({"error": str(e)}), 500

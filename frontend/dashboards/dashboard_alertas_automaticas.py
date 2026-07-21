@@ -570,7 +570,7 @@ fig_tendencias.update_xaxes(title_text="Tipo de Alerta", row=2, col=1)
 fig_tendencias.update_yaxes(title_text="Cantidad de Alertas", row=1, col=1)
 fig_tendencias.update_yaxes(title_text="Total", row=2, col=1)
 
-st.plotly_chart(fig_tendencias, use_container_width=True)
+st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis por sistema
 st.markdown('<h2 class="section-title-alertas">🔧 Análisis por Sistema</h2>', unsafe_allow_html=True)
@@ -590,7 +590,7 @@ with col1:
                          names=list(sistemas_alertas.keys()),
                          title='🔧 Distribución de Alertas por Sistema',
                          color_discrete_sequence=px.colors.qualitative.Set3)
-    st.plotly_chart(fig_sistemas, use_container_width=True)
+    st.plotly_chart(fig_sistemas, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Estado de alertas
@@ -617,7 +617,7 @@ with col2:
             'Resuelta': '#27ae60',
         },
     )
-    st.plotly_chart(fig_estados, use_container_width=True)
+    st.plotly_chart(fig_estados, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Panel de control de alertas
 st.markdown('<h2 class="section-title-alertas">🎛️ Panel de Control</h2>', unsafe_allow_html=True)

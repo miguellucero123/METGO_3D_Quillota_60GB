@@ -570,7 +570,7 @@ def mostrar_dashboard_principal():
         fig_temp.add_trace(go.Scatter(x=datos_met['fecha'], y=datos_met['temp_promedio'], 
                                     name='Temp Promedio', line=dict(color='green')))
         fig_temp.update_layout(title='Temperaturas Diarias', xaxis_title='Fecha', yaxis_title='Temperatura (°C)')
-        st.plotly_chart(fig_temp, use_container_width=True)
+        st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
         # Gráfico de precipitaciones
@@ -578,7 +578,7 @@ def mostrar_dashboard_principal():
                            title='Precipitación Diaria', color='precipitacion',
                            color_continuous_scale='Blues')
         fig_precip.update_layout(xaxis_title='Fecha', yaxis_title='Precipitación (mm)')
-        st.plotly_chart(fig_precip, use_container_width=True)
+        st.plotly_chart(fig_precip, config=PLOTLY_CONFIG, use_container_width=True)
     
     col3, col4 = st.columns(2)
     
@@ -586,13 +586,13 @@ def mostrar_dashboard_principal():
         # Gráfico de humedad
         fig_humedad = px.line(datos_met, x='fecha', y='humedad_relativa', 
                              title='Humedad Relativa (%)', color_discrete_sequence=['purple'])
-        st.plotly_chart(fig_humedad, use_container_width=True)
+        st.plotly_chart(fig_humedad, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col4:
         # Gráfico de presión
         fig_presion = px.line(datos_met, x='fecha', y='presion_atmosferica', 
                              title='Presión Atmosférica (hPa)', color_discrete_sequence=['orange'])
-        st.plotly_chart(fig_presion, use_container_width=True)
+        st.plotly_chart(fig_presion, config=PLOTLY_CONFIG, use_container_width=True)
     
     st.markdown("---")
     
@@ -605,13 +605,13 @@ def mostrar_dashboard_principal():
         # Gráfico de superficie por cultivo
         fig_superficie = px.bar(datos_agri, x='cultivo', y='superficie_ha', 
                                title='Superficie por Cultivo (Ha)', color='cultivo')
-        st.plotly_chart(fig_superficie, use_container_width=True)
+        st.plotly_chart(fig_superficie, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
         # Gráfico de producción estimada
         fig_produccion = px.pie(datos_agri, values='produccion_estimada', names='cultivo', 
                                title='Producción Estimada por Cultivo')
-        st.plotly_chart(fig_produccion, use_container_width=True)
+        st.plotly_chart(fig_produccion, config=PLOTLY_CONFIG, use_container_width=True)
     
     col3, col4 = st.columns(2)
     
@@ -621,14 +621,14 @@ def mostrar_dashboard_principal():
         fig_estado = px.bar(x=estado_counts.index, y=estado_counts.values, 
                            title='Estado de Cultivos', color=estado_counts.values,
                            color_continuous_scale='RdYlGn')
-        st.plotly_chart(fig_estado, use_container_width=True)
+        st.plotly_chart(fig_estado, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col4:
         # Gráfico de valor económico
         fig_valor = px.bar(datos_agri, x='cultivo', y='valor_estimado', 
                           title='Valor Económico por Cultivo ($)', color='valor_estimado',
                           color_continuous_scale='Greens')
-        st.plotly_chart(fig_valor, use_container_width=True)
+        st.plotly_chart(fig_valor, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Generar reporte si se solicitó
     if st.session_state.get('generar_reporte', False):

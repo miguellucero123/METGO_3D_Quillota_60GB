@@ -230,7 +230,7 @@ fig_barras = px.bar(datos_sensores, x='Sensor', y='Valor',
 
 fig_barras.update_traces(texttemplate='%{text:.1f}', textposition='outside')
 fig_barras.update_layout(**plotly_layout(height=400), height=500)
-st.plotly_chart(fig_barras, use_container_width=True)
+st.plotly_chart(fig_barras, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Gráfico de evolución temporal (simulado)
 st.markdown("### 📊 Evolución Temporal de Sensores")
@@ -260,7 +260,7 @@ fig_evolucion = px.line(df_historico, x='Timestamp', y='Valor',
                        title=f'Evolución 24h - {categoria_sensor}')
 
 fig_evolucion.update_layout(**plotly_layout(height=400), height=400)
-st.plotly_chart(fig_evolucion, use_container_width=True)
+st.plotly_chart(fig_evolucion, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Tabla detallada de sensores
 st.markdown("### 📋 Estado Detallado de Sensores")
@@ -299,7 +299,7 @@ fig_mapa_calor = px.bar(df_estados, x='Categoría', y=['Normal', 'Advertencia', 
                            'Crítico': '#F44336'
                        })
 
-st.plotly_chart(fig_mapa_calor, use_container_width=True)
+st.plotly_chart(fig_mapa_calor, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Panel de control de sensores
 st.markdown("### 🎛️ Panel de Control de Sensores")

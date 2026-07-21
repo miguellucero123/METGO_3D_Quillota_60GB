@@ -267,7 +267,7 @@ fig_temp.update_layout(**plotly_layout(height=400), title='Temperatura por Hora'
     showlegend=False
 )
 
-st.plotly_chart(fig_temp, use_container_width=True)
+st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Información agrícola simple
 st.markdown("### 🌾 Información Agrícola")

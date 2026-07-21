@@ -110,7 +110,7 @@ def crear_grafico_rendimientos(datos):
     fig.update_layout(
         title='Rendimiento por Cultivo',
         xaxis_title='Cultivo',
-        yaxis_title='Rendimiento (Ton/Ha)',
+        yaxis_title='Rendimiento (Ton/Ha, showlegend=False, showlegend=False)',
         height=400
     )
     
@@ -136,7 +136,7 @@ def crear_grafico_valor_produccion(datos):
     fig.update_layout(
         title='Valor Estimado de Producción',
         xaxis_title='Cultivo',
-        yaxis_title='Valor ($)',
+        yaxis_title='Valor ($, showlegend=False, showlegend=False)',
         height=400
     )
     
@@ -155,7 +155,7 @@ def crear_grafico_estado_cultivos(datos):
     fig.update_layout(
         title='Distribución del Estado de Cultivos',
         height=400
-    )
+    , showlegend=False, showlegend=False)
     
     return fig
 
@@ -242,13 +242,13 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.plotly_chart(crear_grafico_rendimientos(datos_cultivos), use_container_width=True)
+        st.plotly_chart(crear_grafico_rendimientos(datos_cultivos), config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
-        st.plotly_chart(crear_grafico_valor_produccion(datos_cultivos), use_container_width=True)
+        st.plotly_chart(crear_grafico_valor_produccion(datos_cultivos), config=PLOTLY_CONFIG, use_container_width=True)
     
     # Gráfico de estado de cultivos
-    st.plotly_chart(crear_grafico_estado_cultivos(datos_cultivos), use_container_width=True)
+    st.plotly_chart(crear_grafico_estado_cultivos(datos_cultivos), config=PLOTLY_CONFIG, use_container_width=True)
     
     # Tabla de recomendaciones
     st.markdown("### 🎯 Recomendaciones por Cultivo")

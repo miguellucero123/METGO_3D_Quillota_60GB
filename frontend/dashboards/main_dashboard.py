@@ -111,7 +111,7 @@ def main():
             names=list(modulos_estado.keys()),
             title="Distribución de Registros por Módulo"
         )
-        st.plotly_chart(fig_uso, use_container_width=True)
+        st.plotly_chart(fig_uso, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
         # Gráfico de tendencia temporal (datos simulados)
@@ -129,7 +129,7 @@ def main():
             y='temperatura',
             title="Tendencia de Temperatura (Último Mes)"
         )
-        st.plotly_chart(fig_tendencia, use_container_width=True)
+        st.plotly_chart(fig_tendencia, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Alertas y notificaciones
     st.header("🚨 Alertas del Sistema")

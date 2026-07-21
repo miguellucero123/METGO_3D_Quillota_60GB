@@ -91,6 +91,8 @@ paths:
           description: Sin token
         "404":
           description: Sin datos
+        "503":
+          description: Servicio de OpenMeteo temporalmente no disponible
   /api/meteo/{estacion_id}/viento-horario:
     get:
       tags: [meteo]
@@ -109,6 +111,8 @@ paths:
           description: Arrays paralelos `direcciones` y `velocidades` (unidad m/s)
         "404":
           description: Sin datos de viento
+        "503":
+          description: Servicio de OpenMeteo temporalmente no disponible
   /api/alertas:
     get:
       tags: [sistema]
@@ -163,6 +167,8 @@ paths:
           description: PoP, intensidad, percentiles p10/p90 (diario o cada 3 h)
         "404":
           description: Sin pronóstico
+        "503":
+          description: Servicio de OpenMeteo temporalmente no disponible
   /api/meteo/{estacion_id}/heladas:
     get:
       tags: [meteo]
@@ -350,6 +356,8 @@ paths:
           description: Serie 3h con PoP, mm ventana e intensidad mm/h
         "404":
           description: Sin pronóstico
+        "503":
+          description: Servicio de OpenMeteo temporalmente no disponible
   /api/precip/{estacion_id}/alertas:
     get:
       tags: [alertas]
@@ -524,6 +532,8 @@ paths:
       responses:
         '200':
           description: Datos del ensemble procesados
+        '503':
+          description: Servicio de OpenMeteo temporalmente no disponible (Ensemble)
           content:
             application/json:
               schema:

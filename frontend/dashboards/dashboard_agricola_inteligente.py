@@ -454,7 +454,7 @@ with tab1:
                 title="Distribución de Alertas por Tipo",
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
-            st.plotly_chart(fig_tipos, use_container_width=True)
+            st.plotly_chart(fig_tipos, config=PLOTLY_CONFIG, use_container_width=True)
         else:
             st.info("No hay alertas para mostrar estadísticas")
     
@@ -471,7 +471,7 @@ with tab1:
                 color=severidad_counts.index,
                 color_discrete_map={'Alta': '#F44336', 'Media': '#FF9800', 'Baja': '#4CAF50'}
             )
-            st.plotly_chart(fig_severidad, use_container_width=True)
+            st.plotly_chart(fig_severidad, config=PLOTLY_CONFIG, use_container_width=True)
         else:
             st.info("No hay alertas para mostrar estadísticas")
     
@@ -603,7 +603,7 @@ with tab3:
             height=400,
             hovermode="x unified",
         )
-        st.plotly_chart(fig_tendencias, use_container_width=True)
+        st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -794,7 +794,7 @@ fig_condiciones.update_layout(
     barmode='group',
 )
 
-st.plotly_chart(fig_condiciones, use_container_width=True)
+st.plotly_chart(fig_condiciones, config=PLOTLY_CONFIG, use_container_width=True)
 
 def _score_riesgo(humedad: float, temp: float, hum_r: tuple, temp_r: tuple) -> int:
     hum_min, hum_max = hum_r
@@ -829,7 +829,7 @@ with col1:
                        color='Riesgo', 
                        color_discrete_map={'Bajo': '#4CAF50', 'Medio': '#FF9800', 'Alto': '#F44336'},
                        title='Probabilidad de Aparición de Plagas')
-    st.plotly_chart(fig_plagas, use_container_width=True)
+    st.plotly_chart(fig_plagas, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     st.markdown("#### 🦠 Riesgo de enfermedades (estimado por clima)")
@@ -847,7 +847,7 @@ with col2:
                              color='Riesgo',
                              color_discrete_map={'Bajo': '#4CAF50', 'Medio': '#FF9800', 'Alto': '#F44336'},
                              title='Probabilidad de Aparición de Enfermedades')
-    st.plotly_chart(fig_enfermedades, use_container_width=True)
+    st.plotly_chart(fig_enfermedades, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Cronograma de actividades
 st.markdown("### 📅 Cronograma de Actividades Agrícolas")
@@ -933,7 +933,7 @@ if not df_cronograma.empty:
         hovermode='closest'
     )
     
-    st.plotly_chart(fig_cronograma, use_container_width=True)
+    st.plotly_chart(fig_cronograma, config=PLOTLY_CONFIG, use_container_width=True)
 
 st.caption("Riesgos de plagas/enfermedades: índice derivado de humedad y temperatura observadas (no sustituye monitoreo en campo).")
 
@@ -956,7 +956,7 @@ with col1:
     fig_factores = px.pie(values=list(factores.values()), 
                          names=list(factores.keys()),
                          title='Factores de Rendimiento (%)')
-    st.plotly_chart(fig_factores, use_container_width=True)
+    st.plotly_chart(fig_factores, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Predicción de rendimiento

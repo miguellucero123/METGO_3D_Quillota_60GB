@@ -490,7 +490,7 @@ with col1:
                                   color='Rendimiento',
                                   color_continuous_scale='Greens')
     fig_rendimiento_zonas.update_layout(height=400)
-    st.plotly_chart(fig_rendimiento_zonas, use_container_width=True)
+    st.plotly_chart(fig_rendimiento_zonas, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Eficiencia por zona
@@ -499,7 +499,7 @@ with col2:
                                  color='Eficiencia_Riego',
                                  color_continuous_scale='Blues')
     fig_eficiencia_zonas.update_layout(height=400)
-    st.plotly_chart(fig_eficiencia_zonas, use_container_width=True)
+    st.plotly_chart(fig_eficiencia_zonas, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de suelos
 st.markdown('<h2 class="section-title-precision">🌱 Análisis de Suelos</h2>', unsafe_allow_html=True)
@@ -512,7 +512,7 @@ with col1:
                         title='💧 Distribución de Humedad del Suelo por Zona',
                         color='Zona')
     fig_humedad.update_layout(height=400)
-    st.plotly_chart(fig_humedad, use_container_width=True)
+    st.plotly_chart(fig_humedad, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # pH del suelo por zona
@@ -520,7 +520,7 @@ with col2:
                    title='🧪 Distribución de pH del Suelo por Zona',
                    color='Zona')
     fig_ph.update_layout(height=400)
-    st.plotly_chart(fig_ph, use_container_width=True)
+    st.plotly_chart(fig_ph, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis de nutrientes
 st.markdown('<h2 class="section-title-precision">🧪 Análisis de Nutrientes</h2>', unsafe_allow_html=True)
@@ -534,7 +534,7 @@ fig_nutrientes = px.imshow(nutrientes.T,
                           title="🧪 Matriz de Nutrientes por Zona",
                           color_continuous_scale='YlOrRd')
 fig_nutrientes.update_layout(height=500)
-st.plotly_chart(fig_nutrientes, use_container_width=True)
+st.plotly_chart(fig_nutrientes, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Tendencias históricas
 st.markdown('<h2 class="section-title-precision">📈 Tendencias Históricas</h2>', unsafe_allow_html=True)
@@ -592,7 +592,7 @@ fig_tendencias.update_yaxes(title_text="Eficiencia (%)", row=1, col=2)
 fig_tendencias.update_yaxes(title_text="Calidad (%)", row=2, col=1)
 fig_tendencias.update_yaxes(title_text="Margen ($)", row=2, col=2)
 
-st.plotly_chart(fig_tendencias, use_container_width=True)
+st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Recomendaciones de precisión
 st.markdown('<h2 class="section-title-precision">🎯 Recomendaciones de Precisión</h2>', unsafe_allow_html=True)

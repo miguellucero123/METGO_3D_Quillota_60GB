@@ -574,7 +574,7 @@ with col1:
         hovermode='x unified'
     )
     
-    st.plotly_chart(fig_nubosidad, use_container_width=True)
+    st.plotly_chart(fig_nubosidad, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
     # Gráfico de probabilidad de niebla
@@ -599,7 +599,7 @@ with col2:
         hovermode='x unified'
     )
     
-    st.plotly_chart(fig_niebla, use_container_width=True)
+    st.plotly_chart(fig_niebla, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis detallado de heladas con explicaciones
 st.markdown("#### ❄️ Análisis Detallado de Heladas y Sensación Térmica Agrícola")
@@ -707,7 +707,7 @@ fig_heladas.update_layout(
     hovermode='closest'
 )
 
-st.plotly_chart(fig_heladas, use_container_width=True)
+st.plotly_chart(fig_heladas, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Gráfico de sensación térmica agrícola
 st.markdown("##### 🌡️ Sensación Térmica Agrícola")
@@ -742,7 +742,7 @@ fig_sensacion.update_layout(
     hovermode='x unified'
 )
 
-st.plotly_chart(fig_sensacion, use_container_width=True)
+st.plotly_chart(fig_sensacion, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Explicación de la sensación térmica agrícola
 st.markdown("""
@@ -811,7 +811,7 @@ if 'Hora' in df.columns and df['Hora'].nunique() > 1:
             labels={'Hora': 'Hora del Día', 'Temperatura': 'Temperatura (°C)'}
         )
         fig_temp_hora.update_layout(height=400)
-        st.plotly_chart(fig_temp_hora, use_container_width=True)
+        st.plotly_chart(fig_temp_hora, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
         # Gráfico de humedad por hora
@@ -823,7 +823,7 @@ if 'Hora' in df.columns and df['Hora'].nunique() > 1:
             labels={'Hora': 'Hora del Día', 'Humedad': 'Humedad Relativa (%)'}
         )
         fig_hum_hora.update_layout(height=400)
-        st.plotly_chart(fig_hum_hora, use_container_width=True)
+        st.plotly_chart(fig_hum_hora, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Análisis de patrones horarios
     st.markdown("##### 📊 Patrones Horarios Detectados")
@@ -883,7 +883,7 @@ fig_comparacion.update_yaxes(title_text="Humedad (%)", row=1, col=2)
 fig_comparacion.update_yaxes(title_text="Nubosidad (%)", row=2, col=1)
 fig_comparacion.update_yaxes(title_text="Prob. Niebla (%)", row=2, col=2)
 
-st.plotly_chart(fig_comparacion, use_container_width=True)
+st.plotly_chart(fig_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Resumen estadístico por localidad
 st.markdown("##### 📊 Resumen Estadístico por Localidad")
@@ -939,7 +939,7 @@ if tipo_viz == "Tendencias Temporales":
     fig_tendencias.update_yaxes(title_text="Temperatura (°C)", row=1, col=1)
     fig_tendencias.update_yaxes(title_text="Precipitación (mm)", row=2, col=1)
     
-    st.plotly_chart(fig_tendencias, use_container_width=True)
+    st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Comparaciones":
     st.markdown("### 🔄 Análisis Comparativo")
@@ -959,7 +959,7 @@ elif tipo_viz == "Comparaciones":
                                 title='📊 Comparación por Estación',
                                 color_discrete_sequence=['#e74c3c', '#3498db', '#9b59b6'])
         fig_comparacion.update_layout(height=400)
-        st.plotly_chart(fig_comparacion, use_container_width=True)
+        st.plotly_chart(fig_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
         # Radar chart
@@ -990,7 +990,7 @@ elif tipo_viz == "Comparaciones":
             height=400
         )
         
-        st.plotly_chart(fig_radar, use_container_width=True)
+        st.plotly_chart(fig_radar, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Distribuciones":
     st.markdown("### 📊 Análisis de Distribuciones")
@@ -1003,7 +1003,7 @@ elif tipo_viz == "Distribuciones":
                                title='📈 Distribución de Temperaturas',
                                color_discrete_sequence=['#e74c3c'])
         fig_hist.update_layout(height=400)
-        st.plotly_chart(fig_hist, use_container_width=True)
+        st.plotly_chart(fig_hist, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
         # Box plot por estación
@@ -1011,7 +1011,7 @@ elif tipo_viz == "Distribuciones":
                         title='📦 Distribución de Temperaturas por Estación',
                         color='Estacion')
         fig_box.update_layout(height=400)
-        st.plotly_chart(fig_box, use_container_width=True)
+        st.plotly_chart(fig_box, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Correlaciones":
     st.markdown("### 🔗 Análisis de Correlaciones")
@@ -1026,7 +1026,7 @@ elif tipo_viz == "Correlaciones":
                         title="🔗 Matriz de Correlación",
                         color_continuous_scale='RdBu_r')
     fig_corr.update_layout(height=600)
-    st.plotly_chart(fig_corr, use_container_width=True)
+    st.plotly_chart(fig_corr, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Mapas de Calor":
     st.markdown("### 🗺️ Mapas de Calor")
@@ -1041,7 +1041,7 @@ elif tipo_viz == "Mapas de Calor":
                            title="🌡️ Mapa de Calor - Temperaturas por Estación y Fecha",
                            color_continuous_scale='RdYlBu_r')
     fig_heatmap.update_layout(height=500)
-    st.plotly_chart(fig_heatmap, use_container_width=True)
+    st.plotly_chart(fig_heatmap, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Análisis 3D":
     st.markdown("### 🎯 Análisis Tridimensional")
@@ -1053,7 +1053,7 @@ elif tipo_viz == "Análisis 3D":
                           size='Calidad',
                           opacity=0.7)
     fig_3d.update_layout(height=600)
-    st.plotly_chart(fig_3d, use_container_width=True)
+    st.plotly_chart(fig_3d, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis estadístico avanzado
 st.markdown("### 📊 Análisis Estadístico Avanzado")

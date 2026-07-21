@@ -81,7 +81,7 @@ if pron:
         labels={"value": "°C", "fecha": "Fecha", "variable": "Serie"},
         title="Temperaturas máx / mín (7 días)",
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, config=PLOTLY_CONFIG, use_container_width=True)
 else:
     st.info("Sin serie de pronóstico para graficar.")
 

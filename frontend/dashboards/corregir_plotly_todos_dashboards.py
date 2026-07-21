@@ -100,7 +100,7 @@ PLOTLY_CONFIG = {
                     params += " showlegend=False"
                 else:
                     params += ", showlegend=False"
-            return f"fig.update_layout({params}, showlegend=False)"
+            return f"fig.update_layout({params}, showlegend=False, showlegend=False)"
         
         contenido = re.sub(patron_update_layout, corregir_update_layout, contenido)
         
@@ -129,7 +129,7 @@ def encontrar_dashboards_con_plotly():
     dashboards = []
     
     for patron in patrones:
-        archivos = glob.glob(patron)
+        archivos = glob.glob(f"**/{patron}", recursive=True)
         dashboards.extend(archivos)
     
     # Filtrar solo los que contienen plotly

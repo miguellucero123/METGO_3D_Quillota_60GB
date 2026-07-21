@@ -93,7 +93,7 @@ def crear_grafico_temperaturas(datos):
     fig.update_layout(
         title='Evolución de Temperaturas - Quillota',
         xaxis_title='Fecha',
-        yaxis_title='Temperatura (°C)',
+        yaxis_title='Temperatura (°C, showlegend=False, showlegend=False)',
         hovermode='x unified',
         height=400
     )
@@ -120,7 +120,7 @@ def crear_grafico_precipitacion(datos):
     fig.update_layout(
         title='Precipitación Diaria - Quillota',
         xaxis_title='Fecha',
-        yaxis_title='Precipitación (mm)',
+        yaxis_title='Precipitación (mm, showlegend=False, showlegend=False)',
         height=300
     )
     
@@ -211,10 +211,10 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.plotly_chart(crear_grafico_temperaturas(datos), use_container_width=True)
+        st.plotly_chart(crear_grafico_temperaturas(datos), config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
-        st.plotly_chart(crear_grafico_precipitacion(datos), use_container_width=True)
+        st.plotly_chart(crear_grafico_precipitacion(datos), config=PLOTLY_CONFIG, use_container_width=True)
     
     # Tabla de pronóstico
     st.markdown("### 📊 Pronóstico Detallado (Últimos 7 días)")

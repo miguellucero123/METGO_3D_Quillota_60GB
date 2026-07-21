@@ -172,7 +172,7 @@ class DashboardAgricolaModerno:
         fig.update_layout(
             title="Temperaturas por Estación - Últimas 24 Horas",
             xaxis_title="Hora",
-            yaxis_title="Temperatura (°C, showlegend=False)",
+            yaxis_title="Temperatura (°C, showlegend=False, showlegend=False)",
             hovermode='x unified',
             showlegend=True,
             height=400,
@@ -217,7 +217,7 @@ class DashboardAgricolaModerno:
         fig.update_layout(
             title="Humedad Relativa por Estación",
             xaxis_title="Hora",
-            yaxis_title="Humedad (%, showlegend=False)",
+            yaxis_title="Humedad (%, showlegend=False, showlegend=False)",
             hovermode='x unified',
             showlegend=True,
             height=400,
@@ -260,7 +260,7 @@ class DashboardAgricolaModerno:
             showlegend=False,
             height=400,
             template='plotly_white'
-        )
+        , showlegend=False)
         
         fig.update_yaxes(gridcolor='lightgray')
         
@@ -342,7 +342,7 @@ class DashboardAgricolaModerno:
             showlegend=True,
             height=400,
             template='plotly_white'
-        )
+        , showlegend=False)
         
         st.plotly_chart(fig, config=PLOTLY_CONFIG, width='stretch')
 
