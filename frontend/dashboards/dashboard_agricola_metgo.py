@@ -118,13 +118,13 @@ def crear_grafico_rendimientos(datos):
         )
     ))
     
-    fig.update_layout(
-        **plotly_layout(height=400),
-        title='Rendimiento por Cultivo',
+    fig.update_layout(**plotly_layout(
+        'Rendimiento por Cultivo',
+        height=400,
         xaxis_title='Cultivo',
         yaxis_title='Rendimiento (Ton/Ha)',
         showlegend=False,
-    )
+    ))
     
     return fig
 
@@ -145,13 +145,13 @@ def crear_grafico_valor_produccion(datos):
         )
     ))
     
-    fig.update_layout(
-        **plotly_layout(height=400),
-        title='Valor Estimado de Producción',
+    fig.update_layout(**plotly_layout(
+        'Valor Estimado de Producción',
+        height=400,
         xaxis_title='Cultivo',
         yaxis_title='Valor ($)',
         showlegend=False,
-    )
+    ))
     
     return fig
 
@@ -165,10 +165,10 @@ def crear_grafico_estado_cultivos(datos):
         hole=0.3
     )])
     
-    fig.update_layout(
-        **plotly_layout(height=400),
-        title='Distribución del Estado de Cultivos',
-    )
+    fig.update_layout(**plotly_layout(
+        'Distribución del Estado de Cultivos',
+        height=400,
+    ))
     
     return fig
 

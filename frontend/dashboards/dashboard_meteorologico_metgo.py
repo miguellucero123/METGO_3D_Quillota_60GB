@@ -90,13 +90,13 @@ def crear_grafico_temperaturas(datos):
         marker=dict(size=4)
     ))
     
-    fig.update_layout(
-        **plotly_layout(height=400),
-        title='Evolución de Temperaturas - Quillota',
+    fig.update_layout(**plotly_layout(
+        'Evolución de Temperaturas - Quillota',
+        height=400,
         xaxis_title='Fecha',
         yaxis_title='Temperatura (°C)',
         hovermode='x unified',
-    )
+    ))
     
     return fig
 
@@ -117,12 +117,12 @@ def crear_grafico_precipitacion(datos):
         )
     ))
     
-    fig.update_layout(
-        **plotly_layout(height=300),
-        title='Precipitación Diaria - Quillota',
+    fig.update_layout(**plotly_layout(
+        'Precipitación Diaria - Quillota',
+        height=300,
         xaxis_title='Fecha',
         yaxis_title='Precipitación (mm)',
-    )
+    ))
     
     return fig
 

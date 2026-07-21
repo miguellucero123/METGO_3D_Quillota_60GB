@@ -319,9 +319,20 @@ PLOTLY_COLOR_SEQUENCE = [PRIMARY, SKY, ACCENT, SKY_DEEP, SUCCESS, MUTED, WARNING
 
 
 def plotly_layout(title: str = "", **extra) -> dict:
-    """Layout Plotly alineado al design system METGO."""
+    """Layout Plotly alineado al design system METGO.
+
+    Acepta `title` (str) como primer argumento y cualquier kwarg extra de
+    Plotly (height, margin, showlegend, barmode, hovermode, *_title, ...).
+    Los kwargs extra SIEMPRE deben pasarse aquí dentro y no como argumentos
+    separados de `update_layout`, para evitar `TypeError: got multiple
+    values for keyword argument`.
+    Uso correcto: `fig.update_layout(**plotly_layout("Título", height=400))`.
+    """
+    # Permitir plotly_layout(height=..., title="X") además del posicional.
+    if not title and isinstance(extra.get("title"), str):
+        title = extra.pop("title")
+
     base = {
-        "title": {"text": title, "font": {"family": "DM Sans", "color": TEXT, "size": 16}},
         "paper_bgcolor": BG,
         "plot_bgcolor": SURFACE,
         "font": {"family": "DM Sans", "color": TEXT_SECONDARY},
@@ -330,6 +341,8 @@ def plotly_layout(title: str = "", **extra) -> dict:
         "xaxis": {"gridcolor": BORDER, "linecolor": BORDER},
         "yaxis": {"gridcolor": BORDER, "linecolor": BORDER},
     }
+    if title:
+        base["title"] = {"text": title, "font": {"family": "DM Sans", "color": TEXT, "size": 16}}
     base.update(extra)
     return base
 

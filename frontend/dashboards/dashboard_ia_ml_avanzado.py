@@ -156,12 +156,14 @@ if modo_ml.startswith("Registry"):
                     )
                 )
                 fig.update_layout(
-                    **plotly_layout(height=280),
-                    barmode="group",
-                    title=str(row["variable"]),
-                    yaxis_title=str(row.get("unidad") or "").strip() or "valor",
-                    showlegend=False,
-                    margin=dict(t=48, b=32),
+                    **plotly_layout(
+                        str(row["variable"]),
+                        height=280,
+                        barmode="group",
+                        yaxis_title=str(row.get("unidad") or "").strip() or "valor",
+                        showlegend=False,
+                        margin=dict(l=48, r=24, t=48, b=32),
+                    )
                 )
                 st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
     else:

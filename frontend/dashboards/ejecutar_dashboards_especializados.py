@@ -246,7 +246,7 @@ class EjecutorDashboards:
                 self.detener_todos()
                 break
             except Exception as e:
-                    print(f"[ERROR] Error inesperado: {e}")
+                print(f"[ERROR] Error inesperado: {e}")
                 input("Presiona Enter para continuar...")
 
 def main():

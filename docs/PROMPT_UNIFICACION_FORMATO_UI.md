@@ -48,10 +48,13 @@ from metgo_dashboard_init import page_config_and_theme
 st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme("Título", "Subtítulo", module="...")
 ```
 
-2. **Toda figura Plotly** aplica el layout del tema y el config compartido:
+2. **Toda figura Plotly** aplica el layout del tema y el config compartido.
+   TODOS los kwargs van DENTRO de `plotly_layout(...)` (nunca como argumentos
+   separados de `update_layout`, porque produce `TypeError: got multiple values
+   for keyword argument`):
 
 ```python
-fig.update_layout(**plotly_layout(height=400), title="...", ...)
+fig.update_layout(**plotly_layout("Título del gráfico", height=400, yaxis_title="mm"))
 st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
 ```
 

@@ -42,3 +42,34 @@ create table if not exists public.meteo_series (
 
 create index if not exists idx_meteo_series_estacion_tipo
     on public.meteo_series (estacion_id, tipo);
+
+-- ---------------------------------------------------------------------------
+-- Permisos: la API usa SUPABASE_KEY (service_role o anon según configuración).
+-- Sin estos GRANT, PostgREST devuelve "permission denied" (código 42501)
+-- y el backend no puede leer ni escribir aunque las tablas existan.
+-- ---------------------------------------------------------------------------
+grant usage on schema public to anon, authenticated, service_role;
+
+grant select, insert, update, delete on public.meteo_registros  to service_role;
+grant select, insert, update, delete on public.meteo_pronostico to service_role;
+grant select, insert, update, delete on public.meteo_series     to service_role;
+
+grant usage, select on all sequences in schema public to service_role;
+
+-- Solo lectura para clientes anónimos (por si se usa la anon key).
+grant select on public.meteo_registros  to anon, authenticated;
+grant select on public.meteo_pronostico to anon, authenticated;
+grant select on public.meteo_series     to anon, authenticated;
+
+-- RLS: el backend es el único que escribe (con service_role, que ignora RLS).
+alter table public.meteo_registros  enable row level security;
+alter table public.meteo_pronostico enable row level security;
+alter table public.meteo_series     enable row level security;
+
+drop policy if exists meteo_registros_lectura  on public.meteo_registros;
+drop policy if exists meteo_pronostico_lectura on public.meteo_pronostico;
+drop policy if exists meteo_series_lectura     on public.meteo_series;
+
+create policy meteo_registros_lectura  on public.meteo_registros  for select using (true);
+create policy meteo_pronostico_lectura on public.meteo_pronostico for select using (true);
+create policy meteo_series_lectura     on public.meteo_series     for select using (true);

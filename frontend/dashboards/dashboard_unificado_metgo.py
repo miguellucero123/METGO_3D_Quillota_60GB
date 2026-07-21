@@ -194,7 +194,7 @@ def main():
                                         mode='lines+markers', name='Temp. Máxima', line=dict(color='red')))
             fig_temp.add_trace(go.Scatter(x=datos_met['fecha'], y=datos_met['temp_min'], 
                                         mode='lines+markers', name='Temp. Mínima', line=dict(color='blue')))
-            fig_temp.update_layout(**plotly_layout(height=400), title='Evolución de Temperaturas')
+            fig_temp.update_layout(**plotly_layout('Evolución de Temperaturas', height=400))
             st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, use_container_width=True)
         
         with col2:
@@ -202,7 +202,7 @@ def main():
             fig_precip = go.Figure()
             fig_precip.add_trace(go.Bar(x=datos_met['fecha'], y=datos_met['precipitacion'], 
                                        name='Precipitación', marker=dict(color='lightblue')))
-            fig_precip.update_layout(**plotly_layout(height=400), title='Precipitación Diaria')
+            fig_precip.update_layout(**plotly_layout('Precipitación Diaria', height=400))
             st.plotly_chart(fig_precip, config=PLOTLY_CONFIG, use_container_width=True)
         
         # Tabla de pronóstico
@@ -260,14 +260,14 @@ def main():
             fig_rend = go.Figure()
             fig_rend.add_trace(go.Bar(x=datos_agri['cultivo'], y=datos_agri['rendimiento_ton_ha'],
                                      name='Rendimiento', marker=dict(color='green')))
-            fig_rend.update_layout(**plotly_layout(height=400), title='Rendimiento por Cultivo (Ton/Ha)')
+            fig_rend.update_layout(**plotly_layout('Rendimiento por Cultivo (Ton/Ha)', height=400))
             st.plotly_chart(fig_rend, config=PLOTLY_CONFIG, use_container_width=True)
         
         with col2:
             # Gráfico de estado de cultivos
             estado_counts = datos_agri['estado'].value_counts()
             fig_estado = go.Figure(data=[go.Pie(labels=estado_counts.index, values=estado_counts.values, hole=0.3)])
-            fig_estado.update_layout(**plotly_layout(height=400), title='Distribución del Estado de Cultivos')
+            fig_estado.update_layout(**plotly_layout('Distribución del Estado de Cultivos', height=400))
             st.plotly_chart(fig_estado, config=PLOTLY_CONFIG, use_container_width=True)
         
         # Tabla de recomendaciones

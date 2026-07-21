@@ -376,7 +376,7 @@ with col1:
             fill="tozeroy",
         )
     )
-    fig_presion.update_layout(**plotly_layout(height=400), title="🌀 Presión atmosférica", yaxis_title="hPa", height=400)
+    fig_presion.update_layout(**plotly_layout("Presión atmosférica", height=400, yaxis_title="hPa"))
     st.plotly_chart(fig_presion, use_container_width=True, config=PLOTLY_CONFIG)
 
 with col2:
@@ -390,7 +390,7 @@ with col2:
             fill="tozeroy",
         )
     )
-    fig_viento.update_layout(**plotly_layout(height=400), title="💨 Velocidad del viento", yaxis_title="km/h", height=400)
+    fig_viento.update_layout(**plotly_layout("Velocidad del viento", height=400, yaxis_title="km/h"))
     st.plotly_chart(fig_viento, use_container_width=True, config=PLOTLY_CONFIG)
 
 fig_precip = go.Figure()
@@ -402,7 +402,7 @@ fig_precip.add_trace(
         marker_color="#4ECDC4",
     )
 )
-fig_precip.update_layout(**plotly_layout(height=400), title="🌧️ Precipitación diaria (mm)", height=380)
+fig_precip.update_layout(**plotly_layout("Precipitación diaria (mm)", height=380))
 st.plotly_chart(fig_precip, use_container_width=True, config=PLOTLY_CONFIG)
 
 st.markdown("### 🔬 Variables derivadas")

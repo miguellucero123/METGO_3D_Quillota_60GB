@@ -260,12 +260,13 @@ fig_temp.add_trace(go.Scatter(
     marker=dict(size=6)
 ))
 
-fig_temp.update_layout(**plotly_layout(height=400), title='Temperatura por Hora',
+fig_temp.update_layout(**plotly_layout(
+    'Temperatura por Hora',
+    height=400,
     xaxis_title='Hora del Día',
     yaxis_title='Temperatura (°C)',
-    height=400,
-    showlegend=False
-)
+    showlegend=False,
+))
 
 st.plotly_chart(fig_temp, config=PLOTLY_CONFIG, use_container_width=True)
 

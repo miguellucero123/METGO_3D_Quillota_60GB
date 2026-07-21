@@ -320,10 +320,12 @@ class DashboardPrincipalIntegrado:
         ), row=2, col=2)
 
         fig.update_layout(
-            **plotly_layout(height=620),
-            title_text="Estado general del sistema METGO 3D",
-            showlegend=False,
-            margin=dict(l=20, r=20, t=70, b=20),
+            **plotly_layout(
+                "Estado general del sistema METGO 3D",
+                height=620,
+                showlegend=False,
+                margin=dict(l=20, r=20, t=70, b=20),
+            )
         )
         return fig
 
@@ -372,14 +374,16 @@ class DashboardPrincipalIntegrado:
             opacity=0.6
         ))
         fig.update_layout(
-            **plotly_layout(height=420),
-            title='Tendencias agrícolas de corto plazo',
-            hovermode='x unified',
-            margin=dict(l=30, r=30, t=60, b=35),
-            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-            xaxis=dict(title='Hora', showgrid=False),
-            yaxis=dict(title='Precipitación (mm)', showgrid=False),
-            yaxis2=dict(title='Temperatura / Humedad', overlaying='y', side='right', showgrid=False, range=[0, 100]),
+            **plotly_layout(
+                'Tendencias agrícolas de corto plazo',
+                height=420,
+                hovermode='x unified',
+                margin=dict(l=30, r=30, t=60, b=35),
+                legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+                xaxis=dict(title='Hora', showgrid=False, gridcolor='#334155', linecolor='#334155'),
+                yaxis=dict(title='Precipitación (mm)', showgrid=False, gridcolor='#334155', linecolor='#334155'),
+                yaxis2=dict(title='Temperatura / Humedad', overlaying='y', side='right', showgrid=False, range=[0, 100]),
+            )
         )
         return fig
 
@@ -414,11 +418,13 @@ class DashboardPrincipalIntegrado:
             title='Mapa de riesgo agronómico: temperatura vs humedad',
         )
         fig.update_layout(
-            **plotly_layout(height=460),
-            margin=dict(l=30, r=30, t=70, b=35),
-            xaxis=dict(title='Temperatura (°C)', zeroline=False),
-            yaxis=dict(title='Humedad relativa (%)', zeroline=False),
-            coloraxis_colorbar=dict(title='Riesgo'),
+            **plotly_layout(
+                height=460,
+                margin=dict(l=30, r=30, t=70, b=35),
+                xaxis=dict(title='Temperatura (°C)', zeroline=False, gridcolor='#334155', linecolor='#334155'),
+                yaxis=dict(title='Humedad relativa (%)', zeroline=False, gridcolor='#334155', linecolor='#334155'),
+                coloraxis_colorbar=dict(title='Riesgo'),
+            )
         )
         fig.add_vline(x=25, line_width=1, line_dash='dash', line_color='#64748b')
         fig.add_hline(y=70, line_width=1, line_dash='dash', line_color='#64748b')

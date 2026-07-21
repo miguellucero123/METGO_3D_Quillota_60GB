@@ -227,7 +227,7 @@ if vista == "Gráficos" or vista == "Detallada":
             row=2,
             col=1,
         )
-        fig.update_layout(**plotly_layout(height=420), showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
+        fig.update_layout(**plotly_layout(height=420, showlegend=True, margin=dict(l=20, r=20, t=40, b=20)))
         st.plotly_chart(fig, config=PLOTLY_CONFIG, use_container_width=True)
     else:
         horas = list(range(24))
