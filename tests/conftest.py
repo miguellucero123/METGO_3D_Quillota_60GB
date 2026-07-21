@@ -1,7 +1,18 @@
 import pytest
 import sys
+import os
 from pathlib import Path
 from types import SimpleNamespace
+
+@pytest.fixture(autouse=True)
+def mock_env_passwords(monkeypatch):
+    """Fuerza contraseñas por defecto para los tests independientemente del .env o CI."""
+    monkeypatch.setenv("METGO_PASSWORD_ADMIN", "admin123")
+    monkeypatch.setenv("METGO_PASSWORD_USER", "user123")
+    monkeypatch.setenv("METGO_PASSWORD_LECTOR", "lec123")
+    monkeypatch.setenv("METGO_PASSWORD_OPERADOR", "op123")
+    monkeypatch.setenv("METGO_PASSWORD_AGRONOMO", "agro123")
+    monkeypatch.setenv("METGO_PASSWORD_METGO", "metgo2025")
 
 class MockTable:
     def __init__(self, name, db):
