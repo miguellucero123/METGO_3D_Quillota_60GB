@@ -303,13 +303,16 @@ def crear_dashboard_interactivo_plotly(datos):
         row=3, col=2
     )
     
-    # Actualizar layout
+    # Actualizar layout (tema oscuro METGO)
     fig.update_layout(
         title_text='📊 Dashboard Interactivo - Quillota',
         title_x=0.5,
         height=800,
         showlegend=True,
-        template="plotly_white"
+        template="plotly_dark",
+        paper_bgcolor="#0f172a",
+        plot_bgcolor="#1e293b",
+        font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
     )
     
     return fig

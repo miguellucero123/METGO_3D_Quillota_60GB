@@ -359,7 +359,7 @@ fig_temp_hum.add_trace(
     row=2,
     col=1,
 )
-fig_temp_hum.update_layout(height=520, showlegend=True, title_text="Variables principales")
+fig_temp_hum.update_layout(**plotly_layout(height=520), showlegend=True, title_text="Variables principales")
 fig_temp_hum.update_yaxes(title_text=f"Temperatura ({suf_temp})", row=1, col=1)
 fig_temp_hum.update_yaxes(title_text="Humedad (%)", row=2, col=1)
 st.plotly_chart(fig_temp_hum, use_container_width=True, config=PLOTLY_CONFIG)
@@ -409,9 +409,11 @@ st.markdown("### 🔬 Variables derivadas")
 col1, col2, col3 = st.columns(3)
 with col1:
     fig_rocio = px.line(df_meteo, x="Fecha", y="Punto_Rocio_C", title=f"Punto de rocío ({suf_temp})")
+    fig_rocio.update_layout(**plotly_layout(height=380))
     st.plotly_chart(fig_rocio, use_container_width=True, config=PLOTLY_CONFIG)
 with col2:
     fig_calor = px.line(df_meteo, x="Fecha", y="Indice_Calor_C", title=f"Índice de calor ({suf_temp})")
+    fig_calor.update_layout(**plotly_layout(height=380))
     st.plotly_chart(fig_calor, use_container_width=True, config=PLOTLY_CONFIG)
 with col3:
     st.info(
@@ -434,8 +436,9 @@ with col2:
         x="Temperatura_C",
         nbins=min(30, max(5, len(df_meteo) // 2)),
         title="Distribución temperatura media diaria",
-        color_discrete_sequence=["#1a5f4a"],
+        color_discrete_sequence=["#34d399"],
     )
+    fig_hist.update_layout(**plotly_layout(height=380))
     st.plotly_chart(fig_hist, use_container_width=True, config=PLOTLY_CONFIG)
 
 st.markdown("### 📍 Información de la estación")

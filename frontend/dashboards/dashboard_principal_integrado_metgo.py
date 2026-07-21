@@ -307,27 +307,23 @@ class DashboardPrincipalIntegrado:
             gauge={
                 'axis': {'range': [0, 100]},
                 'bar': {'color': color_riesgo},
-                'bgcolor': 'white',
+                'bgcolor': '#1e293b',
                 'borderwidth': 1,
-                'bordercolor': '#d9e2ec',
+                'bordercolor': '#334155',
                 'steps': [
-                    {'range': [0, 20], 'color': '#d9f0d3'},
-                    {'range': [20, 45], 'color': '#fff2cc'},
-                    {'range': [45, 70], 'color': '#fdd49e'},
-                    {'range': [70, 100], 'color': '#f4cccc'}
+                    {'range': [0, 20], 'color': 'rgba(52, 211, 153, 0.25)'},
+                    {'range': [20, 45], 'color': 'rgba(251, 191, 36, 0.25)'},
+                    {'range': [45, 70], 'color': 'rgba(251, 146, 60, 0.30)'},
+                    {'range': [70, 100], 'color': 'rgba(239, 68, 68, 0.30)'}
                 ]
             }
         ), row=2, col=2)
 
         fig.update_layout(
-            height=620,
+            **plotly_layout(height=620),
             title_text="Estado general del sistema METGO 3D",
             showlegend=False,
-            template="plotly_white",
-            paper_bgcolor="#ffffff",
-            plot_bgcolor="#ffffff",
-            margin=dict(l=20, r=20, t=70, b=20, showlegend=False),
-            font=dict(family="Inter, Segoe UI, Arial, sans-serif", size=13),
+            margin=dict(l=20, r=20, t=70, b=20),
         )
         return fig
 
@@ -376,16 +372,14 @@ class DashboardPrincipalIntegrado:
             opacity=0.6
         ))
         fig.update_layout(
-            template='plotly_white',
+            **plotly_layout(height=420),
             title='Tendencias agrícolas de corto plazo',
             hovermode='x unified',
-            height=420,
-            margin=dict(l=30, r=30, t=60, b=35, showlegend=False, showlegend=False),
+            margin=dict(l=30, r=30, t=60, b=35),
             legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
             xaxis=dict(title='Hora', showgrid=False),
             yaxis=dict(title='Precipitación (mm)', showgrid=False),
             yaxis2=dict(title='Temperatura / Humedad', overlaying='y', side='right', showgrid=False, range=[0, 100]),
-            font=dict(family='Inter, Segoe UI, Arial, sans-serif', size=12),
         )
         return fig
 
@@ -420,18 +414,16 @@ class DashboardPrincipalIntegrado:
             title='Mapa de riesgo agronómico: temperatura vs humedad',
         )
         fig.update_layout(
-            template='plotly_white',
-            height=460,
-            margin=dict(l=30, r=30, t=70, b=35, showlegend=False, showlegend=False),
+            **plotly_layout(height=460),
+            margin=dict(l=30, r=30, t=70, b=35),
             xaxis=dict(title='Temperatura (°C)', zeroline=False),
             yaxis=dict(title='Humedad relativa (%)', zeroline=False),
             coloraxis_colorbar=dict(title='Riesgo'),
-            font=dict(family='Inter, Segoe UI, Arial, sans-serif', size=12),
         )
-        fig.add_vline(x=25, line_width=1, line_dash='dash', line_color='#6c757d')
-        fig.add_hline(y=70, line_width=1, line_dash='dash', line_color='#6c757d')
-        fig.add_annotation(x=25.5, y=72, text='Zona fungosa / humedad alta', showarrow=False, font=dict(size=11, color='#495057'))
-        fig.add_annotation(x=5.5, y=35, text='Zona heladas', showarrow=False, font=dict(size=11, color='#495057'))
+        fig.add_vline(x=25, line_width=1, line_dash='dash', line_color='#64748b')
+        fig.add_hline(y=70, line_width=1, line_dash='dash', line_color='#64748b')
+        fig.add_annotation(x=25.5, y=72, text='Zona fungosa / humedad alta', showarrow=False, font=dict(size=11, color='#94a3b8'))
+        fig.add_annotation(x=5.5, y=35, text='Zona heladas', showarrow=False, font=dict(size=11, color='#94a3b8'))
         fig.add_annotation(x=34.5, y=25, text='Estrés térmico / hídrico', showarrow=False, font=dict(size=11, color='#495057'))
         return fig
 

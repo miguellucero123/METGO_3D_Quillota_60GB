@@ -52,7 +52,7 @@ if datos_ok:
     c4.metric("Lluvia", f"{float(row.get('precipitacion') or 0):.1f} mm")
     if "fecha" in df.columns and "temperatura_max" in df.columns:
         fig = px.line(df, x="fecha", y="temperatura_max", title="Pronóstico temperatura máxima")
-        fig.update_layout(**plotly_layout(, showlegend=False, showlegend=False))
+        fig.update_layout(**plotly_layout(height=400), showlegend=False)
         st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
 else:
     st.info("Conecte OpenMeteo (módulo 01) o use el panel Vue en Netlify para datos en vivo.")

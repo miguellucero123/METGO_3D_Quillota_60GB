@@ -350,10 +350,10 @@ class DashboardIntegradoRecomendaciones:
         ), row=2, col=2)
         
         fig.update_layout(
-            height=600, 
+            **plotly_layout(height=600),
             title_text="Condiciones Meteorológicas para Agricultura",
-            showlegend=False
-        , showlegend=False)
+            showlegend=False,
+        )
         return fig
 
 def main():

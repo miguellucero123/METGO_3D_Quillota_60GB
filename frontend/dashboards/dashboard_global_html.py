@@ -42,7 +42,7 @@ c2.metric("Humedad media", f"{df['humedad'].mean():.0f} %")
 c3.metric("Lluvia acum.", f"{df['lluvia'].sum():.1f} mm")
 
 fig = px.line(df, x="fecha", y=["temperatura", "humedad"], title="Series globales (demo dinámica)")
-fig.update_layout(**plotly_layout("Métricas globales", showlegend=False, showlegend=False))
+fig.update_layout(**plotly_layout("Métricas globales"))
 st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
 
 st.caption("Para datos reales use dashboard_global_metricas.py (8507) o la API METGO.")

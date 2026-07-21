@@ -111,6 +111,7 @@ def main():
             names=list(modulos_estado.keys()),
             title="Distribución de Registros por Módulo"
         )
+        fig_uso.update_layout(**plotly_layout(height=400))
         st.plotly_chart(fig_uso, config=PLOTLY_CONFIG, use_container_width=True)
     
     with col2:
@@ -129,6 +130,7 @@ def main():
             y='temperatura',
             title="Tendencia de Temperatura (Último Mes)"
         )
+        fig_tendencia.update_layout(**plotly_layout(height=400))
         st.plotly_chart(fig_tendencia, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Alertas y notificaciones

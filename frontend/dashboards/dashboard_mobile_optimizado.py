@@ -227,7 +227,7 @@ if vista == "Gráficos" or vista == "Detallada":
             row=2,
             col=1,
         )
-        fig.update_layout(**plotly_layout(height=400, showlegend=False, showlegend=False), height=420, showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
+        fig.update_layout(**plotly_layout(height=420), showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
         st.plotly_chart(fig, config=PLOTLY_CONFIG, use_container_width=True)
     else:
         horas = list(range(24))
@@ -247,7 +247,7 @@ if vista == "Gráficos" or vista == "Detallada":
         )
         fig.add_trace(go.Scatter(x=horas, y=temp_horas, line=dict(color="#e74c3c")), row=1, col=1)
         fig.add_trace(go.Scatter(x=horas, y=humedad_horas, line=dict(color="#3498db")), row=2, col=1)
-        fig.update_layout(**plotly_layout(height=400, showlegend=False, showlegend=False), height=400, showlegend=False)
+        fig.update_layout(**plotly_layout(height=400), showlegend=False)
         st.plotly_chart(fig, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Alertas móviles

@@ -187,9 +187,9 @@ class Visualizacion3DMETGO:
                 ),
                 width=1000,
                 height=800,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white'
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b'
             )
             
             # Guardar como HTML
@@ -255,9 +255,9 @@ class Visualizacion3DMETGO:
                 ),
                 width=1000,
                 height=800,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white'
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b'
             )
             
             # Guardar como HTML
@@ -349,9 +349,9 @@ class Visualizacion3DMETGO:
                 title='Visualización 3D Multivariable - Quillota',
                 height=1200,
                 width=1400,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white'
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b'
             )
             
             # Configurar ejes para cada subplot
@@ -446,9 +446,9 @@ class Visualizacion3DMETGO:
                 ),
                 width=1200,
                 height=800,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white',
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b',
                 showlegend=True
             )
             
@@ -555,9 +555,9 @@ class Visualizacion3DMETGO:
                 ),
                 width=1000,
                 height=800,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white',
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b',
                 showlegend=True
             )
             
@@ -607,9 +607,9 @@ class Visualizacion3DMETGO:
                 ),
                 width=1000,
                 height=800,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white'
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b'
             )
             
             # Guardar como HTML
@@ -700,9 +700,9 @@ class Visualizacion3DMETGO:
                 title='Dashboard Completo 3D - METGO 3D Quillota',
                 height=1200,
                 width=1400,
-                font=dict(family="Arial", size=12),
-                paper_bgcolor='white',
-                plot_bgcolor='white',
+                font=dict(family="DM Sans, Arial", size=12, color="#f8fafc"),
+                paper_bgcolor='#0f172a',
+                plot_bgcolor='#1e293b',
                 showlegend=True
             )
             

@@ -155,8 +155,9 @@ if modo_ml.startswith("Registry"):
                         textposition="outside",
                     )
                 )
-                fig.update_layout(**plotly_layout(height=400, showlegend=False, showlegend=False), barmode="group",
-                    height=280,
+                fig.update_layout(
+                    **plotly_layout(height=280),
+                    barmode="group",
                     title=str(row["variable"]),
                     yaxis_title=str(row.get("unidad") or "").strip() or "valor",
                     showlegend=False,

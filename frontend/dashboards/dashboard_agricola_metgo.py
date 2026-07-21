@@ -5,6 +5,17 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
+import sys
+from pathlib import Path
+
+_DASH = Path(__file__).resolve().parent
+if str(_DASH) not in sys.path:
+    sys.path.insert(0, str(_DASH))
+
+from metgo_dashboard_init import ensure_repo_path
+
+ensure_repo_path()
+from metgo.streamlit_theme import plotly_layout
 
 def generar_datos_agricolas():
     """Genera datos agrícolas simulados para Quillota"""
@@ -108,10 +119,11 @@ def crear_grafico_rendimientos(datos):
     ))
     
     fig.update_layout(
+        **plotly_layout(height=400),
         title='Rendimiento por Cultivo',
         xaxis_title='Cultivo',
-        yaxis_title='Rendimiento (Ton/Ha, showlegend=False, showlegend=False)',
-        height=400
+        yaxis_title='Rendimiento (Ton/Ha)',
+        showlegend=False,
     )
     
     return fig
@@ -134,10 +146,11 @@ def crear_grafico_valor_produccion(datos):
     ))
     
     fig.update_layout(
+        **plotly_layout(height=400),
         title='Valor Estimado de Producción',
         xaxis_title='Cultivo',
-        yaxis_title='Valor ($, showlegend=False, showlegend=False)',
-        height=400
+        yaxis_title='Valor ($)',
+        showlegend=False,
     )
     
     return fig
@@ -153,9 +166,9 @@ def crear_grafico_estado_cultivos(datos):
     )])
     
     fig.update_layout(
+        **plotly_layout(height=400),
         title='Distribución del Estado de Cultivos',
-        height=400
-    , showlegend=False, showlegend=False)
+    )
     
     return fig
 
