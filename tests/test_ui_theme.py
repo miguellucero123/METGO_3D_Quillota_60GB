@@ -106,7 +106,7 @@ def test_plotly_charts_usan_plotly_layout():
     """Si hay st.plotly_chart, el archivo debe importar/usar plotly_layout."""
     violaciones = []
     for path in _activos():
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
         if "st.plotly_chart" not in text and "plotly_chart(" not in text:
             continue
         if "plotly_layout" not in text:
@@ -129,3 +129,9 @@ def test_plotly_charts_usan_plotly_layout():
             ):
                 violaciones.append(f"{path.name}:{i}: {s[:100]}")
     assert not violaciones, "Plotly sin plotly_layout:\n" + "\n".join(violaciones[:40])
+
+
+def test_dashboards_activos_sin_bom_utf8():
+    for path in _activos():
+        raw = path.read_bytes()
+        assert not raw.startswith(b"\xef\xbb\xbf"), f"BOM UTF-8 en {path.name}"

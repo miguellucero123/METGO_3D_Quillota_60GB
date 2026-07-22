@@ -251,10 +251,30 @@ def sincronizar_estaciones(
 
 def fuentes_datos() -> dict[str, Any]:
     csv_path = _csv_5_anios()
-    return {
+    out: dict[str, Any] = {
         "openmeteo": True,
+        "openmeteo_archive": True,
         "cache_modulo_08": True,
         "sqlite_meteo": str(meteo_store._db_path()),
         "csv_5_anios": str(csv_path) if csv_path else None,
         "csv_disponible": bool(csv_path),
+        "supabase": meteo_store.estadisticas_store(),
     }
+    try:
+        from pathlib import Path
+        import importlib.util
+
+        root = Path(__file__).resolve()
+        for p in root.parents:
+            if (p / "metgo_paths.py").exists():
+                script = p / "backend" / "08_Gestion_Datos" / "scripts" / "fuentes_oficiales_chile.py"
+                if script.is_file():
+                    spec = importlib.util.spec_from_file_location("fuentes_oficiales_chile", script)
+                    if spec and spec.loader:
+                        mod = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(mod)
+                        out["oficiales_chile"] = mod.estado_fuentes()
+                break
+    except Exception as exc:
+        out["oficiales_chile"] = {"error": str(exc)}
+    return out

@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
 
 import pandas as pd

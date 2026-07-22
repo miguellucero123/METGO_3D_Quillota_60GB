@@ -1,7 +1,7 @@
 # Plan de trabajo — Calidad Vue en todos los módulos + solo datos reales
 
-> Actualizado: 2026-07-21 · Continuación etapas C–F (paridad Plotly, proxies, stubs Agromet, QA puertos).
-> Ver: `docs/PROMPT_UNIFICACION_FORMATO_UI.md` · `CHECKLIST_ETAPA_E_SUPABASE_ARCHIVE.md` · `CHECKLIST_ETAPA_F_PUERTOS.md`
+> Actualizado: 2026-07-22 · Etapas A–F en código; E operativo verificado (Supabase + sync corto).
+> Ver: `CHECKLIST_ETAPA_E_SUPABASE_ARCHIVE.md` · `CHECKLIST_ETAPA_F_PUERTOS.md`
 
 ## Principios
 
@@ -15,33 +15,31 @@
 ### A — Errores producción + precip Vue ECharts — HECHA
 ### B — SVG → ECharts (tema Ensemble) — HECHA
 
-### C — Paridad visual Streamlit / Vue — HECHA (código catálogo)
-- [x] Emojis eliminados en 8502–8513 + test CI
-- [x] `plotly_layout` en charts que faltaban (8503, 8506, 8508, 8509, 8512)
-- [x] 8513: `bootstrap_dashboard` + solo API (sin Demo)
-- [x] Test: `test_plotly_charts_usan_plotly_layout`
-- [ ] Smoke visual manual puerto a puerto (checklist F)
+### C — Paridad visual Streamlit / Vue — HECHA
+- [x] Emojis + `plotly_layout` + 8513 solo API
+- [x] BOM UTF-8 eliminado en dashboards; test CI anti-BOM
+- [x] Smoke estático F: `scratch/smoke_etapa_f_puertos.py` → 12/12 OK
 
-### D — Sin sintéticos — HECHA (código + CI reforzado)
-- [x] 8506: eliminados `Rendimiento`/`Calidad` inventados; copy sin “datos generados”
-- [x] 8503: sin cronograma sintético ni ton/ha inventadas; riesgos = heurística clima etiquetada
-- [x] Regex CI ampliado (proxies + Demo móvil)
-- [x] `pytest tests/test_ui_theme.py` (4 tests)
+### D — Sin sintéticos — HECHA
+- [x] Proxies 8503/8506 eliminados + `pytest tests/test_ui_theme.py` (5 tests)
 
-### E — Históricos oficiales — CÓDIGO LISTO / OPS PENDIENTE
-- [x] ETL Archive + cron `incluir_archive` + SQL idempotente `meteo_pronostico.sql`
-- [x] Stub Agromet/DMC: `backend/08_Gestion_Datos/scripts/fuentes_oficiales_chile.py`
-- [ ] **Operativo:** ejecutar SQL en Supabase + primer sync Archive
-- [ ] Registrar códigos Agromet/DMC y cablear ETL real
+### E — Históricos oficiales — OPERATIVO AVANZADO
+- [x] SQL tablas OK (permisos): `meteo_registros` / `meteo_pronostico` / `meteo_series`
+- [x] Sync corto: histórico 7d + pronóstico 7d en Supabase
+- [x] **Archive 1 año** (2026-07-22): 366 días × 5 estaciones = **1830** filas `openmeteo_archive`
+- [x] Stub Agromet/DMC + exposición en `fuentes_datos()` (`oficiales_chile`)
+- [ ] Archive 5 años (cron domingo / `workflow_dispatch` con `anios_archive=5`)
+- [ ] Códigos Agromet/DMC reales
 
-### F — Limpieza + verificación — HECHA (código) / QA manual pendiente
-- [x] Legacy + `.backup` + notebooks → `archivos_obsoletos/frontend_dashboards_legacy/`
-- [x] Checklist: `docs/roadmap/CHECKLIST_ETAPA_F_PUERTOS.md`
-- [ ] Marcar checkboxes tras smoke local 8502–8513
+### F — Limpieza + verificación — HECHA (automático) / smoke visual opcional
+- [x] Legacy + backups + notebooks movidos
+- [x] Smoke estático 8502–8513 OK
+- [ ] Smoke visual Streamlit (opcional, checklist F)
 - [ ] Commit/push cuando el usuario lo pida
 
-## Verificación automática
+## Verificación
 ```bash
 pytest tests/test_ui_theme.py -q
-python -m py_compile frontend/dashboards/dashboard_*.py
+python scratch/smoke_etapa_f_puertos.py
+python scratch/verificar_supabase_tablas.py
 ```
