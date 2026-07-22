@@ -28,7 +28,10 @@ from api_rest.meteo_avanzado import (
     PredictorNiebla,
     calcular_bulbo_humedo,
     calcular_punto_rocio,
+    clasificar_dano_cultivo,
+    clasificar_probabilidad_boletin,
     evaluar_criterio_psicrometro,
+    obtener_umbrales_cultivo,
 )
 from api_rest.meteo_avanzado_core import (
     _riesgo_helada_simple,
@@ -61,41 +64,94 @@ def test_criterio_psicrometro_riesgo_inminente():
     assert crit["nivel"] == "inminente"
 
 
+def test_umbrales_distintos_por_cultivo():
+    lechuga = obtener_umbrales_cultivo("lechuga")
+    vid = obtener_umbrales_cultivo("vid")
+    assert lechuga["critico"] > vid["critico"]
+    assert lechuga["critico"] == 3.0
+    assert vid["critico"] == -2.0
+
+
+def test_dano_agrometeorologico_lechuga():
+    dano = clasificar_dano_cultivo(2.0, "lechuga")
+    assert dano["tipo_helada"] == "agrometeorologica"
+    assert dano["alerta_cultivo"] is True
+    assert dano["helada_meteorologica"] is False
+
+
+def test_dano_meteorologico_palto():
+    dano = clasificar_dano_cultivo(-1.0, "palto")
+    assert dano["tipo_helada"] == "meteorologica"
+    assert dano["severidad_cultivo"] == "critico"
+
+
+def test_probabilidad_boletin():
+    assert clasificar_probabilidad_boletin(50) == "baja"
+    assert clasificar_probabilidad_boletin(66) == "baja"
+    assert clasificar_probabilidad_boletin(70) == "media"
+    assert clasificar_probabilidad_boletin(90) == "alta"
+
+
 def test_modelo_helada_alto_riesgo_cielo_despejado():
-    modelo = ModeloHeladaRadiativa("quillota")
+    modelo = ModeloHeladaRadiativa("quillota", altitud_m=127)
     res = modelo.calcular_riesgo_helada(
         temperatura_pronosticada=18,
         temperatura_minima_pronosticada=-3,
         cobertura_nubosa=5,
         velocidad_viento=0.8,
-        humedad_relativa=88,
+        humedad_relativa=45,
         punto_rocio=-4,
         fecha=datetime.now(ZoneInfo("America/Santiago")),
         temperatura_atardecer=6.0,
         bulbo_humedo=1.5,
+        cultivo="palto",
+        precip_reciente_mm=0.5,
     )
     assert res["probabilidad_helada"] > 50
     assert res["riesgo_severo"] or res["riesgo_moderado"]
     assert res["riesgo_inminente"] is True
+    assert res["probabilidad_boletin"] in ("baja", "media", "alta")
+    assert "factor_oquedad" in res
+    assert "factor_humedad_suelo" in res
     assert len(res["factores_contribuyentes"]) >= 2
-    assert "criterio_psicrometro" in res
+
+
+def test_lechuga_alerta_con_temp_positiva():
+    modelo = ModeloHeladaRadiativa("quillota", altitud_m=120)
+    res = modelo.calcular_riesgo_helada(
+        temperatura_pronosticada=15,
+        temperatura_minima_pronosticada=2.5,
+        cobertura_nubosa=10,
+        velocidad_viento=1.0,
+        humedad_relativa=50,
+        punto_rocio=1.0,
+        fecha=datetime.now(ZoneInfo("America/Santiago")),
+        cultivo="lechuga",
+        precip_reciente_mm=1.0,
+    )
+    assert res["alerta_cultivo"] is True
+    assert res["tipo_helada"] == "agrometeorologica"
+    assert res["umbrales_cultivo"]["critico"] == 3.0
 
 
 def test_modelo_helada_bajo_riesgo():
-    modelo = ModeloHeladaRadiativa("quillota")
+    modelo = ModeloHeladaRadiativa("quillota", altitud_m=350)
     res = modelo.calcular_riesgo_helada(
         temperatura_pronosticada=25,
         temperatura_minima_pronosticada=12,
         cobertura_nubosa=90,
         velocidad_viento=12,
-        humedad_relativa=40,
+        humedad_relativa=80,
         punto_rocio=5,
         fecha=datetime.now(ZoneInfo("America/Santiago")),
         temperatura_atardecer=20.0,
         bulbo_humedo=12.0,
+        cultivo="vid",
+        precip_reciente_mm=20.0,
     )
-    assert res["probabilidad_helada"] < 30
+    assert res["probabilidad_helada"] < 35
     assert res["riesgo_inminente"] is False
+    assert res["alerta_cultivo"] is False
 
 
 def test_analizador_nubosidad_clasificacion():

@@ -230,15 +230,14 @@ paths:
   /api/meteo/{estacion_id}/helada:
     get:
       tags: [meteo]
-      summary: Pronóstico avanzado helada radiativa (factores + psicrómetro)
+      summary: Pronóstico avanzado helada radiativa por cultivo
       description: |
-        Combina nubosidad, viento, humedad y T° mínima con el criterio práctico
-        de psicrómetro al atardecer: punto de rocío (Td) y bulbo húmedo (Th).
-        Riesgo alto si Td ≤ 0 °C con cielo despejado y calma; inminente si
-        Th ≤ 2 °C y cielo despejado (se espera T° < 0 en madrugada).
-        Persiste el resultado en Supabase (`meteo_helada_pronostico`) y usa
-        tendencia térmica desde `meteo_registros`. Si no hay pronóstico fresco,
-        responde desde el store.
+        Umbrales diferenciados por cultivo (palto, vid, cítricos, tomate, lechuga):
+        helada meteorológica (T≤0 °C) vs agrometeorológica (daño hasta ~3 °C en sensibles).
+        Probabilidad boletín: baja ≤66 %, media 66–<90 %, alta ≥90 %.
+        Factores: psicrómetro (Td/Th), cielo despejado, calma, baja HR nocturna,
+        oquedad/relieve (altitud estación) y humedad de suelo (sensor o proxy precipitación).
+        Persiste en Supabase (`meteo_helada_pronostico`); tendencia desde `meteo_registros`.
       security: [{ bearerAuth: [] }]
       parameters:
         - name: estacion_id
@@ -251,9 +250,17 @@ paths:
         - name: cultivo
           in: query
           schema: { type: string, enum: [palto, vid, citricos, tomate, lechuga], default: palto }
+        - name: humedad_suelo
+          in: query
+          schema: { type: number, minimum: 0, maximum: 100 }
+          description: Humedad de suelo % (opcional; si falta se usa proxy de precipitación)
+        - name: suelo_descubierto
+          in: query
+          schema: { type: boolean }
+          description: Suelo sin cobertura vegetal (acelera caída de T° superficial)
       responses:
         "200":
-          description: Probabilidad, Td/Th atardecer, criterio psicrómetro y recomendaciones
+          description: Probabilidad, umbrales por cultivo, Td/Th, oquedad, suelo y recomendaciones
   /api/meteo/{estacion_id}/helada-madrugada:
     get:
       tags: [meteo]

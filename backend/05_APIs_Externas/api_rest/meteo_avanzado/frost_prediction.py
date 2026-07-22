@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Modelo de riesgo de helada radiativa (6 factores + criterio psicrómetro)."""
+"""Modelo de riesgo de helada radiativa (cultivo + psicrómetro + factores Quillota)."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
 
+from .cultivo_helada import (
+    POP_BAJA_MAX,
+    clasificar_dano_cultivo,
+    clasificar_probabilidad_boletin,
+    evaluar_condiciones_atmosfericas_noche,
+    factor_humedad_suelo,
+    factor_oquedad_relieve,
+    obtener_umbrales_cultivo,
+)
 from .meteo_utils import (
     calcular_bulbo_humedo,
     calcular_punto_rocio,
@@ -16,10 +25,11 @@ from .meteo_utils import (
 
 
 class ModeloHeladaRadiativa:
-    """Helada radiativa: cielo despejado + viento débil + Td/Th al atardecer."""
+    """Helada radiativa: atmósfera + Td/Th atardecer + umbrales por cultivo + relieve/suelo."""
 
-    def __init__(self, estacion_id: str):
+    def __init__(self, estacion_id: str, altitud_m: float | None = None):
         self.estacion_id = estacion_id
+        self.altitud_m = altitud_m
 
     def calcular_riesgo_helada(
         self,
@@ -33,7 +43,13 @@ class ModeloHeladaRadiativa:
         historia_temperatura: list[float] | None = None,
         temperatura_atardecer: float | None = None,
         bulbo_humedo: float | None = None,
+        cultivo: str = "palto",
+        humedad_suelo_pct: float | None = None,
+        precip_reciente_mm: float | None = None,
+        suelo_descubierto: bool | None = None,
+        altitud_m: float | None = None,
     ) -> dict[str, Any]:
+        alt = altitud_m if altitud_m is not None else self.altitud_m
         t_atardecer = (
             temperatura_atardecer
             if temperatura_atardecer is not None
@@ -41,7 +57,6 @@ class ModeloHeladaRadiativa:
                 temperatura_pronosticada, temperatura_minima_pronosticada
             )
         )
-        # Td/Th de atardecer: priorizar valores del caller (psicrómetro / core)
         td_atardecer = (
             float(punto_rocio)
             if punto_rocio is not None
@@ -52,22 +67,47 @@ class ModeloHeladaRadiativa:
             if bulbo_humedo is not None
             else calcular_bulbo_humedo(t_atardecer, humedad_relativa)
         )
-        temp_f = self._evaluar_temperatura(temperatura_minima_pronosticada)
+
+        dano = clasificar_dano_cultivo(temperatura_minima_pronosticada, cultivo)
+        umb = obtener_umbrales_cultivo(cultivo)
+        atmos = evaluar_condiciones_atmosfericas_noche(
+            cobertura_nubosa, velocidad_viento, humedad_relativa
+        )
+        oquedad = factor_oquedad_relieve(alt)
+        suelo = factor_humedad_suelo(
+            humedad_suelo_pct, precip_reciente_mm, suelo_descubierto
+        )
+        criterio = evaluar_criterio_psicrometro(
+            td_atardecer, th_atardecer, cobertura_nubosa, velocidad_viento
+        )
+
+        temp_f = self._evaluar_temperatura_cultivo(
+            temperatura_minima_pronosticada, umb
+        )
         nub_f = self._evaluar_nubosidad(cobertura_nubosa)
         viento_f = self._evaluar_viento(velocidad_viento)
-        hum_f = self._evaluar_humedad(humedad_relativa)
-        tend_f = self._evaluar_tendencia(historia_temperatura) if historia_temperatura else 0.5
+        # Baja HR nocturna favorece irradiación (no alta HR)
+        hum_f = self._evaluar_humedad_baja_noche(humedad_relativa)
+        tend_f = (
+            self._evaluar_tendencia(historia_temperatura)
+            if historia_temperatura
+            else 0.5
+        )
         rocio_f = self._evaluar_punto_rocio(td_atardecer, temperatura_minima_pronosticada)
         psico_f = self._evaluar_psicrometro(td_atardecer, th_atardecer)
+        oquedad_f = float(oquedad["score"])
+        suelo_f = float(suelo["score"])
 
         pesos = {
-            "temperatura": 0.25,
-            "nubosidad": 0.20,
-            "viento": 0.15,
-            "humedad": 0.10,
-            "tendencia": 0.05,
-            "rocio": 0.10,
-            "psicrometro": 0.15,
+            "temperatura": 0.22,
+            "nubosidad": 0.14,
+            "viento": 0.12,
+            "humedad": 0.08,
+            "tendencia": 0.04,
+            "rocio": 0.08,
+            "psicrometro": 0.12,
+            "oquedad": 0.10,
+            "suelo": 0.10,
         }
         prob = (
             temp_f * pesos["temperatura"]
@@ -77,29 +117,39 @@ class ModeloHeladaRadiativa:
             + tend_f * pesos["tendencia"]
             + rocio_f * pesos["rocio"]
             + psico_f * pesos["psicrometro"]
+            + oquedad_f * pesos["oquedad"]
+            + suelo_f * pesos["suelo"]
         ) * 100
 
-        criterio = evaluar_criterio_psicrometro(
-            td_atardecer, th_atardecer, cobertura_nubosa, velocidad_viento
-        )
         if criterio["riesgo_inminente"]:
             prob = max(prob, 75.0)
         elif criterio["riesgo_alto"]:
             prob = max(prob, 60.0)
+        if dano["severidad_cultivo"] == "critico" and atmos["favorables_irradiacion"]:
+            prob = max(prob, 70.0)
 
-        riesgo_severo = prob > 70 and temperatura_minima_pronosticada < -2
-        riesgo_moderado = prob > 40 and temperatura_minima_pronosticada < 0
+        prob = min(100.0, prob)
+        pop_boletin = clasificar_probabilidad_boletin(prob)
+
+        riesgo_severo = (
+            dano["severidad_cultivo"] == "critico" and prob > POP_BAJA_MAX
+        ) or (criterio["riesgo_inminente"] and dano["alerta_cultivo"])
+        riesgo_moderado = dano["severidad_cultivo"] in ("critico", "alto", "moderado") and (
+            prob > 40 or criterio["riesgo_alto"]
+        )
         if criterio["riesgo_inminente"]:
             riesgo_severo = True
             riesgo_moderado = True
 
-        factores = []
-        if cobertura_nubosa < 20:
+        factores: list[str] = []
+        if atmos["cielo_despejado"]:
             factores.append(f"Cielo despejado ({cobertura_nubosa:.0f}% nubosidad)")
-        if velocidad_viento < 3:
-            factores.append(f"Viento débil ({velocidad_viento:.1f} m/s)")
-        if humedad_relativa > 70:
-            factores.append(f"Humedad alta ({humedad_relativa:.0f}%)")
+        if atmos["viento_calma"]:
+            factores.append(f"Viento en calma ({velocidad_viento:.1f} m/s)")
+        if atmos["baja_humedad_nocturna"]:
+            factores.append(
+                f"Baja humedad nocturna ({humedad_relativa:.0f}% HR) — favorece irradiación"
+            )
         if td_atardecer <= 0:
             factores.append(f"Punto de rocío al atardecer ≤ 0 °C (Td={td_atardecer:.1f})")
         elif abs(td_atardecer - temperatura_minima_pronosticada) < 3:
@@ -108,20 +158,29 @@ class ModeloHeladaRadiativa:
             factores.append(
                 f"Bulbo húmedo al atardecer ≤ 2 °C (Th={th_atardecer:.1f}) — riesgo inminente"
             )
+        if oquedad["nivel"] in ("alto", "medio"):
+            factores.append(oquedad["mensaje"])
+        if suelo["score"] >= 0.6:
+            factores.append(suelo["mensaje"])
+        if dano["tipo_helada"] != "sin_helada":
+            factores.append(
+                f"Helada {dano['tipo_helada']} para {dano['cultivo_nombre']} "
+                f"(Tmín={temperatura_minima_pronosticada:.1f} °C, umbral crítico "
+                f"{umb['critico']} °C)"
+            )
 
-        nivel_riesgo = "Bajo"
-        if criterio["riesgo_inminente"] or riesgo_severo:
-            nivel_riesgo = "Inminente" if criterio["riesgo_inminente"] else "Severo"
-        elif riesgo_moderado or criterio["riesgo_alto"]:
-            nivel_riesgo = "Alto" if criterio["riesgo_alto"] else "Moderado"
-        elif prob > 20:
-            nivel_riesgo = "Vigilancia"
+        nivel_riesgo = self._nivel_riesgo(
+            pop_boletin, dano, criterio, riesgo_severo, riesgo_moderado
+        )
 
         return {
             "estacion_id": self.estacion_id,
             "fecha_pronostico": fecha.isoformat(),
-            "probabilidad_helada": round(min(100.0, prob), 1),
-            "riesgo_helada_radiativa": round(min(100.0, prob), 1),
+            "cultivo": dano["cultivo"],
+            "cultivo_nombre": dano["cultivo_nombre"],
+            "probabilidad_helada": round(prob, 1),
+            "probabilidad_boletin": pop_boletin,
+            "riesgo_helada_radiativa": round(prob, 1),
             "temperatura_minima_esperada": round(temperatura_minima_pronosticada, 1),
             "temperatura_minima_absoluta": round(temperatura_minima_pronosticada, 1),
             "temperatura_maxima": round(temperatura_pronosticada, 1),
@@ -130,6 +189,11 @@ class ModeloHeladaRadiativa:
             "punto_rocio_atardecer": round(td_atardecer, 1),
             "bulbo_humedo": round(th_atardecer, 1),
             "bulbo_humedo_atardecer": round(th_atardecer, 1),
+            "dano_cultivo": dano,
+            "umbral_cultivo": umb["critico"],
+            "umbrales_cultivo": dano["umbrales"],
+            "alerta_cultivo": dano["alerta_cultivo"],
+            "tipo_helada": dano["tipo_helada"],
             "riesgo_severo": riesgo_severo,
             "riesgo_moderado": riesgo_moderado,
             "riesgo_inminente": criterio["riesgo_inminente"],
@@ -137,8 +201,11 @@ class ModeloHeladaRadiativa:
             "hora_critica_esperada": "04:00",
             "factores_contribuyentes": factores,
             "criterio_psicrometro": criterio,
+            "condiciones_atmosfericas": atmos,
+            "factor_oquedad": oquedad,
+            "factor_humedad_suelo": suelo,
             "recomendaciones": self._generar_recomendaciones(
-                prob, temperatura_minima_pronosticada, riesgo_severo, criterio
+                prob, temperatura_minima_pronosticada, riesgo_severo, criterio, dano
             ),
             "recomendacion": criterio["mensaje"],
             "scores_componentes": {
@@ -149,20 +216,25 @@ class ModeloHeladaRadiativa:
                 "tendencia": round(tend_f * 100, 1),
                 "punto_rocio": round(rocio_f * 100, 1),
                 "psicrometro": round(psico_f * 100, 1),
+                "oquedad": round(oquedad_f * 100, 1),
+                "suelo": round(suelo_f * 100, 1),
             },
         }
 
-    def _evaluar_temperatura(self, temp_min: float) -> float:
-        if temp_min < -10:
+    def _evaluar_temperatura_cultivo(
+        self, temp_min: float, umb: dict[str, Any]
+    ) -> float:
+        """Score según umbrales del cultivo (no un único 0 °C genérico)."""
+        if temp_min <= umb["critico"] - 3:
             return 1.0
-        if temp_min < -5:
+        if temp_min <= umb["critico"]:
             return 0.9
-        if temp_min < 0:
-            return 0.7
-        if temp_min < 2:
-            return 0.4
-        if temp_min < 5:
-            return 0.2
+        if temp_min <= umb["alto"]:
+            return 0.65
+        if temp_min <= umb["moderado"]:
+            return 0.35
+        if temp_min <= umb["moderado"] + 2:
+            return 0.15
         return 0.0
 
     def _evaluar_nubosidad(self, cobertura: float) -> float:
@@ -189,16 +261,17 @@ class ModeloHeladaRadiativa:
             return 0.15
         return 0.05
 
-    def _evaluar_humedad(self, hr: float) -> float:
-        if hr > 85:
+    def _evaluar_humedad_baja_noche(self, hr: float) -> float:
+        """Baja HR nocturna favorece pérdida de calor por irradiación."""
+        if hr < 40:
             return 1.0
-        if hr > 75:
-            return 0.8
-        if hr > 65:
-            return 0.5
-        if hr > 50:
-            return 0.2
-        return 0.05
+        if hr < 50:
+            return 0.85
+        if hr < 60:
+            return 0.7
+        if hr < 75:
+            return 0.35
+        return 0.1
 
     def _evaluar_tendencia(self, historia: list[float]) -> float:
         if not historia or len(historia) < 2:
@@ -213,7 +286,6 @@ class ModeloHeladaRadiativa:
         return 0.2
 
     def _evaluar_punto_rocio(self, pr: float, temp_min: float) -> float:
-        # Td ≤ 0 °C es señal fuerte de escarcha potencial
         if pr <= -2:
             return 1.0
         if pr <= 0:
@@ -230,7 +302,6 @@ class ModeloHeladaRadiativa:
         return 0.05
 
     def _evaluar_psicrometro(self, td: float, th: float) -> float:
-        """Score 0–1 del método de campo (Td + Th al atardecer)."""
         score = 0.0
         if th <= 0:
             score += 0.6
@@ -246,44 +317,75 @@ class ModeloHeladaRadiativa:
             score += 0.15
         return min(1.0, score)
 
+    def _nivel_riesgo(
+        self,
+        pop_boletin: str,
+        dano: dict[str, Any],
+        criterio: dict[str, Any],
+        riesgo_severo: bool,
+        riesgo_moderado: bool,
+    ) -> str:
+        if criterio.get("riesgo_inminente"):
+            return "Inminente"
+        if pop_boletin == "alta" or riesgo_severo:
+            return "Alto"
+        if pop_boletin == "media" or dano["severidad_cultivo"] in ("critico", "alto"):
+            return "Medio"
+        if riesgo_moderado or dano["severidad_cultivo"] == "moderado":
+            return "Moderado"
+        if pop_boletin == "baja" and dano["severidad_cultivo"] == "bajo":
+            return "Bajo"
+        return "Vigilancia"
+
     def _generar_recomendaciones(
         self,
         prob: float,
         temp_min: float,
         severo: bool,
         criterio: dict[str, Any] | None = None,
+        dano: dict[str, Any] | None = None,
     ) -> list[str]:
         recs: list[str] = []
         criterio = criterio or {}
+        dano = dano or {}
+        cultivo_n = dano.get("cultivo_nombre", "cultivo")
+        pop = clasificar_probabilidad_boletin(prob)
+
         if criterio.get("riesgo_inminente"):
             recs.extend(
                 [
-                    "RIESGO INMINENTE (psicrómetro): Th ≤ 2 °C + cielo despejado",
+                    f"RIESGO INMINENTE ({cultivo_n}): Th ≤ 2 °C + cielo despejado",
                     "Activar protección antihielo antes de medianoche",
                     "Monitorear temperatura entre 3–6 AM",
                 ]
             )
-        elif severo:
+        elif pop == "alta" or severo:
             recs.extend(
                 [
-                    "ALERTA CRÍTICA: riesgo muy alto de daño por helada",
+                    f"ALERTA ALTA (boletin ≥90 %) para {cultivo_n}",
                     "Activar protección antihielo (riego por aspersión, mallas)",
                     "Monitorear temperatura entre 3–6 AM",
                 ]
             )
-        elif criterio.get("riesgo_alto") or prob > 40:
+        elif pop == "media" or criterio.get("riesgo_alto") or dano.get("alerta_cultivo"):
             recs.extend(
                 [
-                    "ALERTA: Td ≤ 0 °C o probabilidad significativa de helada radiativa",
+                    f"ALERTA MEDIA (66–90 %) / umbral de {cultivo_n}",
                     "Preparar sistemas de protección",
-                    "Revisar psicrómetro / pronóstico cada 6 h",
+                    "Revisar psicrómetro y pronóstico cada 6 h",
                 ]
             )
         elif prob > 20:
-            recs.append("Vigilancia: riesgo de helada débil")
+            recs.append(f"Vigilancia baja (≤66 %) para {cultivo_n}")
         else:
-            recs.append("Riesgo bajo de helada. Operaciones normales.")
-        if temp_min < 0:
-            recs.append("Evitar labores que expongan raíces")
-            recs.append("NO regar por aspersión antes de la helada")
+            recs.append(f"Riesgo bajo para {cultivo_n}. Operaciones normales.")
+
+        if dano.get("tipo_helada") == "agrometeorologica":
+            recs.append(
+                "Helada agrometeorológica: T° sobre 0 °C pero dentro del rango de daño del cultivo"
+            )
+        if temp_min <= 0:
+            recs.append("Helada meteorológica (T° ≤ 0 °C): evitar labores que expongan tejidos")
+        if dano.get("alerta_cultivo"):
+            recs.append("Preferir riego previo (humedecer suelo) para aumentar inercia térmica")
         return recs

@@ -17,6 +17,7 @@ from api_rest.meteo_avanzado import (
     clasificar_velocidad_viento,
     estimar_temp_atardecer,
     indice_humedad_percibida,
+    obtener_umbrales_cultivo,
 )
 from api_rest.meteo_avanzado.meteo_utils import ventilacion_vertical_indice
 from api_rest.services import ESTACIONES_PRINCIPALES, pronostico_meteo, slug_a_nombre
@@ -29,14 +30,6 @@ COORDS_ESTACIONES: dict[str, dict[str, float]] = {
     "hijuelas": {"lat": -32.8000, "lon": -71.1333, "altitud": 350},
     "limache": {"lat": -33.0167, "lon": -71.2667, "altitud": 120},
     "olmue": {"lat": -33.0000, "lon": -71.2167, "altitud": 145},
-}
-
-UMBRALES_HELADA_CULTIVO = {
-    "palto": -2,
-    "vid": -5,
-    "citricos": -4,
-    "tomate": -1,
-    "lechuga": -2,
 }
 
 
@@ -87,17 +80,22 @@ def _radiacion_wm2_desde_sum(radiacion_sum_mj: float | None) -> float:
 
 
 def pronostico_helada_avanzado(
-    estacion_id: str, dias: int = 7, cultivo: str = "palto", persistir: bool = True
+    estacion_id: str,
+    dias: int = 7,
+    cultivo: str = "palto",
+    persistir: bool = True,
+    humedad_suelo_pct: float | None = None,
+    suelo_descubierto: bool | None = None,
 ) -> dict[str, Any]:
     validar_estacion(estacion_id)
     estacion = obtener_estacion_meta(estacion_id)
     filas = pronostico_meteo(estacion_id, dias) or []
-    modelo = ModeloHeladaRadiativa(estacion_id)
+    modelo = ModeloHeladaRadiativa(estacion_id, altitud_m=estacion.get("altitud"))
     heladas: list[dict[str, Any]] = []
     historia = _historia_temperatura_min(estacion_id)
+    umb_cultivo = obtener_umbrales_cultivo(cultivo)
 
     if not filas:
-        # Fallback: identificación ya persistida en Supabase (sin inventar)
         try:
             from api_rest.integracion.meteo_store import leer_helada_pronostico
 
@@ -109,11 +107,20 @@ def pronostico_helada_avanzado(
                 "estacion_id": estacion_id,
                 "estacion_nombre": estacion["nombre"],
                 "cultivo": cultivo,
+                "cultivo_nombre": umb_cultivo["nombre"],
+                "umbrales_cultivo": {
+                    "critico": umb_cultivo["critico"],
+                    "alto": umb_cultivo["alto"],
+                    "moderado": umb_cultivo["moderado"],
+                    "helada_meteorologica": 0.0,
+                },
                 "fecha_solicitud": datetime.now(TZ).isoformat(),
                 "pronosticos_helada": cached,
                 "resumen": _resumen_heladas(cached),
                 "fuente": "supabase_helada",
             }
+
+    precip_reciente = _precip_reciente_mm(filas)
 
     for row in filas[:dias]:
         fecha = datetime.fromisoformat(str(row["fecha"])[:10]).replace(tzinfo=TZ)
@@ -123,7 +130,6 @@ def pronostico_helada_avanzado(
         viento = _num(row, "viento", 5)
         hr = _num(row, "humedad", 70)
         t_atardecer = estimar_temp_atardecer(temp_max, temp_min)
-        # Método de campo: Td y Th del psicrómetro al atardecer
         pr = calcular_punto_rocio(t_atardecer, hr)
         th = calcular_bulbo_humedo(t_atardecer, hr)
 
@@ -138,13 +144,15 @@ def pronostico_helada_avanzado(
             historia_temperatura=historia or None,
             temperatura_atardecer=t_atardecer,
             bulbo_humedo=th,
+            cultivo=cultivo,
+            humedad_suelo_pct=humedad_suelo_pct,
+            precip_reciente_mm=precip_reciente,
+            suelo_descubierto=suelo_descubierto,
+            altitud_m=estacion.get("altitud"),
         )
         riesgo["cobertura_nubosa"] = round(cobertura, 1)
         riesgo["velocidad_viento"] = round(viento, 1)
         riesgo["humedad_relativa"] = round(hr, 1)
-        umbral = UMBRALES_HELADA_CULTIVO.get(cultivo, -2)
-        riesgo["umbral_cultivo"] = umbral
-        riesgo["alerta_cultivo"] = temp_min <= umbral
         heladas.append(riesgo)
 
     if persistir and heladas:
@@ -159,17 +167,48 @@ def pronostico_helada_avanzado(
         "estacion_id": estacion_id,
         "estacion_nombre": estacion["nombre"],
         "cultivo": cultivo,
+        "cultivo_nombre": umb_cultivo["nombre"],
+        "umbrales_cultivo": {
+            "critico": umb_cultivo["critico"],
+            "alto": umb_cultivo["alto"],
+            "moderado": umb_cultivo["moderado"],
+            "helada_meteorologica": 0.0,
+            "descripcion": umb_cultivo["descripcion"],
+        },
+        "altitud_m": estacion.get("altitud"),
         "fecha_solicitud": datetime.now(TZ).isoformat(),
         "pronosticos_helada": heladas,
         "resumen": _resumen_heladas(heladas),
+        "criterios_boletin": {
+            "baja": "≤66%",
+            "media": "66% a <90%",
+            "alta": "≥90%",
+        },
     }
+
+
+def _precip_reciente_mm(filas: list[dict]) -> float:
+    """Suma precipitación de los primeros días disponibles (proxy humedad suelo)."""
+    total = 0.0
+    for row in (filas or [])[:3]:
+        total += _num(row, "precipitacion", 0)
+    return round(total, 2)
 
 
 def _resumen_heladas(heladas: list[dict[str, Any]]) -> dict[str, Any]:
     return {
-        "dias_con_riesgo": len([h for h in heladas if (h.get("probabilidad_helada") or 0) > 20]),
+        "dias_con_riesgo": len(
+            [h for h in heladas if (h.get("probabilidad_helada") or 0) > 20]
+        ),
         "dias_riesgo_severo": len([h for h in heladas if h.get("riesgo_severo")]),
         "dias_riesgo_moderado": len([h for h in heladas if h.get("riesgo_moderado")]),
+        "dias_prob_alta": len(
+            [h for h in heladas if h.get("probabilidad_boletin") == "alta"]
+        ),
+        "dias_prob_media": len(
+            [h for h in heladas if h.get("probabilidad_boletin") == "media"]
+        ),
+        "dias_alerta_cultivo": len([h for h in heladas if h.get("alerta_cultivo")]),
         "temperatura_minima_7d": min(
             (
                 h.get("temperatura_minima_esperada")

@@ -19,13 +19,18 @@ UMBRALES_PRECIP_CULTIVO: dict[str, dict[str, float]] = {
     "lechuga": {"lluvia_24h_rojo": 15.0, "lluvia_48h_rojo": 30.0, "intensidad_rojo": 3.0},
 }
 
-# Umbrales helada por cultivo (°C mínima pronosticada)
+# Umbrales helada por cultivo — fuente única (agrometeorológica + meteorológica)
+from api_rest.meteo_avanzado.cultivo_helada import (  # noqa: E402
+    UMBRALES_HELADA_CULTIVO as _UMBRALES_FULL,
+)
+
 UMBRALES_HELADA_CULTIVO: dict[str, dict[str, float]] = {
-    "palto": {"critico": 0.0, "alto": 2.0, "moderado": 5.0},
-    "vid": {"critico": -1.0, "alto": 1.0, "moderado": 4.0},
-    "citricos": {"critico": 0.0, "alto": 2.5, "moderado": 5.0},
-    "tomate": {"critico": 2.0, "alto": 4.0, "moderado": 6.0},
-    "lechuga": {"critico": 3.0, "alto": 5.0, "moderado": 7.0},
+    k: {
+        "critico": float(v["critico"]),
+        "alto": float(v["alto"]),
+        "moderado": float(v["moderado"]),
+    }
+    for k, v in _UMBRALES_FULL.items()
 }
 
 CULTIVOS_DEFAULT = list(UMBRALES_PRECIP_CULTIVO.keys())

@@ -35,7 +35,20 @@ def register_meteo_avanzada_routes(app) -> None:
             validar_estacion(estacion_id)
             dias = request.args.get("dias", 7, type=int)
             cultivo = request.args.get("cultivo", "palto")
-            return jsonify(pronostico_helada_avanzado(estacion_id, dias, cultivo))
+            hs = request.args.get("humedad_suelo", type=float)
+            descubierto = request.args.get("suelo_descubierto")
+            suelo_desc = None
+            if descubierto is not None:
+                suelo_desc = str(descubierto).lower() in ("1", "true", "si", "sí", "yes")
+            return jsonify(
+                pronostico_helada_avanzado(
+                    estacion_id,
+                    dias,
+                    cultivo,
+                    humedad_suelo_pct=hs,
+                    suelo_descubierto=suelo_desc,
+                )
+            )
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:

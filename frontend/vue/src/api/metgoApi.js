@@ -159,8 +159,15 @@ export async function fetchPronosticoHeladas(estacionId, dias = 7) {
   return data
 }
 
-export async function fetchPronosticoHeladaAvanzado(estacionId, dias = 7, cultivo = 'palto') {
-  const { data } = await api.get(`/meteo/${estacionId}/helada`, { params: { dias, cultivo } })
+export async function fetchPronosticoHeladaAvanzado(
+  estacionId,
+  dias = 7,
+  cultivo = 'palto',
+  extras = {},
+) {
+  const { data } = await api.get(`/meteo/${estacionId}/helada`, {
+    params: { dias, cultivo, ...extras },
+  })
   return data
 }
 
