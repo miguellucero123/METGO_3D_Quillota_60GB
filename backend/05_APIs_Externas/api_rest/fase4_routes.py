@@ -88,9 +88,15 @@ def register_fase4_routes(app: Flask) -> None:
         body = request.get_json(silent=True) or {}
         dias = body.get("dias", 14)
         incluir_csv = body.get("incluir_csv", True)
+        incluir_archive = body.get("incluir_archive", False)
+        anios_archive = body.get("anios_archive", 5)
         return jsonify(
             etl_sync.sincronizar_estaciones(
-                dias=int(dias), incluir_csv=bool(incluir_csv), origen="rest"
+                dias=int(dias),
+                incluir_csv=bool(incluir_csv),
+                incluir_archive=bool(incluir_archive),
+                anios_archive=int(anios_archive),
+                origen="rest",
             )
         )
 

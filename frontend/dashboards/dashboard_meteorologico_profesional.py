@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Dashboard meteorológico profesional (puerto 8502) — datos OpenMeteo vía API METGO."""
 

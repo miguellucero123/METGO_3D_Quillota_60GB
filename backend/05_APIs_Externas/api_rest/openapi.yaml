@@ -544,6 +544,14 @@ paths:
               properties:
                 dias: { type: integer, example: 14 }
                 incluir_csv: { type: boolean, default: true }
+                incluir_archive:
+                  type: boolean
+                  default: false
+                  description: Si true, descarga OpenMeteo Archive (ERA5) y persiste con fuente openmeteo_archive
+                anios_archive:
+                  type: integer
+                  default: 5
+                  description: Años hacia atrás para archive (solo si incluir_archive)
       responses:
         "200":
           description: Detalle por estación y estadísticas store

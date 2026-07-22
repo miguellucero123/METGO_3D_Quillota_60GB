@@ -5,7 +5,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
-import random
 import sys
 from pathlib import Path
 
@@ -478,7 +477,7 @@ with tab1:
     # Métricas adicionales
     col1, col2, col3, col4 = st.columns(4)
     
-    st.caption("KPIs operativos del panel empresarial: datos ilustrativos (no conectados a API).")
+    st.info("Sin datos — requiere API de alertas para KPIs operativos del panel empresarial.")
 
 with tab2:
     st.markdown("#### 🎯 Recomendaciones Estratégicas Detalladas")
@@ -676,80 +675,7 @@ with tab4:
 
 with tab5:
     st.markdown("#### 📋 Historial de Alertas y Acciones")
-    
-    # Simulación de historial
-    historial_data = []
-    for i in range(50):
-        fecha = datetime.now() - timedelta(days=random.randint(0, 30))
-        historial_data.append({
-            'Fecha': fecha.strftime('%d/%m/%Y %H:%M'),
-            'Tipo': random.choice(['Temperatura', 'Humedad', 'Plagas', 'Riego', 'Fertilización']),
-            'Severidad': random.choice(['Alta', 'Media', 'Baja']),
-            'Mensaje': f"Alerta {i+1}: Condición detectada",
-            'Estado': random.choice(['Resuelta', 'Pendiente', 'En Proceso']),
-            'Acción Tomada': random.choice(['Notificación enviada', 'Riego activado', 'Técnico contactado', 'Sin acción']),
-            'Tiempo Resolución': f"{random.randint(1, 24)}h"
-        })
-    
-    df_historial = pd.DataFrame(historial_data)
-    
-    # Filtros para el historial
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        filtro_tipo = st.selectbox("Filtrar por Tipo", ["Todos"] + list(df_historial['Tipo'].unique()))
-    
-    with col2:
-        filtro_severidad = st.selectbox("Filtrar por Severidad", ["Todos"] + list(df_historial['Severidad'].unique()))
-    
-    with col3:
-        filtro_estado = st.selectbox("Filtrar por Estado", ["Todos"] + list(df_historial['Estado'].unique()))
-    
-    # Aplicar filtros
-    df_filtrado = df_historial.copy()
-    
-    if filtro_tipo != "Todos":
-        df_filtrado = df_filtrado[df_filtrado['Tipo'] == filtro_tipo]
-    
-    if filtro_severidad != "Todos":
-        df_filtrado = df_filtrado[df_filtrado['Severidad'] == filtro_severidad]
-    
-    if filtro_estado != "Todos":
-        df_filtrado = df_filtrado[df_filtrado['Estado'] == filtro_estado]
-    
-    # Mostrar historial filtrado
-    st.dataframe(
-        df_filtrado,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Fecha": "Fecha/Hora",
-            "Tipo": "Tipo de Alerta",
-            "Severidad": "Prioridad",
-            "Mensaje": "Descripción",
-            "Estado": "Estado",
-            "Acción Tomada": "Acción Realizada",
-            "Tiempo Resolución": "Tiempo de Resolución"
-        }
-    )
-    
-    # Estadísticas del historial
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("📊 Total Registros", len(df_filtrado))
-    
-    with col2:
-        resueltas = len(df_filtrado[df_filtrado['Estado'] == 'Resuelta'])
-        st.metric("✅ Resueltas", resueltas)
-    
-    with col3:
-        pendientes = len(df_filtrado[df_filtrado['Estado'] == 'Pendiente'])
-        st.metric("⏳ Pendientes", pendientes)
-    
-    with col4:
-        tiempo_promedio = df_filtrado[df_filtrado['Estado'] == 'Resuelta']['Tiempo Resolución'].str.extract(r'(\d+)').astype(int).mean()[0]
-        st.metric("⏱️ Tiempo Promedio", f"{tiempo_promedio:.1f}h" if not pd.isna(tiempo_promedio) else "N/A")
+    st.info("Sin datos — requiere API de alertas")
 
 # Análisis de cultivos
 st.markdown("### 📊 Análisis de Cultivos")
@@ -940,36 +866,28 @@ if not df_cronograma.empty:
 st.caption("Riesgos de plagas/enfermedades: índice derivado de humedad y temperatura observadas (no sustituye monitoreo en campo).")
 
 # Análisis de rendimiento
-st.markdown("### 📈 Rendimiento referencial (ilustrativo)")
+st.markdown("### 📈 Rendimiento y factores agrícolas")
+
+st.info(
+    "Sin datos de control de plagas, fertilización o eficiencia de riego en campo — "
+    "requiere integración con sensores o registros operativos. "
+    "Use las métricas meteorológicas y recomendaciones API arriba."
+)
 
 col1, col2 = st.columns(2)
 
 with col1:
-    # Factores que afectan el rendimiento
-    factores = {
-        'Temperatura': temp_actual,
-        'Humedad': humedad_actual,
-        'Precipitación': precipitacion_actual,
-        'Control de Plagas': 85,
-        'Fertilización': 90,
-        'Riego': 88
-    }
-    
-    fig_factores = px.pie(values=list(factores.values()), 
-                         names=list(factores.keys()),
-                         title='Factores de Rendimiento (%)')
-    st.plotly_chart(fig_factores, config=PLOTLY_CONFIG, use_container_width=True)
+    st.caption("Gráfico de factores de rendimiento no disponible sin datos operativos.")
 
 with col2:
-    # Predicción de rendimiento
     rendimiento_base = {
         "Palta": 15,
         "Cítricos": 25,
         "Vid": 12,
         "Tomate": 40,
-        "Lechuga": 30
+        "Lechuga": 30,
     }
-    
+
     t_min, t_max = config["temp_optima"]
     factor = 1.0
     if t_min <= temp_actual <= t_max:
@@ -977,12 +895,12 @@ with col2:
     if config["humedad_optima"][0] <= humedad_actual <= config["humedad_optima"][1]:
         factor += 0.05
     rendimiento_estimado = rendimiento_base[cultivo_seleccionado] * factor
-    
-    st.markdown("#### 📊 Rendimiento referencial")
+
+    st.markdown("#### 📊 Referencia de rendimiento (solo clima)")
     st.metric(
         label=f"Referencia {cultivo_seleccionado}",
         value=f"{rendimiento_estimado:.1f} ton/ha",
-        help="Modelo simplificado; no es predicción ML ni dato de mercado.",
+        help="Ajuste simple por T° y humedad observadas; no es dato de cosecha ni ML.",
     )
     st.caption("Para análisis económico real use Vue → /agricola (endpoint económico API).")
 

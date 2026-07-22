@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from datetime import datetime, timedelta
-import random
+from datetime import datetime
 import sys
 from pathlib import Path
 
@@ -17,9 +15,14 @@ import metgo_paths
 
 metgo_paths.setup_paths("05_api_rest")
 
-from api_rest.services import metricas_globales
+from api_rest.services import (
+    ESTACIONES_PRINCIPALES,
+    historico_meteo,
+    metricas_globales,
+    slug_a_nombre,
+)
 from metgo.streamlit_theme import bootstrap_dashboard, PLOTLY_CONFIG, plotly_layout
-from meteo_dashboard_utils import hoy_chile
+from meteo_dashboard_utils import dia_iso, filtrar_historico_hasta_hoy, hoy_chile
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
@@ -50,13 +53,12 @@ st.markdown("""
     }
     
     .metric-global-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         padding: 2rem;
         border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
         margin: 1rem 0;
-        border: 2px solid transparent;
-        background-clip: padding-box;
+        border: 1px solid #334155;
         position: relative;
         overflow: hidden;
     }
@@ -68,20 +70,19 @@ st.markdown("""
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #00b894, #00a085, #74b9ff, #0984e3);
+        background: linear-gradient(90deg, #00b894, #10b981, #38bdf8, #0ea5e9);
     }
     
     .kpi-number {
         font-size: 2.5rem;
         font-weight: bold;
-        color: #2c3e50;
+        color: #f8fafc;
         margin: 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .kpi-label {
         font-size: 1rem;
-        color: #7f8c8d;
+        color: #94a3b8;
         margin: 0.5rem 0;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -105,8 +106,8 @@ st.markdown("""
     }
     
     .kpi-neutral {
-        background: linear-gradient(135deg, #74b9ff, #0984e3);
-        color: white;
+        background: linear-gradient(135deg, #334155, #475569);
+        color: #f8fafc;
     }
     
     .chart-container-global {
@@ -121,7 +122,7 @@ st.markdown("""
     .section-title {
         font-size: 1.5rem;
         font-weight: bold;
-        color: #2c3e50;
+        color: #f8fafc;
         margin: 2rem 0 1rem 0;
         padding-bottom: 0.5rem;
         border-bottom: 3px solid #00b894;
@@ -156,8 +157,8 @@ st.markdown("""
 st.markdown("""
 <div class="global-header">
     <h1>📈 Dashboard Global de Métricas</h1>
-    <h3>Sistema METGO - Análisis Integral 5 Años</h3>
-    <p>Métricas globales, tendencias históricas y análisis comparativo completo</p>
+    <h3>Sistema METGO — Valle de Aconcagua</h3>
+    <p>KPIs en vivo y series históricas desde API / OpenMeteo (máx. 92 días por estación)</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -172,113 +173,73 @@ with st.sidebar:
         key="periodo_global"
     )
     
-    # Selector de tipo de métrica
-    tipo_metrica = st.selectbox(
-        "📊 Tipo de Métrica:",
-        ["Meteorológicas", "Agrícolas", "Económicas", "Ambientales", "Todas"],
-        key="tipo_metrica"
-    )
-    
-    # Selector de granularidad
     granularidad = st.selectbox(
         "⏱️ Granularidad:",
         ["Diaria", "Semanal", "Mensual", "Anual"],
-        key="granularidad"
+        key="granularidad",
     )
 
-# Función para generar datos globales de 5 años
-@st.cache_data
-def generar_datos_globales_5_anos(periodo, granularidad):
-    """Genera datos globales simulados de 5 años"""
-    
-    # Mapeo de períodos
-    periodos_map = {
-        "Últimos 5 años": 5,
-        "Últimos 3 años": 3,
-        "Últimos 2 años": 2,
-        "Último año": 1,
-        "Últimos 6 meses": 0.5
+
+@st.cache_data(ttl=600, show_spinner=False)
+def cargar_historico_global(periodo: str) -> pd.DataFrame:
+    """Series meteorológicas reales agregadas por estación principal."""
+    periodos_dias = {
+        "Últimos 5 años": 1825,
+        "Últimos 3 años": 1095,
+        "Últimos 2 años": 730,
+        "Último año": 365,
+        "Últimos 6 meses": 183,
     }
-    
-    anos = periodos_map[periodo]
-    inicio = datetime.now() - timedelta(days=anos*365)
-    
-    # Configurar frecuencia según granularidad
-    freq_map = {
-        "Diaria": "D",
-        "Semanal": "W",
-        "Mensual": "M",
-        "Anual": "Y"
-    }
-    
-    freq = freq_map[granularidad]
-    fechas = pd.date_range(start=inicio, end=datetime.now(), freq=freq)
-    
-    # Generar datos globales
-    datos = []
-    
-    for fecha in fechas:
-        # Tendencias de crecimiento simuladas
-        anos_transcurridos = (fecha - inicio).days / 365
-        
-        # Datos meteorológicos globales
-        temp_base = 18.5 + anos_transcurridos * 0.1  # Tendencia de calentamiento
-        temp_estacional = np.sin(2 * np.pi * fecha.month / 12) * 5
-        temperatura = temp_base + temp_estacional + np.random.normal(0, 3)
-        
-        precipitacion_base = 0.3 - anos_transcurridos * 0.01  # Tendencia de sequía
-        precipitacion = max(0, precipitacion_base + np.random.exponential(1))
-        
-        humedad_base = 65 + np.sin(2 * np.pi * fecha.month / 12) * 10
-        humedad = max(10, min(100, humedad_base + np.random.normal(0, 8)))
-        
-        # Datos agrícolas globales
-        rendimiento_base = 20 + anos_transcurridos * 1.5  # Mejora tecnológica
-        rendimiento = rendimiento_base + temperatura * 0.3 + humedad * 0.1 + np.random.normal(0, 2)
-        
-        calidad_base = 75 + anos_transcurridos * 2  # Mejora en calidad
-        calidad = min(100, max(0, calidad_base + np.random.normal(0, 5)))
-        
-        # Datos económicos globales
-        precio_base = 1000 + anos_transcurridos * 50  # Inflación
-        precio = precio_base + np.random.normal(0, 100)
-        
-        ingreso_total = rendimiento * precio / 1000  # En miles de pesos
-        
-        # Datos ambientales
-        co2_base = 400 + anos_transcurridos * 2  # Aumento CO2
-        co2 = co2_base + np.random.normal(0, 10)
-        
-        biodiversidad_base = 85 - anos_transcurridos * 1  # Pérdida biodiversidad
-        biodiversidad = max(0, min(100, biodiversidad_base + np.random.normal(0, 3)))
-        
-        # Métricas de eficiencia
-        eficiencia_riego = 70 + anos_transcurridos * 3 + np.random.normal(0, 5)
-        eficiencia_riego = max(0, min(100, eficiencia_riego))
-        
-        uso_sustentable = 60 + anos_transcurridos * 4 + np.random.normal(0, 6)
-        uso_sustentable = max(0, min(100, uso_sustentable))
-        
-        datos.append({
-            'Fecha': fecha,
-            'Año': fecha.year,
-            'Mes': fecha.month,
-            'Trimestre': (fecha.month - 1) // 3 + 1,
-            'Temperatura': round(temperatura, 1),
-            'Precipitacion': round(precipitacion, 2),
-            'Humedad': round(humedad, 1),
-            'Rendimiento': round(rendimiento, 1),
-            'Calidad': round(calidad, 1),
-            'Precio': round(precio, 0),
-            'Ingreso_Total': round(ingreso_total, 0),
-            'CO2': round(co2, 1),
-            'Biodiversidad': round(biodiversidad, 1),
-            'Eficiencia_Riego': round(eficiencia_riego, 1),
-            'Uso_Sustentable': round(uso_sustentable, 1),
-            'Años_Transcurridos': round(anos_transcurridos, 1)
-        })
-    
-    return pd.DataFrame(datos)
+    dias_periodo = periodos_dias.get(periodo, 365)
+    dias = min(dias_periodo, 92)
+    filas: list[dict] = []
+
+    for slug in ESTACIONES_PRINCIPALES:
+        hist = filtrar_historico_hasta_hoy(historico_meteo(slug, dias) or [])
+        nombre = slug_a_nombre(slug)
+        for row in hist:
+            fecha = pd.to_datetime(dia_iso(row.get("fecha")))
+            temp = float(row.get("temperatura") or row.get("temperatura_max") or 0)
+            filas.append(
+                {
+                    "Fecha": fecha,
+                    "Estacion": nombre,
+                    "Temperatura": temp,
+                    "Precipitacion": float(row.get("precipitacion") or 0),
+                    "Humedad": float(row.get("humedad") or 0),
+                    "Viento": float(row.get("viento") or 0),
+                }
+            )
+
+    if not filas:
+        return pd.DataFrame()
+    df = pd.DataFrame(filas)
+    df = df.sort_values("Fecha")
+    return df
+
+
+def _agregar_granularidad(df: pd.DataFrame, granularidad: str) -> pd.DataFrame:
+    if df.empty:
+        return df
+    freq_map = {"Diaria": "D", "Semanal": "W", "Mensual": "ME", "Anual": "YE"}
+    freq = freq_map.get(granularidad, "D")
+    if freq == "D":
+        return df
+    out = (
+        df.set_index("Fecha")
+        .groupby(["Estacion", pd.Grouper(freq=freq)])
+        .agg(
+            {
+                "Temperatura": "mean",
+                "Precipitacion": "sum",
+                "Humedad": "mean",
+                "Viento": "mean",
+            }
+        )
+        .reset_index()
+    )
+    return out
+
 
 # KPIs en vivo (API) — mismo contrato que Vue /metricas
 try:
@@ -311,300 +272,165 @@ try:
 except Exception as e:
     st.warning(f"API METGO no disponible para KPIs en vivo: {e}")
 
-# Generar datos (series largas ilustrativas / ETL CSV)
-with st.spinner("📈 Generando series históricas extendidas…"):
-    df_global = generar_datos_globales_5_anos(periodo_global, granularidad)
+with st.spinner("📈 Cargando histórico meteorológico…"):
+    df_global = cargar_historico_global(periodo_global)
 
-st.info(
-    "Las gráficas de tendencia multi-año siguen siendo **series ilustrativas** "
-    "hasta integrar el CSV histórico vía ETL. Los KPIs del valle arriba son **OpenMeteo/API**."
-)
+if df_global.empty:
+    st.warning("Sin datos históricos — requiere ETL Archive")
+    st.stop()
 
-# KPIs principales con diseño profesional
-st.markdown("### 🎯 Indicadores históricos extendidos (ilustrativo)")
+df_plot = _agregar_granularidad(df_global, granularidad)
+
+st.markdown("### 🎯 Indicadores históricos (meteorología real)")
 
 col1, col2, col3, col4 = st.columns(4)
 
+temp_prom = df_global["Temperatura"].mean()
+precip_total = df_global["Precipitacion"].sum()
+humedad_prom = df_global["Humedad"].mean()
+viento_prom = df_global["Viento"].mean()
+
 with col1:
-    temp_actual = df_global['Temperatura'].iloc[-1]
-    temp_anterior = df_global['Temperatura'].iloc[-2] if len(df_global) > 1 else temp_actual
-    cambio_temp = temp_actual - temp_anterior
-    
-    st.markdown(f"""
-    <div class="metric-global-card">
-        <div class="kpi-label">🌡️ Temperatura Global</div>
-        <div class="kpi-number">{temp_actual:.1f}°C</div>
-        <div class="kpi-change {'kpi-positive' if cambio_temp > 0 else 'kpi-negative' if cambio_temp < 0 else 'kpi-neutral'}">
-            {cambio_temp:+.1f}°C vs anterior
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="metric-global-card">
+        <div class="kpi-label">🌡️ Temperatura media</div>
+        <div class="kpi-number">{temp_prom:.1f}°C</div>
+        <div class="kpi-change kpi-neutral">{len(df_global):,} registros</div>
+    </div>""", unsafe_allow_html=True)
 
 with col2:
-    rendimiento_actual = df_global['Rendimiento'].iloc[-1]
-    rendimiento_anterior = df_global['Rendimiento'].iloc[-2] if len(df_global) > 1 else rendimiento_actual
-    cambio_rendimiento = rendimiento_actual - rendimiento_anterior
-    
-    st.markdown(f"""
-    <div class="metric-global-card">
-        <div class="kpi-label">🌾 Rendimiento Global</div>
-        <div class="kpi-number">{rendimiento_actual:.1f} t/ha</div>
-        <div class="kpi-change {'kpi-positive' if cambio_rendimiento > 0 else 'kpi-negative' if cambio_rendimiento < 0 else 'kpi-neutral'}">
-            {cambio_rendimiento:+.1f} t/ha vs anterior
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="metric-global-card">
+        <div class="kpi-label">🌧️ Precipitación acumulada</div>
+        <div class="kpi-number">{precip_total:.1f} mm</div>
+        <div class="kpi-change kpi-neutral">{df_global['Estacion'].nunique()} estaciones</div>
+    </div>""", unsafe_allow_html=True)
 
 with col3:
-    ingreso_actual = df_global['Ingreso_Total'].iloc[-1]
-    ingreso_anterior = df_global['Ingreso_Total'].iloc[-2] if len(df_global) > 1 else ingreso_actual
-    cambio_ingreso = ingreso_actual - ingreso_anterior
-    
-    st.markdown(f"""
-    <div class="metric-global-card">
-        <div class="kpi-label">💰 Ingreso Total</div>
-        <div class="kpi-number">${ingreso_actual:,.0f}K</div>
-        <div class="kpi-change {'kpi-positive' if cambio_ingreso > 0 else 'kpi-negative' if cambio_ingreso < 0 else 'kpi-neutral'}">
-            ${cambio_ingreso:+,.0f}K vs anterior
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="metric-global-card">
+        <div class="kpi-label">💧 Humedad media</div>
+        <div class="kpi-number">{humedad_prom:.1f}%</div>
+        <div class="kpi-change kpi-neutral">OpenMeteo / API</div>
+    </div>""", unsafe_allow_html=True)
 
 with col4:
-    eficiencia_actual = df_global['Eficiencia_Riego'].iloc[-1]
-    eficiencia_anterior = df_global['Eficiencia_Riego'].iloc[-2] if len(df_global) > 1 else eficiencia_actual
-    cambio_eficiencia = eficiencia_actual - eficiencia_anterior
-    
-    st.markdown(f"""
-    <div class="metric-global-card">
-        <div class="kpi-label">💧 Eficiencia Riego</div>
-        <div class="kpi-number">{eficiencia_actual:.1f}%</div>
-        <div class="kpi-change {'kpi-positive' if cambio_eficiencia > 0 else 'kpi-negative' if cambio_eficiencia < 0 else 'kpi-neutral'}">
-            {cambio_eficiencia:+.1f}% vs anterior
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div class="metric-global-card">
+        <div class="kpi-label">💨 Viento medio</div>
+        <div class="kpi-number">{viento_prom:.1f} km/h</div>
+        <div class="kpi-change kpi-neutral">Período: {periodo_global}</div>
+    </div>""", unsafe_allow_html=True)
 
-# Tendencias históricas
-st.markdown('<h2 class="section-title">📈 Tendencias Históricas</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title">📈 Tendencias históricas</h2>', unsafe_allow_html=True)
 
-# Gráfico de tendencias principales
 fig_tendencias = make_subplots(
-    rows=2, cols=2,
-    subplot_titles=('🌡️ Evolución de Temperatura', '🌾 Rendimiento Agrícola', 
-                   '💰 Ingresos Totales', '💧 Eficiencia de Riego'),
-    vertical_spacing=0.1,
-    horizontal_spacing=0.1
+    rows=2,
+    cols=2,
+    subplot_titles=(
+        "🌡️ Temperatura media",
+        "🌧️ Precipitación",
+        "💧 Humedad media",
+        "💨 Viento medio",
+    ),
+    vertical_spacing=0.12,
+    horizontal_spacing=0.08,
 )
 
-# Temperatura
-fig_tendencias.add_trace(
-    go.Scatter(x=df_global['Fecha'], y=df_global['Temperatura'], 
-              name='Temperatura', line=dict(color='#e74c3c', width=3)),
-    row=1, col=1
-)
+for est in df_plot["Estacion"].unique():
+    dfe = df_plot[df_plot["Estacion"] == est]
+    fig_tendencias.add_trace(
+        go.Scatter(x=dfe["Fecha"], y=dfe["Temperatura"], name=f"T° {est}", mode="lines"),
+        row=1,
+        col=1,
+    )
+    fig_tendencias.add_trace(
+        go.Bar(x=dfe["Fecha"], y=dfe["Precipitacion"], name=f"Precip. {est}", showlegend=False),
+        row=1,
+        col=2,
+    )
+    fig_tendencias.add_trace(
+        go.Scatter(x=dfe["Fecha"], y=dfe["Humedad"], name=f"Humedad {est}", mode="lines", showlegend=False),
+        row=2,
+        col=1,
+    )
+    fig_tendencias.add_trace(
+        go.Scatter(x=dfe["Fecha"], y=dfe["Viento"], name=f"Viento {est}", mode="lines", showlegend=False),
+        row=2,
+        col=2,
+    )
 
-# Rendimiento
-fig_tendencias.add_trace(
-    go.Scatter(x=df_global['Fecha'], y=df_global['Rendimiento'], 
-              name='Rendimiento', line=dict(color='#27ae60', width=3)),
-    row=1, col=2
+fig_tendencias.update_layout(
+    **plotly_layout(
+        "Series meteorológicas por estación",
+        height=620,
+        showlegend=True,
+        hovermode="x unified",
+    )
 )
-
-# Ingresos
-fig_tendencias.add_trace(
-    go.Scatter(x=df_global['Fecha'], y=df_global['Ingreso_Total'], 
-              name='Ingresos', line=dict(color='#f39c12', width=3)),
-    row=2, col=1
-)
-
-# Eficiencia
-fig_tendencias.add_trace(
-    go.Scatter(x=df_global['Fecha'], y=df_global['Eficiencia_Riego'], 
-              name='Eficiencia', line=dict(color='#3498db', width=3)),
-    row=2, col=2
-)
-
-fig_tendencias.update_layout(height=600, showlegend=False, 
-                           title_text="📊 Tendencias Globales - Análisis de 5 Años")
 fig_tendencias.update_xaxes(title_text="Fecha")
-fig_tendencias.update_yaxes(title_text="Temperatura (°C)", row=1, col=1)
-fig_tendencias.update_yaxes(title_text="Rendimiento (t/ha)", row=1, col=2)
-fig_tendencias.update_yaxes(title_text="Ingresos (K$)", row=2, col=1)
-fig_tendencias.update_yaxes(title_text="Eficiencia (%)", row=2, col=2)
+fig_tendencias.update_yaxes(title_text="°C", row=1, col=1)
+fig_tendencias.update_yaxes(title_text="mm", row=1, col=2)
+fig_tendencias.update_yaxes(title_text="%", row=2, col=1)
+fig_tendencias.update_yaxes(title_text="km/h", row=2, col=2)
 
 st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
-# Análisis por categorías
-st.markdown('<h2 class="section-title">📊 Análisis por Categorías</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title">📊 Comparación por estación</h2>', unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
-
-with col1:
-    # Métricas meteorológicas
-    st.markdown("#### 🌤️ Métricas Meteorológicas")
-    
-    df_meteo = df_global[['Fecha', 'Temperatura', 'Precipitacion', 'Humedad']].copy()
-    
-    fig_meteo = make_subplots(
-        rows=3, cols=1,
-        subplot_titles=('Temperatura', 'Precipitación', 'Humedad'),
-        vertical_spacing=0.05
+df_est = (
+    df_global.groupby("Estacion")
+    .agg(
+        Temperatura=("Temperatura", "mean"),
+        Precipitacion=("Precipitacion", "sum"),
+        Humedad=("Humedad", "mean"),
+        Viento=("Viento", "mean"),
     )
-    
-    fig_meteo.add_trace(
-        go.Scatter(x=df_meteo['Fecha'], y=df_meteo['Temperatura'], 
-                  name='Temperatura', line=dict(color='#e74c3c')),
-        row=1, col=1
-    )
-    
-    fig_meteo.add_trace(
-        go.Bar(x=df_meteo['Fecha'], y=df_meteo['Precipitacion'], 
-               name='Precipitación', marker_color='#3498db'),
-        row=2, col=1
-    )
-    
-    fig_meteo.add_trace(
-        go.Scatter(x=df_meteo['Fecha'], y=df_meteo['Humedad'], 
-                  name='Humedad', line=dict(color='#9b59b6')),
-        row=3, col=1
-    )
-    
-    fig_meteo.update_layout(height=500, showlegend=False)
-    st.plotly_chart(fig_meteo, config=PLOTLY_CONFIG, use_container_width=True)
+    .reset_index()
+)
 
-with col2:
-    # Métricas ambientales
-    st.markdown("#### 🌍 Métricas Ambientales")
-    
-    fig_ambiental = make_subplots(
-        rows=2, cols=1,
-        subplot_titles=('CO₂ Atmosférico', 'Biodiversidad'),
-        vertical_spacing=0.1
-    )
-    
-    fig_ambiental.add_trace(
-        go.Scatter(x=df_global['Fecha'], y=df_global['CO2'], 
-                  name='CO₂', line=dict(color='#e67e22', width=3)),
-        row=1, col=1
-    )
-    
-    fig_ambiental.add_trace(
-        go.Scatter(x=df_global['Fecha'], y=df_global['Biodiversidad'], 
-                  name='Biodiversidad', line=dict(color='#27ae60', width=3)),
-        row=2, col=1
-    )
-    
-    fig_ambiental.update_layout(height=500, showlegend=False)
-    st.plotly_chart(fig_ambiental, config=PLOTLY_CONFIG, use_container_width=True)
+fig_comp = px.bar(
+    df_est.melt(id_vars="Estacion", var_name="Variable", value_name="Valor"),
+    x="Estacion",
+    y="Valor",
+    color="Variable",
+    barmode="group",
+    title="Promedios y acumulados por estación",
+)
+fig_comp.update_layout(**plotly_layout(height=420))
+st.plotly_chart(fig_comp, config=PLOTLY_CONFIG, use_container_width=True)
 
-# Análisis comparativo anual
-st.markdown('<h2 class="section-title">📅 Análisis Comparativo Anual</h2>', unsafe_allow_html=True)
-
-# Agrupar por año
-df_anual = df_global.groupby('Año').agg({
-    'Temperatura': 'mean',
-    'Rendimiento': 'mean',
-    'Ingreso_Total': 'sum',
-    'Eficiencia_Riego': 'mean',
-    'Biodiversidad': 'mean'
-}).reset_index()
-
-col1, col2 = st.columns(2)
-
-with col1:
-    # Comparación de años
-    fig_comparacion = px.bar(df_anual, x='Año', y=['Temperatura', 'Rendimiento', 'Eficiencia_Riego'],
-                            title='📊 Comparación Anual de Métricas Principales',
-                            color_discrete_sequence=['#e74c3c', '#27ae60', '#3498db'])
-    fig_comparacion.update_layout(height=400)
-    st.plotly_chart(fig_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
-
-with col2:
-    # Tendencias de crecimiento
-    fig_crecimiento = px.line(df_anual, x='Año', y='Ingreso_Total',
-                             title='💰 Evolución de Ingresos Anuales',
-                             line_shape='spline')
-    fig_crecimiento.update_traces(line=dict(color='#f39c12', width=4))
-    fig_crecimiento.update_layout(height=400)
-    st.plotly_chart(fig_crecimiento, config=PLOTLY_CONFIG, use_container_width=True)
-
-# Resumen ejecutivo
-st.markdown('<h2 class="section-title">📋 Resumen Ejecutivo</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title">ℹ️ Información del análisis</h2>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown("#### 📈 Tendencias Positivas")
-    tendencias_positivas = [
-        "🌾 Rendimiento agrícola en aumento",
-        "💧 Mejora en eficiencia de riego",
-        "💰 Crecimiento sostenido de ingresos",
-        "📊 Calidad de productos mejorando"
-    ]
-    
-    for tendencia in tendencias_positivas:
-        st.success(tendencia)
-
-with col2:
-    st.markdown("#### ⚠️ Áreas de Atención")
-    areas_atencion = [
-        "🌡️ Tendencia al aumento de temperatura",
-        "🌧️ Reducción en precipitaciones",
-        "🌍 Pérdida gradual de biodiversidad",
-        "💨 Aumento de CO₂ atmosférico"
-    ]
-    
-    for area in areas_atencion:
-        st.warning(area)
-
-with col3:
-    st.markdown("#### 🎯 Recomendaciones")
-    recomendaciones = [
-        "🔄 Implementar riego inteligente",
-        "🌱 Adoptar prácticas sustentables",
-        "📊 Monitorear indicadores ambientales",
-        "💰 Diversificar fuentes de ingresos"
-    ]
-    
-    for rec in recomendaciones:
-        st.info(rec)
-
-# Información del análisis global
-st.markdown('<h2 class="section-title">ℹ️ Información del Análisis Global</h2>', unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.info(f"""
-    **📅 Período Analizado:** {periodo_global}
+    dias_cargados = min(
+        92,
+        {
+            "Últimos 5 años": 1825,
+            "Últimos 3 años": 1095,
+            "Últimos 2 años": 730,
+            "Último año": 365,
+            "Últimos 6 meses": 183,
+        }.get(periodo_global, 365),
+    )
+    st.info(f"""**📅 Período solicitado:** {periodo_global}
+    **Ventana cargada:** {dias_cargados} días (máx. API)
     **⏱️ Granularidad:** {granularidad}
-    **📊 Tipo de Métrica:** {tipo_metrica}
-    **🕐 Registros:** {len(df_global):,} mediciones
-    """)
+    **🕐 Registros:** {len(df_global):,}""")
 
 with col2:
-    st.info(f"""
-    **📈 Datos Generados:** {datetime.now().strftime("%H:%M:%S")}
-    **🔄 Actualización:** Automática
-    **📱 Optimizado:** Móvil
-    **🎨 Diseño:** Profesional Global
-    """)
+    st.info(f"""**📈 Última carga:** {datetime.now().strftime("%H:%M:%S")}
+    **Estaciones:** {', '.join(sorted(df_global['Estacion'].unique()))}
+    **Fuente:** API METGO / OpenMeteo""")
 
 with col3:
-    st.info(f"""
-    **🌡️ Temp. Promedio:** {df_global['Temperatura'].mean():.1f}°C
-    **🌾 Rend. Promedio:** {df_global['Rendimiento'].mean():.1f} t/ha
-    **💰 Ingreso Total:** ${df_global['Ingreso_Total'].sum():,.0f}K
-    **💧 Eficiencia Promedio:** {df_global['Eficiencia_Riego'].mean():.1f}%
-    """)
+    st.info(f"""**🌡️ Temp. media:** {temp_prom:.1f}°C
+    **🌧️ Precip. total:** {precip_total:.1f} mm
+    **💧 Humedad media:** {humedad_prom:.1f}%
+    **💨 Viento medio:** {viento_prom:.1f} km/h""")
 
-# Footer profesional
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #666; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px;">
-    <p>📈 <strong>Sistema METGO</strong> - Dashboard Global de Métricas</p>
-    <p>Análisis integral de 5 años con métricas globales y tendencias históricas</p>
-    <p>Última actualización: {}</p>
+st.markdown(f"""
+<div style="text-align: center; color: #94a3b8; padding: 20px;">
+    <p>📈 <strong>Sistema METGO</strong> — Dashboard Global de Métricas</p>
+    <p>Última actualización: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
 </div>
-""".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)
+""", unsafe_allow_html=True)

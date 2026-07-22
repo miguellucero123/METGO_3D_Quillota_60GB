@@ -156,7 +156,55 @@ def _float(v: Any) -> float | None:
         return None
 
 
-def sincronizar_estaciones(dias: int = 30, incluir_csv: bool = True, origen: str = "api") -> dict[str, Any]:
+def _archive_etl_module():
+    """Carga el script ETL archive (módulo 08) bajo el mismo layout que el CLI."""
+    import sys
+
+    for p in Path(__file__).resolve().parents:
+        if (p / "metgo_paths.py").exists():
+            root = p
+            break
+    else:
+        return None
+    script_dir = root / "backend" / "08_Gestion_Datos" / "scripts"
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    try:
+        import metgo_paths
+
+        metgo_paths.setup_paths("01_meteo", "05_api_rest")
+        apis_root = metgo_paths.MODULE_PATHS.get("05_api_rest")
+        if apis_root:
+            ap = str(apis_root)
+            if ap not in sys.path:
+                sys.path.insert(0, ap)
+        if str(script_dir) not in sys.path:
+            sys.path.insert(0, str(script_dir))
+        import etl_archive_openmeteo
+
+        return etl_archive_openmeteo
+    except ImportError:
+        return None
+
+
+def sincronizar_archive(anios: int = 5) -> dict[str, Any]:
+    mod = _archive_etl_module()
+    if mod is None:
+        return {
+            "archive_sync": {},
+            "error": "No se pudo cargar etl_archive_openmeteo",
+            "param_anios": anios,
+        }
+    return mod.sincronizar_archive_openmeteo(anios=anios)
+
+
+def sincronizar_estaciones(
+    dias: int = 30,
+    incluir_csv: bool = True,
+    incluir_archive: bool = False,
+    anios_archive: int = 5,
+    origen: str = "api",
+) -> dict[str, Any]:
     """Pobla el store desde OpenMeteo (histórico + pronóstico) para todas las estaciones."""
     detalle: dict[str, int] = {}
     detalle_pronostico: dict[str, int] = {}
@@ -176,15 +224,23 @@ def sincronizar_estaciones(dias: int = 30, incluir_csv: bool = True, origen: str
             errores.append(f"{slug} (pronostico): {e}")
             detalle_pronostico[slug] = 0
     csv_res = importar_csv_historico() if incluir_csv else {"importados": 0, "omitido": True}
+    archive_res: dict[str, Any] = {"omitido": True}
+    if incluir_archive:
+        archive_res = sincronizar_archive(anios=int(anios_archive))
+        if archive_res.get("errores"):
+            errores.extend(archive_res["errores"])
     stats = meteo_store.estadisticas_store()
     out = {
         "estaciones_sync": detalle,
         "pronostico_sync": detalle_pronostico,
         "csv": csv_res,
+        "archive_sync": archive_res,
         "store": stats,
         "errores": errores,
         "param_dias": dias,
         "param_incluir_csv": incluir_csv,
+        "param_incluir_archive": incluir_archive,
+        "param_anios_archive": int(anios_archive) if incluir_archive else None,
     }
     try:
         _persistir_metrics(out, origen)

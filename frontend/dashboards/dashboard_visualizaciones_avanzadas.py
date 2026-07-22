@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
-import random
 import io
 import sys
 from pathlib import Path
@@ -34,7 +32,7 @@ from meteo_dashboard_utils import (
 
 DATOS_REALES_DISPONIBLES = True
 
-from metgo.streamlit_theme import bootstrap_dashboard, weather_scene_html, classify_weather_from_row, PLOTLY_CONFIG
+from metgo.streamlit_theme import bootstrap_dashboard, weather_scene_html, classify_weather_from_row, PLOTLY_CONFIG, plotly_layout
 
 # Estaciones alineadas con API (valle) + referencia regional (OpenMeteo)
 ESTACIONES_VALLE = ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue"]
@@ -222,7 +220,6 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
                             )
                         continue
                 if not hist:
-                    datos_completos.extend(generar_datos_simulados(est, dias))
                     continue
                 for row in hist:
                     fecha = pd.to_datetime(dia_iso(row.get("fecha")))
@@ -275,14 +272,11 @@ def generar_datos_visualizaciones_avanzados(periodo, estacion):
                                 hora=12,
                             )
                         )
-                else:
-                    datos_completos.extend(generar_datos_simulados(est, dias))
-            else:
-                datos_completos.extend(generar_datos_simulados(est, dias))
         except Exception as e:
             st.warning(f"No se pudieron obtener datos para {est}: {e}")
-            datos_completos.extend(generar_datos_simulados(est, dias))
 
+    if not datos_completos:
+        return pd.DataFrame()
     return pd.DataFrame(datos_completos)
 
 
@@ -323,78 +317,6 @@ def _fila_visual(
         "Hora": hora,
         "Fuente": fuente,
     }
-
-def generar_datos_simulados(estacion, dias):
-    """Genera datos simulados como fallback"""
-    datos_simulados = []
-    
-    # Configuración por estación
-    config_estacion = {
-        "Quillota": {"temp_base": 18.5, "precip_base": 0.3, "humedad_base": 65},
-        "Los Nogales": {"temp_base": 17.8, "precip_base": 0.4, "humedad_base": 70},
-        "Hijuelas": {"temp_base": 16.2, "precip_base": 0.5, "humedad_base": 75},
-        "Limache": {"temp_base": 19.0, "precip_base": 0.2, "humedad_base": 60},
-        "Olmue": {"temp_base": 18.8, "precip_base": 0.35, "humedad_base": 68},
-        "Santiago": {"temp_base": 20.0, "precip_base": 0.2, "humedad_base": 55},
-        "Valparaiso": {"temp_base": 16.5, "precip_base": 0.4, "humedad_base": 75},
-        "Vina del Mar": {"temp_base": 16.0, "precip_base": 0.5, "humedad_base": 80}
-    }
-    
-    config = config_estacion.get(estacion, config_estacion["Quillota"])
-    
-    frec = 'H' if dias <= 7 else 'D'
-    fechas = pd.date_range(end=datetime.now(), periods=dias, freq=frec)
-    
-    for fecha in fechas:
-        # Variación estacional
-        mes = fecha.month
-        estacional = np.sin(2 * np.pi * mes / 12) * 3
-        
-        # Datos meteorológicos
-        temperatura = config["temp_base"] + estacional + np.random.normal(0, 4)
-        precipitacion = max(0, config["precip_base"] + np.random.exponential(1))
-        humedad = max(10, min(100, config["humedad_base"] + np.random.normal(0, 15)))
-        presion = 1013 + np.random.normal(0, 12)
-        viento = max(0, 8 + np.random.exponential(3))
-        nubosidad = np.random.uniform(0, 100)
-        probabilidad_niebla = np.random.uniform(0, 40) if humedad > 75 else 0
-        indice_helada = max(0, 32 - temperatura) if temperatura < 5 else 0
-        
-        # Datos agrícolas simulados
-        rendimiento = 20 + temperatura * 0.5 + humedad * 0.1 + np.random.normal(0, 3)
-        calidad = min(100, max(0, 70 + temperatura * 0.3 + humedad * 0.2 + np.random.normal(0, 10)))
-        
-        # Calcular temperatura mínima y máxima
-        temp_min = temperatura - np.random.uniform(2, 6)
-        temp_max = temperatura + np.random.uniform(2, 6)
-        
-        # Calcular sensación térmica agrícola
-        sensacion_termica = temperatura * (1 + (humedad - 50) * 0.01) * (1 + (viento / 10) * 0.1)
-        sensacion_termica = max(-10, min(50, sensacion_termica))
-        
-        datos_simulados.append({
-            'Fecha': fecha,
-            'Estacion': estacion,
-            'Temperatura': round(temperatura, 1),
-            'Temperatura_Min': round(temp_min, 1),
-            'Temperatura_Max': round(temp_max, 1),
-            'Precipitacion': round(precipitacion, 2),
-            'Humedad': round(humedad, 1),
-            'Presion': round(presion, 1),
-            'Viento': round(viento, 1),
-            'Nubosidad': round(nubosidad, 1),
-            'Probabilidad_Niebla': round(probabilidad_niebla, 1),
-            'Indice_Helada': round(indice_helada, 1),
-            'Sensacion_Termica_Agricola': round(sensacion_termica, 1),
-            'Rendimiento': round(rendimiento, 1),
-            'Calidad': round(calidad, 1),
-            'Mes': mes,
-            'DiaSemana': fecha.strftime('%A'),
-            'Hora': fecha.hour if frec == 'H' else 12,
-            'Fuente': 'Simulado'
-        })
-    
-    return datos_simulados
 
 # Información sobre datos reales
 st.success(
@@ -567,11 +489,13 @@ with col1:
         ))
     
     fig_nubosidad.update_layout(
-        title="☁️ Evolución de Nubosidad (%)",
-        xaxis_title="Fecha",
-        yaxis_title="Nubosidad (%)",
-        height=400,
-        hovermode='x unified'
+        **plotly_layout(
+            "☁️ Evolución de Nubosidad (%)",
+            xaxis_title="Fecha",
+            yaxis_title="Nubosidad (%)",
+            height=400,
+            hovermode="x unified",
+        )
     )
     
     st.plotly_chart(fig_nubosidad, config=PLOTLY_CONFIG, use_container_width=True)
@@ -592,11 +516,13 @@ with col2:
         ))
     
     fig_niebla.update_layout(
-        title="🌫️ Probabilidad de Niebla (%)",
-        xaxis_title="Fecha",
-        yaxis_title="Probabilidad de Niebla (%)",
-        height=400,
-        hovermode='x unified'
+        **plotly_layout(
+            "🌫️ Probabilidad de Niebla (%)",
+            xaxis_title="Fecha",
+            yaxis_title="Probabilidad de Niebla (%)",
+            height=400,
+            hovermode="x unified",
+        )
     )
     
     st.plotly_chart(fig_niebla, config=PLOTLY_CONFIG, use_container_width=True)
@@ -699,12 +625,14 @@ for estacion in df['Estacion'].unique():
         ))
 
 fig_heladas.update_layout(
-    title="❄️ Índice de Heladas por Estación (Basado en Temperatura Mínima)",
-    xaxis_title="Fecha",
-    yaxis_title="Índice de Helada (°C)",
-    height=500,
-    barmode='group',
-    hovermode='closest'
+    **plotly_layout(
+        "❄️ Índice de Heladas por Estación (Basado en Temperatura Mínima)",
+        xaxis_title="Fecha",
+        yaxis_title="Índice de Helada (°C)",
+        height=500,
+        barmode="group",
+        hovermode="closest",
+    )
 )
 
 st.plotly_chart(fig_heladas, config=PLOTLY_CONFIG, use_container_width=True)
@@ -735,11 +663,13 @@ for estacion in df['Estacion'].unique():
     ))
 
 fig_sensacion.update_layout(
-    title="🌡️ Sensación Térmica Agrícola por Estación",
-    xaxis_title="Fecha",
-    yaxis_title="Sensación Térmica (°C)",
-    height=400,
-    hovermode='x unified'
+    **plotly_layout(
+        "🌡️ Sensación Térmica Agrícola por Estación",
+        xaxis_title="Fecha",
+        yaxis_title="Sensación Térmica (°C)",
+        height=400,
+        hovermode="x unified",
+    )
 )
 
 st.plotly_chart(fig_sensacion, config=PLOTLY_CONFIG, use_container_width=True)

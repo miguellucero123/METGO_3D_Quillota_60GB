@@ -18,6 +18,29 @@ warnings.filterwarnings('ignore')
 
 TZ_CHILE = ZoneInfo('America/Santiago')
 
+DAILY_VARS_HISTORICO = [
+    'temperature_2m_max',
+    'temperature_2m_min',
+    'temperature_2m_mean',
+    'relative_humidity_2m_max',
+    'precipitation_sum',
+    'wind_speed_10m_max',
+    'pressure_msl_mean',
+    'cloud_cover_mean',
+    'shortwave_radiation_sum',
+    'wind_direction_10m_dominant',
+    'et0_fao_evapotranspiration',
+]
+
+ARCHIVE_API_BASE = 'https://archive-api.open-meteo.com/v1/archive'
+
+# Nombres OpenMeteo en self.estaciones (sin tilde en algunos casos)
+_ALIASES_ESTACION = {
+    'Viña del Mar': 'Vina del Mar',
+    'Valparaíso': 'Valparaiso',
+}
+
+
 class OpenMeteoData:
     """Clase para obtener datos reales de OpenMeteo API"""
     
@@ -86,19 +109,7 @@ class OpenMeteoData:
             params = {
                 'latitude': coords['lat'],
                 'longitude': coords['lon'],
-                'daily': [
-                    'temperature_2m_max',
-                    'temperature_2m_min',
-                    'temperature_2m_mean',
-                    'relative_humidity_2m_max',
-                    'precipitation_sum',
-                    'wind_speed_10m_max',
-                    'pressure_msl_mean',
-                    'cloud_cover_mean',
-                    'shortwave_radiation_sum',
-                    'wind_direction_10m_dominant',
-                    'et0_fao_evapotranspiration',
-                ],
+                'daily': DAILY_VARS_HISTORICO,
                 'hourly': ['visibility', 'cloud_cover'],
                 'timezone': 'America/Santiago',
                 'past_days': min(dias, 92),  # Máximo 92 días hacia atrás
@@ -116,6 +127,87 @@ class OpenMeteoData:
         except Exception as e:
             print(f"ERROR - Error conectando con OpenMeteo: {e}")
             return None
+
+    def _resolver_estacion(self, estacion):
+        key = _ALIASES_ESTACION.get(estacion, estacion)
+        if key not in self.estaciones:
+            print(f"ERROR - Estación {estacion} no encontrada")
+            return None
+        return key
+
+    def _rango_archive_chile(self, anios: int) -> tuple[date, date]:
+        hoy = datetime.now(TZ_CHILE).date()
+        end_date = hoy - timedelta(days=1)
+        anios = max(1, int(anios))
+        try:
+            start_date = end_date.replace(year=end_date.year - anios)
+        except ValueError:
+            start_date = end_date.replace(year=end_date.year - anios, day=28)
+        if start_date > end_date:
+            start_date = end_date - timedelta(days=365 * anios)
+        return start_date, end_date
+
+    def _chunks_anuales(self, start_date: date, end_date: date) -> list[tuple[date, date]]:
+        chunks: list[tuple[date, date]] = []
+        year = start_date.year
+        while year <= end_date.year:
+            chunk_start = start_date if year == start_date.year else date(year, 1, 1)
+            chunk_end = end_date if year == end_date.year else date(year, 12, 31)
+            if chunk_start <= chunk_end:
+                chunks.append((chunk_start, chunk_end))
+            year += 1
+        return chunks
+
+    def _fetch_archive_chunk(self, coords: dict, start_date: date, end_date: date) -> dict | None:
+        params = {
+            'latitude': coords['lat'],
+            'longitude': coords['lon'],
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'daily': DAILY_VARS_HISTORICO,
+            'timezone': 'America/Santiago',
+        }
+        status, data = self._get_json(ARCHIVE_API_BASE, params, timeout=60)
+        if status == 200 and data:
+            return data
+        print(
+            f"ERROR - Archive OpenMeteo {start_date}..{end_date} (status {status})"
+        )
+        return None
+
+    def obtener_datos_archive(self, estacion='Quillota', anios=5):
+        """Históricos diarios ERA5 vía OpenMeteo Archive (hasta ayer, Chile)."""
+        estacion_key = self._resolver_estacion(estacion)
+        if not estacion_key:
+            return None
+
+        anios = max(1, int(anios))
+        print(f"Obteniendo archive OpenMeteo para {estacion_key} ({anios} años)")
+
+        coords = self.estaciones[estacion_key]
+        start_date, end_date = self._rango_archive_chile(anios)
+        chunks = self._chunks_anuales(start_date, end_date)
+
+        frames: list[pd.DataFrame] = []
+        for c_start, c_end in chunks:
+            print(f" Archive {c_start.isoformat()} → {c_end.isoformat()}...")
+            raw = self._fetch_archive_chunk(coords, c_start, c_end)
+            if not raw:
+                continue
+            df_chunk = self._procesar_datos_openmeteo(raw, estacion_key)
+            if df_chunk is not None and not df_chunk.empty:
+                frames.append(df_chunk)
+
+        if not frames:
+            print("ERROR - Sin datos archive")
+            return None
+
+        df = pd.concat(frames, ignore_index=True)
+        df = df.drop_duplicates(subset=['fecha'], keep='last').sort_values('fecha')
+        df['fuente_datos'] = 'openmeteo_archive'
+        df['estacion'] = estacion_key
+        print(f"OK - Archive consolidado: {len(df)} días ({start_date} .. {end_date})")
+        return df
     
     def obtener_datos_pronostico(self, estacion='Quillota', dias=16):
         """Obtiene datos de pronóstico de OpenMeteo"""
@@ -646,6 +738,11 @@ class OpenMeteoData:
             return False
 
 # Función principal para usar en los dashboards
+def obtener_datos_archive_openmeteo(estacion='Quillota', anios=5):
+    """Helper módulo: histórico largo OpenMeteo Archive."""
+    return OpenMeteoData().obtener_datos_archive(estacion, anios)
+
+
 def obtener_datos_meteorologicos_reales(estacion='Quillota', tipo='historicos', dias=30):
     """
     Función principal para obtener datos meteorológicos reales
