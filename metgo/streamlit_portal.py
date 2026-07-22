@@ -127,46 +127,38 @@ def _render_kpi_cards(summary: dict[str, Any]) -> None:
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">API / Salud</div>
-                <div class="metric-number">{_status_badge(status)}</div>
-                <div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">v{summary['api_version']}</div>
-            </div>
-            """,
+            f'<div class="metric-card">'
+            f'<div class="metric-label">API / Salud</div>'
+            f'<div class="metric-number">{_status_badge(status)}</div>'
+            f'<div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">v{summary["api_version"]}</div>'
+            f"</div>",
             unsafe_allow_html=True,
         )
     with c2:
         st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">Modelos activos</div>
-                <div class="metric-number">{summary['models_ok']}/{summary['models_total']}</div>
-                <div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">registry + manifest</div>
-            </div>
-            """,
+            f'<div class="metric-card">'
+            f'<div class="metric-label">Modelos activos</div>'
+            f'<div class="metric-number">{summary["models_ok"]}/{summary["models_total"]}</div>'
+            f'<div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">registry + manifest</div>'
+            f"</div>",
             unsafe_allow_html=True,
         )
     with c3:
         st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">Frescura de datos</div>
-                <div class="metric-number" style="font-size:1.2rem;">{summary['data_freshness']}</div>
-                <div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">fuente real prioritaria</div>
-            </div>
-            """,
+            f'<div class="metric-card">'
+            f'<div class="metric-label">Frescura de datos</div>'
+            f'<div class="metric-number" style="font-size:1.2rem;">{summary["data_freshness"]}</div>'
+            f'<div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">fuente real prioritaria</div>'
+            f"</div>",
             unsafe_allow_html=True,
         )
     with c4:
         st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">Observabilidad</div>
-                <div class="metric-number">{"Activa" if summary['observability'] else "Básica"}</div>
-                <div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">health + logs</div>
-            </div>
-            """,
+            f'<div class="metric-card">'
+            f'<div class="metric-label">Observabilidad</div>'
+            f'<div class="metric-number">{"Activa" if summary["observability"] else "Básica"}</div>'
+            f'<div style="margin-top:0.35rem;color:{TEXT_SECONDARY};font-size:0.9rem;">health + logs</div>'
+            f"</div>",
             unsafe_allow_html=True,
         )
 
@@ -236,28 +228,31 @@ def render_inicio_page() -> None:
     with left:
         st.markdown(
             f"""
-            <div class="dashboard-card">
-              <h4 style="margin-top:0;">Lectura ejecutiva</h4>
-              <ul>
-                <li><strong>Frontend principal:</strong> Netlify / Vue</li>
-                <li><strong>Consola operativa:</strong> Streamlit</li>
-                <li><strong>Backend técnico:</strong> API REST</li>
-                <li><strong>Modelos activos:</strong> {summary['models_ok']}/{summary['models_total']}</li>
-                <li><strong>Datos:</strong> {summary['data_freshness']}</li>
-              </ul>
-            </div>
+<div class="dashboard-card">
+  <h4 style="margin-top:0;">Lectura ejecutiva</h4>
+  <ul>
+    <li><strong>Frontend principal:</strong> Netlify / Vue</li>
+    <li><strong>Consola operativa:</strong> Streamlit</li>
+    <li><strong>Backend técnico:</strong> API REST</li>
+    <li><strong>Modelos activos:</strong> {summary['models_ok']}/{summary['models_total']}</li>
+    <li><strong>Datos:</strong> {summary['data_freshness']}</li>
+  </ul>
+</div>
             """,
             unsafe_allow_html=True,
         )
     with right:
+        status = str(summary["api_status"]).lower()
+        if status not in {"healthy", "degraded", "failed"}:
+            status = "unknown"
         st.markdown(
             f"""
-            <div class="dashboard-card">
-              <h4 style="margin-top:0;">Sesión / despliegue</h4>
-              <p><strong>Modo:</strong> {"Streamlit Cloud" if is_streamlit_cloud() else "Local / servidor"}</p>
-              <p><strong>Uptime API:</strong> {int(summary['uptime_s'])} s</p>
-              <p><strong>Estado:</strong> {_status_badge(status)}</p>
-            </div>
+<div class="dashboard-card">
+  <h4 style="margin-top:0;">Sesión / despliegue</h4>
+  <p><strong>Modo:</strong> {"Streamlit Cloud" if is_streamlit_cloud() else "Local / servidor"}</p>
+  <p><strong>Uptime API:</strong> {int(summary['uptime_s'])} s</p>
+  <p><strong>Estado:</strong> {_status_badge(status)}</p>
+</div>
             """,
             unsafe_allow_html=True,
         )

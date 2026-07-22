@@ -57,13 +57,13 @@ def ejecutar_dashboard(modulo_id: str) -> None:
     if info.get("id") == "streamlit_principal":
         st.info(
             "El dashboard **principal** es este portal multipágina. "
-            "Use el menú lateral o abra otro puerto (8502–8513)."
+            "Use el menú lateral o el Visor para otros módulos Streamlit."
         )
         return
 
     script: Path = info["script_path"]
     st.caption(
-        f"Puerto local de referencia **:{info.get('puerto')}** · "
+        f"Ref. local **:{info.get('puerto')}** (solo PC) · "
         f"{info.get('utilidad') or info.get('descripcion', '')}"
     )
 

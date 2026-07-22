@@ -33,7 +33,7 @@ import plotly.express as px
 import streamlit as st
 
 from api_rest.services import ESTACIONES_PRINCIPALES, pronostico_meteo, resumen_meteo, slug_a_nombre
-from metgo.streamlit_theme import PRIMARY, inject_theme
+from metgo.streamlit_theme import PLOTLY_CONFIG, PRIMARY, inject_theme
 
 st.set_page_config(
     page_title="METGO 3D — Quillota (público)",

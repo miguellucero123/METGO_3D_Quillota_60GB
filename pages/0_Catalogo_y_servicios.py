@@ -84,9 +84,9 @@ st.markdown(
 en_nube = _api_en_nube() or is_streamlit_cloud()
 if en_nube:
     st.info(
-        "Modo **nube**: cada puerto (8501–8513) indica qué hace el módulo en su PC. "
-        "Use **Activar en nube** para volver al portal con el módulo seleccionado, "
-        "o **Ver en Vue** cuando exista equivalente. **Iniciar PC** solo en desarrollo local."
+        "Modo **nube**: los números **:8501–:8513** son solo referencia del entorno local (PC). "
+        "Aquí no se abren esos puertos. Use **Vue** (Netlify) o **Visor de puerto** para ver "
+        "el dashboard embebido. **Iniciar PC** solo en desarrollo local."
     )
 else:
     st.success(
@@ -144,7 +144,10 @@ with tab_cat:
             nombre = f"{icon} [{estado}] {m.get('nombre', m.get('id'))}"
             color = PRIMARY if tipo == "vue" else ACCENT
             url = ""
-            if tipo == "streamlit" and puerto and not is_streamlit_cloud():
+            en_cloud = is_streamlit_cloud()
+            # En nube no mostramos puerto como si fuera clicable; solo etiqueta local en PC.
+            puerto_card = "" if en_cloud else (str(puerto) if puerto else "")
+            if tipo == "streamlit" and puerto and not en_cloud:
                 url = f"http://127.0.0.1:{puerto}"
             with cols[i % 3]:
                 st.markdown(
@@ -152,9 +155,9 @@ with tab_cat:
                         nombre,
                         color,
                         f"Módulo {m.get('modulo_num', '')} · {tipo} — {desc}",
-                        puerto=str(puerto) if puerto else "—",
+                        puerto=puerto_card,
                         url=url,
-                        cloud=is_streamlit_cloud(),
+                        cloud=en_cloud,
                     ),
                     unsafe_allow_html=True,
                 )

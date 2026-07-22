@@ -437,6 +437,11 @@ def is_streamlit_cloud() -> bool:
     env = os.environ
     if env.get("STREAMLIT_RUNTIME_ENV") == "cloud":
         return True
+    if env.get("IS_STREAMLIT_CLOUD", "").lower() in {"1", "true", "yes"}:
+        return True
+    # Community Cloud monta el repo en /mount/src/<repo>
+    if os.path.isdir("/mount/src"):
+        return True
     host = (env.get("HOSTNAME") or env.get("STREAMLIT_SERVER_ADDRESS") or "").lower()
     return "streamlit.app" in host
 
@@ -457,26 +462,34 @@ def module_card_html(
     url: str = "",
     cloud: bool = False,
 ) -> str:
-    """Tarjeta de módulo con estilo Vue."""
+    """Tarjeta de módulo con estilo Vue.
+
+    Importante: sin indentación Markdown (4+ espacios = bloque de código y se ve el HTML crudo).
+    """
     if cloud:
-        return f"""
-        <div class="metgo-module-card" style="border-left: 4px solid {color};">
-            <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
-            <p style="margin: 0 0 10px 0; font-size: 12px; color: {TEXT_SECONDARY};">{descripcion}</p>
-            <p style="margin: 0; font-size: 11px; color: {MUTED};">Vista en Streamlit Cloud · datos vía panel principal</p>
-        </div>
-        """
+        return (
+            f'<div class="metgo-module-card" style="border-left:4px solid {color};">'
+            f'<h5 style="color:{color};margin:0 0 10px 0;">{nombre}</h5>'
+            f'<p style="margin:0 0 10px 0;font-size:12px;color:{TEXT_SECONDARY};">{descripcion}</p>'
+            f'<p style="margin:0;font-size:11px;color:{MUTED};">'
+            "En la nube: use Vue (Netlify) o Visor de puerto — los :850x solo existen en PC local."
+            "</p></div>"
+        )
     btn = (
-        f'<a href="{url}" target="_blank" class="metgo-btn" style="background-color:{color};">🚀 Acceder</a>'
+        f'<a href="{url}" target="_blank" class="metgo-btn" style="background-color:{color};">Acceder</a>'
         if url.startswith("http")
         else ""
     )
-    return f"""
-    <div class="metgo-module-card" style="border-left: 4px solid {color};">
-        <h5 style="color: {color}; margin: 0 0 10px 0;">{nombre}</h5>
-        <p style="margin: 0 0 8px 0; font-size: 12px; color: {TEXT_SECONDARY};">{descripcion}</p>
-        <p style="margin: 0 0 8px 0; font-size: 10px; color: {MUTED};">Puerto: {puerto}</p>
-        {btn}
-        <p style="margin: 8px 0 0; font-size: 11px; color: {MUTED};">Red local · compatible móvil</p>
-    </div>
-    """
+    puerto_line = (
+        f'<p style="margin:0 0 8px 0;font-size:10px;color:{MUTED};">Puerto local: {puerto}</p>'
+        if puerto and puerto != "—"
+        else ""
+    )
+    return (
+        f'<div class="metgo-module-card" style="border-left:4px solid {color};">'
+        f'<h5 style="color:{color};margin:0 0 10px 0;">{nombre}</h5>'
+        f'<p style="margin:0 0 8px 0;font-size:12px;color:{TEXT_SECONDARY};">{descripcion}</p>'
+        f"{puerto_line}{btn}"
+        f'<p style="margin:8px 0 0;font-size:11px;color:{MUTED};">Red local · compatible móvil</p>'
+        "</div>"
+    )

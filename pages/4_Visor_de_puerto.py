@@ -47,14 +47,21 @@ st.markdown(
 )
 
 if not modulo_id:
-    st.subheader("Elija un módulo (puerto 8501–8513)")
+    from metgo.streamlit_theme import is_streamlit_cloud
+
+    st.subheader("Elija un dashboard Streamlit")
+    if is_streamlit_cloud():
+        st.caption(
+            "Los códigos :8501–:8513 son la referencia del PC local. "
+            "En Streamlit Cloud el visor carga el script en esta misma app (no abre ese puerto)."
+        )
     opciones = [
         m
         for m in catalog.MODULOS_SISTEMA
         if m.get("tipo_acceso") == "streamlit"
     ]
     labels = {
-        m["id"]: f":{m.get('puerto')} — {m.get('nombre')}"
+        m["id"]: f"{m.get('nombre')} (ref. local :{m.get('puerto')})"
         for m in opciones
     }
     elegido = st.selectbox(
@@ -68,7 +75,9 @@ if not modulo_id:
         st.rerun()
     for m in opciones:
         util = m.get("utilidad") or m.get("descripcion", "")
-        st.markdown(f"**:{m.get('puerto')}** · {m.get('nombre')} — {util}")
+        st.markdown(
+            f"**{m.get('nombre')}** · ref. local `:{m.get('puerto')}` — {util}"
+        )
 else:
     info = obtener_script_modulo(modulo_id)
     if info:
