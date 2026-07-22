@@ -16,9 +16,19 @@ c = client_mod.get_supabase_client()
 print("cliente:", bool(c))
 
 if c:
-    for tabla in ("meteo_registros", "meteo_pronostico", "meteo_series"):
+    for tabla in (
+        "meteo_registros",
+        "meteo_pronostico",
+        "meteo_series",
+        "meteo_helada_pronostico",
+        "ml_registry",
+    ):
         try:
             r = c.table(tabla).select("*", count="exact").limit(2).execute()
-            print(f"{tabla} -> count: {r.count} | muestra: {len(r.data)}")
+            extra = ""
+            if tabla == "ml_registry" and r.data:
+                d = r.data[0].get("datos") or {}
+                extra = f" | total={d.get('total')} servibles={d.get('servibles')}"
+            print(f"{tabla} -> count: {r.count} | muestra: {len(r.data)}{extra}")
         except Exception as e:
             print(f"{tabla} -> ERROR: {e}")

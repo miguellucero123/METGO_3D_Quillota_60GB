@@ -304,11 +304,13 @@ create policy meteo_helada_pronostico_lectura
     on public.meteo_helada_pronostico for select using (true);
 
 -- ---------------------------------------------------------------------------
--- 7) Verificación rápida (opcional): debe listar las 4 tablas
+-- 7) Verificación rápida (opcional): debe listar las 4 tablas meteo
+--    MLOps: ver también supabase_db/ml_registry.sql
 -- ---------------------------------------------------------------------------
 -- select table_name
 -- from information_schema.tables
 -- where table_schema = 'public'
 --   and table_name in (
---     'meteo_registros', 'meteo_pronostico', 'meteo_series', 'meteo_helada_pronostico'
+--     'meteo_registros', 'meteo_pronostico', 'meteo_series', 'meteo_helada_pronostico',
+--     'ml_registry'
 --   );

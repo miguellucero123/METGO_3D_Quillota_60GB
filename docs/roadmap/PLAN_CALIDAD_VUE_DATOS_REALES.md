@@ -29,8 +29,14 @@
 - [x] **Archive 1 año** (2026-07-22): 366 días × 5 estaciones = **1830** filas `openmeteo_archive`
 - [x] Stub Agromet/DMC + exposición en `fuentes_datos()` (`oficiales_chile`)
 - [x] Cron ETL operativo (cron-job.org + wake; ver `OPS_CRON_ETL.md`)
-- [ ] Archive 5 años (cron domingo / `workflow_dispatch` con `anios_archive=5`)
-- [ ] Códigos Agromet/DMC reales
+- [x] SQL `ml_registry` en repo (`supabase_db/ml_registry.sql` + migración); tabla creada en Supabase
+- [x] `ml_registry` poblada (1 fila, 43/43 servibles) — verificado 2026-07-22
+- [x] **Archive 5 años** (2026-07-22 local): 1827 días × 5 estaciones = **9135** registros; `errores: []`
+- [x] Lectura históricos largos: paginación Supabase (>1000) + Vue ventanas 90/365/5 años
+- [x] Export CSV/JSON en `/meteo/historico` + test `test_historico_fechas.py`
+- [ ] Códigos Agromet/DMC reales *(diferido: requiere registro oficial; stub en `fuentes_oficiales_chile.py`)*
+- [ ] Badge `tipo_dato` observado/pronóstico en Vue store
+- [ ] Mapa estaciones en `/meteo/comparativo`
 
 ### F — Limpieza + verificación — HECHA (automático) / smoke visual opcional
 - [x] Legacy + backups + notebooks movidos

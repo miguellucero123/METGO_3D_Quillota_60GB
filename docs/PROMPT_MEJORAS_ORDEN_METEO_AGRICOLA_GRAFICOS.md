@@ -174,10 +174,11 @@ Spec completa: `openapi.yaml`
 
 - [ ] Unificar `tipoAnalisis` del store Vue con `tipo_dato` del API (mostrar badge “observado/pronóstico”).
 - [ ] Pronóstico en Vue: tabla + gráfico siempre sincronizados (misma deduplicación que `metgoApi.js`).
-- [ ] Export CSV/JSON de series desde `/meteo/historico`.
-- [ ] Rosa de vientos (viento por dirección) si OpenMeteo horario se expone en API.
+- [x] Export CSV/JSON de series desde `/meteo/historico` (2026-07-22).
+- [x] Rosa de vientos en `/meteo/historico` (WindRoseChart; dirección diaria si viene en serie).
 - [ ] Mapa estaciones Valle (Leaflet/MapLibre) en `/meteo/comparativo`.
-- [ ] Tests de regresión: histórico sin fechas > `hoy_chile()`.
+- [x] Tests de regresión: histórico sin fechas > `hoy_chile()` (`tests/test_historico_fechas.py`).
+- [x] Históricos largos: Archive en Supabase + ventanas 90/365/1825 en Vue + paginación PostgREST.
 
 ---
 

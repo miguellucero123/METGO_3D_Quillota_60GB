@@ -88,22 +88,37 @@ def guardar_registros(estacion_id: str, filas: list[dict[str, Any]], fuente: str
 
 
 def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
+    """Lee histórico por estación. Pagina de a 1000 (tope PostgREST por defecto)."""
     client = get_supabase_client()
     if not client:
         return []
-    
+
+    dias = max(1, int(dias))
+    page_size = 1000
+    rows: list[dict[str, Any]] = []
+
     try:
-        res = (
-            client.table("meteo_registros")
-            .select("*")
-            .eq("estacion_id", estacion_id)
-            .order("fecha", desc=True)
-            .limit(dias)
-            .execute()
-        )
-        
+        offset = 0
+        while offset < dias:
+            end = min(offset + page_size, dias) - 1
+            res = (
+                client.table("meteo_registros")
+                .select("*")
+                .eq("estacion_id", estacion_id)
+                .order("fecha", desc=True)
+                .range(offset, end)
+                .execute()
+            )
+            batch = res.data or []
+            if not batch:
+                break
+            rows.extend(batch)
+            if len(batch) < (end - offset + 1):
+                break
+            offset += page_size
+
         out = []
-        for row in res.data:
+        for row in rows:
             out.append(
                 {
                     "estacion_id": estacion_id,

@@ -9,6 +9,7 @@ import WindRoseChart from '@/components/charts/WindRoseChart.vue'
 import { useApiCall } from '@/composables/useApiCall'
 import { fetchHistorico, syncDatosEtl, fetchMeteoStore } from '@/api/metgoApi'
 import { hoyChile, seriesHistoricoPorDia } from '@/utils/meteoDates'
+import { exportarDatosCSV, exportarDatosJSON } from '@/utils/exportData'
 
 const store = useMetgoStore()
 const dias = ref(30)
@@ -21,6 +22,34 @@ const { data: historico, loading, error, run } = useApiCall(() =>
 )
 
 const serie = computed(() => seriesHistoricoPorDia(historico.value, dias.value))
+
+const filasExport = computed(() =>
+  serie.value.map((r) => ({
+    estacion: store.estacionActiva,
+    fecha: r.fecha,
+    temperatura: r.temperatura,
+    temperatura_max: r.temperatura_max,
+    temperatura_min: r.temperatura_min,
+    precipitacion: r.precipitacion,
+    viento: r.viento,
+    humedad: r.humedad,
+    presion: r.presion,
+    direccion_viento: r.direccion_viento,
+    fuente: r.fuente,
+  }))
+)
+
+function exportNombre() {
+  return `historico_${store.estacionActiva}_${dias.value}d`
+}
+
+function exportarCsv() {
+  exportarDatosCSV(filasExport.value, exportNombre())
+}
+
+function exportarJson() {
+  exportarDatosJSON(filasExport.value, exportNombre())
+}
 
 const vientoDirs = computed(() =>
   serie.value.map((r) => r.direccion_viento).filter((v) => v != null)
@@ -46,8 +75,10 @@ async function sincronizarEtl() {
   etlBusy.value = true
   etlMsg.value = ''
   try {
-    const r = await syncDatosEtl(dias.value, true)
-    etlMsg.value = `Sync OK: ${r.store?.registros ?? '?'} registros en BD local`
+    // Sync corto: no redescargar Archive (eso es job aparte)
+    const ventanaSync = Math.min(Number(dias.value) || 14, 30)
+    const r = await syncDatosEtl(ventanaSync, false)
+    etlMsg.value = `Sync OK: ${r.store?.registros ?? '?'} registros en store`
     await run()
     await cargarStore()
   } catch (e) {
@@ -75,7 +106,7 @@ watch(dias, async () => {
       <h2 class="page-title">Histórico meteorológico</h2>
       <p class="page-subtitle">
         Histórico hasta hoy ({{ hoyChile() }}) · {{ store.estacionNombre }}
-        <span class="badge badge--neutral">Fase 4A · ETL local</span>
+        <span class="badge badge--neutral">Store Supabase · OpenMeteo Archive</span>
       </p>
       <label class="range-sel">
         Ventana:
@@ -83,10 +114,31 @@ watch(dias, async () => {
           <option :value="7">7 días</option>
           <option :value="14">14 días</option>
           <option :value="30">30 días</option>
+          <option :value="90">90 días</option>
+          <option :value="365">1 año</option>
+          <option :value="1825">5 años</option>
         </select>
       </label>
       <button type="button" class="btn btn-sm btn-primary" :disabled="etlBusy" @click="sincronizarEtl">
-        Sincronizar OpenMeteo + CSV → store
+        Sincronizar recientes (ETL)
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        :disabled="!serie.length"
+        title="Exportar CSV"
+        @click="exportarCsv"
+      >
+        CSV
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        :disabled="!serie.length"
+        title="Exportar JSON"
+        @click="exportarJson"
+      >
+        JSON
       </button>
       <p v-if="storeInfo" class="muted small">
         Store global: {{ storeInfo.registros }} registros · {{ storeInfo.estaciones }} estaciones
