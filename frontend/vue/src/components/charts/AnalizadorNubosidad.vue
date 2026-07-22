@@ -1,7 +1,24 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { LineChart, BarChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import VChart from 'vue-echarts'
 import { useMetgoStore } from '@/stores/metgo'
 import { fetchAnalisisNubosidad } from '@/api/metgoApi'
+import {
+  CHART_COLORS,
+  tooltipOscuro,
+  leyendaSuperior,
+  grillaBase,
+  ejeCategoria,
+  ejeValor,
+  serieBarrasAzules,
+  serieLineaVerde,
+} from '@/utils/echartsTheme'
+
+use([CanvasRenderer, LineChart, BarChart, GridComponent, TooltipComponent, LegendComponent])
 
 const store = useMetgoStore()
 const cargando = ref(false)
@@ -25,42 +42,55 @@ function fmt(f) {
   return new Date(f).toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
-function cobColor(c) {
-  if (c < 10) return '#fbbf24'
-  if (c < 50) return '#60a5fa'
-  if (c < 80) return 'var(--color-text-muted, #94a3b8)'
-  return 'var(--color-background, #0f172a)'
-}
-
-const maxRad = computed(() => Math.max(100, ...datos.value.map((d) => d.radiacion || 0)))
+const chartOption = computed(() => {
+  const labels = datos.value.map((d) => fmt(d.fecha))
+  const cob = datos.value.map((d) => d.cobertura)
+  const rad = datos.value.map((d) => d.radiacion || 0)
+  return {
+    backgroundColor: 'transparent',
+    tooltip: tooltipOscuro((params) => {
+      let html = `<div style="font-weight:bold;margin-bottom:4px;">${params[0].axisValue}</div>`
+      params.forEach((p) => {
+        const u = p.seriesName.includes('Radiación') ? ' W/m²' : '%'
+        html += `<div><span style="color:${p.color}">● ${p.seriesName}</span> <b>${p.value ?? 0}${u}</b></div>`
+      })
+      return html
+    }),
+    legend: leyendaSuperior(['Cobertura nubosa', 'Radiación']),
+    grid: { ...grillaBase(), bottom: '8%', top: '18%' },
+    xAxis: [ejeCategoria(labels)],
+    yAxis: [
+      ejeValor('Cobertura (%)', CHART_COLORS.azul, {
+        max: 100,
+        position: 'left',
+        axisLabel: { formatter: '{value}%', color: CHART_COLORS.texto },
+      }),
+      ejeValor('Radiación', CHART_COLORS.ambar, {
+        position: 'right',
+        splitLine: { show: false },
+        axisLabel: { formatter: '{value}', color: CHART_COLORS.texto },
+      }),
+    ],
+    series: [
+      serieBarrasAzules('Cobertura nubosa', cob, { yAxisIndex: 0 }),
+      serieLineaVerde('Radiación', rad, {
+        yAxisIndex: 1,
+        itemStyle: { color: CHART_COLORS.ambar },
+        lineStyle: { color: CHART_COLORS.ambar, width: 3 },
+        areaStyle: undefined,
+      }),
+    ],
+  }
+})
 </script>
 
 <template>
   <div class="nub-panel">
-    <h3>☁️ Nubosidad y radiación solar</h3>
+    <h3>Nubosidad y radiación solar</h3>
     <div v-if="cargando" class="loading">Cargando…</div>
     <template v-else-if="datos.length">
-      <div class="charts-row">
-        <svg viewBox="0 0 100 50" class="mini-chart">
-          <rect
-            v-for="(d, i) in datos"
-            :key="'n' + i"
-            :x="i * (100 / datos.length) + 1"
-            :y="50 - (d.cobertura / 100) * 45"
-            :width="100 / datos.length - 2"
-            :height="(d.cobertura / 100) * 45"
-            :fill="cobColor(d.cobertura)"
-            rx="0.5"
-          />
-        </svg>
-        <svg viewBox="0 0 100 50" class="mini-chart">
-          <polyline
-            :points="datos.map((d, i) => `${i * (100 / datos.length) + 50 / datos.length},${50 - (d.radiacion / maxRad) * 45}`).join(' ')"
-            fill="none"
-            stroke="#fbbf24"
-            stroke-width="1.2"
-          />
-        </svg>
+      <div class="chart-wrap">
+        <v-chart class="chart" :option="chartOption" autoresize />
       </div>
       <table class="tabla">
         <thead>
@@ -87,10 +117,10 @@ const maxRad = computed(() => Math.max(100, ...datos.value.map((d) => d.radiacio
 </template>
 
 <style scoped>
-.nub-panel { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; }
+.nub-panel { background: var(--color-surface, #1e293b); border-radius: 8px; padding: 1rem; border: 1px solid var(--color-border, #334155); }
 .nub-panel h3 { margin: 0 0 0.75rem; font-size: 1rem; }
-.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
-.mini-chart { width: 100%; height: 120px; background: var(--color-background, rgba(15, 23, 42, 0.4)); border-radius: 6px; border: 1px solid var(--color-border, #334155); }
+.chart-wrap { width: 100%; height: 280px; margin-bottom: 0.75rem; }
+.chart { width: 100%; height: 100%; }
 .tabla { width: 100%; font-size: 0.78rem; border-collapse: collapse; }
 .tabla th, .tabla td { padding: 0.4rem; border-bottom: 1px solid var(--color-border, #334155); }
 .neg { color: #ef4444; }

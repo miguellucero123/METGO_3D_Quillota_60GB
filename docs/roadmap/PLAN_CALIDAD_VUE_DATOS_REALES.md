@@ -1,6 +1,6 @@
 # Plan de trabajo — Calidad Vue en todos los módulos + solo datos reales
 
-> Actualizado: 2026-07-22 · En ejecución por etapas.
+> Actualizado: 2026-07-21 · Etapa B cerrada en código; F parcial.
 > Ver también `docs/PROMPT_UNIFICACION_FORMATO_UI.md`.
 
 ## Principios
@@ -13,14 +13,14 @@
 ## Estado por etapa
 
 ### A — Errores producción — HECHA
-### B — Vue ECharts — AVANZADA
+### B — Vue ECharts — HECHA
 - [x] TimeSeries / HorizontalBar / WindRose / precipitación / heladas precip
-- [x] `ComboMeteoChart.vue` → ECharts (2026-07-22)
-- [ ] SVG restantes: AnalizadorNubosidad, PredictorNiebla, ComparacionModelos,
-  PronosticoHeladaAvanzado, SparklineGrid, MlProjectionChart
+- [x] `ComboMeteoChart.vue` → ECharts
+- [x] AnalizadorNubosidad, PredictorNiebla, ComparacionModelos
+- [x] PronosticoHeladaAvanzado, SparklineGrid, MlProjectionChart
 
 ### C — Sin emojis Streamlit — PARCIAL
-- Strip masivo aplazado (corrompía sintaxis). Manual pendiente.
+- Strip masivo aplazado (corrompía sintaxis). Manual pendiente archivo a archivo.
 
 ### D — Sin sintéticos catálogo 8501–8513 — HECHA
 - [x] 8502–8507 + 8509 (antes)
@@ -34,11 +34,10 @@
 - [ ] Operativo: SQL Supabase + sync Archive en Render
 - [ ] Agromet/DMC
 
-### F — Limpieza
-- [ ] Mover legacy no catalogados a `archivos_obsoletos/`
+### F — Limpieza — PARCIAL
+- [x] 14 dashboards legacy → `backend/12_Respaldos_Archivos/archivos_obsoletos/frontend_dashboards_legacy/`
 - [ ] Commit/push cuando el usuario lo pida
 
 ## Verificación última pasada
-- `py_compile` dashboards + services/app OK
-- `pytest tests/test_ui_theme.py` OK
-- `npm run build` (Vue) OK
+- `npm run build` (Vue) OK (2026-07-21)
+- Catálogo 8502–8513 intacto en `frontend/dashboards/`
