@@ -183,11 +183,11 @@ with st.sidebar:
         key="tipo_comparacion"
     )
     
-    # Selector de métricas a comparar
+    # Selector de métricas a comparar (solo variables con serie real en API)
     metricas_comparar = st.multiselect(
         "Métricas a Comparar:",
-        ["Temperatura", "Precipitación", "Humedad", "Rendimiento", "Calidad", "Eficiencia", "Ingresos"],
-        default=["Temperatura", "Rendimiento", "Eficiencia"],
+        ["Temperatura", "Precipitación", "Humedad", "Viento", "Presión"],
+        default=["Temperatura", "Humedad"],
         key="metricas_comparar"
     )
     
@@ -233,7 +233,7 @@ if modo_comparativo.startswith("API"):
             color="temperatura_max",
             color_continuous_scale="RdYlBu_r",
         )
-        fig_tmax.update_layout(height=380, xaxis_tickangle=-25)
+        fig_tmax.update_layout(**plotly_layout(height=380, xaxis_tickangle=-25))
         st.plotly_chart(fig_tmax, use_container_width=True, config=PLOTLY_CONFIG)
 
         st.dataframe(
@@ -267,7 +267,7 @@ if modo_comparativo.startswith("API"):
                 title=f"Temperatura diaria · últimos {dias_hist_api} días",
                 markers=True,
             )
-            fig_hist.update_layout(height=420, xaxis_tickangle=-45)
+            fig_hist.update_layout(**plotly_layout(height=420, xaxis_tickangle=-45))
             st.plotly_chart(fig_hist, use_container_width=True, config=PLOTLY_CONFIG)
 
     st.stop()

@@ -29,7 +29,9 @@ FORBIDDEN_SYNTH = re.compile(
     r"generar_datos_comparativos|generar_datos_tiempo_real|"
     r"generar_datos_precision|generar_datos_unificados|generar_datos_simples|"
     r"generar_datos_mobile|random\.uniform|random\.randint|"
-    r"\bilustrativo\b|\bdatos simulados\b",
+    r"\bilustrativo\b|\bdatos simulados\b|"
+    r"Rendimiento.*=.*temp_prom|Calidad.*=.*temp_prom|"
+    r"rendimiento_estimado\s*=|Demo móvil|datos generados",
     re.IGNORECASE,
 )
 FORBIDDEN_WHITE = re.compile(
@@ -98,3 +100,32 @@ def test_dashboards_activos_sin_emojis():
             snippet = text.splitlines()[line - 1].strip()[:100]
             violaciones.append(f"{path.name}:{line}: {snippet}")
     assert not violaciones, "Emojis en dashboards activos:\n" + "\n".join(violaciones[:40])
+
+
+def test_plotly_charts_usan_plotly_layout():
+    """Si hay st.plotly_chart, el archivo debe importar/usar plotly_layout."""
+    violaciones = []
+    for path in _activos():
+        text = path.read_text(encoding="utf-8")
+        if "st.plotly_chart" not in text and "plotly_chart(" not in text:
+            continue
+        if "plotly_layout" not in text:
+            violaciones.append(f"{path.name}: plotly_chart sin plotly_layout")
+            continue
+        # Heurística: update_layout(height=N) sin plotly_layout en la misma llamada
+        for i, line in enumerate(text.splitlines(), 1):
+            s = line.strip()
+            if "update_layout(" not in s:
+                continue
+            if "plotly_layout" in s:
+                continue
+            if s.startswith("#"):
+                continue
+            # update_layout multilínea con solo height/title sin plotly_layout
+            if "update_layout(**plotly_layout" in s:
+                continue
+            if re.search(r"update_layout\(\s*height\s*=", s) or re.search(
+                r"update_layout\(\s*title", s
+            ):
+                violaciones.append(f"{path.name}:{i}: {s[:100]}")
+    assert not violaciones, "Plotly sin plotly_layout:\n" + "\n".join(violaciones[:40])

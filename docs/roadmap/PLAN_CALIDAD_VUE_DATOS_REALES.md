@@ -1,7 +1,7 @@
 # Plan de trabajo — Calidad Vue en todos los módulos + solo datos reales
 
-> Actualizado: 2026-07-21 · Etapas B/C/D/F avanzadas; E pendiente operativo usuario.
-> Ver también `docs/PROMPT_UNIFICACION_FORMATO_UI.md` y `docs/roadmap/CHECKLIST_ETAPA_E_SUPABASE_ARCHIVE.md`.
+> Actualizado: 2026-07-21 · Continuación etapas C–F (paridad Plotly, proxies, stubs Agromet, QA puertos).
+> Ver: `docs/PROMPT_UNIFICACION_FORMATO_UI.md` · `CHECKLIST_ETAPA_E_SUPABASE_ARCHIVE.md` · `CHECKLIST_ETAPA_F_PUERTOS.md`
 
 ## Principios
 
@@ -12,33 +12,36 @@
 
 ## Estado por etapa
 
-### A — Errores producción — HECHA
-### B — Vue ECharts — HECHA
-- [x] TimeSeries / HorizontalBar / WindRose / precipitación / heladas precip
-- [x] `ComboMeteoChart.vue` → ECharts
-- [x] AnalizadorNubosidad, PredictorNiebla, ComparacionModelos
-- [x] PronosticoHeladaAvanzado, SparklineGrid, MlProjectionChart
+### A — Errores producción + precip Vue ECharts — HECHA
+### B — SVG → ECharts (tema Ensemble) — HECHA
 
-### C — Sin emojis Streamlit — HECHA (catálogo)
-- [x] 292 líneas limpiadas en 11/12 dashboards activos (8505 ya sin emoji)
-- [x] Guardarraíl: `tests/test_ui_theme.py::test_dashboards_activos_sin_emojis`
-- Script seguro: `scratch/strip_emojis_catalog_safe.py` (no colapsar whitespace global)
+### C — Paridad visual Streamlit / Vue — HECHA (código catálogo)
+- [x] Emojis eliminados en 8502–8513 + test CI
+- [x] `plotly_layout` en charts que faltaban (8503, 8506, 8508, 8509, 8512)
+- [x] 8513: `bootstrap_dashboard` + solo API (sin Demo)
+- [x] Test: `test_plotly_charts_usan_plotly_layout`
+- [ ] Smoke visual manual puerto a puerto (checklist F)
 
-### D — Sin sintéticos catálogo 8501–8513 — HECHA
+### D — Sin sintéticos — HECHA (código + CI reforzado)
+- [x] 8506: eliminados `Rendimiento`/`Calidad` inventados; copy sin “datos generados”
+- [x] 8503: sin cronograma sintético ni ton/ha inventadas; riesgos = heurística clima etiquetada
+- [x] Regex CI ampliado (proxies + Demo móvil)
+- [x] `pytest tests/test_ui_theme.py` (4 tests)
 
-### E — Archive histórico — CÓDIGO + CRON LISTOS
-- [x] ETL Archive + sync `incluir_archive`
-- [x] `historico_meteo(dias>92)` lee **solo store**
-- [x] `/api/cron/sync?incluir_archive=true` + OpenAPI
-- [x] Cron GitHub: 00/12 ligero; domingo 03 UTC + `workflow_dispatch` con Archive
-- [ ] Operativo: ejecutar SQL Supabase (ver checklist Etapa E)
-- [ ] Agromet/DMC
+### E — Históricos oficiales — CÓDIGO LISTO / OPS PENDIENTE
+- [x] ETL Archive + cron `incluir_archive` + SQL idempotente `meteo_pronostico.sql`
+- [x] Stub Agromet/DMC: `backend/08_Gestion_Datos/scripts/fuentes_oficiales_chile.py`
+- [ ] **Operativo:** ejecutar SQL en Supabase + primer sync Archive
+- [ ] Registrar códigos Agromet/DMC y cablear ETL real
 
-### F — Limpieza — HECHA (código)
-- [x] Legacy `*_metgo` + launchers/auditores → `archivos_obsoletos/frontend_dashboards_legacy/`
+### F — Limpieza + verificación — HECHA (código) / QA manual pendiente
+- [x] Legacy + `.backup` + notebooks → `archivos_obsoletos/frontend_dashboards_legacy/`
+- [x] Checklist: `docs/roadmap/CHECKLIST_ETAPA_F_PUERTOS.md`
+- [ ] Marcar checkboxes tras smoke local 8502–8513
 - [ ] Commit/push cuando el usuario lo pida
 
-## Verificación última pasada
-- `python -m py_compile` dashboards catálogo OK
-- `pytest tests/test_ui_theme.py` OK (sintéticos + plotly_white + emojis)
-- `npm run build` (Vue) OK (sesión previa)
+## Verificación automática
+```bash
+pytest tests/test_ui_theme.py -q
+python -m py_compile frontend/dashboards/dashboard_*.py
+```

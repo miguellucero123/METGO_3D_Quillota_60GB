@@ -69,7 +69,7 @@ modo_datos = st.sidebar.radio(
     "Fuente",
     ["Estaciones METGO (API)"],
     index=0,
-    help="API usa resumen OpenMeteo del valle; simulación para demo IoT.",
+    help="API usa resumen OpenMeteo del valle (sin demo IoT).",
 )
 actualizacion_automatica = st.sidebar.checkbox("Actualización Automática", value=True)
 intervalo_actualizacion = st.sidebar.slider("Intervalo (segundos):", 1, 60, 5)

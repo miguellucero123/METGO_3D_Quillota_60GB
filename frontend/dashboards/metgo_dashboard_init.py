@@ -23,7 +23,7 @@ def page_config_and_theme(
     *,
     module: str = "meteo",
     page_title: str | None = None,
-    page_icon: str = "🌤️",
+    page_icon: str = "M",
     layout: str = "wide",
     initial_sidebar_state: str = "expanded",
 ) -> tuple[Any, dict[str, Any], Any]:

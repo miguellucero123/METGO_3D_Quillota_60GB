@@ -9,7 +9,7 @@ class MobileConfig:
         """Configura la página para optimización móvil"""
         st.set_page_config(
             page_title="METGO Mobile",
-            page_icon="📱",
+            page_icon="M",
             layout="wide",
             initial_sidebar_state="collapsed",
             menu_items={

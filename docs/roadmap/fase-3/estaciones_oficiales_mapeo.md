@@ -20,3 +20,4 @@
 
 - Las coordenadas coinciden con `OpenMeteoData.estaciones` en `datos_reales_openmeteo.py`.
 - ERA5 es reanálisis de cuadrícula (~9 km); no sustituye observación in situ hasta integrar Agromet/DMC.
+- Stub Python (contrato, sin datos inventados): `backend/08_Gestion_Datos/scripts/fuentes_oficiales_chile.py`

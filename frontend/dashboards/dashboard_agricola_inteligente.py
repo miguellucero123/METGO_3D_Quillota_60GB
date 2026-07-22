@@ -453,6 +453,7 @@ with tab1:
                 title="Distribución de Alertas por Tipo",
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
+            fig_tipos.update_layout(**plotly_layout(height=360))
             st.plotly_chart(fig_tipos, config=PLOTLY_CONFIG, use_container_width=True)
         else:
             st.info("No hay alertas para mostrar estadísticas")
@@ -470,6 +471,7 @@ with tab1:
                 color=severidad_counts.index,
                 color_discrete_map={'Alta': '#F44336', 'Media': '#FF9800', 'Baja': '#4CAF50'}
             )
+            fig_severidad.update_layout(**plotly_layout(height=360))
             st.plotly_chart(fig_severidad, config=PLOTLY_CONFIG, use_container_width=True)
         else:
             st.info("No hay alertas para mostrar estadísticas")
@@ -595,12 +597,14 @@ with tab3:
             )
         )
         fig_tendencias.update_layout(
-            title=f"Clima observado · {estacion_seleccionada}",
-            xaxis_title="Fecha",
-            yaxis_title="Temperatura (°C)",
-            yaxis2=dict(title="Humedad (%)", overlaying="y", side="right"),
-            height=400,
-            hovermode="x unified",
+            **plotly_layout(
+                f"Clima observado · {estacion_seleccionada}",
+                height=400,
+                hovermode="x unified",
+                xaxis_title="Fecha",
+                yaxis_title="Temperatura (°C)",
+                yaxis2=dict(title="Humedad (%)", overlaying="y", side="right"),
+            )
         )
         st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
@@ -756,7 +760,8 @@ with col1:
     fig_plagas = px.bar(df_plagas, x='Plaga', y='Probabilidad', 
                        color='Riesgo', 
                        color_discrete_map={'Bajo': '#4CAF50', 'Medio': '#FF9800', 'Alto': '#F44336'},
-                       title='Probabilidad de Aparición de Plagas')
+                       title='Índice heurístico de riesgo (clima)')
+    fig_plagas.update_layout(**plotly_layout(height=360))
     st.plotly_chart(fig_plagas, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
@@ -774,95 +779,17 @@ with col2:
     fig_enfermedades = px.bar(df_enfermedades, x='Enfermedad', y='Probabilidad', 
                              color='Riesgo',
                              color_discrete_map={'Bajo': '#4CAF50', 'Medio': '#FF9800', 'Alto': '#F44336'},
-                             title='Probabilidad de Aparición de Enfermedades')
+                             title='Índice heurístico de riesgo (clima)')
+    fig_enfermedades.update_layout(**plotly_layout(height=360))
     st.plotly_chart(fig_enfermedades, config=PLOTLY_CONFIG, use_container_width=True)
 
-# Cronograma de actividades
+# Cronograma: sin calendario operativo en store — no inventar actividades
 st.markdown("### Cronograma de Actividades Agrícolas")
-
-# Generar cronograma para los próximos 30 días
-fechas = pd.date_range(start=datetime.now(), periods=30, freq='D')
-actividades = []
-
-for fecha in fechas:
-    dia_semana = fecha.strftime('%A')
-    
-    # Actividades regulares
-    if dia_semana in ['Monday', 'Wednesday', 'Friday']:
-        actividades.append({
-            'Fecha': fecha,
-            'Actividad': 'Riego programado',
-            'Prioridad': 'Alta',
-            'Tipo': 'Riego'
-        })
-    
-    # Actividades semanales
-    if fecha.day % 7 == 0:
-        actividades.append({
-            'Fecha': fecha,
-            'Actividad': 'Monitoreo de plagas',
-            'Prioridad': 'Media',
-            'Tipo': 'Monitoreo'
-        })
-    
-    # Actividades mensuales
-    if fecha.day == 15:
-        actividades.append({
-            'Fecha': fecha,
-            'Actividad': 'Aplicación de fertilizante',
-            'Prioridad': 'Alta',
-            'Tipo': 'Fertilización'
-        })
-
-df_cronograma = pd.DataFrame(actividades)
-
-if not df_cronograma.empty:
-    # Crear gráfico de cronograma mejorado
-    fig_cronograma = go.Figure()
-    
-    # Mapeo de colores para prioridades
-    color_map = {'Alta': '#F44336', 'Media': '#FF9800', 'Baja': '#4CAF50'}
-    
-    # Agrupar por tipo de actividad
-    tipos_actividad = df_cronograma['Tipo'].unique()
-    y_positions = {tipo: i for i, tipo in enumerate(tipos_actividad)}
-    
-    for _, row in df_cronograma.iterrows():
-        fig_cronograma.add_trace(go.Scatter(
-            x=[row['Fecha'], row['Fecha']],
-            y=[y_positions[row['Tipo']] - 0.3, y_positions[row['Tipo']] + 0.3],
-            mode='lines',
-            line=dict(width=8, color=color_map.get(row['Prioridad'], '#9E9E9E')),
-            name=f"{row['Actividad']} ({row['Prioridad']})",
-            hovertemplate=f"<b>{row['Actividad']}</b><br>" +
-                         f"Fecha: {row['Fecha'].strftime('%d/%m/%Y')}<br>" +
-                         f"Prioridad: {row['Prioridad']}<br>" +
-                         f"Tipo: {row['Tipo']}<extra></extra>",
-            showlegend=False
-        ))
-    
-    # Configurar layout
-    fig_cronograma.update_layout(
-        title='Cronograma de Actividades Agrícolas - Próximos 30 días',
-        xaxis_title='Fecha',
-        yaxis_title='Tipo de Actividad',
-        height=400,
-        yaxis=dict(
-            tickmode='array',
-            tickvals=list(y_positions.values()),
-            ticktext=list(y_positions.keys()),
-            showgrid=True
-        ),
-        xaxis=dict(
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(128,128,128,0.2)'
-        ),
-        hovermode='closest'
-    )
-    
-    st.plotly_chart(fig_cronograma, config=PLOTLY_CONFIG, use_container_width=True)
-
+st.info(
+    "Sin calendario operativo en API/Supabase. "
+    "Las recomendaciones de riego y manejo vienen de la API (módulo 02) más arriba. "
+    "Agenda de campo: Vue → /agricola o integración futura con registros de faena."
+)
 st.caption("Riesgos de plagas/enfermedades: índice derivado de humedad y temperatura observadas (no sustituye monitoreo en campo).")
 
 # Análisis de rendimiento
@@ -874,35 +801,7 @@ st.info(
     "Use las métricas meteorológicas y recomendaciones API arriba."
 )
 
-col1, col2 = st.columns(2)
-
-with col1:
-    st.caption("Gráfico de factores de rendimiento no disponible sin datos operativos.")
-
-with col2:
-    rendimiento_base = {
-        "Palta": 15,
-        "Cítricos": 25,
-        "Vid": 12,
-        "Tomate": 40,
-        "Lechuga": 30,
-    }
-
-    t_min, t_max = config["temp_optima"]
-    factor = 1.0
-    if t_min <= temp_actual <= t_max:
-        factor += 0.05
-    if config["humedad_optima"][0] <= humedad_actual <= config["humedad_optima"][1]:
-        factor += 0.05
-    rendimiento_estimado = rendimiento_base[cultivo_seleccionado] * factor
-
-    st.markdown("#### Referencia de rendimiento (solo clima)")
-    st.metric(
-        label=f"Referencia {cultivo_seleccionado}",
-        value=f"{rendimiento_estimado:.1f} ton/ha",
-        help="Ajuste simple por T° y humedad observadas; no es dato de cosecha ni ML.",
-    )
-    st.caption("Para análisis económico real use Vue → /agricola (endpoint económico API).")
+st.caption("Para análisis económico real use Vue → /agricola (endpoint económico API). No se muestran ton/ha inventadas.")
 
 # Información del cultivo
 st.markdown("### Información del Cultivo Seleccionado")

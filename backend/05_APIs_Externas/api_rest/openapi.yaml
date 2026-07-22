@@ -230,7 +230,12 @@ paths:
   /api/meteo/{estacion_id}/helada:
     get:
       tags: [meteo]
-      summary: Pronóstico avanzado helada radiativa (6 factores)
+      summary: Pronóstico avanzado helada radiativa (factores + psicrómetro)
+      description: |
+        Combina nubosidad, viento, humedad y T° mínima con el criterio práctico
+        de psicrómetro al atardecer: punto de rocío (Td) y bulbo húmedo (Th).
+        Riesgo alto si Td ≤ 0 °C con cielo despejado y calma; inminente si
+        Th ≤ 2 °C y cielo despejado (se espera T° < 0 en madrugada).
       security: [{ bearerAuth: [] }]
       parameters:
         - name: estacion_id
@@ -245,7 +250,7 @@ paths:
           schema: { type: string, enum: [palto, vid, citricos, tomate, lechuga], default: palto }
       responses:
         "200":
-          description: Probabilidad helada, factores y recomendaciones
+          description: Probabilidad, Td/Th atardecer, criterio psicrómetro y recomendaciones
   /api/meteo/{estacion_id}/nubosidad:
     get:
       tags: [meteo]

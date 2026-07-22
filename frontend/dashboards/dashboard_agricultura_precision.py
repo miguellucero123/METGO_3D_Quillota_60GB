@@ -252,7 +252,7 @@ if modo_precision.startswith("API"):
             row=2,
             col=1,
         )
-        fig_h.update_layout(height=420, title=f"Histórico 30 días · {est_p}")
+        fig_h.update_layout(**plotly_layout(f"Histórico 30 días · {est_p}", height=420))
         st.plotly_chart(fig_h, use_container_width=True, config=PLOTLY_CONFIG)
 
     if valle_p:

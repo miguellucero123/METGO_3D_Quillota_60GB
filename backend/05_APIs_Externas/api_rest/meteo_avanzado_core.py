@@ -12,8 +12,10 @@ from api_rest.meteo_avanzado import (
     AnalizadorNubosidad,
     ModeloHeladaRadiativa,
     PredictorNiebla,
+    calcular_bulbo_humedo,
     calcular_punto_rocio,
     clasificar_velocidad_viento,
+    estimar_temp_atardecer,
     indice_humedad_percibida,
 )
 from api_rest.meteo_avanzado.meteo_utils import ventilacion_vertical_indice
@@ -100,7 +102,10 @@ def pronostico_helada_avanzado(
         cobertura = _num(row, "cobertura_nubosa", 50)
         viento = _num(row, "viento", 5)
         hr = _num(row, "humedad", 70)
-        pr = calcular_punto_rocio(temp_min, hr)
+        t_atardecer = estimar_temp_atardecer(temp_max, temp_min)
+        # Método de campo: Td y Th del psicrómetro al atardecer
+        pr = calcular_punto_rocio(t_atardecer, hr)
+        th = calcular_bulbo_humedo(t_atardecer, hr)
 
         riesgo = modelo.calcular_riesgo_helada(
             temperatura_pronosticada=temp_max,
@@ -110,6 +115,8 @@ def pronostico_helada_avanzado(
             humedad_relativa=hr,
             punto_rocio=pr,
             fecha=fecha,
+            temperatura_atardecer=t_atardecer,
+            bulbo_humedo=th,
         )
         riesgo["cobertura_nubosa"] = round(cobertura, 1)
         riesgo["velocidad_viento"] = round(viento, 1)

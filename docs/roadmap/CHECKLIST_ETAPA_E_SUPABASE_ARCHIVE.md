@@ -2,12 +2,14 @@
 
 Código listo en repo. Falta ejecución en infra.
 
-## 1. SQL en Supabase (una vez)
+## 1. SQL en Supabase (actualizar tablas existentes)
 
 1. Abrir [Supabase](https://supabase.com) → proyecto METGO → **SQL Editor**.
-2. Pegar y ejecutar: `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`
-3. Confirmar tablas: `meteo_pronostico`, `meteo_series` (+ GRANTs / RLS del script).
-4. Si `meteo_registros` ya existía con errores de permiso, el mismo script re-aplica GRANTs.
+2. Pegar y ejecutar todo: `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`
+   - Es **idempotente**: no borra datos; hace `CREATE IF NOT EXISTS` + `ADD COLUMN IF NOT EXISTS`.
+   - Actualiza `meteo_registros` (ya creada) y crea/alinea `meteo_pronostico` + `meteo_series`.
+3. Confirmar las 3 tablas en Table Editor y que no haya *permission denied*.
+4. Re-ejecutar el script es seguro si hace falta re-aplicar GRANTs/RLS.
 
 ## 2. Secrets
 

@@ -269,7 +269,7 @@ if modo_unificado.startswith("API"):
                     mode="lines+markers",
                 )
             )
-            fig_u.update_layout(height=360, title=f"Histórico 14 d · {estacion_unificada}")
+            fig_u.update_layout(**plotly_layout(f"Histórico 14 d · {estacion_unificada}", height=360))
             st.plotly_chart(fig_u, use_container_width=True, config=PLOTLY_CONFIG)
         for a in alertas_u[:5]:
             st.warning(f"**{a.get('nivel', 'info')}**: {a.get('mensaje', '')}")

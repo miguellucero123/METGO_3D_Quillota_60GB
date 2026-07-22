@@ -24,13 +24,14 @@ from meteo_dashboard_utils import filtrar_historico_hasta_hoy, hoy_chile
 
 from mobile_config import MobileConfig
 
-# Aplicar configuraciones móviles
+# Aplicar configuraciones móviles + tema METGO (paridad Vue)
 MobileConfig.apply_mobile_optimizations()
+bootstrap_dashboard("METGO Mobile", "Vista compacta · datos API", module="simple")
 
 # Header móvil optimizado
 st.markdown("""
 <div class="mobile-header">
-    <h1> METGO Mobile</h1>
+    <h1>METGO Mobile</h1>
     <h3>Sistema Meteorológico Agrícola</h3>
     <p>Optimizado para dispositivos móviles</p>
     <div style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(255,255,255,0.2); border-radius: 15px; display: inline-block; font-size: 0.9rem;">
@@ -57,43 +58,32 @@ with st.sidebar:
         key="vista_mobile"
     )
     
-    # Toggle de modo oscuro
-    modo_oscuro = st.toggle("Modo Oscuro", value=False)
+    st.caption("Tema oscuro METGO (paridad Vue Netlify). Fuente: solo API.")
 
-    modo_mobile = st.radio(
-        "Fuente",
-        ["API METGO", "Demo móvil"],
-        index=0,
-    )
+slug_m = nombre_a_slug(estacion)
+with st.spinner("Sincronizando…"):
+    res_m = resumen_meteo(slug_m) or {}
+    hist_m = filtrar_historico_hasta_hoy(historico_meteo(slug_m, 7) or [])
+    alertas_m = generar_alertas(slug_m)
+datos = {
+    "temperatura": float(res_m.get("temperatura") or 0),
+    "humedad": float(res_m.get("humedad") or 0),
+    "precipitacion": float(res_m.get("precipitacion") or 0),
+    "viento": float(res_m.get("viento") or 0),
+    "presion": float(res_m.get("presion") or 1013),
+    "rendimiento": None,
+    "calidad": None,
+    "eficiencia": None,
+    "alertas": [
+        {"tipo": a.get("nivel", "info"), "mensaje": a.get("mensaje", "")}
+        for a in alertas_m[:6]
+    ],
+    "hist": hist_m,
+    "tipo_dato": res_m.get("tipo_dato"),
+}
+st.caption(f"{hoy_chile()} · {estacion} · {datos['tipo_dato']} · Vue 5173")
 
-if modo_mobile.startswith("API"):
-    slug_m = nombre_a_slug(estacion)
-    with st.spinner("Sincronizando…"):
-        res_m = resumen_meteo(slug_m) or {}
-        hist_m = filtrar_historico_hasta_hoy(historico_meteo(slug_m, 7) or [])
-        alertas_m = generar_alertas(slug_m)
-    datos = {
-        "temperatura": float(res_m.get("temperatura") or 0),
-        "humedad": float(res_m.get("humedad") or 0),
-        "precipitacion": float(res_m.get("precipitacion") or 0),
-        "viento": float(res_m.get("viento") or 0),
-        "presion": float(res_m.get("presion") or 1013),
-        "rendimiento": None,
-        "calidad": None,
-        "eficiencia": None,
-        "alertas": [
-            {"tipo": a.get("nivel", "info"), "mensaje": a.get("mensaje", "")}
-            for a in alertas_m[:6]
-        ],
-        "hist": hist_m,
-        "tipo_dato": res_m.get("tipo_dato"),
-    }
-    st.caption(f"{hoy_chile()} · {estacion} · {datos['tipo_dato']} · Vue 5173")
-else:
-    datos = None
-
-
-if datos is None:
+if not res_m:
     st.warning("Sin datos — requiere API METGO (:8080).")
     st.stop()
 

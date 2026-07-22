@@ -60,9 +60,17 @@ function fmt(fechaStr) {
 }
 
 function tempClass(t) {
+  if (t == null || Number.isNaN(t)) return 'ok'
   if (t < -5) return 'ext'
   if (t < 0) return 'crit'
   if (t < 5) return 'riesgo'
+  return 'ok'
+}
+
+function thClass(t) {
+  if (t == null || Number.isNaN(t)) return 'ok'
+  if (t <= 0) return 'crit'
+  if (t <= 2) return 'riesgo'
   return 'ok'
 }
 
@@ -130,7 +138,10 @@ const chartOption = computed(() => {
 <template>
   <div class="helada-av">
     <header class="helada-av__head">
-      <h3>Pronóstico de helada radiativa</h3>
+      <div>
+        <h3>Pronóstico de helada radiativa</h3>
+        <p class="sub">Criterio psicrómetro al atardecer: Td ≤ 0 °C · Th ≤ 2 °C + cielo despejado</p>
+      </div>
       <select v-model="cultivo" class="cultivo-sel">
         <option value="palto">Palto</option>
         <option value="vid">Vid</option>
@@ -157,6 +168,8 @@ const chartOption = computed(() => {
           <tr>
             <th>Fecha</th>
             <th>T° mín</th>
+            <th>Td</th>
+            <th>Th</th>
             <th>PoP</th>
             <th>Nubes</th>
             <th>Viento</th>
@@ -166,7 +179,7 @@ const chartOption = computed(() => {
         <tbody>
           <template v-for="(d, i) in datos" :key="i">
             <tr
-              :class="{ alto: d.riesgo_severo }"
+              :class="{ alto: d.riesgo_severo || d.riesgo_inminente }"
               @click="expandidoIdx = expandidoIdx === i ? -1 : i"
             >
               <td>{{ fmt(d.fecha_pronostico || d.fecha) }}</td>
@@ -175,14 +188,27 @@ const chartOption = computed(() => {
                   {{ d.temperatura_minima_esperada }}°C
                 </span>
               </td>
+              <td>
+                <span class="badge" :class="tempClass(d.punto_rocio_atardecer ?? d.punto_rocio)">
+                  {{ d.punto_rocio_atardecer ?? d.punto_rocio ?? '—' }}{{ (d.punto_rocio_atardecer ?? d.punto_rocio) != null ? '°C' : '' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" :class="thClass(d.bulbo_humedo_atardecer ?? d.bulbo_humedo)">
+                  {{ d.bulbo_humedo_atardecer ?? d.bulbo_humedo ?? '—' }}{{ (d.bulbo_humedo_atardecer ?? d.bulbo_humedo) != null ? '°C' : '' }}
+                </span>
+              </td>
               <td>{{ d.probabilidad_helada }}%</td>
               <td>{{ d.cobertura_nubosa ?? '—' }}%</td>
               <td>{{ d.velocidad_viento ?? '—' }} m/s</td>
-              <td>{{ d.nivel_riesgo || (d.riesgo_severo ? 'Severo' : '—') }}</td>
+              <td>{{ d.nivel_riesgo || (d.riesgo_inminente ? 'Inminente' : d.riesgo_severo ? 'Severo' : '—') }}</td>
             </tr>
             <tr v-if="expandidoIdx === i" class="detalle-row">
-              <td colspan="6">
-                {{ d.recomendacion || d.descripcion || 'Sin detalle adicional' }}
+              <td colspan="8">
+                <p>{{ d.recomendacion || d.criterio_psicrometro?.mensaje || d.descripcion || 'Sin detalle adicional' }}</p>
+                <ul v-if="d.factores_contribuyentes?.length" class="factores">
+                  <li v-for="(f, fi) in d.factores_contribuyentes" :key="fi">{{ f }}</li>
+                </ul>
               </td>
             </tr>
           </template>
@@ -200,8 +226,9 @@ const chartOption = computed(() => {
   border-radius: 10px;
   padding: 1rem;
 }
-.helada-av__head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.helada-av__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
 .helada-av__head h3 { margin: 0; font-size: 1rem; }
+.sub { margin: 0.25rem 0 0; font-size: 0.72rem; color: #94a3b8; max-width: 28rem; }
 .cultivo-sel { font-size: 0.8rem; padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .resumen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
 .card { background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 0.5rem; text-align: center; border-left: 3px solid #0284c7; }
@@ -217,6 +244,8 @@ const chartOption = computed(() => {
 .tabla tr { cursor: pointer; }
 .tabla tr.alto { background: rgba(239, 68, 68, 0.08); }
 .detalle-row td { font-size: 0.75rem; color: #94a3b8; }
+.detalle-row p { margin: 0 0 0.35rem; }
+.factores { margin: 0; padding-left: 1.1rem; }
 .badge { padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 600; }
 .badge.ok { color: #22c55e; }
 .badge.riesgo { color: #fbbf24; }

@@ -26,7 +26,9 @@ from api_rest.meteo_avanzado import (
     AnalizadorNubosidad,
     ModeloHeladaRadiativa,
     PredictorNiebla,
+    calcular_bulbo_humedo,
     calcular_punto_rocio,
+    evaluar_criterio_psicrometro,
 )
 from api_rest.meteo_avanzado_core import (
     _riesgo_helada_simple,
@@ -41,6 +43,24 @@ def test_calcular_punto_rocio_saturacion():
     assert pr == pytest.approx(20.0, abs=1.0)
 
 
+def test_calcular_bulbo_humedo_entre_td_y_t():
+    t, hr = 10.0, 70.0
+    td = calcular_punto_rocio(t, hr)
+    th = calcular_bulbo_humedo(t, hr)
+    assert td <= th <= t
+
+
+def test_criterio_psicrometro_riesgo_inminente():
+    crit = evaluar_criterio_psicrometro(
+        punto_rocio=-1.0,
+        bulbo_humedo=1.5,
+        cobertura_nubosa=5,
+        velocidad_viento=0.5,
+    )
+    assert crit["riesgo_inminente"] is True
+    assert crit["nivel"] == "inminente"
+
+
 def test_modelo_helada_alto_riesgo_cielo_despejado():
     modelo = ModeloHeladaRadiativa("quillota")
     res = modelo.calcular_riesgo_helada(
@@ -51,10 +71,14 @@ def test_modelo_helada_alto_riesgo_cielo_despejado():
         humedad_relativa=88,
         punto_rocio=-4,
         fecha=datetime.now(ZoneInfo("America/Santiago")),
+        temperatura_atardecer=6.0,
+        bulbo_humedo=1.5,
     )
     assert res["probabilidad_helada"] > 50
     assert res["riesgo_severo"] or res["riesgo_moderado"]
+    assert res["riesgo_inminente"] is True
     assert len(res["factores_contribuyentes"]) >= 2
+    assert "criterio_psicrometro" in res
 
 
 def test_modelo_helada_bajo_riesgo():
@@ -67,8 +91,11 @@ def test_modelo_helada_bajo_riesgo():
         humedad_relativa=40,
         punto_rocio=5,
         fecha=datetime.now(ZoneInfo("America/Santiago")),
+        temperatura_atardecer=20.0,
+        bulbo_humedo=12.0,
     )
     assert res["probabilidad_helada"] < 30
+    assert res["riesgo_inminente"] is False
 
 
 def test_analizador_nubosidad_clasificacion():
