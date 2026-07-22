@@ -106,10 +106,18 @@ def register_fase4_routes(app: Flask) -> None:
         # El cron secret es obligatorio para que nadie sature la API externamente
         if not secret or secret != os.getenv("CRON_SECRET"):
             return jsonify({"error": "No autorizado"}), 401
-        
-        # Por defecto bajamos 3 días de OpenMeteo.
-        # No se procesa CSV porque es un trabajo en batch ligero de OpenMeteo
-        res = etl_sync.sincronizar_estaciones(dias=3, incluir_csv=False, origen="cron")
+
+        # Sync ligero 00/12 UTC; Archive opcional vía query (p. ej. cron semanal).
+        raw_arch = (request.args.get("incluir_archive") or "false").strip().lower()
+        incluir_archive = raw_arch in ("1", "true", "yes", "on")
+        anios_archive = request.args.get("anios_archive", default=5, type=int) or 5
+        res = etl_sync.sincronizar_estaciones(
+            dias=3,
+            incluir_csv=False,
+            incluir_archive=incluir_archive,
+            anios_archive=int(anios_archive),
+            origen="cron",
+        )
         return jsonify(res)
 
     @app.get("/api/datos/etl/status")

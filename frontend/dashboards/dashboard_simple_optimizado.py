@@ -31,7 +31,7 @@ st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Dashboard Simple",
     "Vista resumida optimizada para móvil",
     module="simple",
-    page_icon="📊",
+    page_icon="M",
     initial_sidebar_state="collapsed",
 )
 
@@ -119,7 +119,7 @@ st.markdown("""
 # Header principal
 st.markdown("""
 <div class="simple-header">
-    <h1>📊 Dashboard Simple</h1>
+    <h1> Dashboard Simple</h1>
     <h3>Sistema METGO - Vista Simplificada</h3>
     <p>Información esencial y fácil de entender</p>
 </div>
@@ -127,18 +127,18 @@ st.markdown("""
 
 # Sidebar simple
 with st.sidebar:
-    st.markdown("### ⚙️ Opciones")
+    st.markdown("### Opciones")
     
     # Selector de estación
     estacion = st.selectbox(
-        "🌍 Estación:",
+        "Estación:",
         ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue"],
         key="estacion_simple"
     )
     
     # Selector de período
     periodo = st.selectbox(
-        "📅 Período:",
+        "Período:",
         ["Hoy", "Esta semana", "Este mes", "Últimos 3 meses"],
         key="periodo_simple"
     )

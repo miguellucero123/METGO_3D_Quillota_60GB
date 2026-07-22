@@ -38,7 +38,7 @@ st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Agricultura de Precisión",
     "Análisis de cultivos con datos históricos Quillota",
     module="precision",
-    page_icon="🌾",
+    page_icon="M",
     initial_sidebar_state="collapsed",
 )
 
@@ -171,7 +171,7 @@ st.markdown("""
 # Header principal
 st.markdown("""
 <div class="precision-header">
-    <h1>🌾 Agricultura de Precisión</h1>
+    <h1> Agricultura de Precisión</h1>
     <h3>Sistema METGO - Tecnología Avanzada</h3>
     <p>Monitoreo preciso, análisis de zonas y optimización inteligente de cultivos</p>
 </div>
@@ -179,25 +179,25 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🎛️ Panel de Control de Precisión")
+    st.markdown("### Panel de Control de Precisión")
     
     # Selector de cultivo
     cultivo_precision = st.selectbox(
-        "🌱 Cultivo:",
+        "Cultivo:",
         ["Palta", "Cítricos", "Vid", "Tomate", "Lechuga", "Todos los Cultivos"],
         key="cultivo_precision"
     )
     
     # Selector de zona
     zona_precision = st.selectbox(
-        "📍 Zona de Análisis:",
+        "Zona de Análisis:",
         ["Zona A - Norte", "Zona B - Centro", "Zona C - Sur", "Zona D - Este", "Zona E - Oeste", "Todas las Zonas"],
         key="zona_precision"
     )
     
     # Selector de tecnología
     tecnologia = st.selectbox(
-        "🤖 Tecnología:",
+        "Tecnología:",
         ["Sensores IoT", "Drones", "Satélites", "IA/ML", "Sistema Integrado"],
         key="tecnologia"
     )
@@ -209,8 +209,8 @@ with st.sidebar:
     )
 
     if modo_precision.startswith("API"):
-        est_p = st.selectbox("🌍 Estación", ESTACIONES_VALLE, key="est_api_p")
-        cult_p = st.selectbox("🌱 Cultivo", list(CULTIVO_A_SLUG.keys()), key="cult_api_p")
+        est_p = st.selectbox("Estación", ESTACIONES_VALLE, key="est_api_p")
+        cult_p = st.selectbox("Cultivo", list(CULTIVO_A_SLUG.keys()), key="cult_api_p")
 
 if modo_precision.startswith("API"):
     slug_p = nombre_a_slug(est_p)

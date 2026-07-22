@@ -30,35 +30,35 @@ MobileConfig.apply_mobile_optimizations()
 # Header móvil optimizado
 st.markdown("""
 <div class="mobile-header">
-    <h1>📱 METGO Mobile</h1>
+    <h1> METGO Mobile</h1>
     <h3>Sistema Meteorológico Agrícola</h3>
     <p>Optimizado para dispositivos móviles</p>
     <div style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: rgba(255,255,255,0.2); border-radius: 15px; display: inline-block; font-size: 0.9rem;">
-        🌡️ Tiempo Real | 🌾 Quillota
+         Tiempo Real | Quillota
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar móvil colapsado
 with st.sidebar:
-    st.markdown("### ⚙️ Configuración")
+    st.markdown("### Configuración")
     
     # Selector de estación
     estacion = st.selectbox(
-        "🌍 Estación:",
+        "Estación:",
         ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue"],
         key="estacion_mobile"
     )
     
     # Selector de vista
     vista = st.selectbox(
-        "👁️ Vista:",
+        "Vista:",
         ["Resumen", "Detallada", "Gráficos", "Alertas"],
         key="vista_mobile"
     )
     
     # Toggle de modo oscuro
-    modo_oscuro = st.toggle("🌙 Modo Oscuro", value=False)
+    modo_oscuro = st.toggle("Modo Oscuro", value=False)
 
     modo_mobile = st.radio(
         "Fuente",
@@ -99,7 +99,7 @@ if datos is None:
 
 # Métricas principales en grid móvil
 if vista == "Resumen" or vista == "Detallada":
-    st.markdown("### 📊 Condiciones Actuales")
+    st.markdown("### Condiciones Actuales")
     
     col1, col2 = st.columns(2)
     
@@ -107,14 +107,14 @@ if vista == "Resumen" or vista == "Detallada":
         st.markdown(f"""
         <div class="mobile-metric">
             <div class="mobile-number">{datos['temperatura']}°C</div>
-            <div class="mobile-label">🌡️ Temperatura</div>
+            <div class="mobile-label"> Temperatura</div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown(f"""
         <div class="mobile-metric">
             <div class="mobile-number">{datos['humedad']}%</div>
-            <div class="mobile-label">💧 Humedad</div>
+            <div class="mobile-label"> Humedad</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -122,14 +122,14 @@ if vista == "Resumen" or vista == "Detallada":
         st.markdown(f"""
         <div class="mobile-metric">
             <div class="mobile-number">{datos['viento']} km/h</div>
-            <div class="mobile-label">💨 Viento</div>
+            <div class="mobile-label"> Viento</div>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown(f"""
         <div class="mobile-metric">
             <div class="mobile-number">{datos['precipitacion']} mm</div>
-            <div class="mobile-label">🌧️ Lluvia</div>
+            <div class="mobile-label"> Lluvia</div>
         </div>
         """, unsafe_allow_html=True)
 

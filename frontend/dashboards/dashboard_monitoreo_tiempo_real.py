@@ -25,7 +25,7 @@ from meteo_dashboard_utils import hoy_chile
 # Configuración de la página
 st.set_page_config(
     page_title="Monitoreo en Tiempo Real - METGO",
-    page_icon="🔍",
+    page_icon="M",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -37,7 +37,7 @@ bootstrap_dashboard(
 )
 
 # Sidebar para controles
-st.sidebar.markdown("### 🎛️ Panel de Control")
+st.sidebar.markdown("### Panel de Control")
 
 # Configuración de sensores
 sensores_config = {
@@ -64,21 +64,21 @@ sensores_config = {
     }
 }
 
-categoria_sensor = st.sidebar.selectbox("📡 Categoría de Sensores:", list(sensores_config.keys()))
+categoria_sensor = st.sidebar.selectbox("Categoría de Sensores:", list(sensores_config.keys()))
 modo_datos = st.sidebar.radio(
     "Fuente",
     ["Estaciones METGO (API)"],
     index=0,
     help="API usa resumen OpenMeteo del valle; simulación para demo IoT.",
 )
-actualizacion_automatica = st.sidebar.checkbox("🔄 Actualización Automática", value=True)
-intervalo_actualizacion = st.sidebar.slider("⏱️ Intervalo (segundos):", 1, 60, 5)
+actualizacion_automatica = st.sidebar.checkbox("Actualización Automática", value=True)
+intervalo_actualizacion = st.sidebar.slider("Intervalo (segundos):", 1, 60, 5)
 
 if modo_datos.startswith("Estaciones"):
     try:
         resumen = comparativo_estaciones()
         alertas_api = alertas_meteo_api()
-        st.success(f"🌐 **{hoy_chile()}** · {len(resumen)} estaciones · {len(alertas_api)} alertas activas")
+        st.success(f"**{hoy_chile()}** · {len(resumen)} estaciones · {len(alertas_api)} alertas activas")
         if resumen:
             st.dataframe(
                 pd.DataFrame(resumen)[

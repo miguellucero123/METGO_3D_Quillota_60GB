@@ -27,7 +27,7 @@ from meteo_dashboard_utils import dia_iso, filtrar_historico_hasta_hoy, hoy_chil
 # Configuración de la página optimizada para móviles
 st.set_page_config(
     page_title="Dashboard Global de Métricas - METGO",
-    page_icon="📈",
+    page_icon="M",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -156,7 +156,7 @@ st.markdown("""
 # Header principal
 st.markdown("""
 <div class="global-header">
-    <h1>📈 Dashboard Global de Métricas</h1>
+    <h1> Dashboard Global de Métricas</h1>
     <h3>Sistema METGO — Valle de Aconcagua</h3>
     <p>KPIs en vivo y series históricas desde API / OpenMeteo (máx. 92 días por estación)</p>
 </div>
@@ -164,17 +164,17 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🎛️ Panel de Control Global")
+    st.markdown("### Panel de Control Global")
     
     # Selector de período
     periodo_global = st.selectbox(
-        "📅 Período de Análisis:",
+        "Período de Análisis:",
         ["Últimos 5 años", "Últimos 3 años", "Últimos 2 años", "Último año", "Últimos 6 meses"],
         key="periodo_global"
     )
     
     granularidad = st.selectbox(
-        "⏱️ Granularidad:",
+        "Granularidad:",
         ["Diaria", "Semanal", "Mensual", "Anual"],
         key="granularidad",
     )
@@ -245,7 +245,7 @@ def _agregar_granularidad(df: pd.DataFrame, granularidad: str) -> pd.DataFrame:
 try:
     mg = metricas_globales()
     if mg.get("estaciones_activas", 0) > 0:
-        st.markdown("### 🌍 Valle de Aconcagua · datos en vivo")
+        st.markdown("### Valle de Aconcagua · datos en vivo")
         st.caption(f"Día de referencia **{mg.get('referencia_fecha', hoy_chile())}** · Vue http://127.0.0.1:5173/metricas")
         c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric("Estaciones", mg["estaciones_activas"])
@@ -272,7 +272,7 @@ try:
 except Exception as e:
     st.warning(f"API METGO no disponible para KPIs en vivo: {e}")
 
-with st.spinner("📈 Cargando histórico meteorológico…"):
+with st.spinner("Cargando histórico meteorológico…"):
     df_global = cargar_historico_global(periodo_global)
 
 if df_global.empty:
@@ -281,7 +281,7 @@ if df_global.empty:
 
 df_plot = _agregar_granularidad(df_global, granularidad)
 
-st.markdown("### 🎯 Indicadores históricos (meteorología real)")
+st.markdown("### Indicadores históricos (meteorología real)")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -292,42 +292,42 @@ viento_prom = df_global["Viento"].mean()
 
 with col1:
     st.markdown(f"""<div class="metric-global-card">
-        <div class="kpi-label">🌡️ Temperatura media</div>
+        <div class="kpi-label"> Temperatura media</div>
         <div class="kpi-number">{temp_prom:.1f}°C</div>
         <div class="kpi-change kpi-neutral">{len(df_global):,} registros</div>
     </div>""", unsafe_allow_html=True)
 
 with col2:
     st.markdown(f"""<div class="metric-global-card">
-        <div class="kpi-label">🌧️ Precipitación acumulada</div>
+        <div class="kpi-label"> Precipitación acumulada</div>
         <div class="kpi-number">{precip_total:.1f} mm</div>
         <div class="kpi-change kpi-neutral">{df_global['Estacion'].nunique()} estaciones</div>
     </div>""", unsafe_allow_html=True)
 
 with col3:
     st.markdown(f"""<div class="metric-global-card">
-        <div class="kpi-label">💧 Humedad media</div>
+        <div class="kpi-label"> Humedad media</div>
         <div class="kpi-number">{humedad_prom:.1f}%</div>
         <div class="kpi-change kpi-neutral">OpenMeteo / API</div>
     </div>""", unsafe_allow_html=True)
 
 with col4:
     st.markdown(f"""<div class="metric-global-card">
-        <div class="kpi-label">💨 Viento medio</div>
+        <div class="kpi-label"> Viento medio</div>
         <div class="kpi-number">{viento_prom:.1f} km/h</div>
         <div class="kpi-change kpi-neutral">Período: {periodo_global}</div>
     </div>""", unsafe_allow_html=True)
 
-st.markdown('<h2 class="section-title">📈 Tendencias históricas</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title"> Tendencias históricas</h2>', unsafe_allow_html=True)
 
 fig_tendencias = make_subplots(
     rows=2,
     cols=2,
     subplot_titles=(
-        "🌡️ Temperatura media",
-        "🌧️ Precipitación",
-        "💧 Humedad media",
-        "💨 Viento medio",
+        "Temperatura media",
+        "Precipitación",
+        "Humedad media",
+        "Viento medio",
     ),
     vertical_spacing=0.12,
     horizontal_spacing=0.08,
@@ -372,7 +372,7 @@ fig_tendencias.update_yaxes(title_text="km/h", row=2, col=2)
 
 st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
-st.markdown('<h2 class="section-title">📊 Comparación por estación</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title"> Comparación por estación</h2>', unsafe_allow_html=True)
 
 df_est = (
     df_global.groupby("Estacion")
@@ -396,7 +396,7 @@ fig_comp = px.bar(
 fig_comp.update_layout(**plotly_layout(height=420))
 st.plotly_chart(fig_comp, config=PLOTLY_CONFIG, use_container_width=True)
 
-st.markdown('<h2 class="section-title">ℹ️ Información del análisis</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title"> Información del análisis</h2>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 
@@ -411,26 +411,26 @@ with col1:
             "Últimos 6 meses": 183,
         }.get(periodo_global, 365),
     )
-    st.info(f"""**📅 Período solicitado:** {periodo_global}
+    st.info(f"""** Período solicitado:** {periodo_global}
     **Ventana cargada:** {dias_cargados} días (máx. API)
-    **⏱️ Granularidad:** {granularidad}
-    **🕐 Registros:** {len(df_global):,}""")
+    ** Granularidad:** {granularidad}
+    ** Registros:** {len(df_global):,}""")
 
 with col2:
-    st.info(f"""**📈 Última carga:** {datetime.now().strftime("%H:%M:%S")}
+    st.info(f"""** Última carga:** {datetime.now().strftime("%H:%M:%S")}
     **Estaciones:** {', '.join(sorted(df_global['Estacion'].unique()))}
     **Fuente:** API METGO / OpenMeteo""")
 
 with col3:
-    st.info(f"""**🌡️ Temp. media:** {temp_prom:.1f}°C
-    **🌧️ Precip. total:** {precip_total:.1f} mm
-    **💧 Humedad media:** {humedad_prom:.1f}%
-    **💨 Viento medio:** {viento_prom:.1f} km/h""")
+    st.info(f"""** Temp. media:** {temp_prom:.1f}°C
+    ** Precip. total:** {precip_total:.1f} mm
+    ** Humedad media:** {humedad_prom:.1f}%
+    ** Viento medio:** {viento_prom:.1f} km/h""")
 
 st.markdown("---")
 st.markdown(f"""
 <div style="text-align: center; color: #94a3b8; padding: 20px;">
-    <p>📈 <strong>Sistema METGO</strong> — Dashboard Global de Métricas</p>
+    <p> <strong>Sistema METGO</strong> — Dashboard Global de Métricas</p>
     <p>Última actualización: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
 </div>
 """, unsafe_allow_html=True)

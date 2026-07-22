@@ -38,7 +38,7 @@ st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Análisis Meteorológico Profesional",
     "Quillota y región · histórico y pronóstico (OpenMeteo)",
     module="meteo",
-    page_icon="🌤️",
+    page_icon="M",
 )
 
 ESTACIONES = {
@@ -232,27 +232,27 @@ def _metricas_actuales(estacion: str, df: pd.DataFrame, unidad_temp: str) -> dic
 
 
 # --- Sidebar ---
-st.sidebar.markdown("### 🎛️ Panel de Control")
+st.sidebar.markdown("### Panel de Control")
 estacion_seleccionada = st.sidebar.selectbox(
-    "🌍 Estación Meteorológica:", list(ESTACIONES.keys())
+    "Estación Meteorológica:", list(ESTACIONES.keys())
 )
 periodo_analisis = st.sidebar.selectbox(
-    "📅 Período de Análisis:",
+    "Período de Análisis:",
     list(DIAS_MAP.keys()),
 )
 tipo_datos = st.sidebar.selectbox(
-    "📊 Tipo de Datos:",
+    "Tipo de Datos:",
     ["Datos Históricos", "Pronóstico 7 días", "Pronóstico 15 días", "Análisis Comparativo"],
 )
 unidad_temp = st.sidebar.radio(
-    "🌡️ Unidad de temperatura",
+    "Unidad de temperatura",
     options=["C", "F"],
     format_func=lambda u: "Celsius (°C)" if u == "C" else "Fahrenheit (°F)",
     horizontal=True,
     help="Misma preferencia que la SPA Vue (Configuración → Preferencias).",
 )
 
-with st.spinner("🌤️ Cargando datos meteorológicos (OpenMeteo)…"):
+with st.spinner("Cargando datos meteorológicos (OpenMeteo)…"):
     df_raw, fuente_datos = cargar_datos_meteorologicos(
         estacion_seleccionada, periodo_analisis, tipo_datos
     )
@@ -283,7 +283,7 @@ def _aplicar_unidad_temp(df: pd.DataFrame, unidad: str) -> pd.DataFrame:
 
 df_meteo = _aplicar_unidad_temp(df_raw, unidad_temp)
 
-st.success(f"🌐 **{fuente_datos}** · {len(df_meteo)} registros diarios · hoy {_hoy_chile()} (Chile)")
+st.success(f"**{fuente_datos}** · {len(df_meteo)} registros diarios · hoy {_hoy_chile()} (Chile)")
 
 metricas = _metricas_actuales(estacion_seleccionada, df_meteo, unidad_temp)
 suf_temp = _unidad_suffix(unidad_temp)
@@ -296,26 +296,26 @@ if metricas:
     v, dv, us_v = metricas["viento"]
     with col1:
         st.metric(
-            "🌡️ Temperatura Actual",
+            "Temperatura Actual",
             f"{t:.1f}{suf_temp}",
             f"{dt:+.1f}{suf_temp}" if dt is not None else None,
         )
     with col2:
-        st.metric("💧 Humedad Relativa", f"{h:.1f}%", f"{dh:+.1f}%" if dh is not None else None)
+        st.metric("Humedad Relativa", f"{h:.1f}%", f"{dh:+.1f}%"if dh is not None else None)
     with col3:
-        st.metric("🌀 Presión Atmosférica", f"{p:.1f}{us_p}", f"{dp:+.1f}{us_p}" if dp is not None else None)
+        st.metric("Presión Atmosférica", f"{p:.1f}{us_p}", f"{dp:+.1f}{us_p}"if dp is not None else None)
     with col4:
-        st.metric("💨 Velocidad del Viento", f"{v:.1f}{us_v}", f"{dv:+.1f}{us_v}" if dv is not None else None)
+        st.metric("Velocidad del Viento", f"{v:.1f}{us_v}", f"{dv:+.1f}{us_v}"if dv is not None else None)
     st.caption(f"Condición del día · fuente: **{metricas.get('fuente', 'METGO')}**")
 
-st.markdown("### 📊 Análisis Meteorológico Avanzado")
+st.markdown("### Análisis Meteorológico Avanzado")
 
 fig_temp_hum = make_subplots(
     rows=2,
     cols=1,
     subplot_titles=(
-        f"🌡️ Temperatura diaria ({suf_temp})",
-        "💧 Humedad relativa",
+        f"Temperatura diaria ({suf_temp})",
+        "Humedad relativa",
     ),
     vertical_spacing=0.12,
 )
@@ -405,7 +405,7 @@ fig_precip.add_trace(
 fig_precip.update_layout(**plotly_layout("Precipitación diaria (mm)", height=380))
 st.plotly_chart(fig_precip, use_container_width=True, config=PLOTLY_CONFIG)
 
-st.markdown("### 🔬 Variables derivadas")
+st.markdown("### Variables derivadas")
 col1, col2, col3 = st.columns(3)
 with col1:
     fig_rocio = px.line(df_meteo, x="Fecha", y="Punto_Rocio_C", title=f"Punto de rocío ({suf_temp})")
@@ -421,16 +421,16 @@ with col3:
         "Use Vue `/meteo` o amplíe el ETL (fase 3+)."
     )
 
-st.markdown("### 📈 Análisis estadístico")
+st.markdown("### Análisis estadístico")
 col1, col2 = st.columns(2)
 with col1:
-    st.markdown("#### 📊 Estadísticas descriptivas")
+    st.markdown("#### Estadísticas descriptivas")
     stats = df_meteo[
         ["Temperatura_C", "Humedad_%", "Presion_hPa", "Viento_kmh", "Precipitacion_mm"]
     ].describe()
     st.dataframe(stats.round(2))
 with col2:
-    st.markdown(f"#### 🌡️ Distribución de temperaturas ({suf_temp})")
+    st.markdown(f"#### Distribución de temperaturas ({suf_temp})")
     fig_hist = px.histogram(
         df_meteo,
         x="Temperatura_C",
@@ -441,35 +441,35 @@ with col2:
     fig_hist.update_layout(**plotly_layout(height=380))
     st.plotly_chart(fig_hist, use_container_width=True, config=PLOTLY_CONFIG)
 
-st.markdown("### 📍 Información de la estación")
+st.markdown("### Información de la estación")
 col1, col2, col3 = st.columns(3)
 info = ESTACIONES[estacion_seleccionada]
 with col1:
     st.info(
-        f"**🌍 Estación:** {estacion_seleccionada}\n\n"
-        f"**📍 Coordenadas:** {info['lat']:.4f}, {info['lon']:.4f}\n\n"
-        f"**⛰️ Altura:** {info['altura']} m.s.n.m."
+        f"** Estación:** {estacion_seleccionada}\n\n"
+        f"** Coordenadas:** {info['lat']:.4f}, {info['lon']:.4f}\n\n"
+        f"** Altura:** {info['altura']} m.s.n.m."
     )
 with col2:
     st.info(
-        f"**📅 Período:** {periodo_analisis}\n\n"
-        f"**📊 Tipo:** {tipo_datos}\n\n"
-        f"**🕐 Registros:** {len(df_meteo):,} días\n\n"
-        f"**📈 Frecuencia:** Diaria (OpenMeteo)"
+        f"** Período:** {periodo_analisis}\n\n"
+        f"** Tipo:** {tipo_datos}\n\n"
+        f"** Registros:** {len(df_meteo):,} días\n\n"
+        f"** Frecuencia:** Diaria (OpenMeteo)"
     )
 with col3:
     st.info(
-        f"**🌡️ Temp. promedio:** {df_meteo['Temperatura_C'].mean():.1f}{suf_temp}\n\n"
-        f"**💧 Humedad promedio:** {df_meteo['Humedad_%'].mean():.1f}%\n\n"
-        f"**🌀 Presión promedio:** {df_meteo['Presion_hPa'].mean():.1f} hPa\n\n"
-        f"**💨 Viento promedio:** {df_meteo['Viento_kmh'].mean():.1f} km/h"
+        f"** Temp. promedio:** {df_meteo['Temperatura_C'].mean():.1f}{suf_temp}\n\n"
+        f"** Humedad promedio:** {df_meteo['Humedad_%'].mean():.1f}%\n\n"
+        f"** Presión promedio:** {df_meteo['Presion_hPa'].mean():.1f} hPa\n\n"
+        f"** Viento promedio:** {df_meteo['Viento_kmh'].mean():.1f} km/h"
     )
 
 st.markdown("---")
 st.markdown(
     f"""
 <div style="text-align: center; color: #666; padding: 20px;">
-    <p>🌤️ <strong>Sistema METGO</strong> - Análisis Meteorológico Profesional</p>
+    <p> <strong>Sistema METGO</strong> - Análisis Meteorológico Profesional</p>
     <p>Datos: <strong>{fuente_datos}</strong> · alineado con API REST y SPA Vue</p>
     <p>Última actualización: {datetime.now(ZoneInfo("America/Santiago")).strftime("%Y-%m-%d %H:%M:%S")} (Chile)</p>
 </div>

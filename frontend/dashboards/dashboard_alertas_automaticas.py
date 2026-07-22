@@ -24,7 +24,7 @@ from meteo_dashboard_utils import hoy_chile
 # Configuración de la página optimizada para móviles
 st.set_page_config(
     page_title="Sistema de Alertas Automáticas - METGO",
-    page_icon="🚨",
+    page_icon="M",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -187,7 +187,7 @@ st.markdown("""
 # Header principal
 st.markdown("""
 <div class="alertas-header">
-    <h1>🔬 Sistema de Alertas Automáticas</h1>
+    <h1> Sistema de Alertas Automáticas</h1>
     <h3>Sistema METGO - Monitoreo Inteligente</h3>
     <p>Detección automática de anomalías, alertas inteligentes y respuesta inmediata</p>
 </div>
@@ -195,25 +195,25 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🎛️ Panel de Control de Alertas")
+    st.markdown("### Panel de Control de Alertas")
     
     # Selector de tipo de alerta
     tipo_alerta = st.selectbox(
-        "🚨 Tipo de Alerta:",
+        "Tipo de Alerta:",
         ["Todas", "Críticas", "Advertencias", "Informativas", "Exitosas"],
         key="tipo_alerta"
     )
     
     # Selector de sistema
     sistema_alerta = st.selectbox(
-        "🔧 Sistema:",
+        "Sistema:",
         ["Meteorológico", "Agrícola", "IoT", "Calidad", "Económico", "Todos"],
         key="sistema_alerta"
     )
     
     # Selector de período
     periodo_alerta = st.selectbox(
-        "📅 Período:",
+        "Período:",
         ["Última hora", "Últimas 24 horas", "Última semana", "Último mes"],
         key="periodo_alerta"
     )
@@ -225,10 +225,10 @@ with st.sidebar:
     )
 
 _NIVEL_UI = {
-    "critical": ("🔴", "alerta-critica", "Críticas"),
-    "warning": ("🟡", "alerta-advertencia", "Advertencias"),
-    "info": ("🔵", "alerta-info", "Informativas"),
-    "success": ("🟢", "alerta-success", "Exitosas"),
+    "critical": ("", "alerta-critica", "Críticas"),
+    "warning": ("", "alerta-advertencia", "Advertencias"),
+    "info": ("", "alerta-info", "Informativas"),
+    "success": ("", "alerta-success", "Exitosas"),
 }
 
 

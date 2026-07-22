@@ -1,18 +1,33 @@
 # ETL meteorológico programado: OpenMeteo → Supabase vía /api/cron/sync
-# Corre a las 00:00 y 12:00 UTC (modelos globales actualizan en esos ciclos).
-# Requiere el secret CRON_SECRET (mismo valor que la env CRON_SECRET en Render).
+# - 00:00 y 12:00 UTC: sync ligero (pronóstico / recientes)
+# - Domingos 03:00 UTC: sync + Archive ERA5 (histórico largo)
+# Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
 name: ETL Meteo (00 y 12 UTC)
 
 on:
   schedule:
     - cron: "0 0 * * *"
     - cron: "0 12 * * *"
+    - cron: "0 3 * * 0"
   workflow_dispatch:
+    inputs:
+      incluir_archive:
+        description: "Incluir OpenMeteo Archive (ERA5)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      anios_archive:
+        description: "Años de archive"
+        required: false
+        default: "5"
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - name: Despertar API (cold start Render)
         run: |
@@ -24,10 +39,31 @@ jobs:
           done
           echo "La API no respondió tras 12 intentos" && exit 1
 
+      - name: Decidir flags Archive
+        id: flags
+        run: |
+          ARCH="false"
+          ANIOS="5"
+          # Cron semanal (domingo 03 UTC)
+          if [ "${{ github.event.schedule }}" = "0 3 * * 0" ]; then
+            ARCH="true"
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ARCH="${{ github.event.inputs.incluir_archive || 'false' }}"
+            ANIOS="${{ github.event.inputs.anios_archive || '5' }}"
+          fi
+          echo "incluir_archive=$ARCH" >> "$GITHUB_OUTPUT"
+          echo "anios_archive=$ANIOS" >> "$GITHUB_OUTPUT"
+          echo "Archive=$ARCH anios=$ANIOS"
+
       - name: Sincronizar OpenMeteo -> Supabase
         run: |
-          resp=$(curl -s -w "\n%{http_code}" --max-time 600 \
-            "https://metgo-api.onrender.com/api/cron/sync?token=${{ secrets.CRON_SECRET }}")
+          QS="token=${{ secrets.CRON_SECRET }}"
+          if [ "${{ steps.flags.outputs.incluir_archive }}" = "true" ]; then
+            QS="${QS}&incluir_archive=true&anios_archive=${{ steps.flags.outputs.anios_archive }}"
+          fi
+          resp=$(curl -s -w "\n%{http_code}" --max-time 2400 \
+            "https://metgo-api.onrender.com/api/cron/sync?${QS}")
           body=$(echo "$resp" | head -n -1)
           code=$(echo "$resp" | tail -n 1)
           echo "HTTP $code"

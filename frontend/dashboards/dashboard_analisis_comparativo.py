@@ -24,7 +24,7 @@ from meteo_dashboard_utils import hoy_chile
 # Configuración de la página optimizada para móviles
 st.set_page_config(
     page_title="Análisis Comparativo - METGO",
-    page_icon="📊",
+    page_icon="M",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -166,7 +166,7 @@ st.markdown("""
 # Header principal
 st.markdown("""
 <div class="comparativo-header">
-    <h1>📊 Análisis Comparativo</h1>
+    <h1> Análisis Comparativo</h1>
     <h3>Sistema METGO - Comparación de 5 Años</h3>
     <p>Análisis comparativo detallado entre períodos, estaciones y métricas</p>
 </div>
@@ -174,18 +174,18 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🎛️ Panel de Comparación")
+    st.markdown("### Panel de Comparación")
     
     # Selector de tipo de comparación
     tipo_comparacion = st.selectbox(
-        "📊 Tipo de Comparación:",
+        "Tipo de Comparación:",
         ["Año vs Año", "Mes vs Mes", "Estación vs Estación", "Cultivo vs Cultivo", "Zona vs Zona"],
         key="tipo_comparacion"
     )
     
     # Selector de métricas a comparar
     metricas_comparar = st.multiselect(
-        "📈 Métricas a Comparar:",
+        "Métricas a Comparar:",
         ["Temperatura", "Precipitación", "Humedad", "Rendimiento", "Calidad", "Eficiencia", "Ingresos"],
         default=["Temperatura", "Rendimiento", "Eficiencia"],
         key="metricas_comparar"
@@ -193,7 +193,7 @@ with st.sidebar:
     
     # Selector de período base
     periodo_base = st.selectbox(
-        "📅 Período Base:",
+        "Período Base:",
         ["2020", "2021", "2022", "2023", "2024"],
         key="periodo_base"
     )

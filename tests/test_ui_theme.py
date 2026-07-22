@@ -37,6 +37,26 @@ FORBIDDEN_WHITE = re.compile(
     re.IGNORECASE,
 )
 
+# Emojis UI (Etapa C) — mismos rangos que scratch/strip_emojis_catalog_safe.py
+FORBIDDEN_EMOJI = re.compile(
+    "["
+    "\U0001F300-\U0001F9FF"
+    "\U0001FA00-\U0001FAFF"
+    "\U00002600-\U000027BF"
+    "\U0001F1E0-\U0001F1FF"
+    "\U0001F000-\U0001F02F"
+    "\U0001F0A0-\U0001F0FF"
+    "\U0000231A-\U0000231B"
+    "\U00002328"
+    "\U000023E9-\U000023F3"
+    "\U000023F8-\U000023FA"
+    "\U000025AA-\U000025FE"
+    "\U00002B05-\U00002B55"
+    "\U00003030\U0000303D"
+    "\U00003297\U00003299"
+    "]"
+)
+
 
 def _activos() -> list[Path]:
     return sorted(p for p in DASH.glob("*.py") if p.name in ACTIVOS)
@@ -67,3 +87,14 @@ def test_dashboards_activos_sin_plotly_white():
             line = text[: m.start()].count("\n") + 1
             violaciones.append(f"{path.name}:{line}")
     assert not violaciones, "Fondos claros Plotly en dashboards activos:\n" + "\n".join(violaciones)
+
+
+def test_dashboards_activos_sin_emojis():
+    violaciones = []
+    for path in _activos():
+        text = path.read_text(encoding="utf-8")
+        for m in FORBIDDEN_EMOJI.finditer(text):
+            line = text[: m.start()].count("\n") + 1
+            snippet = text.splitlines()[line - 1].strip()[:100]
+            violaciones.append(f"{path.name}:{line}: {snippet}")
+    assert not violaciones, "Emojis en dashboards activos:\n" + "\n".join(violaciones[:40])

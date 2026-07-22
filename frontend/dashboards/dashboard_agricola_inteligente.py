@@ -30,7 +30,7 @@ def _fmt_delta(val: float | None, unidad: str) -> str | None:
 # Configuración de la página
 st.set_page_config(
     page_title="Gestión Agrícola Inteligente - METGO",
-    page_icon="🌾",
+    page_icon="M",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -42,7 +42,7 @@ bootstrap_dashboard(
 )
 
 # Sidebar para controles
-st.sidebar.markdown("### 🎛️ Panel de Control Agrícola")
+st.sidebar.markdown("### Panel de Control Agrícola")
 
 # Configuración de cultivos
 cultivos_config = {
@@ -83,10 +83,10 @@ cultivos_config = {
     }
 }
 
-estacion_seleccionada = st.sidebar.selectbox("🌍 Estación:", ESTACIONES_VALLE)
-cultivo_seleccionado = st.sidebar.selectbox("🌱 Cultivo:", list(cultivos_config.keys()))
-fase_actual = st.sidebar.selectbox("📅 Fase Actual:", cultivos_config[cultivo_seleccionado]["fases"])
-superficie = st.sidebar.number_input("📏 Superficie (hectáreas):", min_value=0.1, max_value=1000.0, value=1.0, step=0.1)
+estacion_seleccionada = st.sidebar.selectbox("Estación:", ESTACIONES_VALLE)
+cultivo_seleccionado = st.sidebar.selectbox("Cultivo:", list(cultivos_config.keys()))
+fase_actual = st.sidebar.selectbox("Fase Actual:", cultivos_config[cultivo_seleccionado]["fases"])
+superficie = st.sidebar.number_input("Superficie (hectáreas):", min_value=0.1, max_value=1000.0, value=1.0, step=0.1)
 
 with st.spinner("Cargando condiciones y recomendaciones (API METGO)…"):
     ctx = cargar_contexto_agricola(estacion_seleccionada, cultivo_seleccionado)
@@ -114,42 +114,42 @@ def generar_recomendaciones_ia(cultivo, fase, superficie, temp_actual, humedad_a
     # Análisis de temperatura
     temp_min, temp_max = config["temp_optima"]
     if temp_actual < temp_min:
-        recomendaciones.append(f"🌡️ **Temperatura baja**: Considerar protección contra heladas o calefacción")
+        recomendaciones.append(f"**Temperatura baja**: Considerar protección contra heladas o calefacción")
         alertas.append({"tipo": "Helada", "severidad": "Alta", "mensaje": "Riesgo de helada detectado"})
     elif temp_actual > temp_max:
-        recomendaciones.append(f"🌡️ **Temperatura alta**: Incrementar riego y considerar sombreado")
+        recomendaciones.append(f"**Temperatura alta**: Incrementar riego y considerar sombreado")
         alertas.append({"tipo": "Calor", "severidad": "Media", "mensaje": "Estrés térmico en cultivos"})
     else:
-        recomendaciones.append(f"🌡️ **Temperatura óptima**: Condiciones ideales para {cultivo}")
+        recomendaciones.append(f"**Temperatura óptima**: Condiciones ideales para {cultivo}")
     
     # Análisis de humedad
     hum_min, hum_max = config["humedad_optima"]
     if humedad_actual < hum_min:
-        recomendaciones.append(f"💧 **Humedad baja**: Incrementar frecuencia de riego")
+        recomendaciones.append(f"**Humedad baja**: Incrementar frecuencia de riego")
         alertas.append({"tipo": "Sequía", "severidad": "Media", "mensaje": "Condiciones de sequía"})
     elif humedad_actual > hum_max:
-        recomendaciones.append(f"💧 **Humedad alta**: Reducir riego y mejorar ventilación")
+        recomendaciones.append(f"**Humedad alta**: Reducir riego y mejorar ventilación")
         alertas.append({"tipo": "Exceso Humedad", "severidad": "Baja", "mensaje": "Riesgo de enfermedades fúngicas"})
     
     # Plagas/enfermedades: solo si hay estrés climático (sin listas genéricas)
     if humedad_actual > hum_max:
         for enfermedad in config["enfermedades"][:1]:
-            recomendaciones.append(f"🦠 **Prevención {enfermedad}**: Humedad elevada — fungicida preventivo")
+            recomendaciones.append(f"**Prevención {enfermedad}**: Humedad elevada — fungicida preventivo")
             alertas.append({"tipo": "Enfermedad", "severidad": "Media", "mensaje": f"Riesgo fúngico ({enfermedad})"})
     if temp_actual > temp_max:
         for plaga in config["plagas_comunes"][:1]:
-            recomendaciones.append(f"🐛 **Control de {plaga}**: Estrés térmico — monitoreo intensivo")
+            recomendaciones.append(f"**Control de {plaga}**: Estrés térmico — monitoreo intensivo")
             alertas.append({"tipo": "Plaga", "severidad": "Media", "mensaje": f"Vigilar {plaga}"})
     
     # Recomendaciones específicas por fase
     if fase == "Floración":
-        recomendaciones.append("🌸 **Fase de Floración**: Evitar riego excesivo y aplicar fertilizante rico en fósforo")
+        recomendaciones.append("**Fase de Floración**: Evitar riego excesivo y aplicar fertilizante rico en fósforo")
     elif fase == "Crecimiento":
-        recomendaciones.append("🌱 **Fase de Crecimiento**: Mantener riego constante y aplicar fertilizante balanceado")
+        recomendaciones.append("**Fase de Crecimiento**: Mantener riego constante y aplicar fertilizante balanceado")
     elif fase == "Maduración":
-        recomendaciones.append("🍎 **Fase de Maduración**: Reducir riego y preparar para cosecha")
+        recomendaciones.append("**Fase de Maduración**: Reducir riego y preparar para cosecha")
     elif fase == "Cosecha":
-        recomendaciones.append("🚜 **Cosecha**: Programar cosecha en condiciones óptimas de humedad")
+        recomendaciones.append("**Cosecha**: Programar cosecha en condiciones óptimas de humedad")
     
     return recomendaciones, alertas
 
@@ -169,13 +169,13 @@ recomendaciones, alertas = generar_recomendaciones_ia(
 recomendaciones_api_txt: list[str] = []
 for rec in ctx.get("recomendaciones_api") or []:
     recomendaciones_api_txt.append(
-        f"📡 **{rec.get('cultivo', 'METGO')}**: {rec.get('accion', '')} — _{rec.get('motivo', '')}_"
+        f"**{rec.get('cultivo', 'METGO')}**: {rec.get('accion', '')} — _{rec.get('motivo', '')}_"
     )
 if ctx.get("riego"):
     r = ctx["riego"]
     recomendaciones_api_txt.insert(
         0,
-        f"💧 **Riego (API)**: {r.get('mm_sugeridos_hoy', '—')} mm hoy · {r.get('accion', '')}",
+        f"**Riego (API)**: {r.get('mm_sugeridos_hoy', '—')} mm hoy · {r.get('accion', '')}",
     )
 
 # Métricas principales
@@ -183,7 +183,7 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
-        label="🌡️ T° promedio hoy",
+        label="T° promedio hoy",
         value=f"{temp_actual:.1f}°C",
         delta=_fmt_delta(ctx.get("delta_temp"), "°C"),
         help=f"Mín {ctx['temperatura_min']:.1f}°C · máx {ctx['temperatura_max']:.1f}°C (OpenMeteo)",
@@ -191,14 +191,14 @@ with col1:
 
 with col2:
     st.metric(
-        label="💧 Humedad relativa",
+        label="Humedad relativa",
         value=f"{humedad_actual:.1f}%",
         delta=_fmt_delta(ctx.get("delta_humedad"), "%"),
     )
 
 with col3:
     st.metric(
-        label="🌧️ Precipitación día",
+        label="Precipitación día",
         value=f"{precipitacion_actual:.1f} mm",
         delta=_fmt_delta(ctx.get("delta_precip"), " mm"),
     )
@@ -208,13 +208,13 @@ with col4:
     mm_hoy = riego_api.get("mm_sugeridos_hoy")
     if mm_hoy is not None:
         st.metric(
-            label="💧 Riego API (hoy)",
+            label="Riego API (hoy)",
             value=f"{mm_hoy} mm",
             delta=str(riego_api.get("accion", ""))[:24],
         )
     else:
         st.metric(
-            label="💧 Riego",
+            label="Riego",
             value="—",
             delta="Sin dato API",
             help="Active la API en :8080 o elija cultivo en Vue /agricola",
@@ -223,38 +223,38 @@ with col4:
 # Sistema de Alertas y Recomendaciones Profesional
 st.markdown("""
 <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
-    <h2 style="margin: 0; text-align: center;">🚨 Sistema de Alertas y Recomendaciones Empresarial</h2>
+    <h2 style="margin: 0; text-align: center;"> Sistema de Alertas y Recomendaciones Empresarial</h2>
     <p style="margin: 10px 0 0 0; text-align: center; opacity: 0.9;">Monitoreo inteligente y comunicación automatizada</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Panel de control de notificaciones
-st.markdown("### 📱 Panel de Control de Notificaciones")
+st.markdown("### Panel de Control de Notificaciones")
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown("#### 📧 Email")
+    st.markdown("#### Email")
     email_enabled = st.checkbox("Activar Email", value=True, key="email_alerts")
     email_address = st.text_input("Dirección Email", value="agricola@metgo.cl", key="email_address")
 
 with col2:
-    st.markdown("#### 📱 SMS")
+    st.markdown("#### SMS")
     sms_enabled = st.checkbox("Activar SMS", value=True, key="sms_alerts")
     phone_number = st.text_input("Número Teléfono", value="+56 9 1234 5678", key="phone_number")
 
 with col3:
-    st.markdown("#### 💬 WhatsApp")
+    st.markdown("#### WhatsApp")
     whatsapp_enabled = st.checkbox("Activar WhatsApp", value=True, key="whatsapp_alerts")
     whatsapp_number = st.text_input("WhatsApp Business", value="+56 9 8765 4321", key="whatsapp_number")
 
 with col4:
-    st.markdown("#### ⚙️ Configuración")
+    st.markdown("#### Configuración")
     alert_frequency = st.selectbox("Frecuencia", ["Inmediata", "Cada hora", "Diaria", "Semanal"], key="alert_freq")
     priority_filter = st.selectbox("Prioridad Mínima", ["Alta", "Media", "Baja"], key="priority_filter")
 
 # Dashboard de alertas profesional
-st.markdown("### 📊 Dashboard de Alertas Empresarial")
+st.markdown("### Dashboard de Alertas Empresarial")
 
 # Métricas de alertas
 col1, col2, col3, col4 = st.columns(4)
@@ -265,19 +265,19 @@ alertas_medias = len([a for a in alertas if a["severidad"] == "Media"])
 alertas_bajas = len([a for a in alertas if a["severidad"] == "Baja"])
 
 with col1:
-    st.metric("🚨 Total Alertas", total_alertas, delta=f"Últimas 24h")
+    st.metric("Total Alertas", total_alertas, delta=f"Últimas 24h")
     
 with col2:
-    st.metric("🔴 Críticas", alertas_altas, delta="Requieren acción inmediata" if alertas_altas > 0 else "Sin alertas críticas")
+    st.metric("Críticas", alertas_altas, delta="Requieren acción inmediata"if alertas_altas > 0 else "Sin alertas críticas")
     
 with col3:
-    st.metric("🟡 Medias", alertas_medias, delta="Monitoreo recomendado" if alertas_medias > 0 else "Sistema estable")
+    st.metric("Medias", alertas_medias, delta="Monitoreo recomendado"if alertas_medias > 0 else "Sistema estable")
     
 with col4:
-    st.metric("🟢 Bajas", alertas_bajas, delta="Rutina normal" if alertas_bajas > 0 else "Sin incidencias")
+    st.metric("Bajas", alertas_bajas, delta="Rutina normal"if alertas_bajas > 0 else "Sin incidencias")
 
 # Tabla profesional de alertas
-st.markdown("#### 📋 Tabla de Alertas Detallada")
+st.markdown("#### Tabla de Alertas Detallada")
 
 if alertas:
     # Crear DataFrame para la tabla
@@ -301,24 +301,24 @@ if alertas:
         }
     )
 else:
-    st.success("✅ No hay alertas activas en este momento")
+    st.success("No hay alertas activas en este momento")
 
 # Recomendaciones API (datos reales)
-st.markdown("#### 🎯 Recomendaciones METGO (API / módulo 02)")
+st.markdown("#### Recomendaciones METGO (API / módulo 02)")
 
 if recomendaciones_api_txt:
     for i, rec in enumerate(recomendaciones_api_txt, 1):
         with st.container():
             st.markdown(f"""
             <div style="border-left: 4px solid #1565C0; padding: 15px; margin: 10px 0; background-color: #f0f7ff; border-radius: 5px;">
-                <h4 style="margin: 0 0 10px 0; color: #1565C0;">🎯 Recomendación API #{i}</h4>
+                <h4 style="margin: 0 0 10px 0; color: #1565C0;"> Recomendación API #{i}</h4>
                 <p style="margin: 0; color: #333;">{rec}</p>
             </div>
             """, unsafe_allow_html=True)
 else:
     st.info("Sin recomendaciones API para esta estación. Verifique la API en el puerto 8080.")
 
-with st.expander("📐 Reglas locales por cultivo (complemento, no sustituye API)"):
+with st.expander("Reglas locales por cultivo (complemento, no sustituye API)"):
     if recomendaciones:
         for i, rec in enumerate(recomendaciones, 1):
             st.markdown(f"**#{i}** {rec}")
@@ -355,7 +355,7 @@ td,th{{border:1px solid #ccc;padding:8px;text-align:left}}
 <h2>Alertas</h2><ul>{alt_html}</ul>
 </body></html>"""
 
-st.markdown("### 📄 Exportar reporte")
+st.markdown("### Exportar reporte")
 reporte_html = _generar_reporte_html(
     cultivo_seleccionado,
     fase_actual,
@@ -367,7 +367,7 @@ reporte_html = _generar_reporte_html(
     alertas,
 )
 st.download_button(
-    label="📄 Descargar reporte (HTML / imprimir como PDF)",
+    label="Descargar reporte (HTML / imprimir como PDF)",
     data=reporte_html.encode("utf-8"),
     file_name=f"reporte_metgo_{cultivo_seleccionado.lower()}_{datetime.now():%Y%m%d}.html",
     mime="text/html",
@@ -377,38 +377,38 @@ st.download_button(
 )
 
 # Botones de acción empresarial
-st.markdown("### 🚀 Acciones Empresariales")
+st.markdown("### Acciones Empresariales")
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if st.button("📧 Enviar Reporte por Email", type="primary", use_container_width=True):
+    if st.button("Enviar Reporte por Email", type="primary", use_container_width=True):
         if email_enabled and email_address:
-            st.success(f"✅ Reporte enviado a {email_address}")
+            st.success(f"Reporte enviado a {email_address}")
         else:
-            st.error("❌ Email no configurado")
+            st.error("Email no configurado")
 
 with col2:
-    if st.button("📱 Enviar Alerta SMS", type="secondary", use_container_width=True):
+    if st.button("Enviar Alerta SMS", type="secondary", use_container_width=True):
         if sms_enabled and phone_number:
-            st.success(f"✅ SMS enviado a {phone_number}")
+            st.success(f"SMS enviado a {phone_number}")
         else:
-            st.error("❌ SMS no configurado")
+            st.error("SMS no configurado")
 
 with col3:
-    if st.button("💬 Enviar por WhatsApp", type="secondary", use_container_width=True):
+    if st.button("Enviar por WhatsApp", type="secondary", use_container_width=True):
         if whatsapp_enabled and whatsapp_number:
-            st.success(f"✅ Mensaje WhatsApp enviado a {whatsapp_number}")
+            st.success(f"Mensaje WhatsApp enviado a {whatsapp_number}")
         else:
-            st.error("❌ WhatsApp no configurado")
+            st.error("WhatsApp no configurado")
 
 with col4:
-    if st.button("📊 Generar Reporte Ejecutivo", type="primary", use_container_width=True):
-        st.success("✅ Reporte ejecutivo generado y guardado")
+    if st.button("Generar Reporte Ejecutivo", type="primary", use_container_width=True):
+        st.success("Reporte ejecutivo generado y guardado")
 
 # Panel de configuración avanzada
-with st.expander("⚙️ Configuración Avanzada de Notificaciones"):
-    st.markdown("#### 🔧 Configuraciones Empresariales")
+with st.expander("Configuración Avanzada de Notificaciones"):
+    st.markdown("#### Configuraciones Empresariales")
     
     col1, col2 = st.columns(2)
     
@@ -425,19 +425,19 @@ with st.expander("⚙️ Configuración Avanzada de Notificaciones"):
         st.markdown("**Plantillas de Mensaje:**")
         plantilla_email = st.text_area("Plantilla Email", value="Alerta METGO: {tipo} - {mensaje} - Fecha: {fecha}")
         plantilla_sms = st.text_area("Plantilla SMS", value="METGO: {tipo} - {mensaje}")
-        plantilla_whatsapp = st.text_area("Plantilla WhatsApp", value="🚨 *Alerta METGO*\\n\\n*Tipo:* {tipo}\\n*Mensaje:* {mensaje}\\n*Fecha:* {fecha}")
+        plantilla_whatsapp = st.text_area("Plantilla WhatsApp", value="*Alerta METGO*\\n\\n*Tipo:* {tipo}\\n*Mensaje:* {mensaje}\\n*Fecha:* {fecha}")
     
-    if st.button("💾 Guardar Configuración", type="primary"):
-        st.success("✅ Configuración guardada correctamente")
+    if st.button("Guardar Configuración", type="primary"):
+        st.success("Configuración guardada correctamente")
 
 # Análisis detallado de alertas y recomendaciones
-st.markdown("### 🔍 Análisis Detallado de Alertas y Recomendaciones")
+st.markdown("### Análisis Detallado de Alertas y Recomendaciones")
 
 # Tabs para diferentes aspectos del análisis
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Estadísticas", "🎯 Recomendaciones Detalladas", "📈 Tendencias", "🔧 Acciones Automáticas", "📋 Historial"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Estadísticas", "Recomendaciones Detalladas", "Tendencias", "Acciones Automáticas", "Historial"])
 
 with tab1:
-    st.markdown("#### 📊 Estadísticas Avanzadas de Alertas")
+    st.markdown("#### Estadísticas Avanzadas de Alertas")
     
     col1, col2 = st.columns(2)
     
@@ -480,11 +480,11 @@ with tab1:
     st.info("Sin datos — requiere API de alertas para KPIs operativos del panel empresarial.")
 
 with tab2:
-    st.markdown("#### 🎯 Recomendaciones Estratégicas Detalladas")
+    st.markdown("#### Recomendaciones Estratégicas Detalladas")
     
     if recomendaciones:
         for i, rec in enumerate(recomendaciones, 1):
-            with st.expander(f"🎯 Recomendación #{i}: {rec[:50]}..."):
+            with st.expander(f"Recomendación #{i}: {rec[:50]}..."):
                 st.markdown(f"**Descripción Completa:**")
                 st.write(rec)
                 
@@ -542,19 +542,19 @@ with tab2:
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    if st.button(f"✅ Aplicar Rec #{i}", key=f"aplicar_{i}"):
+                    if st.button(f"Aplicar Rec #{i}", key=f"aplicar_{i}"):
                         st.success(f"Recomendación #{i} marcada como aplicada")
                 
                 with col2:
-                    if st.button(f"⏰ Programar Rec #{i}", key=f"programar_{i}"):
+                    if st.button(f"Programar Rec #{i}", key=f"programar_{i}"):
                         st.info(f"Recomendación #{i} programada para revisión")
                 
                 with col3:
-                    if st.button(f"❌ Descartar Rec #{i}", key=f"descartar_{i}"):
+                    if st.button(f"Descartar Rec #{i}", key=f"descartar_{i}"):
                         st.warning(f"Recomendación #{i} descartada")
 
 with tab3:
-    st.markdown("#### 📈 Tendencias (histórico OpenMeteo)")
+    st.markdown("#### Tendencias (histórico OpenMeteo)")
     
     hist_t = ctx.get("historico") or []
     if not hist_t:
@@ -615,7 +615,7 @@ with tab3:
             st.metric("Precip. acumulada (30 d)", f"{df_tendencias['precipitacion'].sum():.1f} mm")
 
 with tab4:
-    st.markdown("#### 🔧 Configuración de Acciones Automáticas")
+    st.markdown("#### Configuración de Acciones Automáticas")
     
     st.markdown("**Automatización de Respuestas a Alertas:**")
     
@@ -666,19 +666,19 @@ with tab4:
             st.write(f"**Acción:** {regla['accion']}")
         
         with col3:
-            estado = "🟢 Activa" if regla['activa'] else "🔴 Inactiva"
+            estado = "Activa"if regla['activa'] else "Inactiva"
             st.write(f"**Estado:** {estado}")
         
         with col4:
-            if st.button("⚙️", key=f"config_regla_{i}"):
+            if st.button("Config", key=f"config_regla_{i}"):
                 st.info(f"Configurando regla #{i}")
 
 with tab5:
-    st.markdown("#### 📋 Historial de Alertas y Acciones")
+    st.markdown("#### Historial de Alertas y Acciones")
     st.info("Sin datos — requiere API de alertas")
 
 # Análisis de cultivos
-st.markdown("### 📊 Análisis de Cultivos")
+st.markdown("### Análisis de Cultivos")
 
 # Gráfico de condiciones óptimas vs actuales
 fig_condiciones = go.Figure()
@@ -743,7 +743,7 @@ def _score_riesgo(humedad: float, temp: float, hum_r: tuple, temp_r: tuple) -> i
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("#### 🐛 Riesgo de plagas (estimado por clima)")
+    st.markdown("#### Riesgo de plagas (estimado por clima)")
     
     plagas_data = []
     for plaga in config["plagas_comunes"]:
@@ -760,7 +760,7 @@ with col1:
     st.plotly_chart(fig_plagas, config=PLOTLY_CONFIG, use_container_width=True)
 
 with col2:
-    st.markdown("#### 🦠 Riesgo de enfermedades (estimado por clima)")
+    st.markdown("#### Riesgo de enfermedades (estimado por clima)")
     
     enfermedades_data = []
     base_enf = _score_riesgo(humedad_actual, temp_actual, config["humedad_optima"], config["temp_optima"])
@@ -778,7 +778,7 @@ with col2:
     st.plotly_chart(fig_enfermedades, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Cronograma de actividades
-st.markdown("### 📅 Cronograma de Actividades Agrícolas")
+st.markdown("### Cronograma de Actividades Agrícolas")
 
 # Generar cronograma para los próximos 30 días
 fechas = pd.date_range(start=datetime.now(), periods=30, freq='D')
@@ -866,7 +866,7 @@ if not df_cronograma.empty:
 st.caption("Riesgos de plagas/enfermedades: índice derivado de humedad y temperatura observadas (no sustituye monitoreo en campo).")
 
 # Análisis de rendimiento
-st.markdown("### 📈 Rendimiento y factores agrícolas")
+st.markdown("### Rendimiento y factores agrícolas")
 
 st.info(
     "Sin datos de control de plagas, fertilización o eficiencia de riego en campo — "
@@ -896,7 +896,7 @@ with col2:
         factor += 0.05
     rendimiento_estimado = rendimiento_base[cultivo_seleccionado] * factor
 
-    st.markdown("#### 📊 Referencia de rendimiento (solo clima)")
+    st.markdown("#### Referencia de rendimiento (solo clima)")
     st.metric(
         label=f"Referencia {cultivo_seleccionado}",
         value=f"{rendimiento_estimado:.1f} ton/ha",
@@ -905,38 +905,38 @@ with col2:
     st.caption("Para análisis económico real use Vue → /agricola (endpoint económico API).")
 
 # Información del cultivo
-st.markdown("### 🌱 Información del Cultivo Seleccionado")
+st.markdown("### Información del Cultivo Seleccionado")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.info(f"""
-    **🌱 Cultivo:** {cultivo_seleccionado}
-    **📅 Fase Actual:** {fase_actual}
-    **📏 Superficie:** {superficie} hectáreas
-    **🌡️ Temp. Óptima:** {config['temp_optima'][0]}-{config['temp_optima'][1]}°C
+    ** Cultivo:** {cultivo_seleccionado}
+    ** Fase Actual:** {fase_actual}
+    ** Superficie:** {superficie} hectáreas
+    ** Temp. Óptima:** {config['temp_optima'][0]}-{config['temp_optima'][1]}°C
     """)
 
 with col2:
     st.info(f"""
-    **💧 Humedad Óptima:** {config['humedad_optima'][0]}-{config['humedad_optima'][1]}%
-    **🌧️ Precip. Anual:** {config['precipitacion_optima'][0]}-{config['precipitacion_optima'][1]} mm
-    **💧 Riego:** {config['riego_cantidad']}L cada {config['riego_frecuencia']} días
+    ** Humedad Óptima:** {config['humedad_optima'][0]}-{config['humedad_optima'][1]}%
+    ** Precip. Anual:** {config['precipitacion_optima'][0]}-{config['precipitacion_optima'][1]} mm
+    ** Riego:** {config['riego_cantidad']}L cada {config['riego_frecuencia']} días
     """)
 
 with col3:
     st.info(f"""
-    **🐛 Plagas Comunes:** {len(config['plagas_comunes'])}
-    **🦠 Enfermedades:** {len(config['enfermedades'])}
-    **📅 Fases:** {len(config['fases'])}
-    **⏱️ Última Actualización:** {datetime.now().strftime("%H:%M")}
+    ** Plagas Comunes:** {len(config['plagas_comunes'])}
+    ** Enfermedades:** {len(config['enfermedades'])}
+    ** Fases:** {len(config['fases'])}
+    ** Última Actualización:** {datetime.now().strftime("%H:%M")}
     """)
 
 # Footer
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 20px;">
-    <p>🌾 <strong>Sistema METGO</strong> - Gestión Agrícola Inteligente</p>
+    <p> <strong>Sistema METGO</strong> - Gestión Agrícola Inteligente</p>
     <p>Datos meteorológicos OpenMeteo · recomendaciones módulo 02 vía API</p>
     <p>Última actualización: {}</p>
 </div>

@@ -43,7 +43,7 @@ OPCIONES_ESTACION = ["Todas las Estaciones"] + ESTACIONES_TODAS
 # Configuración de la página optimizada para móviles
 st.set_page_config(
     page_title="Visualizaciones Avanzadas - METGO",
-    page_icon="📊",
+    page_icon="M",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -135,7 +135,7 @@ st.markdown("""
 # Header principal con diseño profesional
 st.markdown("""
 <div class="main-header">
-    <h1>📊 Visualizaciones Avanzadas</h1>
+    <h1> Visualizaciones Avanzadas</h1>
     <h3>Sistema METGO - Análisis Interactivo</h3>
     <p>Visualizaciones profesionales optimizadas para dispositivos móviles</p>
 </div>
@@ -143,25 +143,25 @@ st.markdown("""
 
 # Sidebar colapsado para móviles
 with st.sidebar:
-    st.markdown("### 🎛️ Controles")
+    st.markdown("### Controles")
     
     # Selector de período
     periodo = st.selectbox(
-        "📅 Período de Análisis:",
+        "Período de Análisis:",
         ["Últimos 7 días", "Últimos 30 días", "Últimos 3 meses", "Últimos 6 meses", "Último año", "Últimos 5 años"],
         key="periodo_selector"
     )
     
     # Selector de tipo de visualización
     tipo_viz = st.selectbox(
-        "📊 Tipo de Visualización:",
+        "Tipo de Visualización:",
         ["Tendencias Temporales", "Comparaciones", "Distribuciones", "Correlaciones", "Mapas de Calor", "Análisis 3D"],
         key="viz_selector"
     )
     
     # Selector de estación (por defecto: todas)
     estacion = st.selectbox(
-        "🌍 Estación:",
+        "Estación:",
         OPCIONES_ESTACION,
         index=0,
         key="estacion_selector",
@@ -320,7 +320,7 @@ def _fila_visual(
 
 # Información sobre datos reales
 st.success(
-    f"🌐 **Valle de Aconcagua:** API METGO + OpenMeteo · histórico hasta **{hoy_chile()}** (Chile). "
+    f"**Valle de Aconcagua:** API METGO + OpenMeteo · histórico hasta **{hoy_chile()}** (Chile). "
     "Interfaz principal: Vue http://127.0.0.1:5173/meteo/comparativo"
 )
 
@@ -328,7 +328,7 @@ st.success(
 try:
     resumen_valle = comparativo_estaciones()
     if resumen_valle:
-        st.markdown("### 🌍 Resumen actual · Valle de Aconcagua")
+        st.markdown("### Resumen actual · Valle de Aconcagua")
         st.dataframe(
             pd.DataFrame(
                 [
@@ -350,7 +350,7 @@ except Exception as e:
     st.caption(f"No se pudo cargar resumen multi-estación: {e}")
 
 # Generar datos
-with st.spinner('📊 Generando datos para visualizaciones...'):
+with st.spinner('Generando datos para visualizaciones...'):
     df = generar_datos_visualizaciones_avanzados(periodo, estacion)
 
 if df.empty:
@@ -367,13 +367,13 @@ st.info(
 col1, col2, col3 = st.columns([2, 1, 1])
 
 with col1:
-    st.markdown(f"**📊 Datos Generados:** {len(df)} registros para {estacion}")
+    st.markdown(f"** Datos Generados:** {len(df)} registros para {estacion}")
 
 with col2:
     # Convertir DataFrame a CSV
     csv_data = df.to_csv(index=False)
     st.download_button(
-        label="📥 Descargar CSV",
+        label="Descargar CSV",
         data=csv_data,
         file_name=f"datos_meteorologicos_{estacion}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv",
@@ -388,7 +388,7 @@ with col3:
     excel_data = excel_buffer.getvalue()
     
     st.download_button(
-        label="📊 Descargar Excel",
+        label="Descargar Excel",
         data=excel_data,
         file_name=f"datos_meteorologicos_{estacion}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -396,7 +396,7 @@ with col3:
     )
 
 # Métricas principales con diseño profesional
-st.markdown("### 📈 Métricas Principales")
+st.markdown("### Métricas Principales")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -404,7 +404,7 @@ with col1:
     temp_prom = df['Temperatura'].mean()
     st.markdown(f"""
     <div class="metric-card">
-        <h4 style="color: #e74c3c; margin: 0;">🌡️ Temperatura</h4>
+        <h4 style="color: #e74c3c; margin: 0;"> Temperatura</h4>
         <h2 style="color: #2c3e50; margin: 0.5rem 0;">{temp_prom:.1f}°C</h2>
         <p style="color: #7f8c8d; margin: 0; font-size: 0.9rem;">Promedio del período</p>
     </div>
@@ -414,7 +414,7 @@ with col2:
     precip_total = df['Precipitacion'].sum()
     st.markdown(f"""
     <div class="metric-card">
-        <h4 style="color: #3498db; margin: 0;">🌧️ Precipitación</h4>
+        <h4 style="color: #3498db; margin: 0;"> Precipitación</h4>
         <h2 style="color: #2c3e50; margin: 0.5rem 0;">{precip_total:.1f} mm</h2>
         <p style="color: #7f8c8d; margin: 0; font-size: 0.9rem;">Total acumulado</p>
     </div>
@@ -424,7 +424,7 @@ with col3:
     humedad_prom = df['Humedad'].mean()
     st.markdown(f"""
     <div class="metric-card">
-        <h4 style="color: #9b59b6; margin: 0;">💧 Humedad</h4>
+        <h4 style="color: #9b59b6; margin: 0;"> Humedad</h4>
         <h2 style="color: #2c3e50; margin: 0.5rem 0;">{humedad_prom:.1f}%</h2>
         <p style="color: #7f8c8d; margin: 0; font-size: 0.9rem;">Promedio del período</p>
     </div>
@@ -434,41 +434,41 @@ with col4:
     rendimiento_prom = df['Rendimiento'].mean()
     st.markdown(f"""
     <div class="metric-card">
-        <h4 style="color: #27ae60; margin: 0;">🌾 Rendimiento</h4>
+        <h4 style="color: #27ae60; margin: 0;"> Rendimiento</h4>
         <h2 style="color: #2c3e50; margin: 0.5rem 0;">{rendimiento_prom:.1f} t/ha</h2>
         <p style="color: #7f8c8d; margin: 0; font-size: 0.9rem;">Producción estimada</p>
     </div>
     """, unsafe_allow_html=True)
 
 # Nueva sección: Análisis de Nubosidad, Niebla y Heladas
-st.markdown("### 🌤️ Análisis Avanzado de Condiciones Atmosféricas")
+st.markdown("### Análisis Avanzado de Condiciones Atmosféricas")
 
 # Métricas específicas para nubosidad, niebla y heladas
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
     nubosidad_prom = df['Nubosidad'].mean()
-    st.metric("☁️ Nubosidad Promedio", f"{nubosidad_prom:.1f}%")
+    st.metric("Nubosidad Promedio", f"{nubosidad_prom:.1f}%")
 
 with col2:
     nubosidad_max = df['Nubosidad'].max()
-    st.metric("☁️ Nubosidad Máxima", f"{nubosidad_max:.1f}%")
+    st.metric("Nubosidad Máxima", f"{nubosidad_max:.1f}%")
 
 with col3:
     niebla_prom = df['Probabilidad_Niebla'].mean()
-    st.metric("🌫️ Prob. Niebla Prom.", f"{niebla_prom:.1f}%")
+    st.metric("Prob. Niebla Prom.", f"{niebla_prom:.1f}%")
 
 with col4:
     niebla_max = df['Probabilidad_Niebla'].max()
-    st.metric("🌫️ Prob. Niebla Máx.", f"{niebla_max:.1f}%")
+    st.metric("Prob. Niebla Máx.", f"{niebla_max:.1f}%")
 
 with col5:
     heladas_dias = len(df[df['Indice_Helada'] > 0])
-    st.metric("❄️ Días con Helada", f"{heladas_dias}")
+    st.metric("Días con Helada", f"{heladas_dias}")
 
 with col6:
     helada_max = df['Indice_Helada'].max()
-    st.metric("❄️ Índice Helada Máx.", f"{helada_max:.1f}")
+    st.metric("Índice Helada Máx.", f"{helada_max:.1f}")
 
 # Gráficos específicos para nubosidad, niebla y heladas
 col1, col2 = st.columns(2)
@@ -490,7 +490,7 @@ with col1:
     
     fig_nubosidad.update_layout(
         **plotly_layout(
-            "☁️ Evolución de Nubosidad (%)",
+            "Evolución de Nubosidad (%)",
             xaxis_title="Fecha",
             yaxis_title="Nubosidad (%)",
             height=400,
@@ -517,7 +517,7 @@ with col2:
     
     fig_niebla.update_layout(
         **plotly_layout(
-            "🌫️ Probabilidad de Niebla (%)",
+            "Probabilidad de Niebla (%)",
             xaxis_title="Fecha",
             yaxis_title="Probabilidad de Niebla (%)",
             height=400,
@@ -528,12 +528,12 @@ with col2:
     st.plotly_chart(fig_niebla, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis detallado de heladas con explicaciones
-st.markdown("#### ❄️ Análisis Detallado de Heladas y Sensación Térmica Agrícola")
+st.markdown("#### Análisis Detallado de Heladas y Sensación Térmica Agrícola")
 
 # Explicación del índice de heladas
 st.markdown("""
 <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #2196f3;">
-    <h4 style="color: #1976d2; margin: 0 0 15px 0;">📚 ¿Qué es el Índice de Helada?</h4>
+    <h4 style="color: #1976d2; margin: 0 0 15px 0;"> ¿Qué es el Índice de Helada?</h4>
     <p style="margin: 5px 0; color: #424242;"><strong>• Índice de Helada:</strong> Mide qué tan severa es una helada basándose en la temperatura mínima del día.</p>
     <p style="margin: 5px 0; color: #424242;"><strong>• Cálculo:</strong> Índice = 32°C - Temperatura Mínima (cuando la temperatura mínima es menor a 5°C)</p>
     <p style="margin: 5px 0; color: #424242;"><strong>• Interpretación:</strong></p>
@@ -584,19 +584,19 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     heladas_dias_corregido = len(df[df['Indice_Helada_Corregido'] > 0])
-    st.metric("❄️ Días con Helada", f"{heladas_dias_corregido}")
+    st.metric("Días con Helada", f"{heladas_dias_corregido}")
 
 with col2:
     helada_max_corregido = df['Indice_Helada_Corregido'].max()
-    st.metric("❄️ Helada Más Severa", f"{helada_max_corregido:.1f}°C")
+    st.metric("Helada Más Severa", f"{helada_max_corregido:.1f}°C")
 
 with col3:
     temp_min_global = df['Temperatura_Min'].min()
-    st.metric("🌡️ Temp. Mínima Registrada", f"{temp_min_global:.1f}°C")
+    st.metric("Temp. Mínima Registrada", f"{temp_min_global:.1f}°C")
 
 with col4:
     sensacion_min = df['Sensacion_Termica_Agricola'].min()
-    st.metric("🥶 Sensación Térmica Mín", f"{sensacion_min:.1f}°C")
+    st.metric("Sensación Térmica Mín", f"{sensacion_min:.1f}°C")
 
 # Gráfico de heladas corregido
 fig_heladas = go.Figure()
@@ -626,7 +626,7 @@ for estacion in df['Estacion'].unique():
 
 fig_heladas.update_layout(
     **plotly_layout(
-        "❄️ Índice de Heladas por Estación (Basado en Temperatura Mínima)",
+        "Índice de Heladas por Estación (Basado en Temperatura Mínima)",
         xaxis_title="Fecha",
         yaxis_title="Índice de Helada (°C)",
         height=500,
@@ -638,7 +638,7 @@ fig_heladas.update_layout(
 st.plotly_chart(fig_heladas, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Gráfico de sensación térmica agrícola
-st.markdown("##### 🌡️ Sensación Térmica Agrícola")
+st.markdown("##### Sensación Térmica Agrícola")
 
 fig_sensacion = go.Figure()
 
@@ -664,7 +664,7 @@ for estacion in df['Estacion'].unique():
 
 fig_sensacion.update_layout(
     **plotly_layout(
-        "🌡️ Sensación Térmica Agrícola por Estación",
+        "Sensación Térmica Agrícola por Estación",
         xaxis_title="Fecha",
         yaxis_title="Sensación Térmica (°C)",
         height=400,
@@ -677,7 +677,7 @@ st.plotly_chart(fig_sensacion, config=PLOTLY_CONFIG, use_container_width=True)
 # Explicación de la sensación térmica agrícola
 st.markdown("""
 <div style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); padding: 20px; border-radius: 10px; margin: 10px 0; border-left: 4px solid #9c27b0;">
-    <h4 style="color: #7b1fa2; margin: 0 0 15px 0;">🌡️ Sensación Térmica Agrícola</h4>
+    <h4 style="color: #7b1fa2; margin: 0 0 15px 0;"> Sensación Térmica Agrícola</h4>
     <p style="margin: 5px 0; color: #424242;"><strong>¿Qué es?</strong> La temperatura que realmente "sienten" los cultivos considerando humedad y viento.</p>
     <p style="margin: 5px 0; color: #424242;"><strong>Factores que influyen:</strong></p>
     <ul style="margin: 5px 0; color: #424242;">
@@ -690,7 +690,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Tabla de resumen de heladas por estación
-st.markdown("##### 📊 Resumen de Heladas por Estación")
+st.markdown("##### Resumen de Heladas por Estación")
 
 resumen_heladas = df.groupby('Estacion').agg({
     'Temperatura_Min': ['min', 'mean'],
@@ -718,7 +718,7 @@ st.dataframe(resumen_heladas, use_container_width=True)
 
 # Análisis horario detallado (si hay datos horarios)
 if 'Hora' in df.columns and df['Hora'].nunique() > 1:
-    st.markdown("#### 🕐 Análisis Horario Detallado")
+    st.markdown("#### Análisis Horario Detallado")
     
     # Seleccionar estación para análisis horario
     estacion_horaria = st.selectbox(
@@ -737,7 +737,7 @@ if 'Hora' in df.columns and df['Hora'].nunique() > 1:
             df_horario, 
             x='Hora', 
             y='Temperatura',
-            title=f"🌡️ Distribución de Temperatura por Hora - {estacion_horaria}",
+            title=f"Distribución de Temperatura por Hora - {estacion_horaria}",
             labels={'Hora': 'Hora del Día', 'Temperatura': 'Temperatura (°C)'}
         )
         fig_temp_hora.update_layout(height=400)
@@ -749,37 +749,37 @@ if 'Hora' in df.columns and df['Hora'].nunique() > 1:
             df_horario, 
             x='Hora', 
             y='Humedad',
-            title=f"💧 Distribución de Humedad por Hora - {estacion_horaria}",
+            title=f"Distribución de Humedad por Hora - {estacion_horaria}",
             labels={'Hora': 'Hora del Día', 'Humedad': 'Humedad Relativa (%)'}
         )
         fig_hum_hora.update_layout(height=400)
         st.plotly_chart(fig_hum_hora, config=PLOTLY_CONFIG, use_container_width=True)
     
     # Análisis de patrones horarios
-    st.markdown("##### 📊 Patrones Horarios Detectados")
+    st.markdown("##### Patrones Horarios Detectados")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
         hora_temp_min = df_horario.loc[df_horario['Temperatura'].idxmin(), 'Hora']
-        st.metric("🕐 Hora Temperatura Mínima", f"{hora_temp_min:02d}:00")
+        st.metric("Hora Temperatura Mínima", f"{hora_temp_min:02d}:00")
     
     with col2:
         hora_temp_max = df_horario.loc[df_horario['Temperatura'].idxmax(), 'Hora']
-        st.metric("🕐 Hora Temperatura Máxima", f"{hora_temp_max:02d}:00")
+        st.metric("Hora Temperatura Máxima", f"{hora_temp_max:02d}:00")
     
     with col3:
         hora_hum_max = df_horario.loc[df_horario['Humedad'].idxmax(), 'Hora']
-        st.metric("🕐 Hora Humedad Máxima", f"{hora_hum_max:02d}:00")
+        st.metric("Hora Humedad Máxima", f"{hora_hum_max:02d}:00")
 
 # Análisis de localidades (estaciones)
-st.markdown("#### 🌍 Análisis Comparativo por Localidades")
+st.markdown("#### Análisis Comparativo por Localidades")
 
 # Crear gráfico de comparación entre estaciones
 fig_comparacion = make_subplots(
     rows=2, cols=2,
-    subplot_titles=('🌡️ Temperatura por Estación', '💧 Humedad por Estación', 
-                   '☁️ Nubosidad por Estación', '🌫️ Prob. Niebla por Estación'),
+    subplot_titles=('Temperatura por Estación', 'Humedad por Estación',
+                   'Nubosidad por Estación', 'Prob. Niebla por Estación'),
     specs=[[{"secondary_y": False}, {"secondary_y": False}],
            [{"secondary_y": False}, {"secondary_y": False}]]
 )
@@ -803,7 +803,7 @@ for i, variable in enumerate(['Temperatura', 'Humedad', 'Nubosidad', 'Probabilid
 
 fig_comparacion.update_layout(
     height=800,
-    title_text="🌍 Comparación de Variables Meteorológicas por Localidad",
+    title_text="Comparación de Variables Meteorológicas por Localidad",
     showlegend=True
 )
 
@@ -816,7 +816,7 @@ fig_comparacion.update_yaxes(title_text="Prob. Niebla (%)", row=2, col=2)
 st.plotly_chart(fig_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Resumen estadístico por localidad
-st.markdown("##### 📊 Resumen Estadístico por Localidad")
+st.markdown("##### Resumen Estadístico por Localidad")
 
 estadisticas_por_estacion = df.groupby('Estacion').agg({
     'Temperatura': ['mean', 'min', 'max', 'std'],
@@ -834,12 +834,12 @@ st.dataframe(estadisticas_por_estacion, use_container_width=True)
 
 # Visualizaciones según tipo seleccionado
 if tipo_viz == "Tendencias Temporales":
-    st.markdown("### 📈 Análisis de Tendencias Temporales")
+    st.markdown("### Análisis de Tendencias Temporales")
     
     # Gráfico de líneas múltiples
     fig_tendencias = make_subplots(
         rows=2, cols=1,
-        subplot_titles=('🌡️ Evolución de Temperatura', '🌧️ Precipitación Acumulada'),
+        subplot_titles=('Evolución de Temperatura', 'Precipitación Acumulada'),
         vertical_spacing=0.1,
         specs=[[{"secondary_y": False}], [{"secondary_y": True}]]
     )
@@ -864,7 +864,7 @@ if tipo_viz == "Tendencias Temporales":
             row=2, col=1
         )
     
-    fig_tendencias.update_layout(height=800, title_text="📊 Tendencias Temporales - Análisis Avanzado")
+    fig_tendencias.update_layout(height=800, title_text="Tendencias Temporales - Análisis Avanzado")
     fig_tendencias.update_xaxes(title_text="Fecha")
     fig_tendencias.update_yaxes(title_text="Temperatura (°C)", row=1, col=1)
     fig_tendencias.update_yaxes(title_text="Precipitación (mm)", row=2, col=1)
@@ -872,7 +872,7 @@ if tipo_viz == "Tendencias Temporales":
     st.plotly_chart(fig_tendencias, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Comparaciones":
-    st.markdown("### 🔄 Análisis Comparativo")
+    st.markdown("### Análisis Comparativo")
     
     col1, col2 = st.columns(2)
     
@@ -886,7 +886,7 @@ elif tipo_viz == "Comparaciones":
         }).reset_index()
         
         fig_comparacion = px.bar(df_estaciones, x='Estacion', y=['Temperatura', 'Precipitacion', 'Humedad'],
-                                title='📊 Comparación por Estación',
+                                title='Comparación por Estación',
                                 color_discrete_sequence=['#e74c3c', '#3498db', '#9b59b6'])
         fig_comparacion.update_layout(height=400)
         st.plotly_chart(fig_comparacion, config=PLOTLY_CONFIG, use_container_width=True)
@@ -916,21 +916,21 @@ elif tipo_viz == "Comparaciones":
             polar=dict(
                 radialaxis=dict(visible=True, range=[0, 100])
             ),
-            title="📊 Análisis Multivariable",
+            title="Análisis Multivariable",
             height=400
         )
         
         st.plotly_chart(fig_radar, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Distribuciones":
-    st.markdown("### 📊 Análisis de Distribuciones")
+    st.markdown("### Análisis de Distribuciones")
     
     col1, col2 = st.columns(2)
     
     with col1:
         # Histograma de temperaturas
         fig_hist = px.histogram(df, x='Temperatura', nbins=30,
-                               title='📈 Distribución de Temperaturas',
+                               title='Distribución de Temperaturas',
                                color_discrete_sequence=['#e74c3c'])
         fig_hist.update_layout(height=400)
         st.plotly_chart(fig_hist, config=PLOTLY_CONFIG, use_container_width=True)
@@ -938,13 +938,13 @@ elif tipo_viz == "Distribuciones":
     with col2:
         # Box plot por estación
         fig_box = px.box(df, x='Estacion', y='Temperatura',
-                        title='📦 Distribución de Temperaturas por Estación',
+                        title='Distribución de Temperaturas por Estación',
                         color='Estacion')
         fig_box.update_layout(height=400)
         st.plotly_chart(fig_box, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Correlaciones":
-    st.markdown("### 🔗 Análisis de Correlaciones")
+    st.markdown("### Análisis de Correlaciones")
     
     # Matriz de correlación
     numeric_cols = ['Temperatura', 'Precipitacion', 'Humedad', 'Presion', 'Viento', 'Rendimiento', 'Calidad']
@@ -953,13 +953,13 @@ elif tipo_viz == "Correlaciones":
     fig_corr = px.imshow(corr_matrix, 
                         text_auto=True,
                         aspect="auto",
-                        title="🔗 Matriz de Correlación",
+                        title="Matriz de Correlación",
                         color_continuous_scale='RdBu_r')
     fig_corr.update_layout(height=600)
     st.plotly_chart(fig_corr, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Mapas de Calor":
-    st.markdown("### 🗺️ Mapas de Calor")
+    st.markdown("### Mapas de Calor")
     
     # Mapa de calor temporal
     df_heatmap = df.pivot_table(values='Temperatura', 
@@ -968,40 +968,40 @@ elif tipo_viz == "Mapas de Calor":
                                aggfunc='mean')
     
     fig_heatmap = px.imshow(df_heatmap,
-                           title="🌡️ Mapa de Calor - Temperaturas por Estación y Fecha",
+                           title="Mapa de Calor - Temperaturas por Estación y Fecha",
                            color_continuous_scale='RdYlBu_r')
     fig_heatmap.update_layout(height=500)
     st.plotly_chart(fig_heatmap, config=PLOTLY_CONFIG, use_container_width=True)
 
 elif tipo_viz == "Análisis 3D":
-    st.markdown("### 🎯 Análisis Tridimensional")
+    st.markdown("### Análisis Tridimensional")
     
     # Gráfico 3D
     fig_3d = px.scatter_3d(df, x='Temperatura', y='Humedad', z='Rendimiento',
                           color='Estacion',
-                          title="🎯 Análisis 3D: Temperatura vs Humedad vs Rendimiento",
+                          title="Análisis 3D: Temperatura vs Humedad vs Rendimiento",
                           size='Calidad',
                           opacity=0.7)
     fig_3d.update_layout(height=600)
     st.plotly_chart(fig_3d, config=PLOTLY_CONFIG, use_container_width=True)
 
 # Análisis estadístico avanzado
-st.markdown("### 📊 Análisis Estadístico Avanzado")
+st.markdown("### Análisis Estadístico Avanzado")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("#### 📈 Estadísticas Descriptivas")
+    st.markdown("#### Estadísticas Descriptivas")
     stats = df[['Temperatura', 'Precipitacion', 'Humedad', 'Rendimiento']].describe()
     st.dataframe(stats.round(2), use_container_width=True)
 
 with col2:
-    st.markdown("#### 📊 Análisis por Estación")
+    st.markdown("#### Análisis por Estación")
     estacion_stats = df.groupby('Estacion')[['Temperatura', 'Precipitacion', 'Humedad', 'Rendimiento']].mean()
     st.dataframe(estacion_stats.round(2), use_container_width=True)
 
 # Alertas y recomendaciones
-st.markdown("### 🚨 Alertas y Recomendaciones")
+st.markdown("### Alertas y Recomendaciones")
 
 col1, col2, col3 = st.columns(3)
 
@@ -1011,7 +1011,7 @@ with col1:
     if temp_max > 35:
         st.markdown(f"""
         <div class="alert-card">
-            <h4>🌡️ Alerta de Temperatura</h4>
+            <h4> Alerta de Temperatura</h4>
             <p>Temperatura máxima: {temp_max:.1f}°C</p>
             <p>Recomendación: Monitorear cultivos</p>
         </div>
@@ -1019,7 +1019,7 @@ with col1:
     else:
         st.markdown(f"""
         <div class="success-card">
-            <h4>✅ Temperatura Normal</h4>
+            <h4> Temperatura Normal</h4>
             <p>Temperatura máxima: {temp_max:.1f}°C</p>
             <p>Condiciones óptimas</p>
         </div>
@@ -1031,7 +1031,7 @@ with col2:
     if precip_total > 50:
         st.markdown(f"""
         <div class="info-card">
-            <h4>🌧️ Alta Precipitación</h4>
+            <h4> Alta Precipitación</h4>
             <p>Total: {precip_total:.1f} mm</p>
             <p>Verificar drenaje</p>
         </div>
@@ -1039,7 +1039,7 @@ with col2:
     else:
         st.markdown(f"""
         <div class="success-card">
-            <h4>💧 Precipitación Adecuada</h4>
+            <h4> Precipitación Adecuada</h4>
             <p>Total: {precip_total:.1f} mm</p>
             <p>Niveles normales</p>
         </div>
@@ -1051,7 +1051,7 @@ with col3:
     if rendimiento_prom > 25:
         st.markdown(f"""
         <div class="success-card">
-            <h4>🌾 Excelente Rendimiento</h4>
+            <h4> Excelente Rendimiento</h4>
             <p>Promedio: {rendimiento_prom:.1f} t/ha</p>
             <p>Producción óptima</p>
         </div>
@@ -1059,46 +1059,46 @@ with col3:
     else:
         st.markdown(f"""
         <div class="info-card">
-            <h4>📈 Mejorable</h4>
+            <h4> Mejorable</h4>
             <p>Promedio: {rendimiento_prom:.1f} t/ha</p>
             <p>Optimizar condiciones</p>
         </div>
         """, unsafe_allow_html=True)
 
 # Información del análisis
-st.markdown("### ℹ️ Información del Análisis")
+st.markdown("### Información del Análisis")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.info(f"""
-    **📅 Período:** {periodo}
-    **🌍 Estación:** {estacion}
-    **📊 Tipo:** {tipo_viz}
-    **🕐 Registros:** {len(df):,} mediciones
+    ** Período:** {periodo}
+    ** Estación:** {estacion}
+    ** Tipo:** {tipo_viz}
+    ** Registros:** {len(df):,} mediciones
     """)
 
 with col2:
     st.info(f"""
-    **📈 Datos Generados:** {datetime.now().strftime("%H:%M:%S")}
-    **🔄 Actualización:** Automática
-    **📱 Optimizado:** Móvil
-    **🎨 Diseño:** Profesional
+    ** Datos Generados:** {datetime.now().strftime("%H:%M:%S")}
+    ** Actualización:** Automática
+    ** Optimizado:** Móvil
+    ** Diseño:** Profesional
     """)
 
 with col3:
     st.info(f"""
-    **🌡️ Temp. Promedio:** {df['Temperatura'].mean():.1f}°C
-    **🌧️ Precip. Total:** {df['Precipitacion'].sum():.1f} mm
-    **💧 Humedad Promedio:** {df['Humedad'].mean():.1f}%
-    **🌾 Rendimiento Promedio:** {df['Rendimiento'].mean():.1f} t/ha
+    ** Temp. Promedio:** {df['Temperatura'].mean():.1f}°C
+    ** Precip. Total:** {df['Precipitacion'].sum():.1f} mm
+    ** Humedad Promedio:** {df['Humedad'].mean():.1f}%
+    ** Rendimiento Promedio:** {df['Rendimiento'].mean():.1f} t/ha
     """)
 
 # Footer profesional
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px;">
-    <p>📊 <strong>Sistema METGO</strong> - Visualizaciones Avanzadas</p>
+    <p> <strong>Sistema METGO</strong> - Visualizaciones Avanzadas</p>
     <p>Análisis interactivo profesional optimizado para dispositivos móviles</p>
     <p>Última actualización: {}</p>
 </div>

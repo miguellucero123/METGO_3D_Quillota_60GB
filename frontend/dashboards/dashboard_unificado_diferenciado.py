@@ -39,7 +39,7 @@ st, PLOTLY_CONFIG, plotly_layout = page_config_and_theme(
     "Dashboard Unificado",
     "Hub diferenciado · acceso a módulos METGO",
     module="unificado",
-    page_icon="🏠",
+    page_icon="M",
     initial_sidebar_state="collapsed",
 )
 
@@ -166,36 +166,36 @@ st.markdown("""
 # Header principal
 st.markdown("""
 <div class="unificado-header">
-    <h1>🏠 Dashboard Unificado</h1>
+    <h1> Dashboard Unificado</h1>
     <h3>Sistema METGO - Vista Integral</h3>
     <p>Integración completa de meteorología, agricultura y monitoreo en una sola vista</p>
     <div style="margin-top: 1rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 20px; display: inline-block;">
-        🔄 Vista Integral - Todos los Sistemas Integrados
+         Vista Integral - Todos los Sistemas Integrados
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🎛️ Panel de Control Unificado")
+    st.markdown("### Panel de Control Unificado")
     
     # Selector de vista
     vista_unificada = st.selectbox(
-        "👁️ Vista:",
+        "Vista:",
         ["Vista Completa", "Solo Meteorología", "Solo Agricultura", "Solo Monitoreo", "Vista Ejecutiva"],
         key="vista_unificada"
     )
     
     # Selector de estación
     estacion_unificada = st.selectbox(
-        "🌍 Estación:",
+        "Estación:",
         ["Quillota", "Los Nogales", "Hijuelas", "Limache", "Olmue", "Todas las Estaciones"],
         key="estacion_unificada"
     )
     
     # Selector de período
     periodo_unificada = st.selectbox(
-        "📅 Período:",
+        "Período:",
         ["Tiempo Real", "Últimas 24 horas", "Últimos 7 días", "Últimos 30 días", "Últimos 3 meses"],
         key="periodo_unificada"
     )

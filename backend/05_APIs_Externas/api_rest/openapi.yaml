@@ -569,6 +569,20 @@ paths:
           required: true
           schema:
             type: string
+        - name: incluir_archive
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Si true, descarga OpenMeteo Archive (ERA5) además del sync diario
+        - name: anios_archive
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+          description: Años hacia atrás (solo con incluir_archive=true)
       responses:
         '200':
           description: Sincronización exitosa

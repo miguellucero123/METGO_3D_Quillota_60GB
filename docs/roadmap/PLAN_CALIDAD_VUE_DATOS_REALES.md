@@ -1,7 +1,7 @@
 # Plan de trabajo — Calidad Vue en todos los módulos + solo datos reales
 
-> Actualizado: 2026-07-21 · Etapa B cerrada en código; F parcial.
-> Ver también `docs/PROMPT_UNIFICACION_FORMATO_UI.md`.
+> Actualizado: 2026-07-21 · Etapas B/C/D/F avanzadas; E pendiente operativo usuario.
+> Ver también `docs/PROMPT_UNIFICACION_FORMATO_UI.md` y `docs/roadmap/CHECKLIST_ETAPA_E_SUPABASE_ARCHIVE.md`.
 
 ## Principios
 
@@ -19,25 +19,26 @@
 - [x] AnalizadorNubosidad, PredictorNiebla, ComparacionModelos
 - [x] PronosticoHeladaAvanzado, SparklineGrid, MlProjectionChart
 
-### C — Sin emojis Streamlit — PARCIAL
-- Strip masivo aplazado (corrompía sintaxis). Manual pendiente archivo a archivo.
+### C — Sin emojis Streamlit — HECHA (catálogo)
+- [x] 292 líneas limpiadas en 11/12 dashboards activos (8505 ya sin emoji)
+- [x] Guardarraíl: `tests/test_ui_theme.py::test_dashboards_activos_sin_emojis`
+- Script seguro: `scratch/strip_emojis_catalog_safe.py` (no colapsar whitespace global)
 
 ### D — Sin sintéticos catálogo 8501–8513 — HECHA
-- [x] 8502–8507 + 8509 (antes)
-- [x] 8508 agricultura_precision, 8510 alertas, 8511 simple, 8512 unificado, 8513 mobile
-- [x] `tests/test_ui_theme.py` cubre los 12 dashboards activos del catálogo
 
-### E — Archive histórico — CÓDIGO LISTO + API
+### E — Archive histórico — CÓDIGO + CRON LISTOS
 - [x] ETL Archive + sync `incluir_archive`
-- [x] `historico_meteo(dias>92)` lee **solo store** (sin OpenMeteo en caliente)
-- [x] `/api/meteo/{id}/historico` acepta hasta 3650 días (contrato lista intacto)
-- [ ] Operativo: SQL Supabase + sync Archive en Render
+- [x] `historico_meteo(dias>92)` lee **solo store**
+- [x] `/api/cron/sync?incluir_archive=true` + OpenAPI
+- [x] Cron GitHub: 00/12 ligero; domingo 03 UTC + `workflow_dispatch` con Archive
+- [ ] Operativo: ejecutar SQL Supabase (ver checklist Etapa E)
 - [ ] Agromet/DMC
 
-### F — Limpieza — PARCIAL
-- [x] 14 dashboards legacy → `backend/12_Respaldos_Archivos/archivos_obsoletos/frontend_dashboards_legacy/`
+### F — Limpieza — HECHA (código)
+- [x] Legacy `*_metgo` + launchers/auditores → `archivos_obsoletos/frontend_dashboards_legacy/`
 - [ ] Commit/push cuando el usuario lo pida
 
 ## Verificación última pasada
-- `npm run build` (Vue) OK (2026-07-21)
-- Catálogo 8502–8513 intacto en `frontend/dashboards/`
+- `python -m py_compile` dashboards catálogo OK
+- `pytest tests/test_ui_theme.py` OK (sintéticos + plotly_white + emojis)
+- `npm run build` (Vue) OK (sesión previa)
