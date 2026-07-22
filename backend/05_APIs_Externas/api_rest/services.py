@@ -234,6 +234,22 @@ def _fila_a_resumen(row: pd.Series, estacion_id: str) -> dict[str, Any]:
     if out.get("radiacion_solar_sum") is not None:
         mj = float(out["radiacion_solar_sum"])
         out["radiacion_solar"] = round((mj * 1e6) / (12 * 3600), 0)
+    # Identificación observada de helada / niebla (insumo store + UI)
+    helada_raw = row.get("helada")
+    if helada_raw is not None and not (isinstance(helada_raw, float) and pd.isna(helada_raw)):
+        out["helada"] = bool(helada_raw)
+    else:
+        out["helada"] = out["temperatura_min"] <= 0.0
+    niebla_raw = row.get("niebla")
+    if niebla_raw is not None and not (isinstance(niebla_raw, float) and pd.isna(niebla_raw)):
+        out["niebla"] = bool(niebla_raw)
+    else:
+        vis_m = out.get("visibilidad_madrugada")
+        vis = out.get("visibilidad")
+        if vis_m is not None:
+            out["niebla"] = float(vis_m) < 1.0
+        elif vis is not None:
+            out["niebla"] = float(vis) < 1.0
     # Propaga la marca de caché (dato real, servido desde caché por fallo de OpenMeteo).
     dc = row.get("desde_cache")
     if dc is not None and not (isinstance(dc, float) and pd.isna(dc)) and bool(dc):
@@ -431,8 +447,6 @@ def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | No
             return {"direcciones": [], "velocidades": [], "unidad": "m/s", "fuente": "openmeteo_hourly"}
         # Normaliza claves al formato esperado por el frontend.
         out = {
-            "estacion_id": estacion_id,
-            "estacion": data.get("estacion", nombre),
             "direcciones": data.get("direcciones") or [],
             "velocidades": data.get("velocidades") or [],
             "unidad": data.get("unidad") or "m/s",
@@ -440,9 +454,57 @@ def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | No
         }
         if data.get("desde_cache"):
             out["desde_cache"] = True
+            if data.get("cache_edad_horas") is not None:
+                out["cache_edad_horas"] = data["cache_edad_horas"]
         return out
     except Exception:
         return {"direcciones": [], "velocidades": [], "unidad": "m/s", "fuente": "openmeteo_hourly_error"}
+
+
+def serie_helada_madrugada_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | None:
+    """Serie horaria de madrugada (T°, HR, viento, nubosidad, Td) para identificación de helada."""
+    tipo = f"helada_madrugada_{dias}"
+    try:
+        nombre = slug_a_nombre(estacion_id)
+        om = OpenMeteoData()
+
+        def _fetch():
+            return om.obtener_serie_helada_madrugada(nombre, dias)
+
+        if _CACHE_JSON:
+            data = _CACHE_JSON(
+                f"helada_madrugada|{nombre}|{dias}",
+                _fetch,
+                es_valido=lambda d: bool(d and (d.get("puntos") or d.get("madrugada"))),
+            )
+        else:
+            data = _fetch()
+        if data and (data.get("puntos") or data.get("madrugada")) and not data.get("desde_cache"):
+            _guardar_serie_supabase(estacion_id, tipo, data)
+        if not data or not (data.get("puntos") or data.get("madrugada")):
+            desde_db = _leer_serie_supabase(estacion_id, tipo)
+            if desde_db:
+                data = desde_db
+        if not data:
+            return {
+                "estacion_id": estacion_id,
+                "horas": [],
+                "puntos": [],
+                "madrugada": [],
+                "fuente": "openmeteo_helada_hourly",
+            }
+        out = dict(data)
+        out["estacion_id"] = estacion_id
+        out["fuente"] = data.get("fuente_datos") or data.get("fuente") or "openmeteo_helada_hourly"
+        return out
+    except Exception:
+        return {
+            "estacion_id": estacion_id,
+            "horas": [],
+            "puntos": [],
+            "madrugada": [],
+            "fuente": "openmeteo_helada_hourly_error",
+        }
 
 
 def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | None:

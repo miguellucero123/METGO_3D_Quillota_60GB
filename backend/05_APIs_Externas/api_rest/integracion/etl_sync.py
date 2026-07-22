@@ -126,6 +126,10 @@ def importar_csv_historico() -> dict[str, Any]:
                     "precipitacion": _float(row.get("precipitacion")),
                     "viento": _float(row.get("velocidad_viento")),
                     "presion": _float(row.get("presion_atmosferica")),
+                    "helada": (
+                        _float(row.get("temperatura_min")) is not None
+                        and _float(row.get("temperatura_min")) <= 0.0
+                    ),
                 }
             )
     by_station: dict[str, list[dict[str, Any]]] = {}
@@ -142,6 +146,7 @@ def importar_csv_historico() -> dict[str, Any]:
                 "precipitacion": x["precipitacion"],
                 "viento": x["viento"],
                 "presion": x["presion"],
+                "helada": x.get("helada"),
             }
             for x in rows
         ]
@@ -205,9 +210,11 @@ def sincronizar_estaciones(
     anios_archive: int = 5,
     origen: str = "api",
 ) -> dict[str, Any]:
-    """Pobla el store desde OpenMeteo (histórico + pronóstico) para todas las estaciones."""
+    """Pobla el store desde OpenMeteo (histórico + pronóstico + heladas) para todas las estaciones."""
     detalle: dict[str, int] = {}
     detalle_pronostico: dict[str, int] = {}
+    detalle_helada: dict[str, int] = {}
+    detalle_serie_helada: dict[str, bool] = {}
     errores: list[str] = []
     for slug in ESTACIONES_PRINCIPALES:
         try:
@@ -223,6 +230,21 @@ def sincronizar_estaciones(
         except Exception as e:
             errores.append(f"{slug} (pronostico): {e}")
             detalle_pronostico[slug] = 0
+        try:
+            from api_rest.meteo_avanzado_core import sincronizar_helada_store
+
+            detalle_helada[slug] = sincronizar_helada_store(slug, dias=7, cultivo="palto")
+        except Exception as e:
+            errores.append(f"{slug} (helada): {e}")
+            detalle_helada[slug] = 0
+        try:
+            from api_rest.services import serie_helada_madrugada_meteo
+
+            serie = serie_helada_madrugada_meteo(slug, dias=7)
+            detalle_serie_helada[slug] = bool(serie and (serie.get("horas") or serie.get("puntos")))
+        except Exception as e:
+            errores.append(f"{slug} (serie_helada): {e}")
+            detalle_serie_helada[slug] = False
     csv_res = importar_csv_historico() if incluir_csv else {"importados": 0, "omitido": True}
     archive_res: dict[str, Any] = {"omitido": True}
     if incluir_archive:
@@ -233,6 +255,8 @@ def sincronizar_estaciones(
     out = {
         "estaciones_sync": detalle,
         "pronostico_sync": detalle_pronostico,
+        "helada_sync": detalle_helada,
+        "serie_helada_sync": detalle_serie_helada,
         "csv": csv_res,
         "archive_sync": archive_res,
         "store": stats,

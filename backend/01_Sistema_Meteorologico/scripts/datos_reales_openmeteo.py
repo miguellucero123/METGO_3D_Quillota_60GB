@@ -347,6 +347,108 @@ class OpenMeteoData:
                 "fuente_datos": "openmeteo_pronostico_hourly",
             }
 
+    def obtener_serie_helada_madrugada(self, estacion="Quillota", dias=7):
+        """Serie horaria nocturna/madrugada para identificación de helada.
+
+        Incluye T°, HR, viento y nubosidad; agrega ventana crítica 03–06 h
+        (hora típica de mínima radiativa en el valle).
+        """
+        vacio = {
+            "estacion": estacion,
+            "horas": [],
+            "puntos": [],
+            "madrugada": [],
+            "fuente_datos": "openmeteo_helada_hourly",
+        }
+        if estacion not in self.estaciones:
+            return vacio
+
+        coords = self.estaciones[estacion]
+        dias = max(1, min(int(dias), 16))
+        try:
+            url = f"{self.api_base}/forecast"
+            params = {
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "hourly": [
+                    "temperature_2m",
+                    "relative_humidity_2m",
+                    "wind_speed_10m",
+                    "cloud_cover",
+                    "dew_point_2m",
+                ],
+                "timezone": "America/Santiago",
+                "forecast_days": dias,
+            }
+            status, data = self._get_json(url, params)
+            if status != 200 or not data:
+                return vacio
+            hourly = data.get("hourly") or {}
+            times = hourly.get("time") or []
+            temps = hourly.get("temperature_2m") or []
+            hrs = hourly.get("relative_humidity_2m") or []
+            winds = hourly.get("wind_speed_10m") or []
+            clouds = hourly.get("cloud_cover") or []
+            dews = hourly.get("dew_point_2m") or []
+            if not times:
+                return vacio
+
+            puntos: list[dict] = []
+            madrugada: list[dict] = []
+            horas: list[str] = []
+            for i, t in enumerate(times):
+                ts = pd.to_datetime(t)
+                hora = int(ts.hour)
+                punto = {
+                    "fecha_hora": str(t),
+                    "fecha": ts.date().isoformat(),
+                    "hora": hora,
+                    "temperatura": round(float(temps[i]), 1) if i < len(temps) and temps[i] is not None else None,
+                    "humedad": round(float(hrs[i]), 1) if i < len(hrs) and hrs[i] is not None else None,
+                    "viento": round(float(winds[i]), 2) if i < len(winds) and winds[i] is not None else None,
+                    "cobertura_nubosa": round(float(clouds[i]), 1)
+                    if i < len(clouds) and clouds[i] is not None
+                    else None,
+                    "punto_rocio": round(float(dews[i]), 1) if i < len(dews) and dews[i] is not None else None,
+                    "ventana_critica": 3 <= hora <= 6,
+                }
+                puntos.append(punto)
+                horas.append(str(t))
+                if punto["ventana_critica"]:
+                    madrugada.append(punto)
+
+            # Resumen diario: mínima en ventana 03–06
+            por_dia: dict[str, list[dict]] = {}
+            for p in madrugada:
+                por_dia.setdefault(p["fecha"], []).append(p)
+            resumen_diario = []
+            for fecha, pts in sorted(por_dia.items()):
+                temps_ok = [p["temperatura"] for p in pts if p["temperatura"] is not None]
+                if not temps_ok:
+                    continue
+                tmin = min(temps_ok)
+                resumen_diario.append(
+                    {
+                        "fecha": fecha,
+                        "temperatura_min_madrugada": tmin,
+                        "helada_observada_ventana": tmin <= 0.0,
+                        "horas": pts,
+                    }
+                )
+
+            return {
+                "estacion": estacion,
+                "horas": horas,
+                "puntos": puntos,
+                "madrugada": madrugada,
+                "resumen_diario": resumen_diario,
+                "unidad_temp": "C",
+                "unidad_viento": "m/s",
+                "fuente_datos": "openmeteo_helada_hourly",
+            }
+        except Exception:
+            return vacio
+
     def obtener_precipitacion_horaria_3h(self, estacion='Quillota', dias=7):
         """Pronóstico de precipitación en ventanas de 3 h (suma mm + PoP máx)."""
         vacio = {

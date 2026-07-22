@@ -17,6 +17,7 @@ from api_rest.meteo_avanzado_core import (
     variables_meteo_completas,
 )
 from api_rest.meteo_variables import catalogo_variables
+from api_rest.services import serie_helada_madrugada_meteo
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,20 @@ def register_meteo_avanzada_routes(app) -> None:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             logger.exception("Error helada avanzada: %s", e)
+            return jsonify({"error": "Error interno"}), 500
+
+    @app.get("/api/meteo/<estacion_id>/helada-madrugada")
+    @auth_required
+    def meteo_helada_madrugada(estacion_id: str):
+        try:
+            validar_estacion(estacion_id)
+            dias = request.args.get("dias", 7, type=int)
+            data = serie_helada_madrugada_meteo(estacion_id, dias)
+            return jsonify(data or {})
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 404
+        except Exception as e:
+            logger.exception("Error helada madrugada: %s", e)
             return jsonify({"error": "Error interno"}), 500
 
     @app.get("/api/meteo/<estacion_id>/nubosidad")

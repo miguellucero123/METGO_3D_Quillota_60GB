@@ -141,6 +141,35 @@ def leer_serie(estacion_id: str, tipo: str, max_edad_horas: int = 48) -> dict[st
     return None
 
 
+def guardar_helada_pronostico(
+    estacion_id: str,
+    filas: list[dict[str, Any]],
+    cultivo: str = "palto",
+    fuente: str = "modelo_helada_radiativa",
+) -> int:
+    if not filas:
+        return 0
+    repo, activo = _repositorio()
+    if repo and activo:
+        try:
+            return repo.guardar_helada_pronostico(estacion_id, filas, cultivo, fuente)
+        except Exception as e:
+            print(f"Error al guardar helada en Supabase: {e}")
+    return 0
+
+
+def leer_helada_pronostico(
+    estacion_id: str, dias: int = 7, cultivo: str = "palto"
+) -> list[dict[str, Any]]:
+    repo, activo = _repositorio()
+    if repo and activo:
+        try:
+            return repo.leer_helada_pronostico(estacion_id, dias, cultivo)
+        except Exception as e:
+            print(f"Error al leer helada de Supabase: {e}")
+    return []
+
+
 def estadisticas_store() -> dict[str, Any]:
     import sys
     import importlib

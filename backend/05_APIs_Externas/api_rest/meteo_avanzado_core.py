@@ -87,16 +87,36 @@ def _radiacion_wm2_desde_sum(radiacion_sum_mj: float | None) -> float:
 
 
 def pronostico_helada_avanzado(
-    estacion_id: str, dias: int = 7, cultivo: str = "palto"
+    estacion_id: str, dias: int = 7, cultivo: str = "palto", persistir: bool = True
 ) -> dict[str, Any]:
     validar_estacion(estacion_id)
     estacion = obtener_estacion_meta(estacion_id)
     filas = pronostico_meteo(estacion_id, dias) or []
     modelo = ModeloHeladaRadiativa(estacion_id)
     heladas: list[dict[str, Any]] = []
+    historia = _historia_temperatura_min(estacion_id)
+
+    if not filas:
+        # Fallback: identificación ya persistida en Supabase (sin inventar)
+        try:
+            from api_rest.integracion.meteo_store import leer_helada_pronostico
+
+            cached = leer_helada_pronostico(estacion_id, dias, cultivo)
+        except Exception:
+            cached = []
+        if cached:
+            return {
+                "estacion_id": estacion_id,
+                "estacion_nombre": estacion["nombre"],
+                "cultivo": cultivo,
+                "fecha_solicitud": datetime.now(TZ).isoformat(),
+                "pronosticos_helada": cached,
+                "resumen": _resumen_heladas(cached),
+                "fuente": "supabase_helada",
+            }
 
     for row in filas[:dias]:
-        fecha = datetime.fromisoformat(row["fecha"]).replace(tzinfo=TZ)
+        fecha = datetime.fromisoformat(str(row["fecha"])[:10]).replace(tzinfo=TZ)
         temp_max = _num(row, "temperatura_max", 20)
         temp_min = _num(row, "temperatura_min", 10)
         cobertura = _num(row, "cobertura_nubosa", 50)
@@ -115,6 +135,7 @@ def pronostico_helada_avanzado(
             humedad_relativa=hr,
             punto_rocio=pr,
             fecha=fecha,
+            historia_temperatura=historia or None,
             temperatura_atardecer=t_atardecer,
             bulbo_humedo=th,
         )
@@ -126,21 +147,66 @@ def pronostico_helada_avanzado(
         riesgo["alerta_cultivo"] = temp_min <= umbral
         heladas.append(riesgo)
 
+    if persistir and heladas:
+        try:
+            from api_rest.integracion.meteo_store import guardar_helada_pronostico
+
+            guardar_helada_pronostico(estacion_id, heladas, cultivo=cultivo)
+        except Exception:
+            pass
+
     return {
         "estacion_id": estacion_id,
         "estacion_nombre": estacion["nombre"],
         "cultivo": cultivo,
         "fecha_solicitud": datetime.now(TZ).isoformat(),
         "pronosticos_helada": heladas,
-        "resumen": {
-            "dias_con_riesgo": len([h for h in heladas if h["probabilidad_helada"] > 20]),
-            "dias_riesgo_severo": len([h for h in heladas if h["riesgo_severo"]]),
-            "dias_riesgo_moderado": len([h for h in heladas if h["riesgo_moderado"]]),
-            "temperatura_minima_7d": min(
-                (h["temperatura_minima_esperada"] for h in heladas), default=None
-            ),
-        },
+        "resumen": _resumen_heladas(heladas),
     }
+
+
+def _resumen_heladas(heladas: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "dias_con_riesgo": len([h for h in heladas if (h.get("probabilidad_helada") or 0) > 20]),
+        "dias_riesgo_severo": len([h for h in heladas if h.get("riesgo_severo")]),
+        "dias_riesgo_moderado": len([h for h in heladas if h.get("riesgo_moderado")]),
+        "temperatura_minima_7d": min(
+            (
+                h.get("temperatura_minima_esperada")
+                for h in heladas
+                if h.get("temperatura_minima_esperada") is not None
+            ),
+            default=None,
+        ),
+    }
+
+
+def _historia_temperatura_min(estacion_id: str, dias: int = 7) -> list[float]:
+    """Últimas T° mínimas observadas (Supabase) para el factor tendencia del modelo."""
+    try:
+        from api_rest.integracion.meteo_store import leer_registros
+
+        regs = leer_registros(estacion_id, dias) or []
+    except Exception:
+        return []
+    out: list[float] = []
+    for r in regs:
+        t = r.get("temperatura_min")
+        if t is None:
+            continue
+        try:
+            out.append(float(t))
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def sincronizar_helada_store(
+    estacion_id: str, dias: int = 7, cultivo: str = "palto"
+) -> int:
+    """Calcula y persiste identificación de helada en Supabase; retorna filas guardadas."""
+    data = pronostico_helada_avanzado(estacion_id, dias=dias, cultivo=cultivo, persistir=True)
+    return len(data.get("pronosticos_helada") or [])
 
 
 def analisis_nubosidad(estacion_id: str, dias: int = 7) -> dict[str, Any]:

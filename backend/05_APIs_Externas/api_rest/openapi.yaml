@@ -236,6 +236,9 @@ paths:
         de psicrómetro al atardecer: punto de rocío (Td) y bulbo húmedo (Th).
         Riesgo alto si Td ≤ 0 °C con cielo despejado y calma; inminente si
         Th ≤ 2 °C y cielo despejado (se espera T° < 0 en madrugada).
+        Persiste el resultado en Supabase (`meteo_helada_pronostico`) y usa
+        tendencia térmica desde `meteo_registros`. Si no hay pronóstico fresco,
+        responde desde el store.
       security: [{ bearerAuth: [] }]
       parameters:
         - name: estacion_id
@@ -251,6 +254,26 @@ paths:
       responses:
         "200":
           description: Probabilidad, Td/Th atardecer, criterio psicrómetro y recomendaciones
+  /api/meteo/{estacion_id}/helada-madrugada:
+    get:
+      tags: [meteo]
+      summary: Serie horaria de madrugada para identificación de helada
+      description: |
+        T°, HR, viento, nubosidad y punto de rocío horarios (OpenMeteo), con
+        ventana crítica 03–06 h. Se cachea en Supabase (`meteo_series`, tipo
+        `helada_madrugada_{dias}`).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: Puntos horarios, madrugada y resumen diario
   /api/meteo/{estacion_id}/nubosidad:
     get:
       tags: [meteo]
@@ -559,7 +582,9 @@ paths:
                   description: Años hacia atrás para archive (solo si incluir_archive)
       responses:
         "200":
-          description: Detalle por estación y estadísticas store
+          description: |
+            Detalle por estación (histórico, pronóstico, helada_sync, serie_helada_sync)
+            y estadísticas store (incl. heladas_pronostico)
         "401":
           description: Sin token
   /api/cron/sync:

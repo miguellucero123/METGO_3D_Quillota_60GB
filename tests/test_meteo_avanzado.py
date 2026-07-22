@@ -160,3 +160,26 @@ def test_visibilidad_hourly_openmeteo():
     first = list(stats.values())[0]
     assert first["min"] == pytest.approx(0.5, abs=0.01)
     assert first["madrugada"] == pytest.approx(0.5, abs=0.01)
+
+
+def test_helada_desde_fila_deriva_tmin():
+    import importlib
+
+    repo = importlib.import_module("backend.08_Gestion_Datos.supabase_db.meteo_repository")
+    assert repo._helada_desde_fila({"temperatura_min": -1.2}) is True
+    assert repo._helada_desde_fila({"temperatura_min": 3.0}) is False
+    assert repo._helada_desde_fila({"helada": True, "temperatura_min": 5}) is True
+
+
+def test_resumen_heladas_cuenta_riesgo():
+    from api_rest.meteo_avanzado_core import _resumen_heladas
+
+    resumen = _resumen_heladas(
+        [
+            {"probabilidad_helada": 55, "riesgo_severo": False, "riesgo_moderado": True, "temperatura_minima_esperada": -1},
+            {"probabilidad_helada": 10, "riesgo_severo": False, "riesgo_moderado": False, "temperatura_minima_esperada": 4},
+        ]
+    )
+    assert resumen["dias_con_riesgo"] == 1
+    assert resumen["dias_riesgo_moderado"] == 1
+    assert resumen["temperatura_minima_7d"] == -1
