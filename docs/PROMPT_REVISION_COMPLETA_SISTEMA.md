@@ -153,8 +153,9 @@ Checklist manual:
 
 - [ ] Tablas `meteo_pronostico` y `meteo_series` creadas en Supabase (SQL `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`).
 - [ ] Render: env `SUPABASE_URL`, `SUPABASE_KEY`, `CRON_SECRET` configuradas; redeploy con el Ãºltimo commit de `main`.
-- [ ] GitHub: secret `CRON_SECRET` (mismo valor que Render); workflow `ETL Meteo (00 y 12 UTC)` habilitado en Actions.
+- [x] GitHub: secret `CRON_SECRET` (mismo valor que Render); workflow `ETL Meteo (00 y 12 UTC)` con wake + retry 503.
 - [ ] Correr el workflow una vez con "Run workflow" (workflow_dispatch) y verificar HTTP 200.
+- [ ] Si usas cron-job.org: job wake `/api/health` 2–3 min antes del sync (`docs/roadmap/OPS_CRON_ETL.md`).
 
 ### Paso 4 â€” Reporte final
 

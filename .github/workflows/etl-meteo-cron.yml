@@ -1,7 +1,8 @@
-# ETL meteorológico programado: OpenMeteo → Supabase vía /api/cron/sync
-# - 00:00 y 12:00 UTC: sync ligero (pronóstico / recientes)
-# - Domingos 03:00 UTC: sync + Archive ERA5 (histórico largo)
+# ETL meteorológico: OpenMeteo → Supabase vía GET /api/cron/sync
+# - 00:00 y 12:00 UTC: sync ligero (recientes + pronóstico)
+# - Domingos 03:00 UTC: sync + Archive ERA5
 # Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
+# Si también usas cron-job.org: crea un job previo a /api/health (ver docs/roadmap/OPS_CRON_ETL.md).
 name: ETL Meteo (00 y 12 UTC)
 
 on:
@@ -29,10 +30,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Verificar CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Falta el secret CRON_SECRET en GitHub (Settings → Secrets). Debe coincidir con CRON_SECRET en Render."
+            exit 1
+          fi
+          echo "CRON_SECRET configurado (longitud ${#CRON_SECRET})"
+
       - name: Despertar API (cold start Render)
         run: |
           for i in $(seq 1 12); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://metgo-api.onrender.com/api/health" || true)
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 45 "https://metgo-api.onrender.com/api/health" || true)
             echo "health intento $i -> HTTP $code"
             [ "$code" = "200" ] && exit 0
             sleep 15
@@ -44,7 +55,6 @@ jobs:
         run: |
           ARCH="false"
           ANIOS="5"
-          # Cron semanal (domingo 03 UTC)
           if [ "${{ github.event.schedule }}" = "0 3 * * 0" ]; then
             ARCH="true"
           fi
@@ -57,18 +67,33 @@ jobs:
           echo "Archive=$ARCH anios=$ANIOS"
 
       - name: Sincronizar OpenMeteo -> Supabase
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          QS="token=${{ secrets.CRON_SECRET }}"
+          QS="token=${CRON_SECRET}"
           if [ "${{ steps.flags.outputs.incluir_archive }}" = "true" ]; then
             QS="${QS}&incluir_archive=true&anios_archive=${{ steps.flags.outputs.anios_archive }}"
           fi
-          resp=$(curl -s -w "\n%{http_code}" --max-time 2400 \
-            "https://metgo-api.onrender.com/api/cron/sync?${QS}")
-          body=$(echo "$resp" | head -n -1)
-          code=$(echo "$resp" | tail -n 1)
-          echo "HTTP $code"
-          echo "$body"
-          [ "$code" = "200" ] || exit 1
+          # Reintentos ante 502/503 (cold start residual de Render free)
+          for i in $(seq 1 5); do
+            resp=$(curl -s -w "\n%{http_code}" --max-time 2400 \
+              "https://metgo-api.onrender.com/api/cron/sync?${QS}" || true)
+            body=$(echo "$resp" | head -n -1)
+            code=$(echo "$resp" | tail -n 1)
+            echo "intento $i -> HTTP $code"
+            echo "$body"
+            if [ "$code" = "200" ]; then
+              exit 0
+            fi
+            if [ "$code" = "502" ] || [ "$code" = "503" ] || [ "$code" = "000" ]; then
+              echo "Render no listo; esperando 20s..."
+              sleep 20
+              curl -s -o /dev/null --max-time 45 "https://metgo-api.onrender.com/api/health" || true
+              continue
+            fi
+            echo "Error no recuperable HTTP $code" && exit 1
+          done
+          echo "Agotados reintentos tras 502/503" && exit 1
 
       - name: Verificar estado ETL
         run: |

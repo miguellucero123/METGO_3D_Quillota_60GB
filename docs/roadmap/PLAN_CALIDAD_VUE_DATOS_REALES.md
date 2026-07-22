@@ -28,6 +28,7 @@
 - [x] Sync corto: histórico 7d + pronóstico 7d en Supabase
 - [x] **Archive 1 año** (2026-07-22): 366 días × 5 estaciones = **1830** filas `openmeteo_archive`
 - [x] Stub Agromet/DMC + exposición en `fuentes_datos()` (`oficiales_chile`)
+- [x] Cron ETL operativo (cron-job.org + wake; ver `OPS_CRON_ETL.md`)
 - [ ] Archive 5 años (cron domingo / `workflow_dispatch` con `anios_archive=5`)
 - [ ] Códigos Agromet/DMC reales
 

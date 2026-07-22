@@ -32,7 +32,7 @@ Estructura para ejecutar el [prompt MVP](../PROMPT_MVP_METGO.md) y el rol en **`
 | 2.x – 3.x | Integrado (MVP) | Ver `fase-2/README.md`, `fase-3/README.md` |
 | 4.x Integración 01–12 | Integrado (MVP) | `api_rest/integracion/`, `fase-4/README.md` |
 | 5.x Conexiones Vue | Integrado | `IntegracionView.vue`, `fase-5/README.md` |
-| 6.x ETL nocturno | Integrado | `run_etl_meteo_nightly.py`, `fase-6/README.md` |
+| 6.x ETL nocturno | Integrado | `run_etl_meteo_nightly.py`, `fase-6/README.md`, [`OPS_CRON_ETL.md`](OPS_CRON_ETL.md) |
 | 7.x MQTT + cola ML | Integrado | `mqtt_bridge.py`, `ml_training_queue.py`, `fase-7/README.md` |
 | 8.x Workers + train | Integrado | `ml_train_runner.py`, `run_mqtt_listener.py`, `fase-8/README.md` |
 | 9.x Notificaciones | Integrado | `notificaciones.py`, `fase-9/README.md` |
