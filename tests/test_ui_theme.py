@@ -17,11 +17,18 @@ ACTIVOS = {
     "dashboard_visualizaciones_avanzadas.py",
     "dashboard_global_metricas.py",
     "dashboard_analisis_comparativo.py",
+    "dashboard_agricultura_precision.py",
+    "dashboard_alertas_automaticas.py",
+    "dashboard_unificado_diferenciado.py",
+    "dashboard_simple_optimizado.py",
+    "dashboard_mobile_optimizado.py",
 }
 
 FORBIDDEN_SYNTH = re.compile(
     r"np\.random|generar_datos_simulados|generar_datos_globales_5_anos|"
     r"generar_datos_comparativos|generar_datos_tiempo_real|"
+    r"generar_datos_precision|generar_datos_unificados|generar_datos_simples|"
+    r"generar_datos_mobile|random\.uniform|random\.randint|"
     r"\bilustrativo\b|\bdatos simulados\b",
     re.IGNORECASE,
 )

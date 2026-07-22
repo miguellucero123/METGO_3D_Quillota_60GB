@@ -1,83 +1,44 @@
 # Plan de trabajo — Calidad Vue en todos los módulos + solo datos reales
 
-> Fecha: 2026-07-21 · Actualizado: 2026-07-21 (noche) · En ejecución por etapas.
-> Complementa `docs/PROMPT_UNIFICACION_FORMATO_UI.md` (tema oscuro) con los
-> requisitos nuevos: nivel de calidad de la SPA Vue/Netlify en TODOS los
-> módulos, sin emojis/iconos de texto, gráficos interactivos (estilo Ensemble),
-> cero datos sintéticos y series históricas oficiales por estación.
+> Actualizado: 2026-07-22 · En ejecución por etapas.
+> Ver también `docs/PROMPT_UNIFICACION_FORMATO_UI.md`.
 
----
+## Principios
 
-## Principios (decididos por el usuario, no renegociar)
+1. Referencia visual: SPA Vue Netlify.
+2. Gráficos: ECharts (Vue) / Plotly + `plotly_layout` (Streamlit).
+3. Cero datos sintéticos.
+4. Históricos: OpenMeteo Archive → store; Agromet/DMC después.
 
-1. **La referencia visual es la SPA Vue en Netlify** (https://metgo3d.netlify.app).
-2. **La referencia de gráficos es el "Motor Predictivo Multi-Modelo (Ensemble)"**
-   (ECharts en Vue / Plotly + `plotly_layout` en Streamlit).
-3. **Cero datos sintéticos/ilustrativos.**
-4. **Históricos oficiales por estación** vía OpenMeteo Archive (inmediato) y Agromet/DMC (después).
+## Estado por etapa
 
-## Etapas
+### A — Errores producción — HECHA
+### B — Vue ECharts — AVANZADA
+- [x] TimeSeries / HorizontalBar / WindRose / precipitación / heladas precip
+- [x] `ComboMeteoChart.vue` → ECharts (2026-07-22)
+- [ ] SVG restantes: AnalizadorNubosidad, PredictorNiebla, ComparacionModelos,
+  PronosticoHeladaAvanzado, SparklineGrid, MlProjectionChart
 
-### Etapa A — Corrección de errores en producción (HECHA)
+### C — Sin emojis Streamlit — PARCIAL
+- Strip masivo aplazado (corrompía sintaxis). Manual pendiente.
 
-- [x] `plotly_layout()` sin kwargs duplicados
-- [x] Dashboards con `update_layout` corregidos
-- [x] Precipitación Vue (Pronóstico / Histórico / Heladas) en ECharts estilo Ensemble
+### D — Sin sintéticos catálogo 8501–8513 — HECHA
+- [x] 8502–8507 + 8509 (antes)
+- [x] 8508 agricultura_precision, 8510 alertas, 8511 simple, 8512 unificado, 8513 mobile
+- [x] `tests/test_ui_theme.py` cubre los 12 dashboards activos del catálogo
 
-### Etapa B — Vue: migrar SVG a ECharts (AVANZADA)
+### E — Archive histórico — CÓDIGO LISTO + API
+- [x] ETL Archive + sync `incluir_archive`
+- [x] `historico_meteo(dias>92)` lee **solo store** (sin OpenMeteo en caliente)
+- [x] `/api/meteo/{id}/historico` acepta hasta 3650 días (contrato lista intacto)
+- [ ] Operativo: SQL Supabase + sync Archive en Render
+- [ ] Agromet/DMC
 
-- [x] `TimeSeriesChart.vue`, `HorizontalBarChart.vue`, `WindRoseChart.vue` → ECharts
-- [x] Composable `frontend/vue/src/composables/useEchartsTheme.js` + `utils/echartsTheme.js`
-- [x] `npm run build` OK (2026-07-21)
-- [ ] Pendiente: migrar SVG restantes en meteo avanzada
-  (`ComboMeteoChart`, `AnalizadorNubosidad`, `PredictorNiebla`, `ComparacionModelosChart`,
-  `PronosticoHeladaAvanzado`, `SparklineGrid`, `MlProjectionChart`)
+### F — Limpieza
+- [ ] Mover legacy no catalogados a `archivos_obsoletos/`
+- [ ] Commit/push cuando el usuario lo pida
 
-### Etapa C — Streamlit sin emojis (PARCIAL)
-
-- [ ] Strip masivo de emojis **aplazado**: un script agresivo corrompió sintaxis Python
-  (docstrings pegados a `def`). Se revirtió; hay que hacer strip **manual archivo a archivo**.
-- [x] `dashboard_ia_ml_avanzado.py` reescrito sin emojis en modo producción
-- [ ] Resto 8501–8513: quitar emojis de `st.metric` / headers de forma segura
-
-### Etapa D — Eliminar datos sintéticos (HECHA en puertos prioritarios)
-
-- [x] `dashboard_visualizaciones_avanzadas.py` — sin `generar_datos_simulados`
-- [x] `dashboard_global_metricas.py` — histórico real vía `historico_meteo` (máx. 92 d hasta Archive)
-- [x] `dashboard_agricola_inteligente.py` — sin KPIs/historial ilustrativos
-- [x] `dashboard_ia_ml_avanzado.py` — solo registry (sin demo np.random)
-- [x] `dashboard_monitoreo_tiempo_real.py` — solo API estaciones (sin simulación IoT)
-- [x] `dashboard_analisis_comparativo.py` — solo API valle (sin series 5 años simuladas)
-- [x] Guardarraíl CI: `tests/test_ui_theme.py` (2 tests verdes)
-- [ ] Pendiente: `dashboard_agricultura_precision.py`, `dashboard_alertas_automaticas.py`,
-  `dashboard_unificado_diferenciado.py`, `dashboard_simple_optimizado.py`,
-  `dashboard_mobile_optimizado.py` (aún tienen `np.random` / ilustrativo)
-
-### Etapa E — Históricos OpenMeteo Archive (HECHA en código)
-
-- [x] `OpenMeteoData.obtener_datos_archive` + helper módulo
-- [x] CLI `backend/08_Gestion_Datos/scripts/etl_archive_openmeteo.py`
-- [x] `sincronizar_estaciones(..., incluir_archive=True, anios_archive=5)`
-- [x] `POST /api/datos/etl/sync` acepta `incluir_archive` / `anios_archive` (+ OpenAPI)
-- [x] Doc `docs/roadmap/fase-3/estaciones_oficiales_mapeo.md`
-- [ ] Operativo: ejecutar SQL Supabase + un sync con `incluir_archive: true` en Render
-- [ ] Ampliar `/api/meteo/{id}/historico` para rangos multi-año solo-store
-- [ ] Agromet/DMC (segunda iteración, requiere registro usuario)
-
-### Etapa F — Limpieza (PARCIAL)
-
-- [ ] Mover dashboards legacy no catalogados a `archivos_obsoletos/`
-- [x] Actualizar este plan con el estado real
-- [ ] Commit + push cuando el usuario lo pida
-
-## Criterios de éxito (estado)
-
-| Criterio | Estado |
-|----------|--------|
-| Sin `np.random`/`ilustrativo` en 8502–8507 + 8509 | OK (test CI) |
-| Sin emoji en todos los módulos | Pendiente (C) |
-| Gráficos Vue ECharts (charts base) | OK TimeSeries/HBar/WindRose + precip |
-| `/metricas` y 8507 con 5 años reales | Código Archive listo; falta poblar Supabase |
-| CI guardarraíl | OK `tests/test_ui_theme.py` |
-
-**Fase del roadmap:** DT-x + 2.x + 3.x
+## Verificación última pasada
+- `py_compile` dashboards + services/app OK
+- `pytest tests/test_ui_theme.py` OK
+- `npm run build` (Vue) OK

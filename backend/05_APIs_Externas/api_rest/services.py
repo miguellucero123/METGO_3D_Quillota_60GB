@@ -446,17 +446,26 @@ def viento_horario_meteo(estacion_id: str, dias: int = 7) -> dict[str, Any] | No
 
 
 def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | None:
+    """Histórico diario real.
+
+    - dias <= 92: OpenMeteo forecast/past_days + merge con store.
+    - dias > 92: solo lectura del store (ETL Archive / CSV); no llama OpenMeteo
+      en caliente para evitar timeouts en Render free.
+    """
+    dias = max(1, int(dias))
     nombre = slug_a_nombre(estacion_id)
-    df = _df_sin_prints(nombre, "historicos", min(dias, 92))
     registros: list[dict[str, Any]] = []
-    if df is not None and not df.empty:
-        df = df.sort_values("fecha")
-        registros = [_fila_a_resumen(row, estacion_id) for _, row in df.iterrows()]
+
+    if dias <= 92:
+        df = _df_sin_prints(nombre, "historicos", dias)
+        if df is not None and not df.empty:
+            df = df.sort_values("fecha")
+            registros = [_fila_a_resumen(row, estacion_id) for _, row in df.iterrows()]
+
     try:
         from api_rest.integracion.meteo_store import guardar_registros, leer_registros
 
         if registros:
-            # Solo guardar datos reales en Supabase/DB local
             guardar_registros(estacion_id, registros)
         local = leer_registros(estacion_id, dias)
         merged: list[dict[str, Any]] = []
@@ -466,8 +475,12 @@ def historico_meteo(estacion_id: str, dias: int = 30) -> list[dict[str, Any]] | 
             merged.extend(registros)
         if merged:
             return _dedupe_historico_por_dia(merged, dias)
+        if dias > 92:
+            # Sin store poblado: no inventar; el cliente debe disparar ETL Archive
+            return []
     except ImportError:
-        pass
+        if dias > 92:
+            return []
     return _dedupe_historico_por_dia(registros, dias) if registros else None
 
 

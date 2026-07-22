@@ -166,7 +166,9 @@ def create_app() -> Flask:
     @app.get("/api/meteo/<estacion_id>/historico")
     @auth_required
     def meteo_historico(estacion_id: str):
+        """Histórico diario. dias>92 lee solo del store (ETL Archive). Lista (contrato Vue)."""
         dias = request.args.get("dias", 30, type=int)
+        dias = max(1, min(int(dias or 30), 3650))
         data = services.historico_meteo(estacion_id, dias)
         if data is None:
             return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
