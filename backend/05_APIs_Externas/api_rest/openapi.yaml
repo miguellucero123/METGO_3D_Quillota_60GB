@@ -791,12 +791,12 @@ paths:
     get:
       tags:
         - Modelos Predictivos
-      summary: Retorna el consenso de 5 modelos climáticos globales (Ensemble)
+      summary: Consenso multi-modelo OpenMeteo (ECMWF/GFS/ICON) con caché last-good
       responses:
         '200':
-          description: Datos del ensemble procesados
+          description: Datos del ensemble procesados (lista diaria)
         '503':
-          description: Servicio de OpenMeteo temporalmente no disponible (Ensemble)
+          description: OpenMeteo no disponible y sin caché last-good
           content:
             application/json:
               schema:

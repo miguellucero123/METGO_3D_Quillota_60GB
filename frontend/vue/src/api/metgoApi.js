@@ -524,6 +524,12 @@ export async function fetchTestingResumen() {
   return data
 }
 
+/** Consenso multi-modelo OpenMeteo (precipitación / tmin / heladas). */
+export async function fetchEnsemble() {
+  const { data } = await api.get('/ensemble')
+  return data
+}
+
 export async function mlPredictBatch(variables, estacionId = 'quillota') {
   const { data } = await api.post('/ml/predict/batch', {
     variables,

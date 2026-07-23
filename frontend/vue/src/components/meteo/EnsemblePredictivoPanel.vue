@@ -1,27 +1,32 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import MeteogramaAvanzado from '@/components/charts/MeteogramaAvanzado.vue'
+import { fetchEnsemble } from '@/api/metgoApi'
 
 const ensembleData = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-const fetchEnsemble = async () => {
+const loadEnsemble = async () => {
+  loading.value = true
+  error.value = null
   try {
-    // Reemplaza fetch nativo si utilizas axios/req
-    const res = await fetch('/api/ensemble')
-    if (!res.ok) throw new Error('Error al conectar con el servidor')
-    const data = await res.json()
+    const data = await fetchEnsemble()
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('Sin datos de ensemble disponibles')
+    }
     ensembleData.value = data
   } catch (err) {
-    error.value = err.message
+    error.value =
+      err?.message ||
+      'El servicio de ensemble (OpenMeteo) no está disponible temporalmente.'
   } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
-  fetchEnsemble()
+  loadEnsemble()
 })
 </script>
 
@@ -29,14 +34,14 @@ onMounted(() => {
   <div class="ensemble-panel">
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      <p>Calculando consenso de 5 modelos globales...</p>
+      <p>Calculando consenso de modelos globales...</p>
     </div>
-    
+
     <div v-else-if="error" class="error-state">
-      <p>⚠️ {{ error }}</p>
-      <button @click="fetchEnsemble" class="btn-retry">Reintentar</button>
+      <p>{{ error }}</p>
+      <button type="button" @click="loadEnsemble" class="btn-retry">Reintentar</button>
     </div>
-    
+
     <div v-else class="ensemble-content">
       <MeteogramaAvanzado :ensembleData="ensembleData" />
     </div>
@@ -58,6 +63,8 @@ onMounted(() => {
   justify-content: center;
   height: 400px;
   color: var(--color-primary);
+  text-align: center;
+  padding: 1rem;
 }
 
 .spinner {
@@ -70,8 +77,8 @@ onMounted(() => {
   margin-bottom: 1rem;
 }
 
-@keyframes spin { 
-  to { transform: rotate(360deg); } 
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .btn-retry {

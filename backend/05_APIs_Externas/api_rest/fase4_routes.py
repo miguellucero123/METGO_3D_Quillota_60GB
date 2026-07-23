@@ -249,20 +249,44 @@ def register_fase4_routes(app: Flask) -> None:
 
     @app.get("/api/ensemble")
     def get_ensemble():
-        """Retorna el consenso de 5 modelos climáticos globales (Ensemble)"""
+        """Retorna el consenso de modelos climáticos globales (Ensemble).
+
+        Usa caché TTL + último dato bueno (mismo patrón que meteo) para evitar
+        503 cuando OpenMeteo falla de forma intermitente desde Render free.
+        """
         import sys
         import os
         backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         scripts_dir = os.path.join(backend_dir, "01_Sistema_Meteorologico", "scripts")
         if scripts_dir not in sys.path:
             sys.path.append(scripts_dir)
-            
+
         try:
             from ensemble_model import EnsembleMeteorologico
-            motor = EnsembleMeteorologico()
-            datos = motor.obtener_ensemble_diario(dias=7)
+
+            def _fetch():
+                motor = EnsembleMeteorologico()
+                return motor.obtener_ensemble_diario(dias=7)
+
+            datos = None
+            try:
+                gd = os.path.join(backend_dir, "08_Gestion_Datos")
+                if gd not in sys.path:
+                    sys.path.insert(0, gd)
+                from cache_openmeteo import get_json_cached
+
+                datos = get_json_cached(
+                    "ensemble|quillota|7",
+                    _fetch,
+                    es_valido=lambda x: isinstance(x, list) and len(x) > 0,
+                )
+            except ImportError:
+                datos = _fetch()
+
             if datos is None:
-                return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible (Ensemble)"}), 503
+                return jsonify({
+                    "error": "Servicio de OpenMeteo temporalmente no disponible (Ensemble)"
+                }), 503
             return jsonify(datos)
         except Exception as e:
             return jsonify({"error": str(e)}), 500
