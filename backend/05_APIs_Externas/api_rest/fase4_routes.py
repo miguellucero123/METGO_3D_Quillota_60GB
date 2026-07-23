@@ -249,10 +249,10 @@ def register_fase4_routes(app: Flask) -> None:
 
     @app.get("/api/ensemble")
     def get_ensemble():
-        """Retorna el consenso de modelos climáticos globales (Ensemble).
+        """Consenso multi-modelo (OpenMeteo) con caché y fallback a pronóstico.
 
-        Usa caché TTL + último dato bueno (mismo patrón que meteo) para evitar
-        503 cuando OpenMeteo falla de forma intermitente desde Render free.
+        Orden: caché TTL/last-good → OpenMeteo ensemble → pronóstico/meteo_store
+        (misma fuente que ya sirve /api/meteo cuando OpenMeteo falla en Render).
         """
         import sys
         import os
@@ -263,11 +263,59 @@ def register_fase4_routes(app: Flask) -> None:
 
         try:
             from ensemble_model import EnsembleMeteorologico
+            from api_rest import services
 
-            def _fetch():
+            def _desde_pronostico(estacion_id="quillota", dias=7):
+                """Degrada a pronóstico diario real (OpenMeteo cache / Supabase)."""
+                rows = services.pronostico_meteo(estacion_id, dias)
+                if not rows:
+                    return None
+                out = []
+                for r in rows:
+                    precip = float(r.get("precipitacion") or 0)
+                    tmin = r.get("temperatura_min")
+                    try:
+                        tmin_f = float(tmin) if tmin is not None else None
+                    except (TypeError, ValueError):
+                        tmin_f = None
+                    pop = r.get("probabilidad_lluvia", r.get("pop"))
+                    if pop is None:
+                        probabilidad = 100.0 if precip > 0.5 else (40.0 if precip > 0 else 0.0)
+                    else:
+                        probabilidad = float(pop)
+                    alerta = tmin_f is not None and tmin_f <= 2.5
+                    if tmin_f is not None and tmin_f < 0:
+                        tipo_helada = "Helada Radiativa (Alta Severidad)"
+                    elif alerta:
+                        tipo_helada = "Riesgo de Helada en Suelo"
+                    else:
+                        tipo_helada = "Ninguna"
+                    out.append({
+                        "fecha": r.get("fecha"),
+                        "precipitacion": {
+                            "mediana": round(precip, 1),
+                            "best_match": round(precip, 1),
+                            "minimo": round(precip, 1),
+                            "maximo": round(precip, 1),
+                            "probabilidad": round(probabilidad, 0),
+                        },
+                        "temperatura": {
+                            "min_mediana": round(tmin_f, 1) if tmin_f is not None else None,
+                            "alerta_helada": alerta,
+                            "tipo_helada": tipo_helada,
+                        },
+                        "fuente": "pronostico_degradado",
+                        "desde_cache": bool(r.get("desde_cache")),
+                        "origen_fallback": r.get("origen_fallback") or "pronostico_meteo",
+                    })
+                return out if out else None
+
+            def _fetch_multi():
                 motor = EnsembleMeteorologico()
                 return motor.obtener_ensemble_diario(dias=7)
 
+            # 1) Multi-modelo (con caché TTL / last-good). get_json_cached
+            #    traga excepciones → el fallback a pronóstico va FUERA.
             datos = None
             try:
                 gd = os.path.join(backend_dir, "08_Gestion_Datos")
@@ -277,15 +325,40 @@ def register_fase4_routes(app: Flask) -> None:
 
                 datos = get_json_cached(
                     "ensemble|quillota|7",
-                    _fetch,
+                    _fetch_multi,
                     es_valido=lambda x: isinstance(x, list) and len(x) > 0,
                 )
             except ImportError:
-                datos = _fetch()
+                try:
+                    datos = _fetch_multi()
+                except Exception as exc:
+                    app.logger.warning("ensemble multi: %s", exc)
+                    datos = None
 
-            if datos is None:
+            # 2) Si OpenMeteo multi-modelo no responde (típico en Render free),
+            #    degradar al mismo pronóstico/store que ya sirve /api/meteo.
+            if not datos:
+                try:
+                    datos = _desde_pronostico("quillota", 7)
+                    if datos:
+                        try:
+                            from cache_openmeteo import get_json_cached
+
+                            # Sembrar last-good para no repetir el camino lento.
+                            get_json_cached(
+                                "ensemble|quillota|7",
+                                lambda: datos,
+                                es_valido=lambda x: isinstance(x, list) and len(x) > 0,
+                            )
+                        except Exception:
+                            pass
+                except Exception as exc:
+                    app.logger.warning("ensemble fallback pronostico: %s", exc)
+                    datos = None
+
+            if not datos:
                 return jsonify({
-                    "error": "Servicio de OpenMeteo temporalmente no disponible (Ensemble)"
+                    "error": "Sin datos de ensemble ni pronóstico de respaldo disponible"
                 }), 503
             return jsonify(datos)
         except Exception as e:

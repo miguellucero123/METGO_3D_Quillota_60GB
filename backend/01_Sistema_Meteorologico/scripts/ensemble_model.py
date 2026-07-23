@@ -16,8 +16,20 @@ class EnsembleMeteorologico:
         # Modelos globales disponibles en OpenMeteo (forecast multi-model)
         self.modelos = ['ecmwf_ifs04', 'gfs_seamless', 'icon_seamless']
         self.base_url = "https://api.open-meteo.com/v1/forecast"
-        self.timeout = int(os.getenv('METGO_OPENMETEO_TIMEOUT', '25'))
-        self.max_retries = int(os.getenv('METGO_OPENMETEO_RETRIES', '3'))
+        # En Render free OpenMeteo suele fallar: fallar rápido y dejar que la
+        # ruta /api/ensemble sirva el fallback desde meteo_store/pronóstico.
+        on_render = bool(os.getenv("RENDER") or os.getenv("PORT"))
+        self.timeout = int(os.getenv(
+            "METGO_OPENMETEO_TIMEOUT",
+            "8" if on_render else "25",
+        ))
+        self.max_retries = int(os.getenv(
+            "METGO_OPENMETEO_RETRIES",
+            "1" if on_render else "3",
+        ))
+        self._skip_per_model = on_render and os.getenv(
+            "METGO_ENSEMBLE_PER_MODEL", "0"
+        ).lower() not in ("1", "true", "yes")
 
     def _get_json(self, params):
         """GET con reintentos ante 429/5xx y errores de red (típico en Render free)."""
@@ -61,6 +73,10 @@ class EnsembleMeteorologico:
         datos = self._get_json(params)
         if datos and 'daily' in datos:
             return self._procesar_estadisticas_diarias(datos)
+
+        if self._skip_per_model:
+            print("[ENSEMBLE] Multi-modelo falló; omitiendo per-model (Render) → fallback store")
+            return None
 
         print("[ENSEMBLE] Multi-modelo falló; reintentando modelo por modelo...")
         fusion = self._obtener_por_modelo(dias, daily_vars)

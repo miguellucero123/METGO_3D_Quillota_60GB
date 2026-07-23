@@ -28,6 +28,11 @@ services:
         value: "0"
       - key: METGO_ML_AUTO_TRAIN
         value: "1"
+      # Fallar rápido hacia meteo_store cuando OpenMeteo no responde desde Render
+      - key: METGO_OPENMETEO_TIMEOUT
+        value: "8"
+      - key: METGO_OPENMETEO_RETRIES
+        value: "1"
       - key: PYTHON_VERSION
         value: "3.11.9"
 

@@ -75,7 +75,16 @@ api.interceptors.response.use(
           'Recargue la página en 30 segundos.'
       }
     } else if (status === 503) {
-      msg = err.response?.data?.error ?? 'El servicio meteorológico (OpenMeteo) no está disponible temporalmente. Recargue en unos minutos.'
+      const bodyErr = err.response?.data?.error
+      if (url.includes('/ensemble')) {
+        msg =
+          bodyErr ??
+          'Ensemble no disponible (OpenMeteo bloqueado desde Render). Se reintentará con pronóstico de respaldo.'
+      } else {
+        msg =
+          bodyErr ??
+          'El servicio meteorológico (OpenMeteo) no está disponible temporalmente. Recargue en unos minutos.'
+      }
     }
     return Promise.reject(new Error(msg))
   }
