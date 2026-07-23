@@ -56,7 +56,7 @@ Estimaciones en **semanas efectivas** (dedicación parcial; una persona + IA). T
 | **E4** | Paine consume metgo-api (fallback OpenMeteo) | 1 sem | 2 SPAs, 1 backend |
 | **E5** | Backports UX a Quillota (toggle, °C/°F, cards) | 1 sem | Quillota mejorada ✅ 2026-07-23 |
 | **E6** | **Plantilla `metgo-site-template`** | 2 sem | Sitio nuevo en <1 día ✅ 2026-07-23 |
-| **E7** | **Copiapó — calidad del aire** | 3–4 sem | SPA aire + ICAP + salud 🔶 backend 2026-07-23 |
+| **E7** | **Copiapó — calidad del aire** | 3–4 sem | SPA aire + ICAP + salud 🔶 SPA `frontend/copiapo/` 2026-07-23 |
 | **E8** | **Mantos Blancos — minería** | 2–3 sem | SPA faena + alertas operacionales |
 | **E9** | Multi-tenant real + auth unificada | 2–3 sem | Login/roles por sitio |
 | **E10** | Calidad clase mundial I: testing + observabilidad | 3 sem | E2E + SLOs + alertas |
@@ -82,7 +82,7 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 
 ### E7 — Copiapó: pronóstico + contaminación atmosférica
 
-> **Estado (2026-07-23):** backend hecho — sitio `copiapo` (3 estaciones), `aire_service.py` (CAMS + ICAP + recomendaciones salud), rutas `/api/public/aire/*`, OpenAPI, migración `aire_registros`, tests. Smoke real OK (PM2.5 3.9 → ICAP 7.8 Bueno). **Pendiente:** SPA desde template, ETL programado, SINCA observado.
+> **Estado (2026-07-23):** backend hecho — sitio `copiapo` (3 estaciones), `aire_service.py` (CAMS + ICAP + recomendaciones salud), rutas `/api/public/aire/*`, OpenAPI, migración `aire_registros`, tests. Smoke real OK (PM2.5 3.9 → ICAP 7.8 Bueno). **SPA:** `frontend/copiapo/` (panel ICAP, pronóstico, histórico, tema ámbar). **Pendiente:** deploy Netlify, ETL programado, SINCA observado.
 
 **Enfoque:** salud ambiental urbana (polvo desértico, PM10 por vientos, episodios).
 
@@ -99,10 +99,13 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 - [ ] ETL: job aire cada 1–3 h (CAMS) + diario (SINCA)
 
 **Frontend (desde template):**
-- Vistas: Panel aire (AQI grande + semáforo), Pronóstico 5 días por contaminante, Mapa de estaciones con color por ICAP, Histórico
-- Charts reutilizados: `TimeSeriesChart` (PM2.5/PM10), `HorizontalBarChart` (ranking estaciones), `ComboMeteoChart` (viento vs PM)
-- Alertas: umbral ICAP → banner + (futuro) notificación push
-- Recomendaciones salud por categoría (análogo a recomendaciones agrícolas)
+- [x] SPA `frontend/copiapo/` — Panel ICAP, Pronóstico 5 días, Histórico, `site.config.js` ámbar
+- [x] Charts ECharts (PM2.5/PM10 + ICAP) + cards por estación
+- [x] Recomendaciones salud desde payload API
+- [ ] Deploy Netlify + CORS origen producción
+- [ ] Mapa de estaciones con color por ICAP (siguiente iteración)
+- [ ] Alertas: umbral ICAP → banner + (futuro) notificación push
+- [ ] ETL: job aire cada 1–3 h (CAMS) + diario (SINCA)
 
 ### E8 — Mantos Blancos (Antofagasta): enfoque minero-operacional
 

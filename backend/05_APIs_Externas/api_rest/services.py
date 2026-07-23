@@ -1010,8 +1010,19 @@ def health_check() -> dict[str, Any]:
     global _ULTIMA_VERIFICACION, _ULTIMO_ESTADO_OM, _ULTIMA_LATENCIA
     t0 = time.perf_counter()
     ahora = time.time()
-    
-    if ahora - _ULTIMA_VERIFICACION > 60:
+    cooldown_restante = 0
+    try:
+        from datos_reales_openmeteo import openmeteo_en_cooldown, openmeteo_cooldown_restante
+        if openmeteo_en_cooldown():
+            cooldown_restante = openmeteo_cooldown_restante()
+            _ULTIMO_ESTADO_OM = False
+            _ULTIMA_LATENCIA = 0
+            # No llamar a OpenMeteo mientras dure el rate limit
+            _ULTIMA_VERIFICACION = ahora
+    except ImportError:
+        pass
+
+    if cooldown_restante == 0 and ahora - _ULTIMA_VERIFICACION > 60:
         om = OpenMeteoData()
         with contextlib.redirect_stdout(io.StringIO()):
             _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=5)
@@ -1024,10 +1035,13 @@ def health_check() -> dict[str, Any]:
         stats = cache_stats()
     except ImportError:
         pass
-    return {
+    out = {
         "status": "ok" if _ULTIMO_ESTADO_OM else "degraded",
         "openmeteo": _ULTIMO_ESTADO_OM,
         "latencia_openmeteo_ms": _ULTIMA_LATENCIA,
         "timestamp": datetime.now().isoformat(),
         **stats,
     }
+    if cooldown_restante:
+        out["openmeteo_cooldown_s"] = cooldown_restante
+    return out

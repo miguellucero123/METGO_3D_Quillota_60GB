@@ -1,0 +1,12 @@
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Opcional: VITE_METGO_API=https://metgo-api.onrender.com/api
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

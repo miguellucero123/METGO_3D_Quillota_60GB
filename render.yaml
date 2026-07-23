@@ -19,7 +19,7 @@ services:
       - key: METGO_API_HOST
         value: 0.0.0.0
       - key: METGO_CORS_ORIGINS
-        value: https://metgo3d.netlify.app,https://metgo-3d-quillota-60gb.streamlit.app
+        value: https://metgo3d.netlify.app,https://metgo-3d-quillota-60gb.streamlit.app,https://metgo-paine.netlify.app,https://metgo-copiapo.netlify.app
       - key: METGO_STREAMLIT_CLOUD_URL
         value: https://metgo-streamlit.onrender.com
       - key: METGO_JWT_SECRET
@@ -28,11 +28,13 @@ services:
         value: "0"
       - key: METGO_ML_AUTO_TRAIN
         value: "1"
-      # Fallar rápido hacia meteo_store cuando OpenMeteo no responde desde Render
+      # Fallar rápido hacia meteo_store; cooldown tras HTTP 429
       - key: METGO_OPENMETEO_TIMEOUT
         value: "8"
       - key: METGO_OPENMETEO_RETRIES
-        value: "1"
+        value: "2"
+      - key: METGO_OPENMETEO_COOLDOWN
+        value: "120"
       - key: PYTHON_VERSION
         value: "3.11.9"
 

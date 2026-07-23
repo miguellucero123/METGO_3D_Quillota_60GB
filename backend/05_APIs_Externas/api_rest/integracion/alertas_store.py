@@ -32,15 +32,36 @@ def _path() -> Path:
     return Path("alertas_historial.json")
 
 
+_ALERTAS_SUPABASE_WARNED = False
+
+
 def _load() -> list[dict[str, Any]]:
+    global _ALERTAS_SUPABASE_WARNED
     try:
         from api_rest.integracion.supabase_store import get_supabase_client
         client = get_supabase_client()
         if client:
             res = client.table("alertas").select("*").order("registrado_en", desc=True).limit(500).execute()
-            return res.data
+            return res.data or []
     except Exception as e:
-        print(f"Error cargando alertas de Supabase: {e}")
+        # Tabla aún no migrada en Supabase (PGRST205): usar historial local, sin spam.
+        msg = str(e)
+        if not _ALERTAS_SUPABASE_WARNED:
+            _ALERTAS_SUPABASE_WARNED = True
+            if "PGRST205" in msg or "alertas" in msg.lower():
+                print(
+                    "Alertas Supabase: tabla 'public.alertas' no existe; "
+                    "usando historial local (aviso único)."
+                )
+            else:
+                print(f"Error cargando alertas de Supabase: {e}")
+    # Fallback archivo local
+    path = _path()
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
     return []
 
 

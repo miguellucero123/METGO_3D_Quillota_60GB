@@ -33,13 +33,33 @@ class EnsembleMeteorologico:
 
     def _get_json(self, params):
         """GET con reintentos ante 429/5xx y errores de red (típico en Render free)."""
+        try:
+            from datos_reales_openmeteo import (
+                openmeteo_en_cooldown,
+                marcar_openmeteo_cooldown,
+            )
+            if openmeteo_en_cooldown():
+                return None
+        except ImportError:
+            marcar_openmeteo_cooldown = None
+
         ultimo_error = None
         for intento in range(1, self.max_retries + 1):
             try:
                 response = requests.get(self.base_url, params=params, timeout=self.timeout)
                 if response.status_code == 200:
                     return response.json()
-                if response.status_code in (429, 500, 502, 503, 504) and intento < self.max_retries:
+                if response.status_code == 429:
+                    if marcar_openmeteo_cooldown:
+                        ra = response.headers.get('Retry-After')
+                        try:
+                            wait = int(ra) if ra else 120
+                        except ValueError:
+                            wait = 120
+                        marcar_openmeteo_cooldown(wait)
+                    ultimo_error = RuntimeError("OpenMeteo HTTP 429")
+                    break
+                if response.status_code in (500, 502, 503, 504) and intento < self.max_retries:
                     time.sleep(min(2 ** intento, 8))
                     continue
                 ultimo_error = RuntimeError(f"OpenMeteo HTTP {response.status_code}")

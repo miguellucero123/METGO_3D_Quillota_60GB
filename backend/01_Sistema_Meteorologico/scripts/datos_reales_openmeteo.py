@@ -40,6 +40,34 @@ _ALIASES_ESTACION = {
     'Valparaíso': 'Valparaiso',
 }
 
+# Circuit breaker: tras HTTP 429 no golpear OpenMeteo durante N segundos
+# (Render free + muchas pantallas Vue = rate limit fácil).
+_OM_COOLDOWN_UNTIL = 0.0
+_OM_COOLDOWN_SEC = int(os.getenv('METGO_OPENMETEO_COOLDOWN', '120'))
+
+
+def openmeteo_en_cooldown() -> bool:
+    return time.time() < _OM_COOLDOWN_UNTIL
+
+
+def openmeteo_cooldown_restante() -> int:
+    return max(0, int(_OM_COOLDOWN_UNTIL - time.time()))
+
+
+def marcar_openmeteo_cooldown(segundos: int | None = None) -> None:
+    global _OM_COOLDOWN_UNTIL
+    secs = int(segundos if segundos is not None else _OM_COOLDOWN_SEC)
+    secs = max(30, min(secs, 300))
+    until = time.time() + secs
+    if until > _OM_COOLDOWN_UNTIL:
+        _OM_COOLDOWN_UNTIL = until
+        print(f"[OpenMeteo] cooldown {secs}s (rate limit / 429)")
+
+
+def limpiar_openmeteo_cooldown() -> None:
+    global _OM_COOLDOWN_UNTIL
+    _OM_COOLDOWN_UNTIL = 0.0
+
 
 class OpenMeteoData:
     """Clase para obtener datos reales de OpenMeteo API"""
@@ -83,7 +111,11 @@ class OpenMeteoData:
 
         Devuelve (status_code, json|None). status_code=0 indica error de red.
         Reintenta ante 429/5xx y errores de red (típicos en Render free).
+        Si hay cooldown por 429 reciente, no llama a la API (ahorra cuota).
         """
+        if openmeteo_en_cooldown():
+            return 429, None
+
         intentos = intentos or self.max_retries
         timeout = timeout or self.timeout
         ultimo_error = None
@@ -92,7 +124,19 @@ class OpenMeteoData:
                 response = requests.get(url, params=params, timeout=timeout)
                 if response.status_code == 200:
                     return 200, response.json()
-                if response.status_code in (429, 500, 502, 503, 504) and intento < intentos:
+                if response.status_code == 429:
+                    retry_after = response.headers.get('Retry-After')
+                    try:
+                        wait = int(retry_after) if retry_after else _OM_COOLDOWN_SEC
+                    except ValueError:
+                        wait = _OM_COOLDOWN_SEC
+                    marcar_openmeteo_cooldown(wait)
+                    if intento < intentos:
+                        time.sleep(min(max(wait, 2), 15))
+                        continue
+                    print(f"ERROR - OpenMeteo HTTP 429 (intento {intento}/{intentos})")
+                    return 429, None
+                if response.status_code in (500, 502, 503, 504) and intento < intentos:
                     time.sleep(min(2 ** intento, 8))
                     continue
                 print(f"ERROR - OpenMeteo HTTP {response.status_code} (intento {intento}/{intentos})")

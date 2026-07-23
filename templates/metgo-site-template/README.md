@@ -22,7 +22,7 @@ Plantilla multi-sitio (etapa **E6**). Base viva: repo **`metgo-paine`**. Identid
    - `GET /api/public/estaciones?sitio=<slug>`
    - SPA muestra colores del `theme` y datos (o fallback Open-Meteo)
 
-Sitio de prueba ya registrado en API: **`demo`** (`demo_norte`, `demo_sur`). Copiá `site.config.example.js` → `site.config.js` en un clone y cambiá solo lo necesario.
+Sitio de prueba ya registrado en API: **`demo`**. Copiapó (E7): SPA en `frontend/copiapo/` del monorepo Quillota.
 
 ## Archivos de esta carpeta
 

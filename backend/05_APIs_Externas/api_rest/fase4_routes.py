@@ -311,6 +311,13 @@ def register_fase4_routes(app: Flask) -> None:
                 return out if out else None
 
             def _fetch_multi():
+                try:
+                    from datos_reales_openmeteo import openmeteo_en_cooldown
+                    if openmeteo_en_cooldown():
+                        print("[ENSEMBLE] OpenMeteo en cooldown → saltando multi-modelo")
+                        return None
+                except ImportError:
+                    pass
                 motor = EnsembleMeteorologico()
                 return motor.obtener_ensemble_diario(dias=7)
 
