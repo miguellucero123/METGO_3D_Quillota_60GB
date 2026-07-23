@@ -65,12 +65,39 @@ paths:
     get:
       tags: [meteo]
       summary: Listar estaciones
+      description: |
+        Por defecto `sitio=quillota` (Valle de Aconcagua).
+        Usar `sitio=paine` para Torres del Paine (METGO Glaciares).
       security: [{ bearerAuth: [] }]
+      parameters:
+        - name: sitio
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [quillota, paine]
+            default: quillota
+          description: Sitio METGO multi-producto
+      responses:
+        "200":
+          description: Lista de estaciones (id, nombre, lat, lon, sitio, …)
+        "401":
+          description: Sin token
+  /api/public/estaciones:
+    get:
+      tags: [meteo]
+      summary: Listar estaciones (público)
+      parameters:
+        - name: sitio
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [quillota, paine]
+            default: quillota
       responses:
         "200":
           description: Lista de estaciones
-        "401":
-          description: Sin token
   /api/meteo/{estacion_id}:
     get:
       tags: [meteo]

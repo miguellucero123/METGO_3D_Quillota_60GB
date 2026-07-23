@@ -1,33 +1,75 @@
-// Tema ECharts METGO — mismo formato que el "Motor Predictivo Multi-Modelo (Ensemble)".
-// Usar estos helpers en todo gráfico nuevo para mantener el formato unificado.
+/** Tema ECharts METGO — colores desde tokens CSS (site-aware). */
 
-export const CHART_COLORS = {
-  verde: '#00ffaa',
-  celeste: '#38bdf8',
-  azul: '#0284c7',
-  ambar: '#f59e0b',
-  rojo: '#ef4444',
-  eje: '#374151',
-  texto: '#9ca3af',
-  grilla: '#1f2937',
+function cssVar(name, fallback) {
+  if (typeof document === 'undefined') return fallback
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+    return v || fallback
+  } catch {
+    return fallback
+  }
+}
+
+function hexToRgba(hex, alpha) {
+  const h = (hex || '').replace('#', '')
+  if (h.length !== 6) return `rgba(0, 255, 170, ${alpha})`
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+/** Snapshot de tokens (llamar desde computed de charts para reactividad al tema). */
+export function resolveChartColors() {
+  const primary = cssVar('--color-primary', '#00ffaa')
+  const accent = cssVar('--color-accent', '#0ea5e9')
+  const accentLight = cssVar('--color-accent-light', '#38bdf8')
+  return {
+    verde: primary,
+    primary,
+    celeste: accentLight,
+    azul: accent,
+    ambar: cssVar('--color-warning', '#f59e0b'),
+    rojo: cssVar('--color-danger', '#ef4444'),
+    eje: cssVar('--color-border', '#374151'),
+    texto: cssVar('--color-text-secondary', '#9ca3af'),
+    grilla: cssVar('--color-surface-elevated', '#1f2937'),
+    primaryRgba: (a) => hexToRgba(primary, a),
+  }
+}
+
+/** Compat: objeto estático con defaults Quillota (se actualiza al llamar refreshChartColors). */
+export const CHART_COLORS = resolveChartColors()
+
+export function refreshChartColors() {
+  Object.assign(CHART_COLORS, resolveChartColors())
+  return CHART_COLORS
 }
 
 export function tooltipOscuro(formatter) {
+  const c = resolveChartColors()
   return {
     trigger: 'axis',
     axisPointer: { type: 'cross', animation: false },
     backgroundColor: 'rgba(17, 24, 39, 0.9)',
-    borderColor: 'rgba(0, 255, 170, 0.3)',
+    borderColor: c.primaryRgba(0.3),
     textStyle: { color: '#f3f4f6' },
     ...(formatter ? { formatter } : {}),
   }
 }
 
 export function leyendaSuperior(items) {
-  return { data: items, textStyle: { color: CHART_COLORS.texto }, top: 0 }
+  const c = resolveChartColors()
+  return {
+    data: items,
+    textStyle: { color: c.texto },
+    top: 0,
+    selectedMode: true,
+  }
 }
 
 export function zoomSlider() {
+  const c = resolveChartColors()
   return [
     { type: 'inside', xAxisIndex: 0, filterMode: 'filter' },
     {
@@ -35,8 +77,8 @@ export function zoomSlider() {
       xAxisIndex: 0,
       height: 25,
       bottom: 5,
-      borderColor: 'rgba(0, 255, 170, 0.2)',
-      textStyle: { color: CHART_COLORS.texto },
+      borderColor: c.primaryRgba(0.2),
+      textStyle: { color: c.texto },
     },
   ]
 }
@@ -46,26 +88,29 @@ export function grillaBase() {
 }
 
 export function ejeCategoria(labels) {
+  const c = resolveChartColors()
   return {
     type: 'category',
     data: labels,
-    axisLine: { lineStyle: { color: CHART_COLORS.eje } },
-    axisLabel: { color: CHART_COLORS.texto },
+    axisLine: { lineStyle: { color: c.eje } },
+    axisLabel: { color: c.texto },
   }
 }
 
 export function ejeValor(name, color, extra = {}) {
+  const c = resolveChartColors()
   return {
     type: 'value',
     name,
-    axisLine: { show: true, lineStyle: { color } },
-    splitLine: { lineStyle: { color: CHART_COLORS.grilla, type: 'dashed' } },
-    axisLabel: { color: CHART_COLORS.texto },
+    axisLine: { show: true, lineStyle: { color: color || c.primary } },
+    splitLine: { lineStyle: { color: c.grilla, type: 'dashed' } },
+    axisLabel: { color: c.texto },
     ...extra,
   }
 }
 
 export function serieBarrasAzules(name, data, extra = {}) {
+  const c = resolveChartColors()
   return {
     name,
     type: 'bar',
@@ -78,8 +123,8 @@ export function serieBarrasAzules(name, data, extra = {}) {
         x2: 0,
         y2: 1,
         colorStops: [
-          { offset: 0, color: CHART_COLORS.celeste },
-          { offset: 1, color: CHART_COLORS.azul },
+          { offset: 0, color: c.celeste },
+          { offset: 1, color: c.azul },
         ],
       },
       borderRadius: [4, 4, 0, 0],
@@ -90,6 +135,7 @@ export function serieBarrasAzules(name, data, extra = {}) {
 }
 
 export function serieLineaVerde(name, data, extra = {}) {
+  const c = resolveChartColors()
   return {
     name,
     type: 'line',
@@ -97,8 +143,8 @@ export function serieLineaVerde(name, data, extra = {}) {
     smooth: true,
     symbol: 'circle',
     symbolSize: 6,
-    itemStyle: { color: CHART_COLORS.verde },
-    lineStyle: { width: 3, shadowColor: 'rgba(0, 255, 170, 0.5)', shadowBlur: 10 },
+    itemStyle: { color: c.primary },
+    lineStyle: { width: 3, shadowColor: c.primaryRgba(0.5), shadowBlur: 10 },
     areaStyle: {
       color: {
         type: 'linear',
@@ -107,8 +153,8 @@ export function serieLineaVerde(name, data, extra = {}) {
         x2: 0,
         y2: 1,
         colorStops: [
-          { offset: 0, color: 'rgba(0, 255, 170, 0.25)' },
-          { offset: 1, color: 'rgba(0, 255, 170, 0.0)' },
+          { offset: 0, color: c.primaryRgba(0.25) },
+          { offset: 1, color: c.primaryRgba(0) },
         ],
       },
     },

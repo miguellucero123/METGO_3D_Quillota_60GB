@@ -11,8 +11,9 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { formatoDiaCorto } from '@/utils/meteoDates'
+import { exportarEchartsPng } from '@/utils/exportChart'
 import {
-  CHART_COLORS,
+  resolveChartColors,
   tooltipOscuro,
   leyendaSuperior,
   zoomSlider,
@@ -49,6 +50,7 @@ const props = defineProps({
 
 const showMax = ref(true)
 const showMin = ref(true)
+const chartRef = ref(null)
 
 const axisLabels = computed(() =>
   props.labels.map((l) => {
@@ -60,9 +62,11 @@ const axisLabels = computed(() =>
   })
 )
 
-const lineColor = computed(() => props.color || CHART_COLORS.verde)
+const colors = computed(() => resolveChartColors())
+const lineColor = computed(() => props.color || colors.value.primary)
 
 const chartOption = computed(() => {
+  const c = colors.value
   const series = []
   const legendItems = []
 
@@ -73,7 +77,7 @@ const chartOption = computed(() => {
       lineStyle: {
         width: 3,
         color: lineColor.value,
-        shadowColor: 'rgba(0, 255, 170, 0.35)',
+        shadowColor: c.primaryRgba(0.35),
         shadowBlur: 8,
       },
       areaStyle: props.showArea
@@ -85,8 +89,8 @@ const chartOption = computed(() => {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: props.fillColor || 'rgba(0, 255, 170, 0.25)' },
-                { offset: 1, color: 'rgba(0, 255, 170, 0)' },
+                { offset: 0, color: props.fillColor || c.primaryRgba(0.25) },
+                { offset: 1, color: c.primaryRgba(0) },
               ],
             },
           }
@@ -105,8 +109,8 @@ const chartOption = computed(() => {
       smooth: true,
       symbol: 'circle',
       symbolSize: 4,
-      itemStyle: { color: CHART_COLORS.celeste },
-      lineStyle: { width: 2, color: CHART_COLORS.celeste, type: 'dashed' },
+      itemStyle: { color: c.celeste },
+      lineStyle: { width: 2, color: c.celeste, type: 'dashed' },
     })
   }
 
@@ -131,13 +135,18 @@ const chartOption = computed(() => {
       ejeValor(props.yAxisTitle || props.unit || '', lineColor.value, {
         axisLabel: {
           formatter: props.unit ? `{value} ${props.unit}` : '{value}',
-          color: CHART_COLORS.texto,
+          color: c.texto,
         },
       }),
     ],
     series,
   }
 })
+
+function exportPng() {
+  const inst = chartRef.value?.chart || chartRef.value
+  exportarEchartsPng(inst, props.exportName || 'serie_temporal')
+}
 </script>
 
 <template>
@@ -151,10 +160,13 @@ const chartOption = computed(() => {
         <input v-model="showMin" type="checkbox" />
         {{ seriesMinLabel }}
       </label>
+      <button v-if="labels.length" type="button" class="export" @click="exportPng">
+        PNG
+      </button>
     </div>
     <div v-if="!labels.length" class="empty">Sin serie temporal</div>
     <div v-else class="chart-wrap" :style="{ height: height + 'px' }">
-      <v-chart class="chart" :option="chartOption" autoresize />
+      <v-chart ref="chartRef" class="chart" :option="chartOption" autoresize />
     </div>
   </div>
 </template>
@@ -167,8 +179,21 @@ const chartOption = computed(() => {
   margin-bottom: 0.35rem;
   font-size: 0.75rem;
   color: var(--color-text-muted, #94a3b8);
+  align-items: center;
+  flex-wrap: wrap;
 }
 .ts-chart__ctrl label { display: flex; align-items: center; gap: 0.25rem; cursor: pointer; }
+.export {
+  margin-left: auto;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #334155);
+  background: var(--color-surface, #1e293b);
+  color: var(--color-primary, #00ffaa);
+  cursor: pointer;
+  font-family: inherit;
+}
 .chart-wrap {
   width: 100%;
   background: var(--color-surface, #1e293b);

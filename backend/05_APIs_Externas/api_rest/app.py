@@ -92,8 +92,9 @@ def create_app() -> Flask:
 
     @app.get("/api/public/estaciones")
     def public_estaciones():
-        """Estaciones principales (solo lectura, sin JWT)."""
-        return jsonify(services.listar_estaciones())
+        """Estaciones por sitio (solo lectura, sin JWT). Query: sitio=quillota|paine."""
+        sitio = request.args.get("sitio")
+        return jsonify(services.listar_estaciones(sitio=sitio))
 
     @app.get("/api/public/meteo/<estacion_id>")
     def public_meteo(estacion_id: str):
@@ -115,8 +116,10 @@ def create_app() -> Flask:
     @app.get("/api/estaciones")
     @auth_required
     def estaciones():
-        return jsonify(services.listar_estaciones(getattr(g, "tenant_id", None)))
-
+        sitio = request.args.get("sitio")
+        return jsonify(
+            services.listar_estaciones(getattr(g, "tenant_id", None), sitio=sitio)
+        )
     @app.get("/api/meteo/<estacion_id>")
     @auth_required
     def meteo_resumen(estacion_id: str):

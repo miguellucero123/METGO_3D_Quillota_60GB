@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart } from 'echarts/charts'
@@ -12,6 +12,7 @@ import {
 import VChart from 'vue-echarts'
 import { formatoDiaCorto } from '@/utils/meteoDates'
 import { exportarDatosCSV } from '@/utils/exportData'
+import { exportarEchartsPng } from '@/utils/exportChart'
 import {
   CHART_COLORS,
   tooltipOscuro,
@@ -95,16 +96,24 @@ function exportCsv() {
   }))
   exportarDatosCSV(rows, props.exportName)
 }
+
+const chartRef = ref(null)
+
+function exportPng() {
+  const inst = chartRef.value?.chart || chartRef.value
+  exportarEchartsPng(inst, props.exportName || 'combo_meteo')
+}
 </script>
 
 <template>
   <div class="combo-meteo">
     <div class="combo-meteo__ctrl">
       <button type="button" class="export" @click="exportCsv">CSV</button>
+      <button type="button" class="export" @click="exportPng">PNG</button>
     </div>
     <div v-if="!labels.length" class="empty">Sin datos combinados</div>
     <div v-else class="chart-wrap" :style="{ height: height + 'px' }">
-      <v-chart class="chart" :option="chartOption" autoresize />
+      <v-chart ref="chartRef" class="chart" :option="chartOption" autoresize />
     </div>
   </div>
 </template>

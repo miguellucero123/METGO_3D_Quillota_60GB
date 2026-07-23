@@ -51,7 +51,7 @@ class OpenMeteoData:
         self.timeout = int(os.getenv('METGO_OPENMETEO_TIMEOUT', '25'))
         self.max_retries = int(os.getenv('METGO_OPENMETEO_RETRIES', '3'))
         
-        # Coordenadas de las estaciones METGO
+        # Coordenadas de las estaciones METGO (multi-sitio)
         self.estaciones = {
             'Quillota': {'lat': -32.8833, 'lon': -71.25},
             'Santiago': {'lat': -33.4489, 'lon': -70.6693},
@@ -61,7 +61,14 @@ class OpenMeteoData:
             'Los Nogales': {'lat': -32.9333, 'lon': -71.2167},
             'Hijuelas': {'lat': -32.8000, 'lon': -71.1333},
             'Limache': {'lat': -33.0167, 'lon': -71.2667},
-            'Olmue': {'lat': -33.0000, 'lon': -71.2167}
+            'Olmue': {'lat': -33.0000, 'lon': -71.2167},
+            # Torres del Paine (sitio=paine)
+            'Base Torres': {'lat': -50.9417, 'lon': -72.9667},
+            'Glaciar Grey': {'lat': -51.0, 'lon': -73.23},
+            'Valle del Frances': {'lat': -50.9667, 'lon': -73.0833},
+            'Paine Grande': {'lat': -50.9500, 'lon': -73.1167},
+            'Campamento Italiano': {'lat': -50.9583, 'lon': -73.0667},
+            'Los Cuernos': {'lat': -50.9750, 'lon': -73.0500},
         }
     
     def _get_json(self, url, params, intentos=None, timeout=None):

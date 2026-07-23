@@ -135,8 +135,8 @@ function irEstacion(id) {
   router.push('/meteo')
 }
 
-function onBarClick({ stationId }) {
-  irEstacion(stationId)
+function onBarClick({ id }) {
+  irEstacion(id)
 }
 </script>
 

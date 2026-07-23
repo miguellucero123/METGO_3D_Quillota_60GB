@@ -249,27 +249,27 @@ OpenMeteo resumen → services.recomendaciones_agricolas(slug, avanzado=True)
 
 ### 6.3 Mejoras interactivas recomendadas (prioridad)
 
-**Fase A — sin nueva dependencia (rápido)**
+**Fase A — sin nueva dependencia (rapido)**
 
-- [ ] Tooltips HTML en barras (hover: estación, valor, fecha, fuente).
-- [ ] Click en barra → cambiar `estacionActiva` en store y navegar a `/meteo`.
-- [ ] Leyenda toggle (mostrar/ocultar series en `TimeSeriesChart`).
-- [ ] Selector rango fechas (7 / 14 / 30 días) en histórico.
-- [ ] Skeleton loaders unificados mientras OpenMeteo responde (12–15 s primera vez).
+- [x] Tooltips HTML en barras — HorizontalBarChart + ECharts.
+- [x] Click en barra -> estacionActiva + navegar /meteo — Comparativo, Metricas, Monitoreo.
+- [x] Leyenda toggle en TimeSeriesChart (checkboxes max/min).
+- [x] Selector rango fechas en historico — MeteoHistoricoView.
+- [x] Skeleton loaders — SkeletonLoader.vue + clase .skeleton.
 
-**Fase B — librería de charts (evaluar una sola)**
+**Fase B — libreria de charts**
 
-Opciones: **Apache ECharts** (zoom, brush, buena para meteo) o **Chart.js** (más ligero).
+Stack: **ECharts 5 + vue-echarts** (echartsTheme.js).
 
-- [ ] Pronóstico 7d: combo barras (lluvia) + línea (T°) con doble eje.
-- [ ] Comparativo valle: small multiples por estación.
-- [ ] ML: barras agrupadas con tooltip Δ y color por magnitud del error.
-- [ ] Export PNG/CSV desde cada gráfico.
+- [x] Pronostico 7d combo lluvia + T — ComboMeteoChart.vue.
+- [ ] Comparativo valle: small multiples (parcial via SparklineGrid).
+- [ ] ML: barras agrupadas con tooltip Delta y color por error.
+- [x] Export PNG/CSV — exportChart.js + botones en charts.
 
 **Fase C — mapa y viento**
 
-- [ ] Mapa Valle de Aconcagua con pins por estación (color = T° máx).
-- [ ] Rosa de vientos / stick plot si se agrega endpoint horario.
+- [x] Mapa Valle — ValleEstacionesMeteoMap.vue.
+- [x] Rosa de vientos — WindRoseChart.vue (stick plot horario: pendiente endpoint).
 
 ### 6.4 Streamlit (Plotly) — alinear con Vue
 

@@ -76,17 +76,41 @@ function irEstacion(estacionId) {
       </div>
 
       <div v-if="estacionesDetalle.length" class="chart-grid">
-        <SectionCard title="T° máxima por estación (hoy)" subtitle="Comparación en el valle">
+        <SectionCard title="T° máxima por estación (hoy)" subtitle="Clic en barra → meteorología">
           <template #icon><BarChart3 /></template>
-          <HorizontalBarChart :labels="labelsEst" :values="tempsMax" unit="°C" kind="temp" />
+          <HorizontalBarChart
+            :labels="labelsEst"
+            :values="tempsMax"
+            :station-ids="estacionesDetalle.map((r) => r.estacion_id || r.id)"
+            unit="°C"
+            kind="temp"
+            clickable
+            @bar-click="({ id }) => irEstacion(id)"
+          />
         </SectionCard>
 
-        <SectionCard title="T° mínima por estación (hoy)" subtitle="Riesgo de heladas">
-          <HorizontalBarChart :labels="labelsEst" :values="tempsMin" unit="°C" kind="temp" />
+        <SectionCard title="T° mínima por estación (hoy)" subtitle="Riesgo de heladas · clic → meteo">
+          <HorizontalBarChart
+            :labels="labelsEst"
+            :values="tempsMin"
+            :station-ids="estacionesDetalle.map((r) => r.estacion_id || r.id)"
+            unit="°C"
+            kind="temp"
+            clickable
+            @bar-click="({ id }) => irEstacion(id)"
+          />
         </SectionCard>
 
-        <SectionCard title="Precipitación hoy" subtitle="mm acumulados por estación">
-          <HorizontalBarChart :labels="labelsEst" :values="lluvia" unit=" mm" kind="precip" />
+        <SectionCard title="Precipitación hoy" subtitle="mm · clic → meteo">
+          <HorizontalBarChart
+            :labels="labelsEst"
+            :values="lluvia"
+            :station-ids="estacionesDetalle.map((r) => r.estacion_id || r.id)"
+            unit=" mm"
+            kind="precip"
+            clickable
+            @bar-click="({ id }) => irEstacion(id)"
+          />
         </SectionCard>
       </div>
 

@@ -27,10 +27,10 @@ La auditoría detectó checklists que contradicen el código ya desplegado:
 
 ### 0.2 Gaps reales de gráficos §6.3 (los que tocaremos al compartir charts)
 
-- [ ] Leyenda toggle interactiva en `TimeSeriesChart`
-- [ ] Click en barra (`HorizontalBarChart`) → set `estacionActiva` + navegar `/meteo` (consistente en todas las vistas)
-- [ ] Export PNG universal (ya existe en algunos; unificar helper)
-- [ ] Skeleton loaders unificados para cargas OpenMeteo largas
+- [x] Leyenda toggle interactiva en `TimeSeriesChart`
+- [x] Click en barra (`HorizontalBarChart`) → set `estacionActiva` + navegar `/meteo` (consistente en todas las vistas)
+- [x] Export PNG universal (ya existe en algunos; unificar helper)
+- [x] Skeleton loaders unificados para cargas OpenMeteo largas
 - [ ] ML: barras agrupadas con Δ coloreado (posterior, no bloquea)
 
 **Por qué antes:** el trío `TimeSeriesChart` / `ComboMeteoChart` / `HorizontalBarChart` se copiará a Paine; mejor portarlos ya mejorados y no mantener dos versiones.
@@ -46,6 +46,8 @@ La auditoría detectó checklists que contradicen el código ya desplegado:
 ---
 
 ## Etapa 1 — Design system compartido (tokens + tema ECharts site-aware)
+
+> **Estado (2026-07-23):** hecho — `echartsTheme.js` lee `--color-primary` / accent en runtime.
 
 ### 1.1 Un solo archivo de tokens
 
@@ -66,6 +68,8 @@ La auditoría detectó checklists que contradicen el código ya desplegado:
 ---
 
 ## Etapa 2 — Gráficos ECharts en Paine
+
+> **Estado (2026-07-23):** hecho — TimeSeries / Combo / HorizontalBar en Dashboard, LugarDetalle, Precipitación.
 
 ### 2.1 Dependencias
 
@@ -91,6 +95,8 @@ npm i echarts vue-echarts
 ---
 
 ## Etapa 3 — Datos compartidos: campo `sitio` + endpoint + contrato
+
+> **Estado (2026-07-23):** hecho en código — catálogo `estaciones_catalogo.py`, `?sitio=paine|quillota`, OpenAPI, CORS example, migración SQL `estaciones`. Aplicar SQL en Supabase Dashboard cuando se despliegue. ETL Paine aún no incluido (cuota OpenMeteo).
 
 ### 3.1 Migración Supabase
 

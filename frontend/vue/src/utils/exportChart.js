@@ -1,4 +1,4 @@
-/** Exportar SVG a PNG desde el cliente. */
+/** Exportar SVG o instancia ECharts a PNG desde el cliente. */
 
 export function exportarSvgPng(svgElement, nombreArchivo = 'grafico') {
   if (!svgElement) return
@@ -20,7 +20,7 @@ export function exportarSvgPng(svgElement, nombreArchivo = 'grafico') {
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = '#0b1120'
     ctx.fillRect(0, 0, w, h)
     ctx.drawImage(img, 0, 0, w, h)
     canvas.toBlob((png) => {
@@ -34,4 +34,18 @@ export function exportarSvgPng(svgElement, nombreArchivo = 'grafico') {
     URL.revokeObjectURL(url)
   }
   img.src = url
+}
+
+/** @param {import('echarts').EChartsType | null | undefined} chartInstance */
+export function exportarEchartsPng(chartInstance, nombreArchivo = 'grafico') {
+  if (!chartInstance || typeof chartInstance.getDataURL !== 'function') return
+  const url = chartInstance.getDataURL({
+    type: 'png',
+    pixelRatio: 2,
+    backgroundColor: '#0b1120',
+  })
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${nombreArchivo}.png`
+  a.click()
 }

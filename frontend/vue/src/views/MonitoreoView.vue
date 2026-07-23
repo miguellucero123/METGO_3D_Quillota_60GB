@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { BellRing, AlertTriangle, Info, Activity, Radio } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import MetricCard from '@/components/ui/MetricCard.vue'
@@ -14,12 +15,27 @@ import {
 import { hoyChile } from '@/utils/meteoDates'
 
 const store = useMetgoStore()
+const router = useRouter()
 const alertas = ref([])
 const historial = ref([])
 const comparativo = ref([])
 const sensores = ref([])
 const ambito = ref('estacion')
 const cargando = ref(true)
+
+const labelsEst = computed(() => comparativo.value.map((r) => r.estacion))
+const tempsMax = computed(() => comparativo.value.map((r) => r.temperatura_max))
+const stationIds = computed(() =>
+  comparativo.value.map((r) => r.estacion_id || r.id)
+)
+
+function irEstacion(id) {
+  if (!id) return
+  if (typeof store.setEstacion === 'function') store.setEstacion(id)
+  else store.estacionActiva = id
+  store.cargarDatosMeteo()
+  router.push('/meteo')
+}
 
 function iconFor(nivel) {
   if (nivel === 'warning') return AlertTriangle
@@ -39,9 +55,6 @@ const conteo = computed(() => {
   const i = alertasFiltradas.value.filter((a) => a.nivel !== 'warning').length
   return { warning: w, info: i, total: alertasFiltradas.value.length }
 })
-
-const labelsEst = computed(() => comparativo.value.map((r) => r.estacion))
-const tempsMax = computed(() => comparativo.value.map((r) => r.temperatura_max))
 
 async function cargar() {
   cargando.value = true
@@ -118,7 +131,15 @@ watch(ambito, cargar)
       subtitle="Referencia para monitoreo multi-zona"
     >
       <template #icon><Activity /></template>
-      <HorizontalBarChart :labels="labelsEst" :values="tempsMax" unit="°C" kind="temp" />
+      <HorizontalBarChart
+        :labels="labelsEst"
+        :values="tempsMax"
+        :station-ids="stationIds"
+        unit="°C"
+        kind="temp"
+        clickable
+        @bar-click="({ id }) => irEstacion(id)"
+      />
       <div class="table-wrap">
         <table class="data-table">
           <thead>

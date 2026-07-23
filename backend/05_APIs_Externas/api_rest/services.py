@@ -17,6 +17,16 @@ import pandas as pd
 
 from datos_reales_openmeteo import OpenMeteoData, obtener_datos_meteorologicos_reales
 
+from api_rest.estaciones_catalogo import (
+    COORDS,
+    ESTACIONES_PRINCIPALES,
+    META_EXTRA,
+    NOMBRE_A_SLUG,
+    SLUG_A_NOMBRE,
+    normalizar_sitio,
+    slugs_de_sitio,
+)
+
 # Caché OpenMeteo (Fase 1.4)
 _CACHE_MOD = None
 _CACHE_JSON = None
@@ -39,29 +49,7 @@ for _p in Path(__file__).resolve().parents:
             pass
         break
 
-# Slug (Vue) -> nombre OpenMeteo
-SLUG_A_NOMBRE: dict[str, str] = {
-    "quillota": "Quillota",
-    "los_nogales": "Los Nogales",
-    "hijuelas": "Hijuelas",
-    "limache": "Limache",
-    "olmue": "Olmue",
-    "santiago": "Santiago",
-    "valparaiso": "Valparaiso",
-    "vina_del_mar": "Viña del Mar",
-    "casablanca": "Casablanca",
-}
-
-NOMBRE_A_SLUG = {v: k for k, v in SLUG_A_NOMBRE.items()}
-
-# Estaciones expuestas en el dashboard principal
-ESTACIONES_PRINCIPALES = [
-    "quillota",
-    "los_nogales",
-    "hijuelas",
-    "limache",
-    "olmue",
-]
+# Slug / catálogo: ver api_rest.estaciones_catalogo (multi-sitio)
 
 
 def slug_a_nombre(estacion_id: str) -> str:
@@ -75,10 +63,15 @@ def nombre_a_slug(nombre: str) -> str:
     return NOMBRE_A_SLUG.get(nombre, nombre.lower().replace(" ", "_"))
 
 
-def listar_estaciones(tenant_id: str | None = None) -> list[dict[str, Any]]:
+def listar_estaciones(
+    tenant_id: str | None = None,
+    sitio: str | None = None,
+) -> list[dict[str, Any]]:
+    """Lista estaciones. ``sitio`` default ``quillota`` (cero impacto SPA actual)."""
     om = OpenMeteoData()
-    slugs = ESTACIONES_PRINCIPALES
-    if tenant_id:
+    sitio_n = normalizar_sitio(sitio)
+    slugs = slugs_de_sitio(sitio_n)
+    if tenant_id and sitio_n == "quillota":
         try:
             from api_rest.tenants import estaciones_de_tenant
 
@@ -87,18 +80,24 @@ def listar_estaciones(tenant_id: str | None = None) -> list[dict[str, Any]]:
             pass
     resultado = []
     for slug in slugs:
-        nombre = SLUG_A_NOMBRE[slug]
-        if nombre in om.estaciones:
-            coords = om.estaciones[nombre]
-            resultado.append(
-                {
-                    "id": slug,
-                    "nombre": nombre,
-                    "activa": True,
-                    "lat": coords["lat"],
-                    "lon": coords["lon"],
-                }
-            )
+        nombre = SLUG_A_NOMBRE.get(slug)
+        if not nombre:
+            continue
+        coords = om.estaciones.get(nombre) or COORDS.get(slug)
+        if not coords:
+            continue
+        item: dict[str, Any] = {
+            "id": slug,
+            "nombre": nombre,
+            "activa": True,
+            "lat": coords["lat"],
+            "lon": coords["lon"],
+            "sitio": sitio_n,
+        }
+        extra = META_EXTRA.get(slug)
+        if extra:
+            item.update(extra)
+        resultado.append(item)
     return resultado
 
 
