@@ -27,22 +27,31 @@ import {
   Database,
   Wrench,
   Layers,
+  Home,
 } from 'lucide-vue-next'
 
-const STORAGE_KEY = 'metgo_sidebar_groups_v1'
+const STORAGE_KEY = 'metgo_sidebar_groups_v2'
 
 const auth = useAuthStore()
 const route = useRoute()
 
-/** Enlaces principales — siempre visibles */
-const principal = [
-  { to: '/', label: 'Panel general', icon: LayoutDashboard, exact: true },
-  { to: '/estado', label: 'Estado sistema', icon: Activity },
-  { to: '/metricas', label: 'Métricas globales', icon: Gauge },
-  { to: '/favoritos', label: 'Favoritos', icon: Star, requiresAuth: true },
-]
-
-const grupos = [
+const gruposDef = [
+  {
+    id: 'principal',
+    label: 'Principal',
+    icon: Home,
+    match: (path) =>
+      path === '/' ||
+      path.startsWith('/estado') ||
+      path.startsWith('/metricas') ||
+      path.startsWith('/favoritos'),
+    items: [
+      { to: '/', label: 'Panel general', icon: LayoutDashboard, exact: true },
+      { to: '/estado', label: 'Estado sistema', icon: Activity },
+      { to: '/metricas', label: 'Métricas globales', icon: Gauge },
+      { to: '/favoritos', label: 'Favoritos', icon: Star, requiresAuth: true },
+    ],
+  },
   {
     id: 'meteo',
     label: 'Meteorología',
@@ -103,31 +112,49 @@ const grupos = [
       { to: '/modulos', label: 'Catálogo', icon: Grid3x3 },
     ],
   },
+  {
+    id: 'cuenta',
+    label: 'Cuenta',
+    icon: Wrench,
+    match: (path) =>
+      path.startsWith('/preferencias') || path.startsWith('/configuracion'),
+    items: [
+      { to: '/preferencias', label: 'Preferencias', icon: UserCog, requiresAuth: true },
+      { to: '/configuracion', label: 'Configuración', icon: Settings },
+    ],
+  },
 ]
 
-const cuenta = [
-  { to: '/preferencias', label: 'Preferencias', icon: UserCog, requiresAuth: true },
-  { to: '/configuracion', label: 'Configuración', icon: Settings },
-]
-
-function filtrarAuth(items) {
-  return items.filter((link) => !link.requiresAuth || auth.isAuthenticated)
-}
-
-const principalVisible = computed(() => filtrarAuth(principal))
-const cuentaVisible = computed(() => filtrarAuth(cuenta))
+const grupos = computed(() =>
+  gruposDef
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((link) => !link.requiresAuth || auth.isAuthenticated),
+    }))
+    .filter((g) => g.items.length > 0)
+)
 
 function loadOpenState() {
+  const defaults = {
+    principal: true,
+    meteo: false,
+    datos: false,
+    ops: false,
+    sistema: false,
+    cuenta: false,
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (parsed && typeof parsed === 'object') return parsed
+      if (parsed && typeof parsed === 'object') {
+        return { ...defaults, ...parsed }
+      }
     }
   } catch {
     /* ignore */
   }
-  return { meteo: true, datos: false, ops: false, sistema: false }
+  return defaults
 }
 
 const openGroups = ref(loadOpenState())
@@ -141,9 +168,10 @@ function persistOpen() {
 }
 
 function toggleGroup(id) {
+  const actualmente = Boolean(openGroups.value[id])
   openGroups.value = {
     ...openGroups.value,
-    [id]: !openGroups.value[id],
+    [id]: !actualmente,
   }
   persistOpen()
 }
@@ -152,35 +180,30 @@ function isGroupOpen(id) {
   return Boolean(openGroups.value[id])
 }
 
-/** Auto-expandir solo el grupo activo; el resto de grupos colapsables se cierra. */
+/** Solo al cambiar de ruta: abrir el grupo de la página actual. */
 function ensureActiveGroupOpen() {
   const path = route.path
-  const next = { ...openGroups.value }
   let activeId = null
-  for (const g of grupos) {
+  for (const g of gruposDef) {
     if (g.match(path)) {
       activeId = g.id
       break
     }
   }
   if (!activeId) return
-  let changed = false
-  for (const g of grupos) {
-    const shouldOpen = g.id === activeId
-    if (Boolean(next[g.id]) !== shouldOpen) {
-      next[g.id] = shouldOpen
-      changed = true
-    }
+  const next = { ...openGroups.value }
+  for (const g of gruposDef) {
+    next[g.id] = g.id === activeId
   }
-  if (changed) {
-    openGroups.value = next
-    persistOpen()
-  }
+  openGroups.value = next
+  persistOpen()
 }
 
 watch(
   () => route.path,
-  () => ensureActiveGroupOpen(),
+  (path, prev) => {
+    if (path !== prev) ensureActiveGroupOpen()
+  },
   { immediate: true }
 )
 
@@ -200,42 +223,31 @@ function linkIsActive(link) {
     </div>
 
     <nav class="sidebar__nav">
-      <!-- Principal -->
-      <div class="nav-section" aria-label="Principal">
-        <RouterLink
-          v-for="link in principalVisible"
-          :key="link.to"
-          :to="link.to"
-          class="nav-link"
-          :class="{ active: linkIsActive(link) }"
-        >
-          <component :is="link.icon" class="nav-link__icon" aria-hidden="true" />
-          <span>{{ link.label }}</span>
-        </RouterLink>
-      </div>
-
-      <!-- Grupos colapsables -->
       <div
         v-for="grupo in grupos"
         :key="grupo.id"
         class="nav-group"
-        :class="{ 'nav-group--open': isGroupOpen(grupo.id), 'nav-group--active': grupo.match(route.path) }"
+        :class="{
+          'nav-group--open': isGroupOpen(grupo.id),
+          'nav-group--active': grupo.match(route.path),
+          'nav-group--cuenta': grupo.id === 'cuenta',
+        }"
       >
         <button
           type="button"
           class="nav-group__header"
           :aria-expanded="isGroupOpen(grupo.id)"
           :aria-controls="`nav-group-${grupo.id}`"
-          @click="toggleGroup(grupo.id)"
+          @click.stop.prevent="toggleGroup(grupo.id)"
         >
           <component :is="grupo.icon" class="nav-group__icon" aria-hidden="true" />
           <span class="nav-group__label">{{ grupo.label }}</span>
           <ChevronDown class="nav-group__chevron" aria-hidden="true" />
         </button>
         <div
+          v-show="isGroupOpen(grupo.id)"
           :id="`nav-group-${grupo.id}`"
           class="nav-group__body"
-          :hidden="!isGroupOpen(grupo.id)"
         >
           <RouterLink
             v-for="link in grupo.items"
@@ -248,24 +260,6 @@ function linkIsActive(link) {
             <span>{{ link.label }}</span>
           </RouterLink>
         </div>
-      </div>
-
-      <!-- Cuenta (separada al fondo del nav) -->
-      <div v-if="cuentaVisible.length" class="nav-section nav-section--cuenta" aria-label="Cuenta">
-        <p class="nav-section__label">
-          <Wrench class="nav-section__label-icon" aria-hidden="true" />
-          Cuenta
-        </p>
-        <RouterLink
-          v-for="link in cuentaVisible"
-          :key="link.to"
-          :to="link.to"
-          class="nav-link"
-          :class="{ active: linkIsActive(link) }"
-        >
-          <component :is="link.icon" class="nav-link__icon" aria-hidden="true" />
-          <span>{{ link.label }}</span>
-        </RouterLink>
       </div>
     </nav>
 
@@ -324,39 +318,14 @@ function linkIsActive(link) {
   gap: 0.35rem;
 }
 
-.nav-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.nav-section--cuenta {
-  margin-top: auto;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.nav-section__label {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0 0 0.25rem;
-  padding: 0.15rem 0.7rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-
-.nav-section__label-icon {
-  width: 0.85rem;
-  height: 0.85rem;
-  opacity: 0.7;
-}
-
 .nav-group {
   border-radius: var(--radius-md);
+}
+
+.nav-group--cuenta {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .nav-group--active .nav-group__header {
