@@ -11,7 +11,9 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py
+    # gunicorn con threads: sin esto una llamada lenta a OpenMeteo bloquea todo
+    # el servidor y Render corta las demás peticiones sin cabeceras CORS.
+    startCommand: gunicorn wsgi_api:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
     healthCheckPath: /api/health
     envVars:
       - key: METGO_API_HOST

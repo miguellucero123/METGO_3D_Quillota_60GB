@@ -296,26 +296,32 @@ def create_app() -> Flask:
 app = create_app()
 
 
+def ml_bootstrap() -> None:
+    """Entrena/sincroniza modelos al arrancar (usado por main() y por gunicorn)."""
+    if os.getenv("METGO_ML_AUTO_TRAIN", "1").lower() in ("0", "false", "no"):
+        return
+    try:
+        from api_rest.integracion.ml_train_runner import ensure_modelos_servibles
+
+        boot = ensure_modelos_servibles()
+        if boot and boot.get("ok"):
+            print(
+                f"ML bootstrap: {boot.get('entrenados', 0)} modelos entrenados "
+                f"({boot.get('origen_datos', '?')}), servibles={boot.get('registry_servibles')}"
+            )
+        elif boot and boot.get("error"):
+            print(f"ML bootstrap omitido: {boot['error']}")
+        from api_rest.integracion import ml_registry
+
+        reg = ml_registry.sincronizar_registro()
+        print(f"ML registry: {reg.get('servibles', 0)}/{reg.get('total', 0)} servibles (legacy_scan={reg.get('legacy_scan')})")
+    except Exception as exc:
+        print(f"ML bootstrap omitido: {exc}")
+
+
 def main() -> None:
     # Render/Railway inyectan PORT; en local use METGO_API_PORT (8080)
-    if os.getenv("METGO_ML_AUTO_TRAIN", "1").lower() not in ("0", "false", "no"):
-        try:
-            from api_rest.integracion.ml_train_runner import ensure_modelos_servibles
-
-            boot = ensure_modelos_servibles()
-            if boot and boot.get("ok"):
-                print(
-                    f"ML bootstrap: {boot.get('entrenados', 0)} modelos entrenados "
-                    f"({boot.get('origen_datos', '?')}), servibles={boot.get('registry_servibles')}"
-                )
-            elif boot and boot.get("error"):
-                print(f"ML bootstrap omitido: {boot['error']}")
-            from api_rest.integracion import ml_registry
-
-            reg = ml_registry.sincronizar_registro()
-            print(f"ML registry: {reg.get('servibles', 0)}/{reg.get('total', 0)} servibles (legacy_scan={reg.get('legacy_scan')})")
-        except Exception as exc:
-            print(f"ML bootstrap omitido: {exc}")
+    ml_bootstrap()
 
     port = int(os.getenv("PORT", os.getenv("METGO_API_PORT", "8080")))
     default_host = "0.0.0.0" if os.getenv("PORT") else "127.0.0.1"
@@ -326,7 +332,9 @@ def main() -> None:
     vue_dir = "frontend/vue" if metgo_paths.LAYOUT_CAPAS else "04_Dashboards_Unificados/frontend_vue"
     print(f"Interfaz Vue    -> http://127.0.0.1:5173 (cd {vue_dir} && npm run dev)")
     print("NO abra :8080 en el navegador para la UI; ese puerto es solo la API.")
-    app.run(host=host, port=port, debug=debug)
+    # threaded=True: sin esto, una llamada lenta a OpenMeteo bloquea todas las
+    # demás peticiones del SPA (en Render el proxy las corta sin cabeceras CORS).
+    app.run(host=host, port=port, debug=debug, threaded=True)
 
 
 if __name__ == "__main__":
