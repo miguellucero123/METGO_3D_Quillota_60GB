@@ -21,9 +21,10 @@ import WeatherScene from '@/components/meteo/WeatherScene.vue'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
 import MlProjectionChart from '@/components/charts/MlProjectionChart.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
+import TipoDatoBadge from '@/components/meteo/TipoDatoBadge.vue'
 import { fetchPronostico, fetchAlertas, fetchRecomendacionesAgricolas, mlPredictBatch } from '@/api/metgoApi'
 import { mapMlProjectionItems, ML_VARS_DASHBOARD } from '@/utils/mlProjection'
-import { diaDeFila } from '@/utils/meteoDates'
+import { diaDeFila, seriePronosticoPorDia } from '@/utils/meteoDates'
 import {
   riesgoHelada,
   necesidadRiego,
@@ -33,13 +34,16 @@ import { useFormatTemp } from '@/composables/useFormatTemp'
 
 const store = useMetgoStore()
 const { formatTemperatura, unit: tempUnit } = useFormatTemp()
-const pronostico = ref([])
+const pronosticoRaw = ref([])
 const alertas = ref([])
 const recomendaciones = ref([])
 const cargandoExtra = ref(false)
 const mlProyecciones = ref([])
 const cargandoMl = ref(false)
 const pronosticoError = ref('')
+
+/** Misma serie para gráfico y tabla (hoy Chile + futuros, 1 fila/día). */
+const pronostico = computed(() => seriePronosticoPorDia(pronosticoRaw.value, 7))
 
 const labelsPron = computed(() =>
   pronostico.value.map((r) => diaDeFila(r) || String(r.fecha ?? '').slice(0, 10))
@@ -60,7 +64,7 @@ async function cargarResumen() {
     fetchAlertas(store.estacionActiva),
     fetchRecomendacionesAgricolas(store.estacionActiva),
   ])
-  pronostico.value = pRes.status === 'fulfilled' ? pRes.value : []
+  pronosticoRaw.value = pRes.status === 'fulfilled' ? pRes.value : []
   if (pRes.status === 'rejected') {
     pronosticoError.value = pRes.reason?.message || 'Error al cargar pronóstico'
   } else if (!pronostico.value.length) {
@@ -103,6 +107,7 @@ watch(() => store.estacionActiva, cargarResumen)
       <h2 class="page-title">Panel general</h2>
       <p class="page-subtitle">Resumen integrado meteorológico y agrícola — {{ store.estacionNombre }}</p>
       <div class="page-meta">
+        <TipoDatoBadge v-if="store.tipoDatoResumen" :tipo="store.tipoDatoResumen" />
         <span v-if="d?.fuente" class="badge badge--neutral">{{ d.fuente }}</span>
         <span
           :class="['badge', store.apiOnline ? 'badge--success' : 'badge--danger']"
@@ -215,8 +220,8 @@ watch(() => store.estacionActiva, cargarResumen)
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in pronostico.slice(0, 5)" :key="row.fecha">
-                  <td>{{ row.fecha?.slice(0, 10) }}</td>
+                <tr v-for="row in pronostico" :key="row.fecha">
+                  <td>{{ diaDeFila(row) }}</td>
                   <td>{{ row.temperatura }}°</td>
                   <td>{{ row.temperatura_max }}°</td>
                   <td>{{ row.temperatura_min }}°</td>

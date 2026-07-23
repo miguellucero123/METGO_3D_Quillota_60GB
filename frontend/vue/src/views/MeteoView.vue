@@ -20,10 +20,11 @@ import SectionCard from '@/components/ui/SectionCard.vue'
 import WeatherScene from '@/components/meteo/WeatherScene.vue'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
 import PronosticoHeladasPanel from '@/components/meteo/PronosticoHeladasPanel.vue'
+import TipoDatoBadge from '@/components/meteo/TipoDatoBadge.vue'
 import { riesgoHelada } from '@/utils/agroInsights'
 import { fetchPronostico, fetchHistorico, fetchVientoHorario } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
-import { hoyChile, seriesHistoricoPorDia, diaDeFila } from '@/utils/meteoDates'
+import { hoyChile, seriesHistoricoPorDia, diaDeFila, seriePronosticoPorDia } from '@/utils/meteoDates'
 import ComboMeteoChart from '@/components/charts/ComboMeteoChart.vue'
 import WindRoseChart from '@/components/charts/WindRoseChart.vue'
 import EnsemblePredictivoPanel from '@/components/meteo/EnsemblePredictivoPanel.vue'
@@ -34,7 +35,7 @@ const store = useMetgoStore()
 const favorites = useFavoritesStore()
 const prefs = usePreferencesStore()
 const { formatTemperatura } = useFormatTemp()
-const pronostico = ref([])
+const pronosticoRaw = ref([])
 const historico = ref([])
 const cargandoPron = ref(false)
 const cargandoHist = ref(false)
@@ -49,6 +50,8 @@ const d = computed(() => store.datosMeteo)
 const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
 const viento = computed(() => condicionViento(d.value?.viento))
 const historicoFiltrado = computed(() => seriesHistoricoPorDia(historico.value, 14))
+/** Misma serie para combo, banda térmica y tabla. */
+const pronostico = computed(() => seriePronosticoPorDia(pronosticoRaw.value, 7))
 const lluviaHist = computed(() => acumuladoPrecipitacion(historicoFiltrado.value))
 const lluviaPron = computed(() => acumuladoPrecipitacion(pronostico.value))
 const rangoTermico = computed(() => {
@@ -90,7 +93,7 @@ async function cargar() {
     fetchHistorico(store.estacionActiva, 14),
     fetchVientoHorario(store.estacionActiva, 7),
   ])
-  pronostico.value = pRes.status === 'fulfilled' ? pRes.value : []
+  pronosticoRaw.value = pRes.status === 'fulfilled' ? pRes.value : []
   historico.value = hRes.status === 'fulfilled' ? hRes.value : []
   vientoHorario.value = vRes.status === 'fulfilled' ? vRes.value : null
   cargandoPron.value = false
@@ -108,6 +111,7 @@ watch(() => store.estacionActiva, cargar)
       <h2 class="page-title">Meteorología</h2>
       <p class="page-subtitle">
         Condiciones y pronóstico · {{ store.estacionNombre }}
+        <TipoDatoBadge v-if="store.tipoDatoResumen" :tipo="store.tipoDatoResumen" />
         <span v-if="d?.fuente" class="badge badge--neutral">{{ d.fuente }}</span>
         <button
           type="button"
@@ -121,7 +125,7 @@ watch(() => store.estacionActiva, cargar)
       </p>
       <div class="page-meta">
         <label class="inline-select">
-          Análisis:
+          Preferencia de carga:
           <select v-model="store.tipoAnalisis" @change="store.cargarDatosMeteo()">
             <option value="pronostico">Pronóstico</option>
             <option value="historico">Histórico</option>
@@ -324,7 +328,7 @@ watch(() => store.estacionActiva, cargar)
             </thead>
             <tbody>
               <tr v-for="row in pronostico" :key="row.fecha">
-                <td>{{ row.fecha?.slice(0, 10) }}</td>
+                <td>{{ diaDeFila(row) }}</td>
                 <td>{{ row.temperatura }}°</td>
                 <td>{{ row.temperatura_max }}°</td>
                 <td>{{ row.temperatura_min }}°</td>

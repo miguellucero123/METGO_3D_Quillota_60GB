@@ -34,9 +34,10 @@
 - [x] **Archive 5 años** (2026-07-22 local): 1827 días × 5 estaciones = **9135** registros; `errores: []`
 - [x] Lectura históricos largos: paginación Supabase (>1000) + Vue ventanas 90/365/5 años
 - [x] Export CSV/JSON en `/meteo/historico` + test `test_historico_fechas.py`
+- [x] Badge `tipo_dato` observado/pronóstico (`TipoDatoBadge`) en Panel y Meteorología
+- [x] Pronóstico Vue: tabla + gráfico con `seriePronosticoPorDia` (misma serie)
+- [x] Mapa valle: coords desde store/API + `DEFAULT_COORDS` alineados
 - [ ] Códigos Agromet/DMC reales *(diferido: requiere registro oficial; stub en `fuentes_oficiales_chile.py`)*
-- [ ] Badge `tipo_dato` observado/pronóstico en Vue store
-- [ ] Mapa estaciones en `/meteo/comparativo`
 
 ### F — Limpieza + verificación — HECHA (automático) / smoke visual opcional
 - [x] Legacy + backups + notebooks movidos

@@ -39,6 +39,9 @@ export const useMetgoStore = defineStore('metgo', () => {
 
   const resumenMeteo = computed(() => datosMeteo.value)
 
+  /** Fuente efectiva del resumen API (observado preferente vs pronóstico). */
+  const tipoDatoResumen = computed(() => datosMeteo.value?.tipo_dato || null)
+
   function setEstacion(id) {
     if (id && estacionActiva.value !== id) {
       estacionActiva.value = id
@@ -160,6 +163,7 @@ export const useMetgoStore = defineStore('metgo', () => {
     error,
     apiOnline,
     tipoAnalisis,
+    tipoDatoResumen,
     estacionNombre,
     comparativoEstaciones,
     riegoPorCultivo,

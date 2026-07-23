@@ -60,17 +60,27 @@ function rgbColorDe(v) {
   return [r, Math.round(90 + n * 40), b]
 }
 
+function coordsDe(id) {
+  const fromStore = store.estaciones.find((e) => e.id === id)
+  if (fromStore?.lat != null && fromStore?.lon != null) {
+    return { lat: Number(fromStore.lat), lon: Number(fromStore.lon) }
+  }
+  return {}
+}
+
 const puntos = computed(() => {
   const map = new Map((datos.value || []).map((r) => [r.estacion_id, r]))
   return estacionesGeo.map((e) => {
     const r = map.get(e.id) || {}
     const val = valorDe(r)
     const unidad = props.variable === 'precipitacion' ? 'mm' : props.variable === 'nubosidad' ? '%' : '°C'
-    return { 
-      ...e, 
-      value: val, 
+    const coords = coordsDe(e.id)
+    return {
+      ...e,
+      ...coords,
+      value: val,
       color: rgbColorDe(val),
-      text: `${val}${unidad}` 
+      text: `${val}${unidad}`,
     }
   })
 })

@@ -172,11 +172,11 @@ Spec completa: `openapi.yaml`
 
 ### 4.5 Mejoras meteo pendientes (para el agente)
 
-- [ ] Unificar `tipoAnalisis` del store Vue con `tipo_dato` del API (mostrar badge “observado/pronóstico”).
-- [ ] Pronóstico en Vue: tabla + gráfico siempre sincronizados (misma deduplicación que `metgoApi.js`).
+- [x] Unificar `tipoAnalisis` del store Vue con `tipo_dato` del API (badge Observado/Pronóstico en Panel y Meteorología) — 2026-07-22.
+- [x] Pronóstico en Vue: tabla + gráfico siempre sincronizados (`seriePronosticoPorDia` en Dashboard y MeteoView).
 - [x] Export CSV/JSON de series desde `/meteo/historico` (2026-07-22).
 - [x] Rosa de vientos en `/meteo/historico` (WindRoseChart; dirección diaria si viene en serie).
-- [ ] Mapa estaciones Valle (Leaflet/MapLibre) en `/meteo/comparativo`.
+- [x] Mapa estaciones Valle en `/meteo/comparativo` (coords API/store + DEFAULT alineado a OpenMeteo).
 - [x] Tests de regresión: histórico sin fechas > `hoy_chile()` (`tests/test_historico_fechas.py`).
 - [x] Históricos largos: Archive en Supabase + ventanas 90/365/1825 en Vue + paginación PostgREST.
 

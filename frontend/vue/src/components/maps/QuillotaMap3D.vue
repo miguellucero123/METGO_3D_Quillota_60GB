@@ -46,12 +46,12 @@ let deckInstance = null;
 let layersConfig = [];
 
 const DEFAULT_COORDS = {
-  quillota: { lon: -71.25, lat: -32.88 },
-  los_nogales: { lon: -71.21, lat: -32.73 },
-  hijuelas: { lon: -71.14, lat: -32.80 },
-  limache: { lon: -71.27, lat: -33.00 },
-  olmue: { lon: -71.18, lat: -33.00 }
-};
+  quillota: { lon: -71.25, lat: -32.8833 },
+  los_nogales: { lon: -71.2167, lat: -32.9333 },
+  hijuelas: { lon: -71.1333, lat: -32.8 },
+  limache: { lon: -71.2667, lat: -33.0167 },
+  olmue: { lon: -71.2167, lat: -33.0 },
+}
 
 const getLayers = async () => {
   const { TerrainLayer } = await import('@deck.gl/geo-layers');

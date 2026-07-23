@@ -79,7 +79,11 @@ watch(() => store.estacionActiva, cargar)
             </select>
           </label>
         </div>
-        <p class="muted">El tipo de análisis afecta la carga de datos en Meteorología al actualizar.</p>
+        <p class="muted">
+          Preferencia de petición al API. El badge <strong>Observado / Pronóstico</strong> en
+          Meteorología y Panel muestra el <code>tipo_dato</code> efectivo del resumen (la API
+          prioriza observado del día).
+        </p>
         <button type="button" class="btn" style="margin-top: 0.75rem" @click="store.cargarDatosMeteo()">
           Aplicar y actualizar datos
         </button>
