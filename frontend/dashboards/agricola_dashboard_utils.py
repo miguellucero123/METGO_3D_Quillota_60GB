@@ -78,6 +78,14 @@ def cargar_contexto_agricola(estacion_nombre: str, cultivo_label: str) -> dict[s
 
     recs = recomendaciones_agricolas(slug, avanzado=True)
 
+    economico: dict[str, Any] = {}
+    try:
+        from api_rest.integracion import agricola_extra
+
+        economico = agricola_extra.analisis_economico(slug)
+    except Exception:
+        pass
+
     temp = float(resumen.get("temperatura") or 0)
     return {
         "estacion_id": slug,
@@ -99,4 +107,5 @@ def cargar_contexto_agricola(estacion_nombre: str, cultivo_label: str) -> dict[s
         "recomendaciones_api": recs,
         "riego": riego,
         "cultivo_id": cultivo_id,
+        "economico": economico,
     }

@@ -219,11 +219,11 @@ OpenMeteo resumen → services.recomendaciones_agricolas(slug, avanzado=True)
 
 ### 5.5 Mejoras agrícolas pendientes
 
-- [ ] Alinear cultivo `uva` (Vue) con slug registry (`vid` / catálogo API).
-- [ ] Endpoint económico visible en 8503 (hoy solo Vue `/agricola`).
-- [ ] Cronograma agrícola desde reglas + pronóstico lluvia (no calendario fijo Lunes/Miércoles).
-- [ ] Integrar reporte módulo 02 en PDF/HTML desde Vue (no solo Streamlit).
-- [ ] Alertas agrícolas cruzadas con `generar_alertas` + recomendaciones en una sola timeline.
+- [x] Alinear cultivo `uva` (Vue) con slug registry (`vid` / catálogo API) — catálogo usa `vid`; alias `uva→vid` en API client.
+- [x] Endpoint económico visible en Vue `/agricola` y Streamlit 8503 (`analisis_economico`).
+- [x] Cronograma agrícola desde reglas + pronóstico lluvia (`cronograma_riego` + `RiegoTimeline`).
+- [x] Reporte módulo 02 exportable JSON desde Vue (`AgricolaEconomicoPanel` + `/agricola/.../avanzado`).
+- [x] Alertas agrícolas cruzadas: timeline unificada (`AgricolaOpsTimeline` = alertas API + helada + módulo 02).
 
 ---
 

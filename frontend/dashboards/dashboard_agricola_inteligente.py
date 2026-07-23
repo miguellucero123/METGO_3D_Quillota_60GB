@@ -212,6 +212,21 @@ with col4:
             value=f"{mm_hoy} mm",
             delta=str(riego_api.get("accion", ""))[:24],
         )
+
+eco = ctx.get("economico") or {}
+if eco:
+    st.subheader("Análisis económico (API)")
+    eco_cols = st.columns(3)
+    with eco_cols[0]:
+        ahorro = eco.get("ahorro_estimado_clp_mes")
+        st.metric(
+            "Ahorro estimado",
+            f"{int(ahorro):,} CLP/mes".replace(",", ".") if ahorro is not None else "—",
+        )
+    with eco_cols[1]:
+        st.write(eco.get("nota") or eco.get("resumen") or "Proyección módulo económico")
+    with eco_cols[2]:
+        st.caption(f"Fuente: {eco.get('fuente', '/api/agricola/.../economico')}")
     else:
         st.metric(
             label="Riego",

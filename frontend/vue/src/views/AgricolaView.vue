@@ -6,17 +6,27 @@ import { useMetgoStore } from '@/stores/metgo'
 import AgricolaAlertStrip from '@/components/agricola/AgricolaAlertStrip.vue'
 import AgricolaKpiGrid from '@/components/agricola/AgricolaKpiGrid.vue'
 import AgricolaStatusCards from '@/components/agricola/AgricolaStatusCards.vue'
+import AgricolaOpsTimeline from '@/components/agricola/AgricolaOpsTimeline.vue'
+import AgricolaEconomicoPanel from '@/components/agricola/AgricolaEconomicoPanel.vue'
 import RiegoBarChart from '@/components/agricola/RiegoBarChart.vue'
 import RiegoTimeline from '@/components/agricola/RiegoTimeline.vue'
 import ValleMapMini from '@/components/agricola/ValleMapMini.vue'
 import SkeletonLoader from '@/components/ui/SkeletonLoader.vue'
 import { CULTIVOS_CATALOG } from '@/utils/agroColors'
+import {
+  fetchAlertas,
+  fetchAgricolaEconomico,
+  fetchAgricolaAvanzado,
+} from '@/api/metgoApi'
 
 const store = useMetgoStore()
 const router = useRouter()
 
 const cultivoActivo = ref('palto')
 const cargandoVista = ref(false)
+const alertas = ref([])
+const economico = ref(null)
+const reporteAvanzado = ref(null)
 
 const resumenMeteo = computed(() => store.resumenMeteo)
 const comparativoEstaciones = computed(() => store.comparativoEstaciones ?? {})
@@ -59,6 +69,14 @@ async function cargarTodo() {
       store.fetchRecomendaciones(estacionActiva.value),
       store.fetchCronograma(estacionActiva.value, cultivoActivo.value),
     ])
+    const [aRes, eRes, rRes] = await Promise.allSettled([
+      fetchAlertas(estacionActiva.value),
+      fetchAgricolaEconomico(estacionActiva.value),
+      fetchAgricolaAvanzado(estacionActiva.value),
+    ])
+    alertas.value = aRes.status === 'fulfilled' ? aRes.value || [] : []
+    economico.value = eRes.status === 'fulfilled' ? eRes.value : null
+    reporteAvanzado.value = rRes.status === 'fulfilled' ? rRes.value : null
   } finally {
     cargandoVista.value = false
   }
@@ -151,6 +169,16 @@ onMounted(cargarTodo)
     </div>
 
     <div class="card">
+      <AgricolaOpsTimeline
+        :alertas="alertas"
+        :recomendaciones="recomendaciones"
+        :resumen="resumenMeteo"
+        :cultivo="cultivoActivo"
+        :loading="cargandoVista"
+      />
+    </div>
+
+    <div class="card">
       <RiegoTimeline
         :cronograma="cronograma"
         :cultivo-label="cultivoLabel"
@@ -158,11 +186,18 @@ onMounted(cargarTodo)
       />
     </div>
 
+    <AgricolaEconomicoPanel
+      :economico="economico"
+      :reporte-avanzado="reporteAvanzado"
+      :estacion-id="estacionActiva"
+      :loading="cargandoVista"
+    />
+
     <div class="card">
       <details class="recs-details">
         <summary class="card-header recs-summary">
           <div class="recs-summary-row">
-            <h3>Recomendaciones módulo 02</h3>
+            <h3>Recomendaciones módulo 02 (detalle)</h3>
             <ChevronDown :size="16" aria-hidden="true" />
           </div>
           <span class="card-meta">Motor avanzado · heladas, plagas, cosecha</span>

@@ -37,6 +37,7 @@
 - [x] Badge `tipo_dato` observado/pronóstico (`TipoDatoBadge`) en Panel y Meteorología
 - [x] Pronóstico Vue: tabla + gráfico con `seriePronosticoPorDia` (misma serie)
 - [x] Mapa valle: coords desde store/API + `DEFAULT_COORDS` alineados
+- [x] §5.5 agrícola: timeline ops + económico Vue/8503 + export reporte 02 JSON
 - [ ] Códigos Agromet/DMC reales *(diferido: requiere registro oficial; stub en `fuentes_oficiales_chile.py`)*
 
 ### F — Limpieza + verificación — HECHA (automático) / smoke visual opcional
