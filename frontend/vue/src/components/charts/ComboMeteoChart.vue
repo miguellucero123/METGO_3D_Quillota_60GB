@@ -18,6 +18,7 @@ import {
   tooltipOscuro,
   leyendaSuperior,
   zoomSlider,
+  zoomInside,
   grillaBase,
   ejeCategoria,
   ejeValor,
@@ -68,7 +69,7 @@ const chartOption = computed(() => ({
     return html
   }),
   legend: leyendaSuperior(['Temperatura máx', 'Precipitación']),
-  dataZoom: props.labels.length > 10 ? zoomSlider() : [{ type: 'inside', xAxisIndex: 0 }],
+  dataZoom: props.labels.length > 10 ? zoomSlider() : [zoomInside()],
   grid: grillaBase(),
   xAxis: [ejeCategoria(axisLabels.value)],
   yAxis: [

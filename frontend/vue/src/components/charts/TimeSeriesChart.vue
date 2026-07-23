@@ -17,6 +17,7 @@ import {
   tooltipOscuro,
   leyendaSuperior,
   zoomSlider,
+  zoomInside,
   grillaBase,
   ejeCategoria,
   ejeValor,
@@ -128,7 +129,7 @@ const chartOption = computed(() => {
       return html
     }),
     legend: leyendaSuperior(legendItems),
-    dataZoom: props.labels.length > 14 ? zoomSlider() : [{ type: 'inside', xAxisIndex: 0 }],
+    dataZoom: props.labels.length > 14 ? zoomSlider() : [zoomInside()],
     grid: grillaBase(),
     xAxis: [ejeCategoria(axisLabels.value)],
     yAxis: [

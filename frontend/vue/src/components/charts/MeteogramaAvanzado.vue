@@ -80,7 +80,10 @@ const initChart = () => {
       {
         type: 'inside',
         xAxisIndex: 0,
-        filterMode: 'filter'
+        filterMode: 'filter',
+        zoomOnMouseWheel: false,
+        moveOnMouseWheel: false,
+        zoomOnMouseMove: false,
       },
       {
         type: 'slider',

@@ -118,7 +118,14 @@ const chartOption = computed(() => {
       top: 0,
     },
     dataZoom: [
-      { type: 'inside', xAxisIndex: 0, filterMode: 'filter' },
+      {
+        type: 'inside',
+        xAxisIndex: 0,
+        filterMode: 'filter',
+        zoomOnMouseWheel: false,
+        moveOnMouseWheel: false,
+        zoomOnMouseMove: false,
+      },
       {
         type: 'slider',
         xAxisIndex: 0,

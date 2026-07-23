@@ -18,6 +18,7 @@ import {
   tooltipOscuro,
   leyendaSuperior,
   zoomSlider,
+  zoomInside,
   grillaBase,
   ejeCategoria,
   ejeValor,
@@ -63,7 +64,7 @@ const chartOption = computed(() => {
       return html
     }),
     legend: leyendaSuperior(['GFS', 'ECMWF']),
-    dataZoom: filas.value.length > 8 ? zoomSlider() : [{ type: 'inside' }],
+    dataZoom: filas.value.length > 8 ? zoomSlider() : [zoomInside()],
     grid: grillaBase(),
     xAxis: [ejeCategoria(labels)],
     yAxis: [

@@ -68,10 +68,23 @@ export function leyendaSuperior(items) {
   }
 }
 
+/** Zoom: slider + pan táctil/arrastre. Sin wheel → evita [Violation] passive de Chrome. */
+export function zoomInside(extra = {}) {
+  return {
+    type: 'inside',
+    xAxisIndex: 0,
+    filterMode: 'filter',
+    zoomOnMouseWheel: false,
+    moveOnMouseWheel: false,
+    zoomOnMouseMove: false,
+    ...extra,
+  }
+}
+
 export function zoomSlider() {
   const c = resolveChartColors()
   return [
-    { type: 'inside', xAxisIndex: 0, filterMode: 'filter' },
+    zoomInside(),
     {
       type: 'slider',
       xAxisIndex: 0,
