@@ -11,6 +11,8 @@ import {
   Star,
   Cloud,
   Eye,
+  LayoutGrid,
+  List,
 } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import { useFavoritesStore } from '@/stores/favorites'
@@ -41,6 +43,7 @@ const cargandoPron = ref(false)
 const cargandoHist = ref(false)
 const vientoHorario = ref(null)
 const cargandoViento = ref(false)
+const vistaPronostico = ref('cards')
 
 const estacionInfo = computed(() =>
   store.estaciones.find((e) => e.id === store.estacionActiva)
@@ -308,9 +311,42 @@ watch(() => store.estacionActiva, cargar)
     </SectionCard>
 
     <div class="layout-split">
-      <SectionCard title="Pronóstico 7 días" subtitle="Tabla detallada">
+      <SectionCard title="Pronóstico 7 días" subtitle="Tarjetas o tabla detallada">
         <template #icon><CloudRain /></template>
+        <template #actions>
+          <div class="view-options" role="group" aria-label="Vista del pronóstico">
+            <button
+              type="button"
+              :class="['view-btn', { active: vistaPronostico === 'cards' }]"
+              @click="vistaPronostico = 'cards'"
+            >
+              <LayoutGrid :size="14" /> Tarjetas
+            </button>
+            <button
+              type="button"
+              :class="['view-btn', { active: vistaPronostico === 'table' }]"
+              @click="vistaPronostico = 'table'"
+            >
+              <List :size="14" /> Tabla
+            </button>
+          </div>
+        </template>
         <p v-if="cargandoPron" class="skeleton">Cargando pronóstico…</p>
+        <div v-else-if="pronostico.length && vistaPronostico === 'cards'" class="forecast-cards">
+          <div v-for="row in pronostico" :key="row.fecha" class="forecast-card">
+            <div class="forecast-card__day">{{ diaDeFila(row) }}</div>
+            <div class="forecast-card__temps">
+              <span class="tmax">{{ formatTemperatura(row.temperatura_max, 0) }}</span>
+              <span class="sep">/</span>
+              <span class="tmin">{{ formatTemperatura(row.temperatura_min, 0) }}</span>
+            </div>
+            <div class="forecast-card__meta">
+              <span>{{ row.precipitacion ?? 0 }} mm</span>
+              <span>{{ row.viento ?? '—' }} m/s</span>
+            </div>
+            <div v-if="row.humedad != null" class="forecast-card__hum">HR {{ row.humedad }}%</div>
+          </div>
+        </div>
         <div v-else-if="pronostico.length" class="table-wrap">
           <table class="data-table">
             <thead>
@@ -329,9 +365,9 @@ watch(() => store.estacionActiva, cargar)
             <tbody>
               <tr v-for="row in pronostico" :key="row.fecha">
                 <td>{{ diaDeFila(row) }}</td>
-                <td>{{ row.temperatura }}°</td>
-                <td>{{ row.temperatura_max }}°</td>
-                <td>{{ row.temperatura_min }}°</td>
+                <td>{{ formatTemperatura(row.temperatura, 0) }}</td>
+                <td>{{ formatTemperatura(row.temperatura_max, 0) }}</td>
+                <td>{{ formatTemperatura(row.temperatura_min, 0) }}</td>
                 <td>{{ row.humedad }}%</td>
                 <td>{{ row.precipitacion }} mm</td>
                 <td>{{ row.viento }} m/s</td>
@@ -517,5 +553,96 @@ watch(() => store.estacionActiva, cargar)
 
 .link-config:hover {
   text-decoration: underline;
+}
+
+.view-options {
+  display: flex;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.15rem;
+  gap: 0.15rem;
+}
+
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.view-btn.active {
+  background: var(--color-primary);
+  color: #0b1120;
+  box-shadow: var(--glow-primary);
+}
+
+.forecast-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 0.65rem;
+}
+
+.forecast-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.65rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.forecast-card__day {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: capitalize;
+}
+
+.forecast-card__temps {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.2rem;
+  font-weight: 700;
+}
+
+.forecast-card__temps .tmax {
+  font-size: 1.05rem;
+  color: var(--color-primary);
+}
+
+.forecast-card__temps .tmin {
+  font-size: 0.9rem;
+  color: var(--color-sky);
+}
+
+.forecast-card__temps .sep {
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.forecast-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.forecast-card__hum {
+  font-size: 0.65rem;
+  color: var(--color-muted);
 }
 </style>

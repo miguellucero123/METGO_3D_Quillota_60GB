@@ -122,6 +122,8 @@ npm i echarts vue-echarts
 
 ## Etapa 4 — Paine consume metgo-api
 
+> **Estado (2026-07-23):** hecho — `metgoApiService.js` + `weatherService` (API → Open-Meteo → caché); endpoint público `/api/public/meteo/{id}/pronostico`. Configurar `VITE_METGO_API` en Netlify.
+
 - `D:\metgo-paine\.env` / Netlify: `VITE_API_BASE=https://metgo-api.onrender.com/api`
 - Nuevo `src/services/metgoApiService.js`: estaciones + pronóstico por `sitio=paine`
 - `weatherService.js` queda como **fallback** (Render free duerme): si la API falla → Open-Meteo directo → caché localStorage (cadena ya existente)
@@ -133,13 +135,15 @@ npm i echarts vue-echarts
 
 ## Etapa 5 — Backports Paine → Quillota (sin perder identidad)
 
+> **Estado (2026-07-23):** hecho — toggle Tarjetas|Tabla en `MeteoView`; selector °C/°F en `MetgoHeader`; `EstacionCard` en Comparativo (clic → `/meteo`).
+
 | Qué | Dónde en Quillota | Nota |
 |-----|-------------------|------|
-| Toggle **Tarjetas \| Tabla** del pronóstico | `MeteoView.vue` | Mismo patrón `vistaPronostico` de `LugarDetalle` Paine |
-| Selector **°C/°F** en header | `MetgoHeader.vue` + `useFormatTemp` | Ya existe composable; falta el control visible |
-| Cards tipo `PlaceCard` para sectores/estaciones | `ComparativoEstacionesView` o nueva sección Dashboard | Badge circuito → badge riesgo (helada/riego) |
+| Toggle **Tarjetas \| Tabla** del pronóstico | `MeteoView.vue` | Hecho (`vistaPronostico`) |
+| Selector **°C/°F** en header | `MetgoHeader.vue` + `useFormatTemp` | Hecho (`preferences.tempUnit`) |
+| Cards tipo `PlaceCard` para sectores/estaciones | `ComparativoEstacionesView` + `EstacionCard.vue` | Badge riesgo helada/riego; tabla favoritos debajo |
 
-**Verificación:** smoke visual + `npm run test` frontend si aplica.
+**Verificación:** smoke visual + `npm run build` en `frontend/vue`.
 
 ---
 

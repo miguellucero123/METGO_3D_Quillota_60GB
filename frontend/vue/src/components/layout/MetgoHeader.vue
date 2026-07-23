@@ -3,9 +3,11 @@ import { useRouter, useRoute } from 'vue-router'
 import { MapPin, LogOut, Activity, Settings } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import { useAuthStore } from '@/stores/auth'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const store = useMetgoStore()
 const auth = useAuthStore()
+const prefs = usePreferencesStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -13,6 +15,10 @@ function logout() {
   const needsLogin = !route.meta.public
   auth.logout()
   router.push(needsLogin ? { name: 'login' } : { name: 'dashboard' })
+}
+
+function setTempUnit(unit) {
+  prefs.setTempUnit(unit)
 }
 </script>
 
@@ -37,6 +43,24 @@ function logout() {
         <span v-if="auth.user.role" class="user-chip__role">{{ auth.user.role }}</span>
         <span v-if="auth.user.tenant" class="user-chip__tenant">{{ auth.user.tenant }}</span>
       </div>
+
+      <div class="temp-unit-selector" role="group" aria-label="Unidad de temperatura">
+        <button
+          type="button"
+          :class="['unit-btn', { active: prefs.tempUnit === 'C' }]"
+          @click="setTempUnit('C')"
+        >
+          °C
+        </button>
+        <button
+          type="button"
+          :class="['unit-btn', { active: prefs.tempUnit === 'F' }]"
+          @click="setTempUnit('F')"
+        >
+          °F
+        </button>
+      </div>
+
       <router-link to="/preferencias" class="header-link" title="Preferencias de clima">
         <Settings aria-hidden="true" />
         <span class="sr-only">Preferencias</span>
@@ -138,6 +162,34 @@ function logout() {
   font-size: 0.65rem;
   opacity: 0.85;
   text-transform: uppercase;
+}
+
+.temp-unit-selector {
+  display: flex;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.15rem;
+  gap: 0.15rem;
+}
+
+.unit-btn {
+  padding: 0.3rem 0.7rem;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.unit-btn.active {
+  background: var(--color-primary);
+  color: #0b1120;
+  box-shadow: var(--glow-primary);
 }
 
 .station-select {

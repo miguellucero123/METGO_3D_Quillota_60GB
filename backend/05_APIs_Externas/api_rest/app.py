@@ -113,6 +113,22 @@ def create_app() -> Flask:
             return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
 
+    @app.get("/api/public/meteo/<estacion_id>/pronostico")
+    def public_meteo_pronostico(estacion_id: str):
+        """Pronóstico diario público (Paine / demos sin JWT)."""
+        key = estacion_id.lower().replace("-", "_")
+        if key not in services.SLUG_A_NOMBRE:
+            return jsonify({"error": "No encontrado", "estacion_id": estacion_id}), 404
+        dias = request.args.get("dias", 7, type=int)
+        try:
+            data = services.pronostico_meteo(estacion_id, dias)
+        except Exception as exc:
+            app.logger.warning("public_meteo_pronostico %s error: %s", estacion_id, exc)
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+        if data is None:
+            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+        return jsonify(data)
+
     @app.get("/api/estaciones")
     @auth_required
     def estaciones():

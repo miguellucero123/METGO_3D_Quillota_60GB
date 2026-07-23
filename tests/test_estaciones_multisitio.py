@@ -64,3 +64,16 @@ def test_api_public_estaciones_sitio():
     paine = r2.get_json()
     assert len(paine) == 6
     assert all(e.get("sitio") == "paine" for e in paine)
+
+
+def test_api_public_pronostico_paine():
+    _setup_api()
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    r = c.get("/api/public/meteo/base_torres/pronostico?dias=3")
+    # 200 con datos o 503 si OpenMeteo caído en CI — no 404
+    assert r.status_code in (200, 503)
+    if r.status_code == 200:
+        body = r.get_json()
+        assert isinstance(body, list)

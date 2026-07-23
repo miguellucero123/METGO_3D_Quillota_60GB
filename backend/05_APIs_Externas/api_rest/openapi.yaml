@@ -98,6 +98,41 @@ paths:
       responses:
         "200":
           description: Lista de estaciones
+  /api/public/meteo/{estacion_id}:
+    get:
+      tags: [meteo]
+      summary: Resumen meteo público
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: base_torres }
+      responses:
+        "200":
+          description: Resumen del día
+        "404":
+          description: Estación desconocida
+        "503":
+          description: OpenMeteo no disponible
+  /api/public/meteo/{estacion_id}/pronostico:
+    get:
+      tags: [meteo]
+      summary: Pronóstico diario público
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: base_torres }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: Lista de días
+        "404":
+          description: Estación desconocida
+        "503":
+          description: OpenMeteo no disponible
   /api/meteo/{estacion_id}:
     get:
       tags: [meteo]

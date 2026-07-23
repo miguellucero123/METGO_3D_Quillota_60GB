@@ -54,7 +54,7 @@ Estimaciones en **semanas efectivas** (dedicación parcial; una persona + IA). T
 | **E2** | Charts ECharts en Paine | 1 sem | Paine con gráficos pro |
 | **E3** | Modelo `sitios` en Supabase + endpoint + OpenAPI + CORS | 1 sem | API multi-sitio viva |
 | **E4** | Paine consume metgo-api (fallback OpenMeteo) | 1 sem | 2 SPAs, 1 backend |
-| **E5** | Backports UX a Quillota (toggle, °C/°F, cards) | 1 sem | Quillota mejorada |
+| **E5** | Backports UX a Quillota (toggle, °C/°F, cards) | 1 sem | Quillota mejorada ✅ 2026-07-23 |
 | **E6** | **Plantilla `metgo-site-template`** | 2 sem | Sitio nuevo en <1 día |
 | **E7** | **Copiapó — calidad del aire** | 3–4 sem | SPA aire + ICAP + salud |
 | **E8** | **Mantos Blancos — minería** | 2–3 sem | SPA faena + alertas operacionales |

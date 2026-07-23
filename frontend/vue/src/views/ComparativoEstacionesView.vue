@@ -3,6 +3,7 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { GitCompare, BarChart3, Star } from 'lucide-vue-next'
 import SectionCard from '@/components/ui/SectionCard.vue'
+import EstacionCard from '@/components/ui/EstacionCard.vue'
 import HorizontalBarChart from '@/components/charts/HorizontalBarChart.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import SkeletonLoader from '@/components/ui/SkeletonLoader.vue'
@@ -158,45 +159,63 @@ function onBarClick({ id }) {
       <p v-else-if="error" class="error-text">{{ error }}</p>
       <template v-else>
         <p v-if="!estacionesResumen.length" class="muted">Sin datos comparativos.</p>
-        <div v-else class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th aria-label="Favorito" />
-                <th>Estación</th>
-                <th>T° máx</th>
-                <th>T° mín</th>
-                <th>Lluvia</th>
-                <th>Viento</th>
-                <th>Humedad</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="r in estacionesResumen" :key="r.estacion_id">
-                <td>
-                  <button
-                    type="button"
-                    class="fav-cell"
-                    :class="{ 'fav-cell--on': favorites.isFavorite(r.estacion_id) }"
-                    @click="favorites.toggle(r.estacion_id)"
-                  >
-                    <Star aria-hidden="true" />
-                  </button>
-                </td>
-                <td>
-                  <button type="button" class="link-est" @click="irEstacion(r.estacion_id)">
-                    {{ r.estacion }}
-                  </button>
-                </td>
-                <td>{{ formatTemperatura(r.temperatura_max) }}</td>
-                <td>{{ formatTemperatura(r.temperatura_min) }}</td>
-                <td>{{ r.precipitacion }} mm</td>
-                <td>{{ r.viento }} m/s</td>
-                <td>{{ r.humedad }}%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <template v-else>
+          <div class="estaciones-grid">
+            <EstacionCard
+              v-for="r in estacionesResumen"
+              :key="r.estacion_id"
+              :id="r.estacion_id"
+              :nombre="r.estacion || r.estacion_id"
+              :temperatura="r.temperatura ?? r.temperatura_max"
+              :temperatura-max="r.temperatura_max"
+              :temperatura-min="r.temperatura_min"
+              :precipitacion="r.precipitacion"
+              :humedad="r.humedad"
+              :viento="r.viento"
+              :activa="r.estacion_id === metgo.estacionActiva"
+              @select="irEstacion"
+            />
+          </div>
+          <div class="table-wrap table-wrap--compact">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th aria-label="Favorito" />
+                  <th>Estación</th>
+                  <th>T° máx</th>
+                  <th>T° mín</th>
+                  <th>Lluvia</th>
+                  <th>Viento</th>
+                  <th>Humedad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in estacionesResumen" :key="r.estacion_id">
+                  <td>
+                    <button
+                      type="button"
+                      class="fav-cell"
+                      :class="{ 'fav-cell--on': favorites.isFavorite(r.estacion_id) }"
+                      @click="favorites.toggle(r.estacion_id)"
+                    >
+                      <Star aria-hidden="true" />
+                    </button>
+                  </td>
+                  <td>
+                    <button type="button" class="link-est" @click="irEstacion(r.estacion_id)">
+                      {{ r.estacion }}
+                    </button>
+                  </td>
+                  <td>{{ formatTemperatura(r.temperatura_max) }}</td>
+                  <td>{{ formatTemperatura(r.temperatura_min) }}</td>
+                  <td>{{ r.precipitacion }} mm</td>
+                  <td>{{ r.viento }} m/s</td>
+                  <td>{{ r.humedad }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
       </template>
     </SectionCard>
 
@@ -317,8 +336,17 @@ function onBarClick({ id }) {
   gap: 1rem;
   margin-bottom: 1rem;
 }
+.estaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
 .table-wrap {
   overflow-x: auto;
+}
+.table-wrap--compact {
+  margin-top: 0.25rem;
 }
 .data-table {
   width: 100%;
