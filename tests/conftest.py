@@ -39,7 +39,14 @@ class MockTable:
     def limit(self, n):
         self._results = self._results[:n]
         return self
-        
+
+    def range(self, start, end):
+        """PostgREST-style inclusive range (offset..end)."""
+        start = max(0, int(start))
+        end = max(start, int(end))
+        self._results = self._results[start : end + 1]
+        return self
+
     def delete(self):
         self._is_delete = True
         return self
