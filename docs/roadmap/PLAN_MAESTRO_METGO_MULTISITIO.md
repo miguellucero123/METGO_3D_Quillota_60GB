@@ -55,8 +55,8 @@ Estimaciones en **semanas efectivas** (dedicación parcial; una persona + IA). T
 | **E3** | Modelo `sitios` en Supabase + endpoint + OpenAPI + CORS | 1 sem | API multi-sitio viva |
 | **E4** | Paine consume metgo-api (fallback OpenMeteo) | 1 sem | 2 SPAs, 1 backend |
 | **E5** | Backports UX a Quillota (toggle, °C/°F, cards) | 1 sem | Quillota mejorada ✅ 2026-07-23 |
-| **E6** | **Plantilla `metgo-site-template`** | 2 sem | Sitio nuevo en <1 día |
-| **E7** | **Copiapó — calidad del aire** | 3–4 sem | SPA aire + ICAP + salud |
+| **E6** | **Plantilla `metgo-site-template`** | 2 sem | Sitio nuevo en <1 día ✅ 2026-07-23 |
+| **E7** | **Copiapó — calidad del aire** | 3–4 sem | SPA aire + ICAP + salud 🔶 backend 2026-07-23 |
 | **E8** | **Mantos Blancos — minería** | 2–3 sem | SPA faena + alertas operacionales |
 | **E9** | Multi-tenant real + auth unificada | 2–3 sem | Login/roles por sitio |
 | **E10** | Calidad clase mundial I: testing + observabilidad | 3 sem | E2E + SLOs + alertas |
@@ -69,33 +69,34 @@ Estimaciones en **semanas efectivas** (dedicación parcial; una persona + IA). T
 
 ### E6 — Plantilla multi-sitio (`metgo-site-template`)
 
+> **Estado (2026-07-23):** hecho — `templates/metgo-site-template/` + `site.config.js` en Paine; tabla/API `sitios`; sitio demo `demo`.
+
 El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 
-- Repo plantilla (GitHub template) derivado de `metgo-paine`: shell + tokens + charts + cliente API
-- Todo lo específico del sitio en **un archivo**: `src/site.config.js`
-  - `sitio` (slug para la API), nombre, región, coordenadas centro
-  - Paleta (3–4 variables CSS), textos de header/footer/login
-  - Módulos activos (`meteo`, `aire`, `lugares`, `operaciones`)
-  - Puntos de monitoreo seed
-- Checklist "nuevo sitio en 1 día": crear repo desde template → editar config → migración seed estaciones → sitio Netlify → CORS
-- Registrar en `sitios` (tabla Supabase): slug, nombre, dominio, paleta, estado
+- Repo plantilla: base viva **`metgo-paine`** + checklist en `templates/metgo-site-template/README.md`
+- Todo lo específico del sitio en **un archivo**: `src/site.config.js` (ejemplo: `site.config.example.js`)
+- Checklist "nuevo sitio en 1 día" en el README del template
+- Registrado en código + migración `sitios`: slug, nombre, dominio, paleta, estado (+ seed `demo`)
 
-**Verificación:** crear un sitio de prueba ficticio end-to-end en <8 h.
+**Verificación:** `GET /api/public/sitios` · `GET /api/public/estaciones?sitio=demo` · editar solo `site.config.js` en un clone.
 
 ### E7 — Copiapó: pronóstico + contaminación atmosférica
+
+> **Estado (2026-07-23):** backend hecho — sitio `copiapo` (3 estaciones), `aire_service.py` (CAMS + ICAP + recomendaciones salud), rutas `/api/public/aire/*`, OpenAPI, migración `aire_registros`, tests. Smoke real OK (PM2.5 3.9 → ICAP 7.8 Bueno). **Pendiente:** SPA desde template, ETL programado, SINCA observado.
 
 **Enfoque:** salud ambiental urbana (polvo desértico, PM10 por vientos, episodios).
 
 **Datos:**
 - **Open-Meteo Air Quality API** (modelo CAMS): PM2.5, PM10, SO₂, NO₂, O₃, CO, polvo — global, gratis, misma integración que ya dominamos
-- **SINCA** (sinca.mma.gob.cl, MMA Chile): estaciones oficiales de Copiapó/Tierra Amarilla para observación real (scraping/CSV; API no oficial)
+- **SINCA** (sinca.mma.gob.cl, MMA Chile): estaciones oficiales de Copiapó/Tierra Amarilla para observación real (scraping/CSV; API no oficial) — pendiente
 - Meteo normal OpenMeteo (viento clave para dispersión)
 
 **Backend (fase 2.x–3.x):**
-- Tabla `aire_registros` (estacion_id, fecha_hora, pm25, pm10, so2, no2, o3, co, aqi, fuente, tipo_dato)
-- Endpoints: `/api/aire/actual`, `/api/aire/pronostico`, `/api/aire/historico` (+`openapi.yaml`)
-- **ICAP** (índice de calidad del aire chileno) calculado server-side con categorías Bueno/Regular/Alerta/Preemergencia/Emergencia
-- ETL: job aire cada 1–3 h (CAMS) + diario (SINCA)
+- [x] Tabla `aire_registros` (`supabase/migrations/20260723150000_copiapo_aire.sql`)
+- [x] Endpoints: `/api/public/aire/{id}`, `…/pronostico`, `…/historico`, `/api/aire/{id}` (+`openapi.yaml` tag `aire`)
+- [x] **ICAP** server-side (tramos DS MMA, contaminante rector PM2.5/PM10, categorías Bueno→Emergencia) — `api_rest/aire_service.py`
+- [x] Recomendaciones de salud por categoría en el payload
+- [ ] ETL: job aire cada 1–3 h (CAMS) + diario (SINCA)
 
 **Frontend (desde template):**
 - Vistas: Panel aire (AQI grande + semáforo), Pronóstico 5 días por contaminante, Mapa de estaciones con color por ICAP, Histórico

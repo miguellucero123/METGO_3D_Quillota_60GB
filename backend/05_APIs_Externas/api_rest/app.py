@@ -40,6 +40,7 @@ from api_rest.fase7_routes import register_fase7_routes
 from api_rest.fase8_routes import register_fase8_routes
 from api_rest.fase9_routes import register_fase9_routes
 from api_rest.fase10_routes import register_fase10_routes
+from api_rest.aire_routes import register_aire_routes
 from api_rest.precipitacion_routes import register_precipitacion_routes
 from api_rest.meteo_avanzada_routes import register_meteo_avanzada_routes
 from api_rest.mapas_routes import register_mapas_routes
@@ -63,6 +64,7 @@ def create_app() -> Flask:
     register_fase8_routes(app)
     register_fase9_routes(app)
     register_fase10_routes(app)
+    register_aire_routes(app)
     register_precipitacion_routes(app)
     register_meteo_avanzada_routes(app)
     register_mapas_routes(app)
@@ -80,8 +82,10 @@ def create_app() -> Flask:
                     "health": "/api/health",
                     "docs": "/api/docs",
                     "login": "POST /api/auth/login",
+                    "public_sitios": "/api/public/sitios",
                     "public_estaciones": "/api/public/estaciones",
                     "public_meteo": "/api/public/meteo/<estacion_id>",
+                    "public_aire": "/api/public/aire/<estacion_id>",
                 },
             }
         )
@@ -90,9 +94,15 @@ def create_app() -> Flask:
     def health():
         return jsonify(build_health_payload(services.health_check))
 
+    @app.get("/api/public/sitios")
+    def public_sitios():
+        """Catálogo de sitios METGO (solo lectura, sin JWT)."""
+        incluir = request.args.get("incluir_plantilla", "1") not in ("0", "false", "False")
+        return jsonify(services.listar_sitios(incluir_plantilla=incluir))
+
     @app.get("/api/public/estaciones")
     def public_estaciones():
-        """Estaciones por sitio (solo lectura, sin JWT). Query: sitio=quillota|paine."""
+        """Estaciones por sitio (solo lectura, sin JWT). Query: sitio=quillota|paine|demo."""
         sitio = request.args.get("sitio")
         return jsonify(services.listar_estaciones(sitio=sitio))
 
@@ -128,6 +138,12 @@ def create_app() -> Flask:
         if data is None:
             return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
         return jsonify(data)
+
+    @app.get("/api/sitios")
+    @auth_required
+    def sitios():
+        incluir = request.args.get("incluir_plantilla", "1") not in ("0", "false", "False")
+        return jsonify(services.listar_sitios(incluir_plantilla=incluir))
 
     @app.get("/api/estaciones")
     @auth_required

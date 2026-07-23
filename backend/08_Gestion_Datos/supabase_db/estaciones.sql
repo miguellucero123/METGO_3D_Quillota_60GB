@@ -47,4 +47,13 @@ on conflict (id) do update set
   circuito = excluded.circuito,
   altitud = excluded.altitud;
 
+insert into public.estaciones (id, nombre, sitio, lat, lon) values
+  ('demo_norte', 'Demo Norte', 'demo', -33.30, -71.40),
+  ('demo_sur', 'Demo Sur', 'demo', -33.34, -71.44)
+on conflict (id) do update set
+  nombre = excluded.nombre,
+  sitio = excluded.sitio,
+  lat = excluded.lat,
+  lon = excluded.lon;
+
 grant select on public.estaciones to anon, authenticated;

@@ -10,7 +10,51 @@ from __future__ import annotations
 from typing import Any
 
 # Sitios conocidos (slug API)
-SITIOS = ("quillota", "paine")
+SITIOS = ("quillota", "paine", "copiapo", "demo")
+
+# Metadatos de producto / SPA (tabla sitios en Supabase es espejo)
+SITIOS_META: dict[str, dict[str, Any]] = {
+    "quillota": {
+        "slug": "quillota",
+        "nombre": "METGO Quillota",
+        "region": "Valle de Aconcagua",
+        "dominio": "agro",
+        "estado": "activo",
+        "primary": "#00ffaa",
+        "center": {"lat": -32.8833, "lon": -71.25},
+        "modules": ["meteo", "agricola", "iot", "ml"],
+    },
+    "paine": {
+        "slug": "paine",
+        "nombre": "METGO Paine",
+        "region": "Torres del Paine",
+        "dominio": "criosfera",
+        "estado": "activo",
+        "primary": "#22d3ee",
+        "center": {"lat": -50.96, "lon": -73.05},
+        "modules": ["meteo", "lugares"],
+    },
+    "copiapo": {
+        "slug": "copiapo",
+        "nombre": "METGO Copiapó",
+        "region": "Copiapó · Región de Atacama",
+        "dominio": "aire",
+        "estado": "activo",
+        "primary": "#fbbf24",
+        "center": {"lat": -27.3668, "lon": -70.3323},
+        "modules": ["meteo", "aire", "alertas_salud"],
+    },
+    "demo": {
+        "slug": "demo",
+        "nombre": "METGO Demo",
+        "region": "Valle Demo (ficticio)",
+        "dominio": "template",
+        "estado": "plantilla",
+        "primary": "#a78bfa",
+        "center": {"lat": -33.32, "lon": -71.42},
+        "modules": ["meteo", "lugares"],
+    },
+}
 
 # slug -> nombre OpenMeteo (clave en OpenMeteoData.estaciones)
 SLUG_A_NOMBRE: dict[str, str] = {
@@ -31,6 +75,13 @@ SLUG_A_NOMBRE: dict[str, str] = {
     "paine_grande": "Paine Grande",
     "campamento_italiano": "Campamento Italiano",
     "los_cuernos": "Los Cuernos",
+    # Copiapó (calidad del aire, E7)
+    "copiapo_centro": "Copiapo Centro",
+    "paipote": "Paipote",
+    "tierra_amarilla": "Tierra Amarilla",
+    # Sitio plantilla E6 (ficticio; coords cerca Casablanca)
+    "demo_norte": "Demo Norte",
+    "demo_sur": "Demo Sur",
 }
 
 NOMBRE_A_SLUG = {v: k for k, v in SLUG_A_NOMBRE.items()}
@@ -52,6 +103,11 @@ COORDS: dict[str, dict[str, float]] = {
     "paine_grande": {"lat": -50.9500, "lon": -73.1167},
     "campamento_italiano": {"lat": -50.9583, "lon": -73.0667},
     "los_cuernos": {"lat": -50.9750, "lon": -73.0500},
+    "copiapo_centro": {"lat": -27.3668, "lon": -70.3323},
+    "paipote": {"lat": -27.4064, "lon": -70.2853},
+    "tierra_amarilla": {"lat": -27.4667, "lon": -70.2667},
+    "demo_norte": {"lat": -33.30, "lon": -71.40},
+    "demo_sur": {"lat": -33.34, "lon": -71.44},
 }
 
 # Dashboard Quillota (default) — no incluir Paine en ETL nocturno por defecto
@@ -73,6 +129,8 @@ ESTACIONES_POR_SITIO: dict[str, list[str]] = {
         "campamento_italiano",
         "los_cuernos",
     ],
+    "copiapo": ["copiapo_centro", "paipote", "tierra_amarilla"],
+    "demo": ["demo_norte", "demo_sur"],
 }
 
 # Metadatos opcionales (UI Paine)
@@ -95,3 +153,15 @@ def normalizar_sitio(sitio: str | None) -> str:
 
 def slugs_de_sitio(sitio: str | None) -> list[str]:
     return list(ESTACIONES_POR_SITIO[normalizar_sitio(sitio)])
+
+
+def listar_sitios(incluir_plantilla: bool = True) -> list[dict[str, Any]]:
+    """Catálogo de sitios METGO (fuente en código; espejo SQL `sitios`)."""
+    out: list[dict[str, Any]] = []
+    for slug in SITIOS:
+        meta = dict(SITIOS_META.get(slug, {"slug": slug, "nombre": slug.title()}))
+        if not incluir_plantilla and meta.get("estado") == "plantilla":
+            continue
+        meta["estaciones"] = list(ESTACIONES_POR_SITIO.get(slug, []))
+        out.append(meta)
+    return out

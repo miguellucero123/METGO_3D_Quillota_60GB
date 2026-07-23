@@ -69,6 +69,13 @@ class OpenMeteoData:
             'Paine Grande': {'lat': -50.9500, 'lon': -73.1167},
             'Campamento Italiano': {'lat': -50.9583, 'lon': -73.0667},
             'Los Cuernos': {'lat': -50.9750, 'lon': -73.0500},
+            # Copiapó (sitio=copiapo, calidad del aire E7)
+            'Copiapo Centro': {'lat': -27.3668, 'lon': -70.3323},
+            'Paipote': {'lat': -27.4064, 'lon': -70.2853},
+            'Tierra Amarilla': {'lat': -27.4667, 'lon': -70.2667},
+            # Sitio plantilla E6 (ficticio)
+            'Demo Norte': {'lat': -33.30, 'lon': -71.40},
+            'Demo Sur': {'lat': -33.34, 'lon': -71.44},
         }
     
     def _get_json(self, url, params, intentos=None, timeout=None):

@@ -147,7 +147,9 @@ npm i echarts vue-echarts
 
 ---
 
-## Etapa 6 — Posterior (fuera de este plan, queda en fases)
+## Etapa 6 — Posterior (fuera de este plan E0–E5; ver plan maestro)
+
+> **E6 plantilla:** ver `PLAN_MAESTRO_METGO_MULTISITIO.md` y `templates/metgo-site-template/` (hecho 2026-07-23).
 
 - Auth unificada: login Paine contra JWT metgo-api con `tenant: paine`; favoritos/preferencias server-side (fase 3.x multi-tenant real)
 - Agromet/DMC códigos reales (Etapa E / fase 3)

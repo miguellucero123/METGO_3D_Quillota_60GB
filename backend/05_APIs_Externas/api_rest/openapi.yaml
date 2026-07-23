@@ -11,6 +11,7 @@ servers:
 tags:
   - name: auth
   - name: meteo
+  - name: aire
   - name: sistema
   - name: datos
   - name: servicios
@@ -61,13 +62,28 @@ paths:
           description: Usuario creado y token emitido
         "400":
           description: Validación fallida
+  /api/sitios:
+    get:
+      tags: [meteo]
+      summary: Listar sitios METGO
+      description: Catálogo multi-producto (quillota, paine, demo, …).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: incluir_plantilla
+          in: query
+          schema: { type: string, enum: ["0", "1"], default: "1" }
+      responses:
+        "200":
+          description: Lista de sitios (slug, nombre, dominio, primary, modules, …)
+        "401":
+          description: Sin token
   /api/estaciones:
     get:
       tags: [meteo]
       summary: Listar estaciones
       description: |
         Por defecto `sitio=quillota` (Valle de Aconcagua).
-        Usar `sitio=paine` para Torres del Paine (METGO Glaciares).
+        Otros: `paine` (Torres del Paine), `copiapo` (calidad del aire), `demo` (plantilla E6).
       security: [{ bearerAuth: [] }]
       parameters:
         - name: sitio
@@ -75,7 +91,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: [quillota, paine]
+            enum: [quillota, paine, copiapo, demo]
             default: quillota
           description: Sitio METGO multi-producto
       responses:
@@ -83,6 +99,17 @@ paths:
           description: Lista de estaciones (id, nombre, lat, lon, sitio, …)
         "401":
           description: Sin token
+  /api/public/sitios:
+    get:
+      tags: [meteo]
+      summary: Listar sitios (público)
+      parameters:
+        - name: incluir_plantilla
+          in: query
+          schema: { type: string, enum: ["0", "1"], default: "1" }
+      responses:
+        "200":
+          description: Lista de sitios
   /api/public/estaciones:
     get:
       tags: [meteo]
@@ -93,11 +120,84 @@ paths:
           required: false
           schema:
             type: string
-            enum: [quillota, paine]
+            enum: [quillota, paine, copiapo, demo]
             default: quillota
       responses:
         "200":
           description: Lista de estaciones
+  /api/public/aire/{estacion_id}:
+    get:
+      tags: [aire]
+      summary: Calidad del aire actual (público)
+      description: |
+        Open-Meteo Air Quality (modelo CAMS) + **ICAP** chileno calculado server-side
+        (contaminante rector PM2.5/PM10, categorías Bueno…Emergencia) y
+        recomendaciones de salud por categoría. Sitio E7 Copiapó.
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+      responses:
+        "200":
+          description: PM2.5, PM10, SO2, NO2, O3, CO, polvo, icap, nivel, recomendaciones
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Servicio CAMS no disponible
+  /api/public/aire/{estacion_id}/pronostico:
+    get:
+      tags: [aire]
+      summary: Pronóstico diario de calidad del aire (público)
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 5, maximum: 7 }
+      responses:
+        "200":
+          description: Lista de días (promedios 24 h + ICAP por día)
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Servicio CAMS no disponible
+  /api/public/aire/{estacion_id}/historico:
+    get:
+      tags: [aire]
+      summary: Histórico diario de calidad del aire (público)
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, maximum: 92 }
+      responses:
+        "200":
+          description: Lista de días pasados (promedios 24 h + ICAP)
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Servicio CAMS no disponible
+  /api/aire/{estacion_id}:
+    get:
+      tags: [aire]
+      summary: Calidad del aire actual
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+      responses:
+        "200":
+          description: Igual que la variante pública
+        "401":
+          description: Sin token
   /api/public/meteo/{estacion_id}:
     get:
       tags: [meteo]

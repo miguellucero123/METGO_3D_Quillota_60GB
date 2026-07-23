@@ -23,6 +23,7 @@ from api_rest.estaciones_catalogo import (
     META_EXTRA,
     NOMBRE_A_SLUG,
     SLUG_A_NOMBRE,
+    listar_sitios as catalogo_listar_sitios,
     normalizar_sitio,
     slugs_de_sitio,
 )
@@ -61,6 +62,11 @@ def slug_a_nombre(estacion_id: str) -> str:
 
 def nombre_a_slug(nombre: str) -> str:
     return NOMBRE_A_SLUG.get(nombre, nombre.lower().replace(" ", "_"))
+
+
+def listar_sitios(incluir_plantilla: bool = True) -> list[dict[str, Any]]:
+    """Lista sitios METGO (quillota, paine, demo, …)."""
+    return catalogo_listar_sitios(incluir_plantilla=incluir_plantilla)
 
 
 def listar_estaciones(
