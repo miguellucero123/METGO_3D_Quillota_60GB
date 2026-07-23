@@ -1,5 +1,6 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import {
   LayoutDashboard,
@@ -22,54 +23,252 @@ import {
   Link2,
   Star,
   UserCog,
+  ChevronDown,
+  Database,
+  Wrench,
+  Layers,
 } from 'lucide-vue-next'
 
-const links = [
-  { to: '/', label: 'Panel general', icon: LayoutDashboard },
+const STORAGE_KEY = 'metgo_sidebar_groups_v1'
+
+const auth = useAuthStore()
+const route = useRoute()
+
+/** Enlaces principales — siempre visibles */
+const principal = [
+  { to: '/', label: 'Panel general', icon: LayoutDashboard, exact: true },
   { to: '/estado', label: 'Estado sistema', icon: Activity },
-  { to: '/integracion', label: 'Conexiones', icon: Link2 },
-  { to: '/favoritos', label: 'Favoritos', icon: Star, requiresAuth: true },
-  { to: '/preferencias', label: 'Preferencias', icon: UserCog, requiresAuth: true },
   { to: '/metricas', label: 'Métricas globales', icon: Gauge },
-  { to: '/iot', label: 'Sensores IoT', icon: Radio },
-  { to: '/ml', label: 'Modelos ML', icon: Cpu },
-  { to: '/meteo', label: 'Meteorología', icon: CloudSun },
-  { to: '/meteo/precipitacion', label: 'Precipitación', icon: CloudRain },
-  { to: '/meteo/avanzado', label: 'Meteo avanzada', icon: CloudFog },
-  { to: '/meteo/historico', label: 'Histórico meteo', icon: History },
-  { to: '/meteo/comparativo', label: 'Visualizaciones', icon: GitCompare },
-  { to: '/agricola', label: 'Gestión agrícola', icon: Sprout },
-  { to: '/monitoreo', label: 'Alertas', icon: BellRing },
-  { to: '/alertas/config', label: 'Config. alertas', icon: SlidersHorizontal },
-  { to: '/puertos', label: 'Visor de puertos', icon: Monitor },
-  { to: '/servicios', label: 'Centro de servicios', icon: Server },
-  { to: '/modulos', label: 'Catálogo', icon: Grid3x3 },
+  { to: '/favoritos', label: 'Favoritos', icon: Star, requiresAuth: true },
+]
+
+const grupos = [
+  {
+    id: 'meteo',
+    label: 'Meteorología',
+    icon: CloudSun,
+    match: (path) =>
+      path === '/meteo' ||
+      path.startsWith('/meteo/precipitacion') ||
+      path.startsWith('/meteo/avanzado') ||
+      path.startsWith('/meteo/historico'),
+    items: [
+      { to: '/meteo', label: 'Meteorología', icon: CloudSun, exact: true },
+      { to: '/meteo/precipitacion', label: 'Precipitación', icon: CloudRain },
+      { to: '/meteo/avanzado', label: 'Meteo avanzada', icon: CloudFog },
+      { to: '/meteo/historico', label: 'Histórico meteo', icon: History },
+    ],
+  },
+  {
+    id: 'datos',
+    label: 'Datos y modelos',
+    icon: Database,
+    match: (path) =>
+      path.startsWith('/iot') ||
+      path.startsWith('/ml') ||
+      path.startsWith('/meteo/comparativo'),
+    items: [
+      { to: '/iot', label: 'Sensores IoT', icon: Radio },
+      { to: '/ml', label: 'Modelos ML', icon: Cpu },
+      { to: '/meteo/comparativo', label: 'Visualizaciones', icon: GitCompare },
+    ],
+  },
+  {
+    id: 'ops',
+    label: 'Operaciones',
+    icon: Sprout,
+    match: (path) =>
+      path.startsWith('/agricola') ||
+      path.startsWith('/monitoreo') ||
+      path.startsWith('/alertas'),
+    items: [
+      { to: '/agricola', label: 'Gestión agrícola', icon: Sprout },
+      { to: '/monitoreo', label: 'Alertas', icon: BellRing },
+      { to: '/alertas/config', label: 'Config. alertas', icon: SlidersHorizontal },
+    ],
+  },
+  {
+    id: 'sistema',
+    label: 'Sistema',
+    icon: Layers,
+    match: (path) =>
+      path.startsWith('/integracion') ||
+      path.startsWith('/puertos') ||
+      path.startsWith('/servicios') ||
+      path.startsWith('/modulos'),
+    items: [
+      { to: '/integracion', label: 'Conexiones', icon: Link2 },
+      { to: '/puertos', label: 'Visor de puertos', icon: Monitor },
+      { to: '/servicios', label: 'Centro de servicios', icon: Server },
+      { to: '/modulos', label: 'Catálogo', icon: Grid3x3 },
+    ],
+  },
+]
+
+const cuenta = [
+  { to: '/preferencias', label: 'Preferencias', icon: UserCog, requiresAuth: true },
   { to: '/configuracion', label: 'Configuración', icon: Settings },
 ]
 
-const auth = useAuthStore()
+function filtrarAuth(items) {
+  return items.filter((link) => !link.requiresAuth || auth.isAuthenticated)
+}
 
-const linksVisibles = links.filter((link) => !link.requiresAuth || auth.isAuthenticated)
+const principalVisible = computed(() => filtrarAuth(principal))
+const cuentaVisible = computed(() => filtrarAuth(cuenta))
+
+function loadOpenState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === 'object') return parsed
+    }
+  } catch {
+    /* ignore */
+  }
+  return { meteo: true, datos: false, ops: false, sistema: false }
+}
+
+const openGroups = ref(loadOpenState())
+
+function persistOpen() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups.value))
+  } catch {
+    /* ignore */
+  }
+}
+
+function toggleGroup(id) {
+  openGroups.value = {
+    ...openGroups.value,
+    [id]: !openGroups.value[id],
+  }
+  persistOpen()
+}
+
+function isGroupOpen(id) {
+  return Boolean(openGroups.value[id])
+}
+
+/** Auto-expandir solo el grupo activo; el resto de grupos colapsables se cierra. */
+function ensureActiveGroupOpen() {
+  const path = route.path
+  const next = { ...openGroups.value }
+  let activeId = null
+  for (const g of grupos) {
+    if (g.match(path)) {
+      activeId = g.id
+      break
+    }
+  }
+  if (!activeId) return
+  let changed = false
+  for (const g of grupos) {
+    const shouldOpen = g.id === activeId
+    if (Boolean(next[g.id]) !== shouldOpen) {
+      next[g.id] = shouldOpen
+      changed = true
+    }
+  }
+  if (changed) {
+    openGroups.value = next
+    persistOpen()
+  }
+}
+
+watch(
+  () => route.path,
+  () => ensureActiveGroupOpen(),
+  { immediate: true }
+)
+
+function linkIsActive(link) {
+  const path = route.path
+  if (link.exact) return path === link.to
+  if (link.to === '/') return path === '/'
+  return path === link.to || path.startsWith(`${link.to}/`)
+}
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" aria-label="Navegación principal">
     <div class="sidebar__brand">
       <span class="sidebar__mark">M</span>
       <span class="sidebar__name">METGO</span>
     </div>
+
     <nav class="sidebar__nav">
-      <RouterLink
-        v-for="link in linksVisibles"
-        :key="link.to"
-        :to="link.to"
-        class="nav-link"
-        active-class="active"
+      <!-- Principal -->
+      <div class="nav-section" aria-label="Principal">
+        <RouterLink
+          v-for="link in principalVisible"
+          :key="link.to"
+          :to="link.to"
+          class="nav-link"
+          :class="{ active: linkIsActive(link) }"
+        >
+          <component :is="link.icon" class="nav-link__icon" aria-hidden="true" />
+          <span>{{ link.label }}</span>
+        </RouterLink>
+      </div>
+
+      <!-- Grupos colapsables -->
+      <div
+        v-for="grupo in grupos"
+        :key="grupo.id"
+        class="nav-group"
+        :class="{ 'nav-group--open': isGroupOpen(grupo.id), 'nav-group--active': grupo.match(route.path) }"
       >
-        <component :is="link.icon" class="nav-link__icon" aria-hidden="true" />
-        <span>{{ link.label }}</span>
-      </RouterLink>
+        <button
+          type="button"
+          class="nav-group__header"
+          :aria-expanded="isGroupOpen(grupo.id)"
+          :aria-controls="`nav-group-${grupo.id}`"
+          @click="toggleGroup(grupo.id)"
+        >
+          <component :is="grupo.icon" class="nav-group__icon" aria-hidden="true" />
+          <span class="nav-group__label">{{ grupo.label }}</span>
+          <ChevronDown class="nav-group__chevron" aria-hidden="true" />
+        </button>
+        <div
+          :id="`nav-group-${grupo.id}`"
+          class="nav-group__body"
+          :hidden="!isGroupOpen(grupo.id)"
+        >
+          <RouterLink
+            v-for="link in grupo.items"
+            :key="link.to"
+            :to="link.to"
+            class="nav-link nav-link--nested"
+            :class="{ active: linkIsActive(link) }"
+          >
+            <component :is="link.icon" class="nav-link__icon" aria-hidden="true" />
+            <span>{{ link.label }}</span>
+          </RouterLink>
+        </div>
+      </div>
+
+      <!-- Cuenta (separada al fondo del nav) -->
+      <div v-if="cuentaVisible.length" class="nav-section nav-section--cuenta" aria-label="Cuenta">
+        <p class="nav-section__label">
+          <Wrench class="nav-section__label-icon" aria-hidden="true" />
+          Cuenta
+        </p>
+        <RouterLink
+          v-for="link in cuentaVisible"
+          :key="link.to"
+          :to="link.to"
+          class="nav-link"
+          :class="{ active: linkIsActive(link) }"
+        >
+          <component :is="link.icon" class="nav-link__icon" aria-hidden="true" />
+          <span>{{ link.label }}</span>
+        </RouterLink>
+      </div>
     </nav>
+
     <footer class="sidebar__footer">
       <span>Valle de Aconcagua</span>
       <span class="sidebar__ver">v1.0 · Quillota</span>
@@ -85,6 +284,7 @@ const linksVisibles = links.filter((link) => !link.requiresAuth || auth.isAuthen
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  min-height: 0;
 }
 
 .sidebar__brand {
@@ -116,16 +316,114 @@ const linksVisibles = links.filter((link) => !link.requiresAuth || auth.isAuthen
 }
 
 .sidebar__nav {
-  padding: 0.75rem 0.65rem;
+  padding: 0.65rem 0.55rem;
   flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.nav-section--cuenta {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.nav-section__label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.25rem;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.nav-section__label-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  opacity: 0.7;
+}
+
+.nav-group {
+  border-radius: var(--radius-md);
+}
+
+.nav-group--active .nav-group__header {
+  color: var(--color-primary);
+}
+
+.nav-group__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: background 0.12s, color 0.12s;
+}
+
+.nav-group__header:hover {
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
+}
+
+.nav-group__icon {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 1.85;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.nav-group__label {
+  flex: 1;
+  text-align: left;
+}
+
+.nav-group__chevron {
+  width: 0.95rem;
+  height: 0.95rem;
+  opacity: 0.65;
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+
+.nav-group--open .nav-group__chevron {
+  transform: rotate(180deg);
+}
+
+.nav-group__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.1rem 0 0.35rem 0.15rem;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  padding: 0.65rem 0.85rem;
-  margin-bottom: 0.2rem;
+  padding: 0.55rem 0.85rem;
   color: var(--color-text-secondary);
   text-decoration: none;
   font-size: 0.875rem;
@@ -134,11 +432,17 @@ const linksVisibles = links.filter((link) => !link.requiresAuth || auth.isAuthen
   transition: background 0.12s, color 0.12s;
 }
 
+.nav-link--nested {
+  padding-left: 1.15rem;
+  font-size: 0.84rem;
+}
+
 .nav-link__icon {
   width: 1.125rem;
   height: 1.125rem;
   stroke-width: 1.75;
   opacity: 0.85;
+  flex-shrink: 0;
 }
 
 .nav-link:hover {
