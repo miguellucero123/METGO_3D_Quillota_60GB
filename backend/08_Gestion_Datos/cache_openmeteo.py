@@ -124,6 +124,22 @@ def get_meteo_cached(
             _hits += 1
             return df.copy() if isinstance(df, pd.DataFrame) else df
 
+    # Durante cooldown 429: no golpear OpenMeteo; servir lastgood si hay.
+    en_cooldown = False
+    try:
+        from datos_reales_openmeteo import openmeteo_en_cooldown
+
+        en_cooldown = bool(openmeteo_en_cooldown())
+    except ImportError:
+        pass
+
+    if en_cooldown:
+        lg = _servir_lastgood(key)
+        if lg is not None:
+            return lg
+        _misses += 1
+        return None
+
     _misses += 1
     df = fetcher(estacion, tipo, dias)
     if df is not None and not df.empty:

@@ -53,6 +53,31 @@ from api_rest.mapas_routes import register_mapas_routes
 from api_rest.observability import register_observability
 
 
+def _error_openmeteo_503():
+    """Respuesta 503 con diagnóstico (cooldown / Supabase) para la SPA."""
+    payload = {
+        "error": "Servicio de OpenMeteo temporalmente no disponible",
+        "hint": (
+            "OpenMeteo rate-limit (429) o sin fallback. "
+            "En Render configure SUPABASE_URL + SUPABASE_KEY para servir meteo_store."
+        ),
+    }
+    try:
+        from datos_reales_openmeteo import openmeteo_cooldown_restante, openmeteo_en_cooldown
+
+        if openmeteo_en_cooldown():
+            payload["openmeteo_cooldown_s"] = openmeteo_cooldown_restante()
+    except ImportError:
+        pass
+    try:
+        from api_rest.integracion.supabase_store import supabase_configurado
+
+        payload["supabase_configurado"] = bool(supabase_configurado())
+    except Exception:
+        payload["supabase_configurado"] = False
+    return jsonify(payload), 503
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
     CORS(
@@ -135,10 +160,10 @@ def create_app() -> Flask:
             data = services.resumen_meteo(estacion_id)
         except Exception as exc:
             app.logger.warning("public_meteo %s error: %s", estacion_id, exc)
-            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+            return _error_openmeteo_503()
             
         if data is None:
-            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+            return _error_openmeteo_503()
         return jsonify(data)
 
     @app.get("/api/public/meteo/<estacion_id>/pronostico")
@@ -198,9 +223,9 @@ def create_app() -> Flask:
                 data = services.resumen_meteo(estacion_id)
         except Exception as exc:
             app.logger.warning("meteo_resumen %s error: %s", estacion_id, exc)
-            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+            return _error_openmeteo_503()
         if data is None:
-            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+            return _error_openmeteo_503()
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/pronostico")
@@ -214,9 +239,9 @@ def create_app() -> Flask:
             data = services.pronostico_meteo(estacion_id, dias)
         except Exception as exc:
             app.logger.warning("meteo_pronostico %s error: %s", estacion_id, exc)
-            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+            return _error_openmeteo_503()
         if data is None:
-            return jsonify({"error": "Servicio de OpenMeteo temporalmente no disponible"}), 503
+            return _error_openmeteo_503()
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/viento-horario")

@@ -35,6 +35,11 @@ services:
         value: "2"
       - key: METGO_OPENMETEO_COOLDOWN
         value: "120"
+      # Fallback meteo cuando OpenMeteo rate-limita (429). Obligatorios en Dashboard Render:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
       - key: PYTHON_VERSION
         value: "3.11.9"
 

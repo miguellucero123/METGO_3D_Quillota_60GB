@@ -318,6 +318,17 @@ def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
 def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
     """Resumen del día: prioriza histórico observado OpenMeteo; si no hay, pronóstico;
     y si OpenMeteo/caché fallan, el último dato REAL persistido en Supabase."""
+    # Si OpenMeteo está en cooldown (429), preferir store para no alargar el rate limit.
+    try:
+        from datos_reales_openmeteo import openmeteo_en_cooldown
+
+        if openmeteo_en_cooldown():
+            stored = _resumen_desde_store(estacion_id)
+            if stored:
+                return stored
+    except ImportError:
+        pass
+
     nombre = slug_a_nombre(estacion_id)
     df_hist = _df_sin_prints(nombre, "historicos", 14)
     row = _fila_hoy(df_hist)
@@ -387,6 +398,16 @@ def pronostico_meteo(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | 
 
     Si OpenMeteo/caché fallan, sirve el último pronóstico REAL guardado en Supabase.
     """
+    try:
+        from datos_reales_openmeteo import openmeteo_en_cooldown
+
+        if openmeteo_en_cooldown():
+            stored = _pronostico_desde_store(estacion_id, dias)
+            if stored:
+                return stored
+    except ImportError:
+        pass
+
     nombre = slug_a_nombre(estacion_id)
     ventana = min(dias, 16)
     df = _df_sin_prints(nombre, "pronostico", ventana)
@@ -1044,4 +1065,15 @@ def health_check() -> dict[str, Any]:
     }
     if cooldown_restante:
         out["openmeteo_cooldown_s"] = cooldown_restante
+    # Diagnóstico E10: sin Supabase en Render el fallback meteo falla → 503 en SPA
+    try:
+        from api_rest.integracion.supabase_store import supabase_configurado
+        from api_rest.integracion import meteo_store
+
+        out["supabase_configurado"] = bool(supabase_configurado())
+        st = meteo_store.estadisticas_store()
+        out["meteo_store_registros"] = st.get("registros", 0)
+    except Exception:
+        out["supabase_configurado"] = False
+        out["meteo_store_registros"] = 0
     return out
