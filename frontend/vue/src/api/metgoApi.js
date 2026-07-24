@@ -109,18 +109,31 @@ export async function wakeApi(maxRetries = 12) {
   }
 }
 
-export async function login(username, password) {
-  const { data } = await api.post('/auth/login', { username, password })
+export async function login(username, password, sitio = 'quillota') {
+  const { data } = await api.post('/auth/login', { username, password, sitio })
   return data
 }
 
-export async function register({ username, password, email }) {
-  const { data } = await api.post('/auth/register', { username, password, email })
+export async function register({ username, password, email, sitio = 'quillota' }) {
+  const { data } = await api.post('/auth/register', { username, password, email, sitio })
   return data
 }
 
 export async function fetchMe() {
   const { data } = await api.get('/auth/me')
+  return data
+}
+
+export async function fetchPreferencias(sitio = 'quillota') {
+  const { data } = await api.get('/me/preferencias', { params: { sitio } })
+  return data
+}
+
+export async function savePreferencias({ sitio = 'quillota', prefs, favorites } = {}) {
+  const body = { sitio }
+  if (prefs != null) body.prefs = prefs
+  if (favorites != null) body.favorites = favorites
+  const { data } = await api.put('/me/preferencias', body)
   return data
 }
 

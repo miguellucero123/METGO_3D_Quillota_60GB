@@ -10,7 +10,7 @@ const prefs = usePreferencesStore()
   <div class="page">
     <header class="page-header">
       <h2 class="page-title">Preferencias</h2>
-      <p class="page-subtitle">Unidades y apariencia · alias `/preferencias-clima`</p>
+      <p class="page-subtitle">Unidades y apariencia · sync servidor por sitio (E9)</p>
     </header>
 
     <SectionCard title="Unidades meteorológicas" subtitle="Aplica en panel y detalle de estación">

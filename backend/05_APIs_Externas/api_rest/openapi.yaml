@@ -12,6 +12,7 @@ tags:
   - name: auth
   - name: meteo
   - name: aire
+  - name: operaciones
   - name: sistema
   - name: datos
   - name: servicios
@@ -23,10 +24,43 @@ paths:
       responses:
         "200":
           description: OK
+  /api/health/sitios:
+    get:
+      tags: [sistema]
+      summary: Health + frescura por sitio (E10 SLO)
+      description: |
+        Evalúa frescura de meteo/aire/operaciones frente a SLOs
+        (`docs/roadmap/SLO_E10.md`). Query `sitio=` para un slug.
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string }
+        - name: incluir_plantilla
+          in: query
+          schema: { type: string, enum: ["0", "1"], default: "0" }
+      responses:
+        "200":
+          description: Lista o detalle de sitio con frescura y estado
+  /api/metrics:
+    get:
+      tags: [sistema]
+      summary: Métricas Prometheus (E10)
+      parameters:
+        - name: format
+          in: query
+          schema: { type: string, enum: [prometheus, json], default: prometheus }
+      responses:
+        "200":
+          description: text/plain Prometheus o JSON
   /api/auth/login:
     post:
       tags: [auth]
-      summary: Login JWT
+      summary: Login JWT (E9 — claim sitio)
+      description: |
+        Emite JWT con `sub`, `role`, `tenant` (legacy) y **`sitio`** (producto).
+        El body puede incluir `sitio` para scoped login; un usuario de Quillota
+        no puede pedir `mantos_blancos` (403). Admin global (`sitio=null` en membresía)
+        puede omitir sitio (acceso a todos) o pedirlo para limitar el token.
       requestBody:
         required: true
         content:
@@ -37,11 +71,14 @@ paths:
               properties:
                 username: { type: string, example: admin }
                 password: { type: string, example: admin123 }
+                sitio: { type: string, example: quillota, description: "Producto METGO (opcional)" }
       responses:
         "200":
-          description: Token emitido
+          description: Token emitido (user.sitio en payload)
         "401":
           description: Credenciales incorrectas
+        "403":
+          description: Sitio no autorizado para el usuario
   /api/auth/register:
     post:
       tags: [auth]
@@ -57,11 +94,73 @@ paths:
                 username: { type: string, example: campo_norte }
                 password: { type: string, minLength: 6 }
                 email: { type: string, format: email }
+                sitio: { type: string, example: quillota }
       responses:
         "201":
           description: Usuario creado y token emitido
         "400":
           description: Validación fallida
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Usuario actual (JWT)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: "{ username, role, tenant, sitio }"
+        "401":
+          description: Sin token
+  /api/auth/refresh:
+    post:
+      tags: [auth]
+      summary: Renovar JWT preservando sitio
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Nuevo access_token
+        "401":
+          description: Sin token
+  /api/me/preferencias:
+    get:
+      tags: [auth]
+      summary: Preferencias/favoritos del usuario para un sitio
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: quillota }
+      responses:
+        "200":
+          description: "{ usuario, sitio, prefs, favorites }"
+        "403":
+          description: Sitio no autorizado
+    put:
+      tags: [auth]
+      summary: Guardar preferencias/favoritos (usuario+sitio)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sitio: { type: string }
+                prefs: { type: object }
+                favorites: { type: array }
+      responses:
+        "200":
+          description: Preferencias guardadas
+        "403":
+          description: Sitio no autorizado
+        "503":
+          description: Supabase no disponible
+  /api/public/sitios-auth:
+    get:
+      tags: [auth]
+      summary: Catálogo de sitios para pantalla de login
+      responses:
+        "200":
+          description: Lista de sitios activos (sin plantilla)
   /api/sitios:
     get:
       tags: [meteo]
@@ -178,11 +277,115 @@ paths:
           schema: { type: integer, default: 7, maximum: 92 }
       responses:
         "200":
-          description: Lista de días pasados (promedios 24 h + ICAP)
+          description: |
+            Lista de días pasados (promedios 24 h + ICAP). Si CAMS no responde,
+            devuelve el respaldo persistido en `aire_registros` (fallback Supabase).
         "404":
           description: Estación desconocida
         "503":
           description: Servicio CAMS no disponible
+  /api/public/aire/alertas:
+    get:
+      tags: [aire]
+      summary: Alertas de salud por umbral ICAP (público)
+      description: |
+        Estaciones de un sitio cuyo ICAP actual supera el umbral de alerta
+        (`METGO_ICAP_UMBRAL_ALERTA`, por defecto 200 → nivel Alerta). Alimenta el
+        banner de alerta de salud del SPA Copiapó.
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: copiapo }
+      responses:
+        "200":
+          description: >
+            { sitio, umbral, hay_alerta, nivel_max, estaciones:[{estacion_id,
+            nombre, icap, nivel, contaminante_rector, recomendaciones}] }
+        "503":
+          description: Servicio CAMS no disponible
+  /api/public/aire/{estacion_id}/dispersion:
+    get:
+      tags: [aire]
+      summary: Potencial de dispersión horario (24/48/72 h)
+      description: |
+        Meteorología de dispersión de contaminantes por hora: **inversión térmica**
+        (gradiente 2 m ↔ 925 hPa), **altura de capa límite**, **viento** (intensidad,
+        dirección, ráfaga, categoría), **nubosidad baja / niebla / neblina costera**
+        e **índice de dispersión (0-100)** con categoría y alerta de acumulación.
+        Malla airshed Copiapó (7 puntos). Fuente Open-Meteo Forecast.
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+        - name: horas
+          in: query
+          schema: { type: integer, default: 72, maximum: 168 }
+      responses:
+        "200":
+          description: Serie horaria con inversión, viento, niebla e índice de dispersión
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Servicio Open-Meteo no disponible
+  /api/public/aire/{estacion_id}/dispersion/diaria:
+    get:
+      tags: [aire]
+      summary: Potencial de dispersión diario (7 días, peor caso)
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7, maximum: 16 }
+      responses:
+        "200":
+          description: Resumen diario (peor índice del día, horas de inversión, niebla)
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Servicio Open-Meteo no disponible
+  /api/public/aire/{estacion_id}/dispersion/proyeccion:
+    get:
+      tags: [aire]
+      summary: Proyección climatológica de dispersión (16-30 días)
+      description: |
+        Proyección **estadística** (climatología del archivo, últimos años) para el
+        tramo 16-30 días. Confianza **baja**: no es un pronóstico determinista.
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: copiapo_centro }
+      responses:
+        "200":
+          description: "{ confianza: baja, metodo: climatologia, indice_dispersion, potencial_dispersion, ... }"
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Archivo Open-Meteo no disponible
+  /api/public/aire/dispersion/alertas:
+    get:
+      tags: [aire]
+      summary: Alertas de mala dispersión por horizonte
+      description: |
+        Estaciones del airshed con índice de dispersión bajo el umbral
+        (`METGO_DISPERSION_UMBRAL_ALERTA`, def. 40 → acumulación probable), por
+        horizonte horaria (72 h) / diaria (7 d) / proyeccion (16-30 d).
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: copiapo }
+        - name: horizonte
+          in: query
+          schema: { type: string, enum: [horaria, diaria, proyeccion], default: horaria }
+      responses:
+        "200":
+          description: "{ sitio, horizonte, umbral_indice, hay_alerta, estaciones[] }"
+        "503":
+          description: Servicio Open-Meteo no disponible
   /api/aire/{estacion_id}:
     get:
       tags: [aire]
@@ -198,6 +401,62 @@ paths:
           description: Igual que la variante pública
         "401":
           description: Sin token
+  /api/public/operaciones/{estacion_id}/ventanas:
+    get:
+      tags: [operaciones]
+      summary: Ventanas operacionales de faena (semáforo por actividad)
+      description: |
+        Serie horaria con semáforo **verde/amarillo/rojo** por actividad
+        (tronadura, transporte, izaje) según viento sostenido, ráfaga,
+        visibilidad y precipitación. Sitio E8 Mantos Blancos.
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string, example: mb_rajo }
+        - name: horas
+          in: query
+          schema: { type: integer, default: 48, maximum: 168 }
+      responses:
+        "200":
+          description: "Serie horaria [{fecha_hora, viento_*, actividades:{tronadura,transporte,izaje}, nivel_global}]"
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Servicio Open-Meteo no disponible
+  /api/public/operaciones/alertas:
+    get:
+      tags: [operaciones]
+      summary: Alertas por turno de faena (día 07-19 / noche 19-07)
+      description: |
+        Resumen del próximo turno: actividades bloqueadas (horas en rojo) por
+        punto de faena. Para HSE / planificación minera.
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: mantos_blancos }
+        - name: turno
+          in: query
+          schema: { type: string, enum: [dia, noche], default: dia }
+      responses:
+        "200":
+          description: "{ sitio, turno, desde, hasta, hay_bloqueo, umbrales_aplicados, estaciones[] }"
+        "503":
+          description: Servicio Open-Meteo no disponible
+  /api/public/operaciones/umbrales:
+    get:
+      tags: [operaciones]
+      summary: Umbrales configurables del semáforo operacional
+      description: |
+        Umbrales efectivos (amarillo, rojo) por actividad. Defaults conservadores
+        + override por sitio + `METGO_OP_UMBRALES_JSON` en el entorno de la API.
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: mantos_blancos }
+      responses:
+        "200":
+          description: "{ sitio, umbrales, unidades, actividades, nota }"
   /api/public/meteo/{estacion_id}:
     get:
       tags: [meteo]

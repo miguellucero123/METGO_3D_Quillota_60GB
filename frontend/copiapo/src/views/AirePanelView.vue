@@ -11,6 +11,8 @@
       <button type="button" class="btn" @click="cargar">Reintentar</button>
     </div>
     <template v-else>
+      <AlertaAireBanner :alerta="alerta" />
+
       <IcapHero
         v-if="seleccionada"
         :icap="seleccionada.icap"
@@ -47,6 +49,7 @@
 import { computed, inject, onMounted, reactive, ref } from 'vue'
 import IcapHero from '@/components/aire/IcapHero.vue'
 import EstacionAireCard from '@/components/aire/EstacionAireCard.vue'
+import AlertaAireBanner from '@/components/aire/AlertaAireBanner.vue'
 import { wakeApi, fetchAireActual, fetchEstacionesSitio } from '@/services/aireApi'
 
 const site = inject('site')
@@ -56,7 +59,33 @@ const estaciones = ref([])
 const lecturas = reactive({})
 const slugActivo = ref(site.stations[0]?.slug || 'copiapo_centro')
 
+const ICAP_UMBRAL = 200
+
 const seleccionada = computed(() => lecturas[slugActivo.value] || null)
+
+const alerta = computed(() => {
+  const activas = estaciones.value
+    .map((est) => ({ est, aire: lecturas[est.slug] }))
+    .filter(({ aire }) => aire && aire.icap != null && aire.icap >= ICAP_UMBRAL)
+    .map(({ est, aire }) => ({
+      estacion_id: est.slug,
+      nombre: est.nombre,
+      icap: aire.icap,
+      nivel: aire.nivel,
+      etiqueta: aire.etiqueta,
+      contaminante_rector: aire.contaminante_rector,
+      recomendaciones: aire.recomendaciones || [],
+    }))
+  const peor = activas.length
+    ? activas.reduce((a, b) => (b.icap > a.icap ? b : a))
+    : null
+  return {
+    hay_alerta: activas.length > 0,
+    umbral: ICAP_UMBRAL,
+    nivel_max: peor?.nivel || null,
+    estaciones: activas,
+  }
+})
 
 async function cargar() {
   loading.value = true

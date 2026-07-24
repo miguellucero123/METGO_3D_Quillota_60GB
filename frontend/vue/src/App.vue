@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMetgoStore } from '@/stores/metgo'
 import { usePreferencesStore } from '@/stores/preferences'
+import { useFavoritesStore } from '@/stores/favorites'
 import MetgoHeader from '@/components/layout/MetgoHeader.vue'
 import MetgoSidebar from '@/components/layout/MetgoSidebar.vue'
 
@@ -11,6 +12,7 @@ const route = useRoute()
 const auth = useAuthStore()
 const store = useMetgoStore()
 const preferences = usePreferencesStore()
+const favorites = useFavoritesStore()
 
 const isAuthPage = computed(() => route.name === 'login' || route.name === 'registro')
 
@@ -23,6 +25,7 @@ onMounted(async () => {
   if (!auth.isAuthenticated) return
   const ok = await auth.ensureValidSession()
   if (ok) {
+    await Promise.all([preferences.syncFromServer(), favorites.syncFromServer()])
     await store.inicializar()
   }
 })

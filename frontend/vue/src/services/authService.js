@@ -6,9 +6,9 @@ import { login as apiLogin, register as apiRegister } from '@/api/metgoApi'
 
 export const AUTH_ERROR_INVALID = 'Usuario o contraseña incorrectos'
 
-export async function login(username, password) {
+export async function login(username, password, sitio = 'quillota') {
   try {
-    return await apiLogin(username, password)
+    return await apiLogin(username, password, sitio)
   } catch (e) {
     const msg = e?.message || ''
     if (
@@ -22,6 +22,6 @@ export async function login(username, password) {
   }
 }
 
-export async function register({ username, password, email }) {
-  return apiRegister({ username, password, email })
+export async function register({ username, password, email, sitio = 'quillota' }) {
+  return apiRegister({ username, password, email, sitio })
 }

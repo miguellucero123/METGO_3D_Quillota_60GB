@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from api_rest.estaciones_catalogo import COORDS, SLUG_A_NOMBRE
+from api_rest.estaciones_catalogo import COORDS, ESTACIONES_POR_SITIO, SLUG_A_NOMBRE
 
 TZ_CHILE = ZoneInfo("America/Santiago")
 
@@ -223,7 +223,14 @@ def aire_actual(estacion_id: str) -> dict[str, Any] | None:
         data.update(evaluar_icap(data.get("pm2_5"), data.get("pm10")))
         return data
 
-    return _json_cached(f"aire_actual|{estacion_id}", fetch)
+    data = _json_cached(f"aire_actual|{estacion_id}", fetch)
+    if data is None:
+        # Fallback: último registro persistido (CAMS caído o en cooldown).
+        respaldo = _ultimo_aire_store(estacion_id.lower().replace("-", "_"))
+        if respaldo is not None:
+            respaldo["degradado"] = True
+            return respaldo
+    return data
 
 
 def aire_pronostico(estacion_id: str, dias: int = 5) -> list[dict[str, Any]] | None:
@@ -255,4 +262,108 @@ def aire_historico(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | No
         hoy = datetime.now(TZ_CHILE).date().isoformat()
         return [f for f in _promedios_diarios(payload) if f["fecha"] < hoy][-dias:]
 
-    return _json_cached(f"aire_historico|{estacion_id}|{dias}", fetch)
+    data = _json_cached(f"aire_historico|{estacion_id}|{dias}", fetch)
+    if not data:
+        respaldo = _leer_aire_store(estacion_id.lower().replace("-", "_"), dias)
+        if respaldo:
+            return respaldo
+    return data
+
+
+# ------------------------------------------------------- persistencia / alertas
+
+
+def _ultimo_aire_store(estacion_id: str) -> dict[str, Any] | None:
+    try:
+        from api_rest.integracion import aire_store
+
+        return aire_store.ultimo_aire(estacion_id)
+    except Exception:
+        return None
+
+
+def _leer_aire_store(estacion_id: str, dias: int) -> list[dict[str, Any]]:
+    try:
+        from api_rest.integracion import aire_store
+
+        return aire_store.leer_aire(estacion_id, dias=dias)
+    except Exception:
+        return []
+
+
+# Umbral ICAP a partir del cual se emite alerta de salud (nivel "alerta").
+ICAP_UMBRAL_ALERTA = int(os.getenv("METGO_ICAP_UMBRAL_ALERTA", "200"))
+
+
+def sincronizar_aire(estaciones: list[str] | None = None) -> dict[str, Any]:
+    """ETL aire: CAMS (actual + pronóstico + histórico) → aire_registros.
+
+    Pensado para el cron: idempotente y tolerante a fallos por estación.
+    """
+    try:
+        from api_rest.integracion import aire_store
+    except Exception as exc:  # pragma: no cover
+        return {"aire_sync": {}, "error": f"aire_store no disponible: {exc}"}
+
+    slugs = estaciones or ESTACIONES_POR_SITIO.get("copiapo", [])
+    detalle: dict[str, int] = {}
+    errores: list[str] = []
+    for slug in slugs:
+        escritos = 0
+        try:
+            actual = aire_actual(slug)
+            if actual and actual.get("fuente") == "openmeteo_cams":
+                escritos += aire_store.guardar_aire(slug, [actual], tipo_dato="modelo")
+        except Exception as exc:
+            errores.append(f"{slug} (actual): {exc}")
+        try:
+            hist = aire_historico(slug, dias=7) or []
+            escritos += aire_store.guardar_aire(slug, hist, tipo_dato="observado")
+        except Exception as exc:
+            errores.append(f"{slug} (historico): {exc}")
+        try:
+            pron = aire_pronostico(slug, dias=5) or []
+            escritos += aire_store.guardar_aire(slug, pron, tipo_dato="pronostico")
+        except Exception as exc:
+            errores.append(f"{slug} (pronostico): {exc}")
+        detalle[slug] = escritos
+    return {"aire_sync": detalle, "errores": errores, "umbral_alerta": ICAP_UMBRAL_ALERTA}
+
+
+def alertas_aire(sitio: str = "copiapo") -> dict[str, Any]:
+    """Estaciones del sitio con ICAP >= umbral (banner de alerta de salud)."""
+    slugs = ESTACIONES_POR_SITIO.get(sitio, [])
+    activas: list[dict[str, Any]] = []
+    for slug in slugs:
+        try:
+            actual = aire_actual(slug)
+        except Exception:
+            actual = None
+        if not actual:
+            continue
+        icap = actual.get("icap")
+        if icap is not None and icap >= ICAP_UMBRAL_ALERTA:
+            activas.append(
+                {
+                    "estacion_id": slug,
+                    "nombre": SLUG_A_NOMBRE.get(slug, slug),
+                    "icap": icap,
+                    "nivel": actual.get("nivel"),
+                    "etiqueta": actual.get("etiqueta"),
+                    "contaminante_rector": actual.get("contaminante_rector"),
+                    "recomendaciones": actual.get("recomendaciones", []),
+                    "actualizado": actual.get("actualizado"),
+                    "degradado": bool(actual.get("degradado")),
+                }
+            )
+    nivel_max = None
+    if activas:
+        peor = max(activas, key=lambda a: a["icap"])
+        nivel_max = peor.get("nivel")
+    return {
+        "sitio": sitio,
+        "umbral": ICAP_UMBRAL_ALERTA,
+        "hay_alerta": bool(activas),
+        "nivel_max": nivel_max,
+        "estaciones": activas,
+    }

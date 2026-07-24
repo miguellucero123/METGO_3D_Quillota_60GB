@@ -37,6 +37,10 @@ USER_TO_ROLE: dict[str, str] = {
     "agronomo": "agronomo",
     "operador": "operador",
     "lector": "lectura",
+    # E9 — demos por sitio de producto
+    "copiapo": "lectura",
+    "mantos": "operador",
+    "paine": "lectura",
 }
 
 USUARIOS_VALIDOS = tuple(USER_TO_ROLE.keys())
@@ -50,6 +54,9 @@ _DEV_FALLBACK = {
     "agronomo": "agro123",
     "operador": "op123",
     "lector": "lec123",
+    "copiapo": "copiapo123",
+    "mantos": "mantos123",
+    "paine": "paine123",
 }
 
 _warned_dev = False
@@ -87,7 +94,10 @@ def usuario_existe(usuario: str) -> bool:
 
 
 def registrar_usuario(
-    usuario: str, contraseña: str, email: str | None = None
+    usuario: str,
+    contraseña: str,
+    email: str | None = None,
+    sitio: str | None = None,
 ) -> tuple[bool, str]:
     """Auto-registro demo (rol lectura). Requiere METGO_ALLOW_SELF_REGISTER=1."""
     if os.getenv("METGO_ALLOW_SELF_REGISTER", "1") != "1":
@@ -106,11 +116,21 @@ def registrar_usuario(
     if len(contraseña or "") < 6:
         return False, "La contraseña debe tener al menos 6 caracteres"
 
+    sitio_reg = (sitio or os.getenv("METGO_SITIO_DEFAULT", "quillota") or "quillota").strip().lower()
+    try:
+        from api_rest.estaciones_catalogo import ESTACIONES_POR_SITIO
+
+        if sitio_reg not in ESTACIONES_POR_SITIO:
+            return False, f"Sitio desconocido: {sitio_reg}"
+    except ImportError:
+        pass
+
     reg = cargar_usuarios_registrados()
     reg[u] = {
         "password_hash": _hash_password(contraseña),
         "email": (email or "").strip() or None,
         "role": "lectura",
+        "sitio": sitio_reg,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     path = _registry_path()
@@ -135,6 +155,21 @@ def tenant_de_usuario(usuario: str) -> str | None:
         return _t(usuario)
     except ImportError:
         return "quillota" if usuario != "admin" else None
+
+
+def sitio_de_usuario(usuario: str) -> str | None:
+    """E9: sitio de producto. None = admin global."""
+    u = usuario.lower().strip()
+    # Preferir sitio guardado en registro
+    reg = cargar_usuarios_registrados()
+    if u in reg and reg[u].get("sitio"):
+        return str(reg[u]["sitio"]).lower().strip()
+    try:
+        from api_rest.sitios_auth import sitio_de_usuario as _s
+
+        return _s(usuario)
+    except ImportError:
+        return tenant_de_usuario(usuario)
 
 
 def rol_permitido(user_role: str, roles_requeridos: tuple[str, ...]) -> bool:
@@ -197,7 +232,7 @@ def jwt_algorithm() -> str:
     return os.getenv("METGO_JWT_ALGORITHM", "HS256")
 
 
-def crear_token_acceso(usuario: str) -> dict[str, Any]:
+def crear_token_acceso(usuario: str, sitio: str | None = None) -> dict[str, Any]:
     if jwt is None:
         raise RuntimeError("Instale PyJWT: pip install PyJWT")
 
@@ -207,12 +242,16 @@ def crear_token_acceso(usuario: str) -> dict[str, Any]:
 
     role = rol_de_usuario(usuario)
     tenant = tenant_de_usuario(usuario)
+
+    # E9: sitio de producto (quillota|paine|copiapo|mantos_blancos|…).
+    sitio_efectivo = sitio if sitio is not None else sitio_de_usuario(usuario)
     exp_secs = jwt_expiration_seconds()
     now = datetime.now(timezone.utc)
     payload = {
         "sub": usuario,
         "role": role,
-        "tenant": tenant,
+        "tenant": tenant,  # legacy Fase 3.3 (mapa geográfico)
+        "sitio": sitio_efectivo,  # E9 producto/sitio
         "iat": now,
         "exp": now + timedelta(seconds=exp_secs),
     }
@@ -224,7 +263,12 @@ def crear_token_acceso(usuario: str) -> dict[str, Any]:
         "access_token": token,
         "token_type": "bearer",
         "expires_in": exp_secs,
-        "user": {"username": usuario, "role": role, "tenant": tenant},
+        "user": {
+            "username": usuario,
+            "role": role,
+            "tenant": tenant,
+            "sitio": sitio_efectivo,
+        },
     }
 
 

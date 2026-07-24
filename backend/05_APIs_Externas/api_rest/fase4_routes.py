@@ -118,6 +118,34 @@ def register_fase4_routes(app: Flask) -> None:
             anios_archive=int(anios_archive),
             origen="cron",
         )
+        # E7: ETL calidad del aire (CAMS → aire_registros) en el mismo cron.
+        try:
+            from api_rest import aire_service
+
+            res["aire"] = aire_service.sincronizar_aire()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"aire: {exc}")
+        # E7: ETL dispersión (inversión/viento/niebla → aire_dispersion).
+        try:
+            from api_rest import dispersion_service
+
+            res["dispersion"] = dispersion_service.sincronizar_dispersion()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"dispersion: {exc}")
+        # E8: ETL ventanas operacionales (faena → operaciones_ventanas).
+        try:
+            from api_rest import operaciones_service
+
+            res["operaciones"] = operaciones_service.sincronizar_operaciones()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"operaciones: {exc}")
+        # E7/E12: SINCA observado (stub hasta tener códigos oficiales).
+        try:
+            from api_rest import sinca_service
+
+            res["sinca"] = sinca_service.sincronizar_sinca()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"sinca: {exc}")
         return jsonify(res)
 
     @app.get("/api/datos/etl/status")

@@ -17,8 +17,30 @@ supabase login
 supabase link --project-ref ylivhjigvxqzpzchllte
 
 # Empujar migraciones pendientes al proyecto cloud:
-supabase db push
+supabase db push --linked --yes
 ```
+
+## Estado remoto (2026-07-24)
+
+Aplicadas (E7/E8 multi-sitio):
+
+| Migración | Contenido |
+|-----------|-----------|
+| `…23120000_estaciones_multisitio` | tabla `estaciones` + seed Quillota/Paine |
+| `…23140000_sitios_multisitio` | tabla `sitios` + demo |
+| `…23150000_copiapo_aire` | Copiapó + `aire_registros` |
+| `…24100000_copiapo_dispersion` | 7 puntos + `aire_dispersion` |
+| `…24120000_mantos_blancos_operaciones` | faena + `operaciones_ventanas` |
+| `…24130000_operaciones_uv_so2` | columnas UV/SO₂ |
+| `…24140000_e7_e8_grants_rls` | GRANTs `service_role` + RLS lectura |
+
+Verificación:
+
+```powershell
+python scratch/verificar_supabase_e7_e8.py
+```
+
+Esperado: **8/8 accesibles** (`sitios`, `estaciones`, `aire_registros`, `aire_dispersion`, `operaciones_ventanas`, meteo_*, `ml_registry`).
 
 ## Alternativa: ejecutar un archivo SQL puntual
 
@@ -31,11 +53,13 @@ supabase db query --linked -f backend/08_Gestion_Datos/supabase_db/meteo_pronost
 ## Verificar
 
 ```powershell
-supabase db query --linked "select table_name from information_schema.tables where table_schema='public' and table_name in ('meteo_registros','meteo_pronostico','meteo_series','meteo_helada_pronostico') order by 1;"
+supabase db query --linked "select table_name from information_schema.tables where table_schema='public' and table_name in ('meteo_registros','meteo_pronostico','meteo_series','meteo_helada_pronostico','sitios','estaciones','aire_registros','aire_dispersion','operaciones_ventanas') order by 1;"
 ```
 
 ## Notas
 
 - El SQL es **idempotente** (`IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS`).
 - Tras el push, el ETL/API hace upsert en `meteo_helada_pronostico` (una fila por estación+fecha+cultivo).
+- El cron `/api/cron/sync` también escribe `aire_registros`, `aire_dispersion` y `operaciones_ventanas` (E7/E8).
 - No commitear secrets; `.temp` ya está en `supabase/.gitignore`.
+- Docker Desktop no es obligatorio para `db push` al remoto (solo para desarrollo local).

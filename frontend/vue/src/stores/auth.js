@@ -26,14 +26,14 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(USER_KEY)
   }
 
-  async function login(username, password) {
-    const data = await authLogin(username, password)
+  async function login(username, password, sitio = 'quillota') {
+    const data = await authLogin(username, password, sitio)
     setSession(data.access_token, data.user)
     return data
   }
 
-  async function register(username, password, email) {
-    const data = await authRegister({ username, password, email })
+  async function register(username, password, email, sitio = 'quillota') {
+    const data = await authRegister({ username, password, email, sitio })
     setSession(data.access_token, data.user)
     return data
   }

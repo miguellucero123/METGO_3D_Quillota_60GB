@@ -33,6 +33,12 @@ async function onSubmit() {
       return
     }
     await auth.login(username.value.trim(), password.value)
+    const { usePreferencesStore } = await import('@/stores/preferences')
+    const { useFavoritesStore } = await import('@/stores/favorites')
+    await Promise.all([
+      usePreferencesStore().syncFromServer(),
+      useFavoritesStore().syncFromServer(),
+    ])
     await metgo.inicializar()
     const redirect = sanitizeRedirectPath(router.currentRoute.value.query.redirect, '/')
     router.push(redirect)

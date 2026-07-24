@@ -3,11 +3,14 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { setUnauthorizedHandler, setForbiddenHandler } from './api/metgoApi'
+import { initSentry } from './utils/sentry'
 import './assets/main.css'
 
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
+
+void initSentry(app, router, 'quillota')
 
 setUnauthorizedHandler(() => {
   if (router.currentRoute.value.name !== 'login') {

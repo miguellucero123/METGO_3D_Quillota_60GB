@@ -57,3 +57,21 @@ jobs:
         run: |
           npm install
           npm run build
+
+  smoke-e2e-api:
+    runs-on: ubuntu-latest
+    needs: test-python
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Playwright API smoke (E10)
+        working-directory: e2e
+        env:
+          METGO_API_BASE: https://metgo-api.onrender.com
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+          npm run test:e2e:api

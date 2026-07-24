@@ -283,6 +283,7 @@ def fuentes_datos() -> dict[str, Any]:
         "csv_5_anios": str(csv_path) if csv_path else None,
         "csv_disponible": bool(csv_path),
         "supabase": meteo_store.estadisticas_store(),
+        "e7_e8": _conteos_e7_e8(),
     }
     try:
         from pathlib import Path
@@ -302,3 +303,23 @@ def fuentes_datos() -> dict[str, Any]:
     except Exception as exc:
         out["oficiales_chile"] = {"error": str(exc)}
     return out
+
+
+def _conteos_e7_e8() -> dict[str, Any]:
+    """Conteos de tablas aire/operaciones (monitoreo post-migración)."""
+    try:
+        from api_rest.integracion.supabase_store import get_supabase_client
+
+        client = get_supabase_client()
+        if not client:
+            return {"activo": False}
+        out: dict[str, Any] = {"activo": True}
+        for tabla in ("aire_registros", "aire_dispersion", "operaciones_ventanas"):
+            try:
+                res = client.table(tabla).select("*", count="exact").limit(1).execute()
+                out[tabla] = res.count
+            except Exception as exc:
+                out[tabla] = {"error": str(exc)[:80]}
+        return out
+    except Exception as exc:
+        return {"activo": False, "error": str(exc)[:120]}

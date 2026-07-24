@@ -57,9 +57,9 @@ Estimaciones en **semanas efectivas** (dedicación parcial; una persona + IA). T
 | **E5** | Backports UX a Quillota (toggle, °C/°F, cards) | 1 sem | Quillota mejorada ✅ 2026-07-23 |
 | **E6** | **Plantilla `metgo-site-template`** | 2 sem | Sitio nuevo en <1 día ✅ 2026-07-23 |
 | **E7** | **Copiapó — calidad del aire** | 3–4 sem | SPA aire + ICAP + salud 🔶 SPA `frontend/copiapo/` 2026-07-23 |
-| **E8** | **Mantos Blancos — minería** | 2–3 sem | SPA faena + alertas operacionales |
-| **E9** | Multi-tenant real + auth unificada | 2–3 sem | Login/roles por sitio |
-| **E10** | Calidad clase mundial I: testing + observabilidad | 3 sem | E2E + SLOs + alertas |
+| **E8** | **Mantos Blancos — minería** | 2–3 sem | SPA faena + alertas operacionales ✅ backend+SPA 2026-07-24 |
+| **E9** | Multi-tenant real + auth unificada | 2–3 sem | Login/roles por sitio ✅ monorepo 2026-07-24 (Paine repo aparte) |
+| **E10** | Calidad clase mundial I: testing + observabilidad | 3 sem | E2E + SLOs + alertas 🔶 MVP 2026-07-24 |
 | **E11** | Calidad clase mundial II: PWA, a11y, i18n, performance | 3 sem | Lighthouse >90, offline |
 | **E12** | Datos oficiales + ML por dominio | 4+ sem (continuo) | Agromet/DMC/SINCA reales, ML aire |
 
@@ -91,45 +91,72 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 - **SINCA** (sinca.mma.gob.cl, MMA Chile): estaciones oficiales de Copiapó/Tierra Amarilla para observación real (scraping/CSV; API no oficial) — pendiente
 - Meteo normal OpenMeteo (viento clave para dispersión)
 
+> **Ampliación (2026-07-24):** módulo **dispersión de contaminantes** — malla airshed de **7 puntos** (≈15 km), `dispersion_service.py` (inversión térmica, capa límite, viento, niebla/estratos costeros, índice de dispersión 0-100), horizontes horaria 72 h / diaria 7 d / **proyección climatológica 16-30 d**, tabla `aire_dispersion`, endpoints `/api/public/aire/*/dispersion*`, vista Vue `DispersionView`. Tests 13/13.
+
 **Backend (fase 2.x–3.x):**
 - [x] Tabla `aire_registros` (`supabase/migrations/20260723150000_copiapo_aire.sql`)
 - [x] Endpoints: `/api/public/aire/{id}`, `…/pronostico`, `…/historico`, `/api/aire/{id}` (+`openapi.yaml` tag `aire`)
 - [x] **ICAP** server-side (tramos DS MMA, contaminante rector PM2.5/PM10, categorías Bueno→Emergencia) — `api_rest/aire_service.py`
 - [x] Recomendaciones de salud por categoría en el payload
-- [ ] ETL: job aire cada 1–3 h (CAMS) + diario (SINCA)
+- [x] ETL: job aire (CAMS) en `/api/cron/sync` → `aire_registros` + fallback lectura store — `aire_store.py`
+- [x] Alertas por umbral ICAP: `/api/public/aire/alertas` + banner SPA
+- [x] Dispersión: `aire_dispersion` + `dispersion_service.py` + 4 endpoints + malla 7 puntos
+- [x] Migraciones Supabase aplicadas (2026-07-24) + sync local: `aire_registros` 91, `aire_dispersion` 553
+- [x] Stub SINCA (`sinca_service.py` + `/api/public/aire/sinca/estado`) — falta código oficial + scraper (E12)
+- [ ] SINCA observado (códigos MMA + CSV/scraper diario)
 
 **Frontend (desde template):**
 - [x] SPA `frontend/copiapo/` — Panel ICAP, Pronóstico 5 días, Histórico, `site.config.js` ámbar
 - [x] Charts ECharts (PM2.5/PM10 + ICAP) + cards por estación
 - [x] Recomendaciones salud desde payload API
-- [ ] Deploy Netlify + CORS origen producción
-- [ ] Mapa de estaciones con color por ICAP (siguiente iteración)
-- [ ] Alertas: umbral ICAP → banner + (futuro) notificación push
-- [ ] ETL: job aire cada 1–3 h (CAMS) + diario (SINCA)
+- [x] Banner de alerta ICAP (`AlertaAireBanner.vue`)
+- [x] Vista Dispersión (`DispersionView.vue`): inversión, viento, niebla, índice + 3 horizontes
+- [x] Mapa del airshed (`MapaView.vue` + `MapaEstacionesChart`): 7 puntos coloreados por ICAP / dispersión (ECharts, sin tiles)
+- [ ] Deploy Netlify + CORS origen producción (en pausa por créditos Netlify)
 
 ### E8 — Mantos Blancos (Antofagasta): enfoque minero-operacional
 
+> **Estado (2026-07-24):** backend + SPA + Supabase hechos — sync local pobló `operaciones_ventanas` (192 filas). Umbrales configurables + UV/SO₂. **Pendiente:** deploy Netlify (créditos) y redeploy Render con el código nuevo.
+
 Reusa el 80 % de E7 (aire) + módulo operaciones:
 
-- **Variables críticas de faena:** viento sostenido/ráfagas (tronaduras, polvo en suspensión, izaje), visibilidad, precipitación (caminos), radiación/UV (turnos), SO₂ (fundiciones cercanas)
-- **Panel "ventanas operacionales":** semáforo por actividad (tronadura, transporte, izaje) según umbrales configurables de viento/visibilidad
-- Alertas por turno (07:00 / 19:00) — reutiliza workers de notificaciones de Quillota
-- Puntos seed: rajo, campamento, chancado, ruta de acceso
-- Identidad cobre, textos de faena; sin módulo lugares/trekking
+- [x] Variables críticas de faena: viento sostenido/ráfagas, visibilidad, precipitación, **UV**, **SO₂** (CAMS)
+- [x] Panel ventanas operacionales: semáforo por actividad según **umbrales configurables**
+- [x] Alertas por turno (07:00 / 19:00)
+- [x] Puntos seed: rajo, campamento, chancado, ruta de acceso
+- [x] Identidad cobre, SPA faena
+- [x] Migración + sync Supabase (`operaciones_ventanas` 192 filas, 2026-07-24)
+- [ ] Deploy Netlify + CORS origen producción (CORS ya incluye `metgo-mantos.netlify.app` en `render.yaml`)
+- [ ] Redeploy API Render con código E7/E8 (aún no pusheado a `origin/main`)
 
 ### E9 — Multi-tenant real + auth unificada
 
-- JWT `metgo-api` con claim `sitio`/`tenant` obligatorio; RBAC por sitio (admin de Copiapó no ve Mantos Blancos)
-- Login de todas las SPAs contra la API (Paine deja el mock localStorage)
-- Favoritos/preferencias server-side por usuario+sitio
-- Fila de seguridad Supabase (RLS) por `sitio` en tablas de escritura de usuario
+> **Estado (2026-07-24):** cerrado en monorepo — JWT `sitio`, filtro estaciones, preferencias,
+> login Quillota/Copiapó/Mantos, membresía demo + RLS (escritura solo `service_role`).
+> Paine: credencial `paine`/`paine123` lista en API; SPA en repo aparte (aplicar mismo patrón).
+
+- [x] JWT `metgo-api` con claim `sitio`; RBAC por sitio (admin global `sitio=None`)
+- [x] Filtrado JWT de listados y estaciones fuera de membresía (meteo/aire/agrícola)
+- [x] Favoritos/preferencias server-side por usuario+sitio (`user_preferencias`)
+- [x] SPA Quillota: login con `sitio=quillota` + sync prefs
+- [x] SPA Copiapó / Mantos Blancos: login JWT + guard de rutas
+- [x] Tabla `user_sitio_membresia` + RLS series (SELECT público, write service_role)
+- [ ] SPA Paine (repo `metgo-paine`): cablear login contra metgo-api (patrón Copiapó)
 
 ### E10 — Clase mundial I: confiabilidad
 
-- **Testing:** E2E Playwright (flujos críticos por sitio), contract tests contra `openapi.yaml`, tests de carga básicos (k6) sobre endpoints cacheados
-- **Observabilidad:** Sentry en todas las SPAs + API; `/api/metrics` → dashboard Grafana Cloud (free); alertas de caída ETL/cron
-- **SLOs:** definir y medir (API p95 < 800 ms cacheado; frescura datos < 2 h aire, < 24 h meteo)
-- **Resiliencia:** healthchecks por sitio, circuit breaker OpenMeteo/SINCA, colas de reintento ETL
+> **Estado (2026-07-24):** MVP E10 en monorepo — health por sitio, histograma latencia,
+> SLOs documentados, contract smoke OpenAPI, Playwright API smoke, k6 smoke, Sentry opcional.
+> Pendiente: dashboard Grafana Cloud en cuenta real, E2E UI multi-SPA, CB SINCA.
+
+- [x] `GET /api/health/sitios` — frescura meteo/aire/ops vs SLO
+- [x] `docs/roadmap/SLO_E10.md` — p95 &lt; 800 ms, aire &lt; 2 h, meteo &lt; 24 h
+- [x] Histograma `metgo_http_request_duration_ms` + gauges frescura en `/api/metrics`
+- [x] Sentry opcional API (`METGO_SENTRY_DSN`) + SPAs (`VITE_SENTRY_DSN`)
+- [x] Contract smoke OpenAPI + Playwright `e2e/api-smoke.spec.ts` + `loadtests/k6_smoke.js`
+- [ ] Grafana Cloud scrape + alertas (checklist en SLO_E10.md)
+- [ ] E2E UI login por SPA (cuando Netlify/deploys estables)
+- [ ] Circuit breaker SINCA + colas reintento ETL dedicadas
 
 ### E11 — Clase mundial II: experiencia
 
@@ -163,11 +190,14 @@ Heredados de fases Quillota (detalle en `PLAN_INTEGRACION_QUILLOTA_PAINE.md` E0)
 
 Nuevos de plataforma:
 
-- [ ] Tabla `sitios` + columna `sitio` en `estaciones` (E3)
-- [ ] Esquema `aire_registros` + ICAP (E7)
-- [ ] Template repo + `site.config.js` (E6)
-- [ ] RLS por sitio (E9)
-- [ ] E2E multi-sitio + SLOs (E10)
+- [x] Tabla `sitios` + columna `sitio` en `estaciones` (E3) — aplicado Supabase 2026-07-24
+- [x] Esquema `aire_registros` + ICAP (E7) — + `aire_dispersion` + `operaciones_ventanas` (E8)
+- [x] Template repo + `site.config.js` (E6)
+- [x] Claim JWT `sitio` + preferencias usuario+sitio + filtro estaciones (E9)
+- [x] Login Copiapó/Mantos + `user_sitio_membresia` + RLS write service_role (E9)
+- [ ] Login SPA Paine contra metgo-api (E9 resto / repo aparte)
+- [x] Health sitios + SLOs + metrics histograma + smoke E2E/k6 (E10 parcial)
+- [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto)
 - [ ] PWA + i18n + a11y (E11)
 
 ---

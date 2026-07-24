@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from flask import Flask, jsonify, request
 
-from api_rest import aire_service
-from api_rest.auth_routes import auth_required
+from api_rest import aire_service, dispersion_service
+from api_rest.auth_routes import requiere_estacion
 
 _ERROR_503 = {"error": "Servicio de calidad del aire temporalmente no disponible"}
 
@@ -51,8 +51,75 @@ def register_aire_routes(app: Flask) -> None:
             return jsonify(_ERROR_503), 503
         return _responder(data, estacion_id)
 
+    @app.get("/api/public/aire/alertas")
+    def public_aire_alertas():
+        """Alertas de salud por umbral ICAP para un sitio (por defecto Copiapó)."""
+        sitio = (request.args.get("sitio") or "copiapo").strip().lower()
+        try:
+            return jsonify(aire_service.alertas_aire(sitio))
+        except Exception as exc:
+            app.logger.warning("public_aire_alertas %s error: %s", sitio, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/aire/sinca/estado")
+    def public_sinca_estado():
+        """Estado de la integración SINCA (observado MMA) — stub E7/E12."""
+        try:
+            from api_rest import sinca_service
+
+            return jsonify(sinca_service.estado_sinca())
+        except Exception as exc:
+            app.logger.warning("sinca_estado error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    # ---------------------------------------------------- dispersión de contaminantes
+
+    @app.get("/api/public/aire/dispersion/alertas")
+    def public_dispersion_alertas():
+        """Alertas de mala dispersión por horizonte (horaria|diaria|proyeccion)."""
+        sitio = (request.args.get("sitio") or "copiapo").strip().lower()
+        horizonte = (request.args.get("horizonte") or "horaria").strip().lower()
+        if horizonte not in ("horaria", "diaria", "proyeccion"):
+            horizonte = "horaria"
+        try:
+            return jsonify(dispersion_service.alertas_dispersion(sitio, horizonte))
+        except Exception as exc:
+            app.logger.warning("dispersion_alertas %s error: %s", sitio, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/aire/<estacion_id>/dispersion")
+    def public_dispersion_horaria(estacion_id: str):
+        """Serie horaria de dispersión: inversión, viento, capa límite, niebla (24/48/72 h)."""
+        horas = max(1, min(request.args.get("horas", default=72, type=int), 168))
+        try:
+            data = dispersion_service.dispersion_horaria(estacion_id, horas)
+        except Exception as exc:
+            app.logger.warning("dispersion_horaria %s error: %s", estacion_id, exc)
+            return jsonify(_ERROR_503), 503
+        return _responder(data, estacion_id)
+
+    @app.get("/api/public/aire/<estacion_id>/dispersion/diaria")
+    def public_dispersion_diaria(estacion_id: str):
+        dias = max(1, min(request.args.get("dias", default=7, type=int), 16))
+        try:
+            data = dispersion_service.dispersion_diaria(estacion_id, dias)
+        except Exception as exc:
+            app.logger.warning("dispersion_diaria %s error: %s", estacion_id, exc)
+            return jsonify(_ERROR_503), 503
+        return _responder(data, estacion_id)
+
+    @app.get("/api/public/aire/<estacion_id>/dispersion/proyeccion")
+    def public_dispersion_proyeccion(estacion_id: str):
+        """Proyección climatológica 16-30 días (baja confianza)."""
+        try:
+            data = dispersion_service.dispersion_proyeccion(estacion_id)
+        except Exception as exc:
+            app.logger.warning("dispersion_proyeccion %s error: %s", estacion_id, exc)
+            return jsonify(_ERROR_503), 503
+        return _responder(data, estacion_id)
+
     @app.get("/api/aire/<estacion_id>")
-    @auth_required
+    @requiere_estacion
     def aire_actual_auth(estacion_id: str):
         try:
             data = aire_service.aire_actual(estacion_id)

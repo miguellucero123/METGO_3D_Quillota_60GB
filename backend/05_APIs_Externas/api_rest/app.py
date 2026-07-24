@@ -31,7 +31,12 @@ from flask_cors import CORS
 from api_rest import catalog, services, streamlit_launcher
 from api_rest.alertas_config import generar_alertas_combinadas
 from api_rest.alertas_routes import register_alertas_routes
-from api_rest.auth_routes import auth_required, register_auth_routes, requiere_rol
+from api_rest.auth_routes import (
+    auth_required,
+    register_auth_routes,
+    requiere_estacion,
+    requiere_rol,
+)
 from api_rest.docs_routes import register_docs_routes
 from api_rest.health import build_health_payload
 from api_rest.fase3_routes import register_fase3_routes
@@ -41,6 +46,7 @@ from api_rest.fase8_routes import register_fase8_routes
 from api_rest.fase9_routes import register_fase9_routes
 from api_rest.fase10_routes import register_fase10_routes
 from api_rest.aire_routes import register_aire_routes
+from api_rest.operaciones_routes import register_operaciones_routes
 from api_rest.precipitacion_routes import register_precipitacion_routes
 from api_rest.meteo_avanzada_routes import register_meteo_avanzada_routes
 from api_rest.mapas_routes import register_mapas_routes
@@ -65,6 +71,7 @@ def create_app() -> Flask:
     register_fase9_routes(app)
     register_fase10_routes(app)
     register_aire_routes(app)
+    register_operaciones_routes(app)
     register_precipitacion_routes(app)
     register_meteo_avanzada_routes(app)
     register_mapas_routes(app)
@@ -93,6 +100,17 @@ def create_app() -> Flask:
     @app.get("/api/health")
     def health():
         return jsonify(build_health_payload(services.health_check))
+
+    @app.get("/api/health/sitios")
+    def health_sitios():
+        """E10: frescura y estado por sitio (público, para alertas/cron)."""
+        from api_rest.health_sitios import evaluar_sitio, listar_health_sitios
+
+        sitio = request.args.get("sitio")
+        if sitio:
+            return jsonify(evaluar_sitio(sitio))
+        incluir = request.args.get("incluir_plantilla", "0") not in ("0", "false", "False")
+        return jsonify(listar_health_sitios(incluir_plantilla=incluir))
 
     @app.get("/api/public/sitios")
     def public_sitios():
@@ -143,17 +161,29 @@ def create_app() -> Flask:
     @auth_required
     def sitios():
         incluir = request.args.get("incluir_plantilla", "1") not in ("0", "false", "False")
-        return jsonify(services.listar_sitios(incluir_plantilla=incluir))
+        lista = services.listar_sitios(incluir_plantilla=incluir)
+        user_sitio = getattr(g, "sitio_id", None)
+        if user_sitio:
+            lista = [s for s in lista if s.get("slug") == user_sitio]
+        return jsonify(lista)
 
     @app.get("/api/estaciones")
     @auth_required
     def estaciones():
+        from api_rest.sitios_auth import sitio_permitido
+
         sitio = request.args.get("sitio")
+        user_sitio = getattr(g, "sitio_id", None)
+        if sitio and not sitio_permitido(user_sitio, sitio):
+            return jsonify({"error": "Sitio no autorizado", "sitio_recurso": sitio}), 403
+        if user_sitio:
+            sitio = user_sitio
         return jsonify(
             services.listar_estaciones(getattr(g, "tenant_id", None), sitio=sitio)
         )
+
     @app.get("/api/meteo/<estacion_id>")
-    @auth_required
+    @requiere_estacion
     def meteo_resumen(estacion_id: str):
         key = estacion_id.lower().replace("-", "_")
         if key not in services.SLUG_A_NOMBRE:
@@ -174,7 +204,7 @@ def create_app() -> Flask:
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/pronostico")
-    @auth_required
+    @requiere_estacion
     def meteo_pronostico(estacion_id: str):
         key = estacion_id.lower().replace("-", "_")
         if key not in services.SLUG_A_NOMBRE:
@@ -190,7 +220,7 @@ def create_app() -> Flask:
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/viento-horario")
-    @auth_required
+    @requiere_estacion
     def meteo_viento_horario(estacion_id: str):
         dias = request.args.get("dias", 7, type=int)
         data = services.viento_horario_meteo(estacion_id, dias)
@@ -199,7 +229,7 @@ def create_app() -> Flask:
         return jsonify(data)
 
     @app.get("/api/meteo/<estacion_id>/historico")
-    @auth_required
+    @requiere_estacion
     def meteo_historico(estacion_id: str):
         """Histórico diario. dias>92 lee solo del store (ETL Archive). Lista (contrato Vue)."""
         dias = request.args.get("dias", 30, type=int)
@@ -212,29 +242,61 @@ def create_app() -> Flask:
     @app.get("/api/alertas")
     @auth_required
     def alertas():
+        from api_rest.sitios_auth import estacion_permitida
+
         estacion_id = request.args.get("estacion")
+        if estacion_id and not estacion_permitida(getattr(g, "sitio_id", None), estacion_id):
+            return jsonify({"error": "Estación fuera del sitio autorizado"}), 403
         return jsonify(generar_alertas_combinadas(estacion_id))
 
     @app.get("/api/meteo/comparativo")
     @auth_required
     def meteo_comparativo():
-        return jsonify(services.comparativo_estaciones(getattr(g, "tenant_id", None)))
+        from api_rest.sitios_auth import estaciones_de_sitio
+
+        rows = services.comparativo_estaciones(getattr(g, "tenant_id", None))
+        user_sitio = getattr(g, "sitio_id", None)
+        if user_sitio:
+            allowed = set(estaciones_de_sitio(user_sitio))
+            rows = [
+                r
+                for r in rows
+                if (r.get("estacion_id") or r.get("id") or r.get("slug")) in allowed
+            ]
+        return jsonify(rows)
 
     @app.get("/api/meteo/comparativo/historico")
     @auth_required
     def meteo_comparativo_historico():
+        from api_rest.sitios_auth import estaciones_de_sitio
+
         dias = request.args.get("dias", 14, type=int)
-        return jsonify(
-            services.comparativo_historico(dias, getattr(g, "tenant_id", None))
-        )
+        rows = services.comparativo_historico(dias, getattr(g, "tenant_id", None))
+        user_sitio = getattr(g, "sitio_id", None)
+        if user_sitio:
+            allowed = set(estaciones_de_sitio(user_sitio))
+            rows = [
+                r
+                for r in rows
+                if (r.get("estacion_id") or r.get("id") or r.get("slug")) in allowed
+            ]
+        return jsonify(rows)
 
     @app.get("/api/metricas/globales")
     @auth_required
     def metricas_globales():
-        return jsonify(services.metricas_globales(getattr(g, "tenant_id", None)))
+        from api_rest.sitios_auth import estaciones_de_sitio
+
+        data = services.metricas_globales(getattr(g, "tenant_id", None))
+        user_sitio = getattr(g, "sitio_id", None)
+        if user_sitio and isinstance(data, dict):
+            data = dict(data)
+            data["sitio"] = user_sitio
+            data["estaciones_sitio"] = estaciones_de_sitio(user_sitio)
+        return jsonify(data)
 
     @app.get("/api/agricola/<estacion_id>")
-    @auth_required
+    @requiere_estacion
     def agricola(estacion_id: str):
         return jsonify(services.recomendaciones_agricolas(estacion_id))
 

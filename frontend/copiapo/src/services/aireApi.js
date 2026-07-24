@@ -66,6 +66,34 @@ export async function fetchAireHistorico(estacionId, dias = 7) {
   )
 }
 
+export async function fetchAireAlertas(sitio = SITIO) {
+  return fetchJson(`/public/aire/alertas?sitio=${encodeURIComponent(sitio)}`)
+}
+
+export async function fetchDispersionHoraria(estacionId, horas = 72) {
+  return fetchJson(
+    `/public/aire/${encodeURIComponent(estacionId)}/dispersion?horas=${horas}`
+  )
+}
+
+export async function fetchDispersionDiaria(estacionId, dias = 7) {
+  return fetchJson(
+    `/public/aire/${encodeURIComponent(estacionId)}/dispersion/diaria?dias=${dias}`
+  )
+}
+
+export async function fetchDispersionProyeccion(estacionId) {
+  return fetchJson(
+    `/public/aire/${encodeURIComponent(estacionId)}/dispersion/proyeccion`
+  )
+}
+
+export async function fetchDispersionAlertas(horizonte = 'horaria', sitio = SITIO) {
+  return fetchJson(
+    `/public/aire/dispersion/alertas?sitio=${encodeURIComponent(sitio)}&horizonte=${horizonte}`
+  )
+}
+
 export function getApiBase() {
   return resolveBaseURL()
 }

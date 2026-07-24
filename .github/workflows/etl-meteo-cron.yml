@@ -1,6 +1,8 @@
-# ETL meteorológico: OpenMeteo → Supabase vía GET /api/cron/sync
-# - 00:00 y 12:00 UTC: sync ligero (recientes + pronóstico)
+# ETL meteorológico + calidad del aire: OpenMeteo → Supabase vía GET /api/cron/sync
+# - 00:00 y 12:00 UTC: sync ligero (recientes + pronóstico + aire CAMS Copiapó)
 # - Domingos 03:00 UTC: sync + Archive ERA5
+# El endpoint /api/cron/sync también persiste aire_registros + aire_dispersion
+# (E7 Copiapó) y operaciones_ventanas (E8 Mantos Blancos).
 # Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
 # Si también usas cron-job.org: crea un job previo a /api/health (ver docs/roadmap/OPS_CRON_ETL.md).
 name: ETL Meteo (00 y 12 UTC)

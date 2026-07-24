@@ -18,6 +18,23 @@ Re-ejecutar `meteo_pronostico.sql` solo si hace falta re-aplicar GRANTs/columnas
 - Tras restart de la API en Render (o `POST /api/ml/registry/sync` con JWT) debe quedar **1 fila** (`id=1`).
 - Verificado 2026-07-22: `ml_registry` count=1, `total=43` / `servibles=43`.
 
+### 1c. E7/E8 multi-sitio — HECHO (2026-07-24)
+
+Aplicado con `supabase db push --linked --yes` al proyecto `ylivhjigvxqzpzchllte`:
+
+- `sitios` (5), `estaciones` (24), `aire_registros`, `aire_dispersion`, `operaciones_ventanas`
+- GRANTs `service_role` + RLS lectura (`20260724140000_e7_e8_grants_rls.sql`)
+- Verificación: `python scratch/verificar_supabase_e7_e8.py` → **8/8 OK**
+- Seeds: `python scratch/verificar_supabase_seeds.py`
+
+Las tablas de aire/operaciones se poblaron con sync local (2026-07-24):
+
+```powershell
+python scratch/sync_e7_e8.py
+```
+
+Resultado: `aire_registros` 91 · `aire_dispersion` 553 · `operaciones_ventanas` 192.
+
 
 ## 2. Secrets
 

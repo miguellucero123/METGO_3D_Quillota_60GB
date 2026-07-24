@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 # Sitios conocidos (slug API)
-SITIOS = ("quillota", "paine", "copiapo", "demo")
+SITIOS = ("quillota", "paine", "copiapo", "mantos_blancos", "demo")
 
 # Metadatos de producto / SPA (tabla sitios en Supabase es espejo)
 SITIOS_META: dict[str, dict[str, Any]] = {
@@ -44,6 +44,16 @@ SITIOS_META: dict[str, dict[str, Any]] = {
         "center": {"lat": -27.3668, "lon": -70.3323},
         "modules": ["meteo", "aire", "alertas_salud"],
     },
+    "mantos_blancos": {
+        "slug": "mantos_blancos",
+        "nombre": "METGO Mantos Blancos",
+        "region": "Antofagasta · faena minera",
+        "dominio": "mineria",
+        "estado": "activo",
+        "primary": "#fb923c",
+        "center": {"lat": -23.43, "lon": -70.06},
+        "modules": ["meteo", "aire", "operaciones"],
+    },
     "demo": {
         "slug": "demo",
         "nombre": "METGO Demo",
@@ -75,10 +85,19 @@ SLUG_A_NOMBRE: dict[str, str] = {
     "paine_grande": "Paine Grande",
     "campamento_italiano": "Campamento Italiano",
     "los_cuernos": "Los Cuernos",
-    # Copiapó (calidad del aire, E7)
+    # Copiapó (calidad del aire + dispersión, E7) — malla airshed 7 puntos
     "copiapo_centro": "Copiapo Centro",
     "paipote": "Paipote",
     "tierra_amarilla": "Tierra Amarilla",
+    "chamonate": "Chamonate",
+    "la_chimba": "La Chimba",
+    "punta_del_cobre": "Punta del Cobre",
+    "nantoco": "Nantoco",
+    # Mantos Blancos (minería / operaciones, E8)
+    "mb_rajo": "Rajo",
+    "mb_campamento": "Campamento",
+    "mb_chancado": "Chancado",
+    "mb_ruta_acceso": "Ruta de acceso",
     # Sitio plantilla E6 (ficticio; coords cerca Casablanca)
     "demo_norte": "Demo Norte",
     "demo_sur": "Demo Sur",
@@ -106,6 +125,14 @@ COORDS: dict[str, dict[str, float]] = {
     "copiapo_centro": {"lat": -27.3668, "lon": -70.3323},
     "paipote": {"lat": -27.4064, "lon": -70.2853},
     "tierra_amarilla": {"lat": -27.4667, "lon": -70.2667},
+    "chamonate": {"lat": -27.2610, "lon": -70.4470},
+    "la_chimba": {"lat": -27.3300, "lon": -70.3100},
+    "punta_del_cobre": {"lat": -27.4400, "lon": -70.2100},
+    "nantoco": {"lat": -27.5600, "lon": -70.2400},
+    "mb_rajo": {"lat": -23.4300, "lon": -70.0600},
+    "mb_campamento": {"lat": -23.4200, "lon": -70.0500},
+    "mb_chancado": {"lat": -23.4400, "lon": -70.0700},
+    "mb_ruta_acceso": {"lat": -23.5000, "lon": -70.2000},
     "demo_norte": {"lat": -33.30, "lon": -71.40},
     "demo_sur": {"lat": -33.34, "lon": -71.44},
 }
@@ -129,7 +156,16 @@ ESTACIONES_POR_SITIO: dict[str, list[str]] = {
         "campamento_italiano",
         "los_cuernos",
     ],
-    "copiapo": ["copiapo_centro", "paipote", "tierra_amarilla"],
+    "copiapo": [
+        "copiapo_centro",
+        "paipote",
+        "tierra_amarilla",
+        "chamonate",
+        "la_chimba",
+        "punta_del_cobre",
+        "nantoco",
+    ],
+    "mantos_blancos": ["mb_rajo", "mb_campamento", "mb_chancado", "mb_ruta_acceso"],
     "demo": ["demo_norte", "demo_sur"],
 }
 
@@ -141,6 +177,11 @@ META_EXTRA: dict[str, dict[str, Any]] = {
     "paine_grande": {"circuito": "O", "altitud": 50},
     "campamento_italiano": {"circuito": "W", "altitud": 120},
     "los_cuernos": {"circuito": "O", "altitud": 200},
+    # Mantos Blancos (E8) — actividad crítica por punto de faena
+    "mb_rajo": {"actividad": "tronadura", "descripcion": "Rajo abierto — tronadura e izaje"},
+    "mb_campamento": {"actividad": "transporte", "descripcion": "Campamento / logística"},
+    "mb_chancado": {"actividad": "transporte", "descripcion": "Chancado — polvo en suspensión"},
+    "mb_ruta_acceso": {"actividad": "transporte", "descripcion": "Ruta de acceso a Antofagasta"},
 }
 
 
@@ -153,6 +194,17 @@ def normalizar_sitio(sitio: str | None) -> str:
 
 def slugs_de_sitio(sitio: str | None) -> list[str]:
     return list(ESTACIONES_POR_SITIO[normalizar_sitio(sitio)])
+
+
+def sitio_de_estacion(estacion_id: str | None) -> str | None:
+    """Sitio dueño de la estación, o None si el slug no está en el catálogo."""
+    key = (estacion_id or "").strip().lower().replace("-", "_")
+    if not key:
+        return None
+    for slug, ests in ESTACIONES_POR_SITIO.items():
+        if key in ests:
+            return slug
+    return None
 
 
 def listar_sitios(incluir_plantilla: bool = True) -> list[dict[str, Any]]:

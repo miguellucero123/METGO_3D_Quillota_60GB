@@ -17,10 +17,13 @@ Plantilla multi-sitio (etapa **E6**). Base viva: repo **`metgo-paine`**. Identid
    - Netlify: `VITE_METGO_API=https://metgo-api.onrender.com/api`
    - Render: añadir origen Netlify a `METGO_CORS_ORIGINS` si no es `*`
 5. **Deploy** Netlify (build `npm run build`, publish `dist`).
-6. **Verificar**:
+6. **Auth E9:** login `POST /api/auth/login` con `{ username, password, sitio: '<slug>' }` + guard de rutas
+   (referencia: `frontend/copiapo/src/services/authApi.js`). Demo: usuario del sitio o `admin`/`admin123`.
+7. **Verificar**:
    - `GET /api/public/sitios` incluye el slug
    - `GET /api/public/estaciones?sitio=<slug>`
    - SPA muestra colores del `theme` y datos (o fallback Open-Meteo)
+   - Login SPA → `/api/auth/me` con `sitio` correcto
 
 Sitio de prueba ya registrado en API: **`demo`**. Copiapó (E7): SPA en `frontend/copiapo/` del monorepo Quillota.
 

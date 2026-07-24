@@ -18,11 +18,13 @@
 
 <script setup>
 import { inject } from 'vue'
-import { Wind, CalendarRange, History } from 'lucide-vue-next'
+import { Wind, CalendarRange, History, Waves, Map } from 'lucide-vue-next'
 
 const site = inject('site')
 const items = [
   { to: '/', label: 'Panel ICAP', icon: Wind },
+  { to: '/mapa', label: 'Mapa', icon: Map },
+  { to: '/dispersion', label: 'Dispersión', icon: Waves },
   { to: '/pronostico', label: 'Pronóstico', icon: CalendarRange },
   { to: '/historico', label: 'Histórico', icon: History },
 ]
