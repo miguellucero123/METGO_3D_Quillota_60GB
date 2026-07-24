@@ -1,5 +1,5 @@
 <template>
-  <aside class="metgo-sidebar">
+  <aside id="metgo-sidebar" class="metgo-sidebar" aria-label="Navegación principal">
     <nav>
       <router-link
         v-for="item in items"
@@ -67,15 +67,21 @@ const items = [
   color: var(--color-muted);
   padding: 0 0.5rem;
 }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .metgo-sidebar {
-    width: 100%;
-    min-height: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 40;
+    width: min(280px, 88vw);
+    min-height: 100vh;
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-lg);
   }
-  .sidebar-foot { display: none; }
+  :global(.app-shell--nav-open) .metgo-sidebar {
+    transform: translateX(0);
+  }
 }
 </style>

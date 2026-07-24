@@ -160,11 +160,12 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 
 ### E11 — Clase mundial II: experiencia
 
-- **PWA:** instalable + offline con última data cacheada (crítico en faena/parque sin señal)
-- **Accesibilidad:** WCAG AA (contraste ya favorable en dark), navegación teclado, aria en charts
-- **i18n:** ES base + EN (Paine tiene turistas; minería tiene contratistas internacionales) — vue-i18n con archivos por sitio
-- **Performance:** code-splitting charts, Lighthouse > 90 en 4 sitios, imágenes/iconos optimizados
-- **Móvil:** revisión responsive completa (sidebar → drawer)
+- [x] **PWA MVP:** Quillota / Copiapó / Mantos con `vite-plugin-pwa`, iconos 192/512, NetworkFirst API
+- [x] **Offline banner** + shell instalable (caché SW; i18n diferido)
+- [x] **Móvil:** sidebar → drawer + backdrop + skip-link (`:focus-visible`)
+- [ ] **a11y charts:** aria en ECharts / deck.gl (resto WCAG)
+- [ ] **i18n:** ES base + EN (vue-i18n por sitio) — Paine + contratistas
+- [ ] **Performance:** Lighthouse > 90 en 4 sitios; code-split charts fino
 
 ### E12 — Datos oficiales + ML por dominio (continuo)
 
@@ -198,7 +199,8 @@ Nuevos de plataforma:
 - [ ] Login SPA Paine contra metgo-api (E9 resto / repo aparte)
 - [x] Health sitios + SLOs + metrics histograma + smoke E2E/k6 (E10 parcial)
 - [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto)
-- [ ] PWA + i18n + a11y (E11)
+- [x] PWA + drawer móvil + skip-link (E11 MVP)
+- [ ] i18n EN + a11y charts + Lighthouse 90 (E11 resto)
 
 ---
 

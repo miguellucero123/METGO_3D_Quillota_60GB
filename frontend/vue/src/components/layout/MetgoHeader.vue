@@ -1,6 +1,7 @@
 <script setup>
+import { inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { MapPin, LogOut, Activity, Settings } from 'lucide-vue-next'
+import { MapPin, LogOut, Activity, Settings, Menu } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import { useAuthStore } from '@/stores/auth'
 import { usePreferencesStore } from '@/stores/preferences'
@@ -10,6 +11,9 @@ const auth = useAuthStore()
 const prefs = usePreferencesStore()
 const router = useRouter()
 const route = useRoute()
+
+const navOpen = inject('navOpen', null)
+const toggleNav = inject('toggleNav', () => {})
 
 function logout() {
   const needsLogin = !route.meta.public
@@ -25,6 +29,16 @@ function setTempUnit(unit) {
 <template>
   <header class="header">
     <div class="header__left">
+      <button
+        type="button"
+        class="nav-toggle"
+        :aria-expanded="navOpen ? 'true' : 'false'"
+        aria-controls="metgo-sidebar"
+        aria-label="Abrir o cerrar menú"
+        @click="toggleNav"
+      >
+        <Menu aria-hidden="true" />
+      </button>
       <div class="header__title-block">
         <h1 class="header__title">Sistema de monitoreo</h1>
         <p class="header__subtitle">
@@ -91,6 +105,40 @@ function setTempUnit(unit) {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-wrap: wrap;
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.nav-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.nav-toggle :deep(svg) {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
 }
 
 .header__title {

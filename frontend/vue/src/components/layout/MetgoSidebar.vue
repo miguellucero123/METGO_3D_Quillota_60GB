@@ -216,7 +216,7 @@ function linkIsActive(link) {
 </script>
 
 <template>
-  <aside class="sidebar" aria-label="Navegación principal">
+  <aside id="metgo-sidebar" class="sidebar" aria-label="Navegación principal">
     <div class="sidebar__brand">
       <span class="sidebar__mark">M</span>
       <span class="sidebar__name">METGO</span>
@@ -441,5 +441,22 @@ function linkIsActive(link) {
 
 .sidebar__ver {
   opacity: 0.75;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 40;
+    width: min(280px, 88vw);
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-lg);
+  }
+  :global(.app-shell--nav-open) .sidebar {
+    transform: translateX(0);
+  }
 }
 </style>

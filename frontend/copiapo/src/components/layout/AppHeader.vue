@@ -1,8 +1,20 @@
 <template>
   <header class="metgo-header">
-    <div class="header-brand">
-      <span class="brand-mark">{{ site.productName }}</span>
-      <span class="brand-site">{{ site.siteLabel }}</span>
+    <div class="header-left">
+      <button
+        type="button"
+        class="nav-toggle"
+        :aria-expanded="navOpen ? 'true' : 'false'"
+        aria-controls="metgo-sidebar"
+        aria-label="Abrir o cerrar menú"
+        @click="toggleNav"
+      >
+        <Menu :size="20" aria-hidden="true" />
+      </button>
+      <div class="header-brand">
+        <span class="brand-mark">{{ site.productName }}</span>
+        <span class="brand-site">{{ site.siteLabel }}</span>
+      </div>
     </div>
     <p class="header-tagline">{{ site.copy?.headerTitle || site.tagline }}</p>
     <div class="header-actions">
@@ -18,9 +30,12 @@
 <script setup>
 import { inject } from 'vue'
 import { useRouter } from 'vue-router'
+import { Menu } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 
 const site = inject('site')
+const navOpen = inject('navOpen', null)
+const toggleNav = inject('toggleNav', () => {})
 const auth = useAuth()
 const router = useRouter()
 
@@ -39,6 +54,32 @@ function onLogout() {
   padding: 0.85rem 1.25rem;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.nav-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+@media (max-width: 900px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
 }
 .header-brand {
   display: flex;
