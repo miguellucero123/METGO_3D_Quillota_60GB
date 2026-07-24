@@ -96,23 +96,37 @@ def guardar_registros(estacion_id: str, filas: list[dict[str, Any]], fuente: str
 
 
 def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
-    client = _client()
-    if not client:
-        return []
     dias = max(1, min(int(dias or 30), 3650))
+    client = _client()
+    if client:
+        try:
+            res = (
+                client.table("meteo_registros")
+                .select("*")
+                .eq("estacion_id", estacion_id)
+                .order("fecha", desc=True)
+                .limit(dias)
+                .execute()
+            )
+            rows = [_fila_registro(estacion_id, r) for r in (res.data or [])]
+            return list(reversed(rows))
+        except Exception as e:
+            print(f"meteo_store.leer_registros SDK {estacion_id}: {e}")
     try:
-        res = (
-            client.table("meteo_registros")
-            .select("*")
-            .eq("estacion_id", estacion_id)
-            .order("fecha", desc=True)
-            .limit(dias)
-            .execute()
+        from api_rest.integracion.supabase_store import rest_select
+
+        raw = rest_select(
+            "meteo_registros",
+            params={
+                "estacion_id": f"eq.{estacion_id}",
+                "order": "fecha.desc",
+                "select": "*",
+            },
+            limit=dias,
         )
-        rows = [_fila_registro(estacion_id, r) for r in (res.data or [])]
-        return list(reversed(rows))
+        return list(reversed([_fila_registro(estacion_id, r) for r in raw]))
     except Exception as e:
-        print(f"meteo_store.leer_registros {estacion_id}: {e}")
+        print(f"meteo_store.leer_registros REST {estacion_id}: {e}")
         return []
 
 
@@ -156,33 +170,10 @@ def guardar_pronostico(
 
 def leer_pronostico(estacion_id: str, dias: int = 7) -> list[dict[str, Any]]:
     """Lee pronóstico persistido. Si no hay filas ≥ hoy, usa las últimas N guardadas."""
-    client = _client()
-    if not client:
-        return []
     dias = max(1, min(int(dias or 7), 16))
-    try:
-        hoy = _hoy_chile()
-        res = (
-            client.table("meteo_pronostico")
-            .select("*")
-            .eq("estacion_id", estacion_id)
-            .gte("fecha", hoy)
-            .order("fecha", desc=False)
-            .limit(dias)
-            .execute()
-        )
-        rows = res.data or []
-        if not rows:
-            # Fallback: últimos pronósticos guardados (aunque la fecha base sea vieja)
-            res2 = (
-                client.table("meteo_pronostico")
-                .select("*")
-                .eq("estacion_id", estacion_id)
-                .order("fecha", desc=True)
-                .limit(dias)
-                .execute()
-            )
-            rows = list(reversed(res2.data or []))
+    hoy = _hoy_chile()
+
+    def _map_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         out = []
         for row in rows:
             out.append(
@@ -205,8 +196,64 @@ def leer_pronostico(estacion_id: str, dias: int = 7) -> list[dict[str, Any]]:
                 }
             )
         return out
+
+    client = _client()
+    if client:
+        try:
+            res = (
+                client.table("meteo_pronostico")
+                .select("*")
+                .eq("estacion_id", estacion_id)
+                .gte("fecha", hoy)
+                .order("fecha", desc=False)
+                .limit(dias)
+                .execute()
+            )
+            rows = res.data or []
+            if not rows:
+                res2 = (
+                    client.table("meteo_pronostico")
+                    .select("*")
+                    .eq("estacion_id", estacion_id)
+                    .order("fecha", desc=True)
+                    .limit(dias)
+                    .execute()
+                )
+                rows = list(reversed(res2.data or []))
+            return _map_rows(rows)
+        except Exception as e:
+            print(f"meteo_store.leer_pronostico SDK {estacion_id}: {e}")
+
+    try:
+        from api_rest.integracion.supabase_store import rest_select
+
+        raw = rest_select(
+            "meteo_pronostico",
+            params={
+                "estacion_id": f"eq.{estacion_id}",
+                "fecha": f"gte.{hoy}",
+                "order": "fecha.asc",
+                "select": "*",
+            },
+            limit=dias,
+        )
+        if not raw:
+            raw = list(
+                reversed(
+                    rest_select(
+                        "meteo_pronostico",
+                        params={
+                            "estacion_id": f"eq.{estacion_id}",
+                            "order": "fecha.desc",
+                            "select": "*",
+                        },
+                        limit=dias,
+                    )
+                )
+            )
+        return _map_rows(raw)
     except Exception as e:
-        print(f"meteo_store.leer_pronostico {estacion_id}: {e}")
+        print(f"meteo_store.leer_pronostico REST {estacion_id}: {e}")
         return []
 
 
@@ -305,51 +352,69 @@ def leer_helada_pronostico(
 
 
 def estadisticas_store() -> dict[str, Any]:
-    client = _client()
     try:
-        from api_rest.integracion.supabase_store import SUPABASE_URL
+        from api_rest.integracion.supabase_store import (
+            SUPABASE_URL,
+            rest_select,
+            supabase_status,
+        )
     except Exception:
         SUPABASE_URL = None
-    if not client:
-        return {"registros": 0, "estaciones": 0, "db": "supabase (inactivo)"}
-    try:
-        res = (
-            client.table("meteo_registros")
-            .select("estacion_id", count="exact")
-            .limit(1)
-            .execute()
-        )
-        total = res.count if res.count is not None else len(res.data or [])
-        # Si count no viene, sondear una estación conocida
-        if not total:
-            sample = (
-                client.table("meteo_registros")
-                .select("estacion_id")
-                .eq("estacion_id", "quillota")
-                .limit(5)
-                .execute()
-            )
-            total = len(sample.data or [])
-        out: dict[str, Any] = {
-            "registros": total,
-            "estaciones": 0,
-            "db": SUPABASE_URL,
-        }
+        rest_select = None  # type: ignore
+        supabase_status = None  # type: ignore
+
+    client = _client()
+    if client:
         try:
-            pr = (
-                client.table("meteo_pronostico")
+            res = (
+                client.table("meteo_registros")
                 .select("estacion_id", count="exact")
                 .limit(1)
                 .execute()
             )
-            out["pronosticos"] = pr.count if pr.count is not None else 0
-        except Exception:
-            out["pronosticos"] = 0
-        return out
-    except Exception as e:
+            total = res.count if res.count is not None else len(res.data or [])
+            if not total:
+                sample = (
+                    client.table("meteo_registros")
+                    .select("estacion_id")
+                    .eq("estacion_id", "quillota")
+                    .limit(5)
+                    .execute()
+                )
+                total = len(sample.data or [])
+            return {
+                "registros": total,
+                "estaciones": 0,
+                "db": SUPABASE_URL,
+                "mode": "sdk",
+            }
+        except Exception as e:
+            return {
+                "registros": 0,
+                "estaciones": 0,
+                "db": SUPABASE_URL,
+                "error": str(e),
+            }
+
+    if rest_select:
+        sample = rest_select(
+            "meteo_registros",
+            params={"select": "estacion_id", "estacion_id": "eq.quillota"},
+            limit=5,
+        )
+        st = supabase_status() if supabase_status else {}
+        if sample or st.get("rest_ok"):
+            return {
+                "registros": len(sample),
+                "estaciones": 0,
+                "db": SUPABASE_URL,
+                "mode": "rest",
+            }
         return {
             "registros": 0,
             "estaciones": 0,
-            "db": SUPABASE_URL,
-            "error": str(e),
+            "db": "supabase (inactivo)",
+            "error": st.get("error"),
         }
+
+    return {"registros": 0, "estaciones": 0, "db": "supabase (inactivo)"}
