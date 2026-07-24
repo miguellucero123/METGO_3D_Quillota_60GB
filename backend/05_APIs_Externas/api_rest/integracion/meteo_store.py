@@ -33,7 +33,7 @@ def _client():
     try:
         from api_rest.integracion.supabase_store import get_supabase_client
 
-        return get_supabase_client() or None
+        return get_supabase_client()
     except Exception as exc:
         print(f"meteo_store: cliente Supabase no disponible: {exc}")
         return None
