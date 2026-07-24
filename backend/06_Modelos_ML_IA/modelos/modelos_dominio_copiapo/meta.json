@@ -1,0 +1,30 @@
+{
+  "id": "pm10_episodio_copiapo",
+  "variable": "episodio_pm10",
+  "target": "icap_dia_siguiente",
+  "sitio": "copiapo",
+  "features": [
+    "pm10",
+    "pm25",
+    "so2",
+    "no2",
+    "o3",
+    "dia_a\u00f1o",
+    "sin_doy",
+    "cos_doy"
+  ],
+  "sklearn": "GradientBoostingRegressor",
+  "umbral_icap_etiqueta": 200,
+  "horizonte": "dia_siguiente",
+  "origen_datos": "openmeteo_cams",
+  "n_filas": 93,
+  "n_train": 69,
+  "n_test": 23,
+  "mae_icap": 3.6934,
+  "r2": 0.3311,
+  "f1_episodio_derivado": 0.0,
+  "positivos_test": 0,
+  "entrenado": "2026-07-24T20:29:07.728382+00:00",
+  "servible": true,
+  "archivo": "pm10_episodio.joblib"
+}

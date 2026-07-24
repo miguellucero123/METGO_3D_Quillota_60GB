@@ -169,10 +169,20 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 
 ### E12 — Datos oficiales + ML por dominio (continuo)
 
-- Agromet/DMC códigos reales (Quillota) — pendiente heredado fase 3
-- SINCA observado como fuente de verdad para validar CAMS (Copiapó/MB) → métrica de sesgo del modelo
-- ML por dominio en el registry existente: helada (Quillota), viento extremo (Paine/MB), episodios PM10 (Copiapó)
-- Gobernanza: tabla `fuentes` con licencia/frescura/cobertura por sitio; `tipo_dato` (observado/pronóstico/modelo) en todas las series — patrón ya creado con `TipoDatoBadge`
+- [x] **Gobernanza `fuentes`:** migración Supabase + seed + `GET /api/public/datos/fuentes` (+ bloque en `/api/datos/fuentes`)
+- [x] **SINCA E12 MVP:** catálogo + env `METGO_SINCA_IDS` / `METGO_SINCA_CSV_DIR` + `GET /api/public/aire/sinca/sesgo` (CAMS−SINCA)
+- [x] **`tipo_dato` aire:** histórico CAMS = `modelo` (no “observado”); filas etiquetadas; badge `Modelo` en Quillota/Copiapó
+- [x] **Stubs ML dominio:** `GET /api/public/ml/dominios` (helada, viento extremo, PM10)
+- [x] **Agromet/DMC pipeline:** `oficiales_service` + CSV/env + `GET /api/public/datos/oficiales/estado` + cron `oficiales`; DMC Quillota candidato `330007`
+- [x] **Baseline PM10 servible:** regla ICAP + fallback
+- [x] **Fixtures CSV** SINCA/DMC + tests de ingest
+- [x] **Modelo PM10 entrenado:** `GradientBoostingRegressor` ICAP t+1 (CAMS 93 d, MAE≈3.7) en `modelos_dominio_copiapo/`
+- [x] **Viento extremo baseline** (Paine/Mantos) servible por umbral
+- [x] **SINCA URL template** `METGO_SINCA_CSV_URL` + doc `fase-3/sinca_activacion.md`
+- [ ] Pegar keys reales SINCA Atacama en Render + CSV diario prod
+- [ ] Confirmar Agromet código portal Quillota + DMC en Render env
+- [ ] Helada Quillota: artefacto sklearn (sigue stub)
+- [ ] Reentrenar PM10 cuando exista histórico SINCA (etiqueta observada)
 
 ---
 
@@ -180,13 +190,13 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 
 Heredados de fases Quillota (detalle en `PLAN_INTEGRACION_QUILLOTA_PAINE.md` E0):
 
-- [ ] §6.3 gaps reales de gráficos (leyenda toggle, click→estación, PNG, skeletons, ML Δ)
-- [ ] Docs stale (fase-2/01, PROMPT_REVISION, fichas DT-2/DT-3)
-- [ ] DT-1 rutas hardcodeadas
-- [ ] SMTP real (Zoho/ZeptoMail) para notificaciones email
-- [ ] Redis + webhooks + Prometheus (escalamiento corto plazo)
+- [x] §6.3 gaps gráficos (leyenda, click→estación, PNG, skeletons, **ML Δ** 2026-07-24)
+- [x] Docs fase-2/01 + fichas DT-2/DT-3 (Etapa 0.1) — sync maestro 2026-07-24
+- [~] DT-1 rutas hardcodeadas — runtime vía `metgo.paths`; residual en scripts `10_Deployment` + docs legacy
+- [ ] SMTP real en prod (código Zoho listo; falta `METGO_SMTP_*` en Render)
+- [ ] Redis (escalamiento) — webhooks + `/api/metrics` Prometheus-lite ya existen
 - [ ] Fase 3.5 Streamlit dedicado (decisión de negocio)
-- [ ] Smoke visual Streamlit 8501–8513 (checklist F)
+- [ ] Smoke visual Streamlit 8501–8513 (checklist F; 8502–8513 smoke estático OK)
 - [ ] Secrets producción: `CRON_SECRET` real en Render + cron-job.org wake
 
 Nuevos de plataforma:
@@ -201,6 +211,10 @@ Nuevos de plataforma:
 - [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto)
 - [x] PWA + drawer móvil + skip-link (E11 MVP)
 - [ ] i18n EN + a11y charts + Lighthouse 90 (E11 resto)
+- [x] Tabla `fuentes` + sesgo SINCA + stubs ML dominio (E12 parcial)
+- [x] Agromet/DMC CSV+env + baseline PM10 (E12 continuación)
+- [x] PM10 sklearn (ICAP t+1) + viento baseline + SINCA URL (E12)
+- [ ] Keys SINCA/Agromet en prod + helada ML (E12 resto)
 
 ---
 

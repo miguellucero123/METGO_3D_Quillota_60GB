@@ -274,6 +274,11 @@ body {
   color: var(--color-warning, #e65100);
 }
 
+.badge--modelo {
+  background: var(--color-info-bg, rgba(14, 165, 233, 0.15));
+  color: var(--color-info, #0ea5e9);
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;

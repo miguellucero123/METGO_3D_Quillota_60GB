@@ -192,6 +192,7 @@ def _promedios_diarios(payload: dict[str, Any]) -> list[dict[str, Any]]:
             vals = acc[var]
             fila[var] = round(sum(vals) / len(vals), 1) if vals else None
         fila.update(evaluar_icap(fila.get("pm2_5"), fila.get("pm10")))
+        fila["fuente"] = "openmeteo_cams"
         filas.append(fila)
     return filas
 
@@ -233,6 +234,13 @@ def aire_actual(estacion_id: str) -> dict[str, Any] | None:
     return data
 
 
+def _etiquetar_tipo(filas: list[dict[str, Any]], tipo_dato: str) -> list[dict[str, Any]]:
+    for f in filas:
+        f["tipo_dato"] = tipo_dato
+        f.setdefault("fuente", "openmeteo_cams")
+    return filas
+
+
 def aire_pronostico(estacion_id: str, dias: int = 5) -> list[dict[str, Any]] | None:
     """Pronóstico diario (promedios 24 h) con ICAP por día."""
     coords = _coords_de(estacion_id)
@@ -244,7 +252,8 @@ def aire_pronostico(estacion_id: str, dias: int = 5) -> list[dict[str, Any]] | N
         if not payload:
             return None
         hoy = datetime.now(TZ_CHILE).date().isoformat()
-        return [f for f in _promedios_diarios(payload) if f["fecha"] >= hoy][:dias]
+        filas = [f for f in _promedios_diarios(payload) if f["fecha"] >= hoy][:dias]
+        return _etiquetar_tipo(filas, "pronostico")
 
     return _json_cached(f"aire_pronostico|{estacion_id}|{dias}", fetch)
 
@@ -260,7 +269,9 @@ def aire_historico(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] | No
         if not payload:
             return None
         hoy = datetime.now(TZ_CHILE).date().isoformat()
-        return [f for f in _promedios_diarios(payload) if f["fecha"] < hoy][-dias:]
+        # CAMS past_days es modelo/reanálisis, no observación in situ (SINCA = observado).
+        filas = [f for f in _promedios_diarios(payload) if f["fecha"] < hoy][-dias:]
+        return _etiquetar_tipo(filas, "modelo")
 
     data = _json_cached(f"aire_historico|{estacion_id}|{dias}", fetch)
     if not data:
@@ -318,7 +329,7 @@ def sincronizar_aire(estaciones: list[str] | None = None) -> dict[str, Any]:
             errores.append(f"{slug} (actual): {exc}")
         try:
             hist = aire_historico(slug, dias=7) or []
-            escritos += aire_store.guardar_aire(slug, hist, tipo_dato="observado")
+            escritos += aire_store.guardar_aire(slug, hist, tipo_dato="modelo")
         except Exception as exc:
             errores.append(f"{slug} (historico): {exc}")
         try:

@@ -1,73 +1,295 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""SINCA (MMA Chile) — stub E7/E12 para validar CAMS con observación oficial.
+"""SINCA (MMA Chile) — E12: catálogo, CSV opcional, sesgo vs CAMS.
 
-SINCA no publica API REST estable; el acceso habitual es CSV/HTML del portal
-https://sinca.mma.gob.cl. Este módulo deja:
+SINCA no publica API REST estable. Integración prevista:
 
-- Catálogo de estaciones del airshed Copiapó (códigos a completar con IDs reales).
-- Interfaz `sincronizar_sinca()` lista para enchufar un scraper/CSV diario.
-- Mientras tanto, marca el estado como `pendiente_fuente` sin fallar el cron.
-
-Cuando exista un feed (CSV diario o scraping autorizado), implementar
-`_fetch_estacion()` y persistir vía `aire_store.guardar_aire(..., fuente='sinca',
-tipo_dato='observado')`.
+1. Completar `sinca_id` (env `METGO_SINCA_IDS` JSON o catálogo).
+2. Colocar CSV diarios en `METGO_SINCA_CSV_DIR/{slug}.csv`
+   (columnas: fecha,pm25,pm10,so2,no2,o3).
+3. Cron llama `sincronizar_sinca()` → `aire_registros` con
+   fuente=`sinca`, tipo_dato=`observado`.
+4. `sesgo_cams_vs_sinca()` compara medias diarias CAMS vs SINCA.
 """
 
 from __future__ import annotations
 
+import csv
+import json
+import os
+from pathlib import Path
 from typing import Any
 
-# Códigos SINCA a confirmar en el portal MMA (placeholders documentados).
+# Catálogo airshed Copiapó. sinca_id: completar con código portal MMA o vía env.
+# nombres_sinca alineados al portal https://sinca.mma.gob.cl (Atacama).
 ESTACIONES_SINCA_COPIAPO: dict[str, dict[str, Any]] = {
     "copiapo_centro": {
-        "sinca_id": None,  # completar con código oficial SINCA
+        "sinca_id": None,
         "nombre_sinca": "Copiapó",
+        "region": "Atacama",
         "contaminantes": ["PM25", "PM10", "SO2", "NO2", "O3"],
+        "portal": "https://sinca.mma.gob.cl",
+        "nota": "Buscar estación 'Copiapó' en red SINCA Atacama; pegar key/ID en METGO_SINCA_IDS",
     },
     "paipote": {
         "sinca_id": None,
         "nombre_sinca": "Paipote",
+        "region": "Atacama",
         "contaminantes": ["PM10", "SO2"],
+        "portal": "https://sinca.mma.gob.cl",
+        "nota": "Estación industrial Paipote (SO2/PM10)",
     },
     "tierra_amarilla": {
         "sinca_id": None,
         "nombre_sinca": "Tierra Amarilla",
+        "region": "Atacama",
         "contaminantes": ["PM10"],
+        "portal": "https://sinca.mma.gob.cl",
+        "nota": "Estación Tierra Amarilla",
     },
 }
 
 
+def _ids_desde_env() -> dict[str, str]:
+    raw = (os.getenv("METGO_SINCA_IDS") or "").strip()
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+        return {str(k): str(v) for k, v in data.items() if v}
+    except json.JSONDecodeError:
+        return {}
+
+
+def catalogo_efectivo() -> dict[str, dict[str, Any]]:
+    """Catálogo con sinca_id resuelto (env pisa placeholders)."""
+    overrides = _ids_desde_env()
+    out: dict[str, dict[str, Any]] = {}
+    for slug, meta in ESTACIONES_SINCA_COPIAPO.items():
+        m = dict(meta)
+        if overrides.get(slug):
+            m["sinca_id"] = overrides[slug]
+        out[slug] = m
+    return out
+
+
 def estado_sinca() -> dict[str, Any]:
     """Estado de la integración SINCA (para /api/datos/etl/status y docs)."""
-    configuradas = sum(1 for e in ESTACIONES_SINCA_COPIAPO.values() if e.get("sinca_id"))
+    cat = catalogo_efectivo()
+    configuradas = sum(1 for e in cat.values() if e.get("sinca_id"))
+    csv_dir = (os.getenv("METGO_SINCA_CSV_DIR") or "").strip()
     return {
         "fuente": "sinca_mma",
         "portal": "https://sinca.mma.gob.cl",
         "estado": "pendiente_fuente" if configuradas == 0 else "parcial",
-        "estaciones_catalogo": len(ESTACIONES_SINCA_COPIAPO),
+        "estaciones_catalogo": len(cat),
         "estaciones_con_codigo": configuradas,
+        "csv_dir_configurado": bool(csv_dir),
+        "csv_url_configurado": bool((os.getenv("METGO_SINCA_CSV_URL") or "").strip()),
+        "estaciones": {
+            slug: {
+                "sinca_id": m.get("sinca_id"),
+                "nombre": m.get("nombre_sinca"),
+                "contaminantes": m.get("contaminantes"),
+                "nota": m.get("nota"),
+            }
+            for slug, m in cat.items()
+        },
         "nota": (
-            "SINCA sin API oficial. Completar sinca_id en ESTACIONES_SINCA_COPIAPO "
-            "y conectar scraper/CSV diario (E12)."
+            "SINCA sin API oficial. Definir METGO_SINCA_IDS y "
+            "METGO_SINCA_CSV_DIR o METGO_SINCA_CSV_URL='…/{slug}.csv' (E12). "
+            "Ver docs/roadmap/fase-3/sinca_activacion.md"
         ),
     }
 
 
+def calcular_sesgo(pares: list[dict[str, Any]]) -> dict[str, Any]:
+    """Sesgo modelo−observado (CAMS − SINCA) sobre pares diarios alineados.
+
+    Cada ítem: {fecha, cams_pm25?, sinca_pm25?, cams_pm10?, sinca_pm10?}.
+    """
+    out: dict[str, Any] = {
+        "n_pares": len(pares),
+        "pm25": None,
+        "pm10": None,
+    }
+    for var in ("pm25", "pm10"):
+        diffs: list[float] = []
+        for p in pares:
+            c = p.get(f"cams_{var}")
+            s = p.get(f"sinca_{var}")
+            if c is None or s is None:
+                continue
+            diffs.append(float(c) - float(s))
+        if not diffs:
+            continue
+        mae = sum(abs(d) for d in diffs) / len(diffs)
+        bias = sum(diffs) / len(diffs)
+        out[var] = {
+            "n": len(diffs),
+            "sesgo_medio": round(bias, 2),
+            "mae": round(mae, 2),
+            "unidad": "ug/m3",
+            "definicion": "CAMS(modelo) - SINCA(observado)",
+        }
+    return out
+
+
+def _leer_csv_estacion(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    filas: list[dict[str, Any]] = []
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            fecha = (row.get("fecha") or row.get("date") or "").strip()
+            if not fecha:
+                continue
+            fila: dict[str, Any] = {
+                "fecha": fecha[:10],
+                "tipo_dato": "observado",
+                "fuente": "sinca",
+            }
+            for src, dst in (
+                ("pm25", "pm2_5"),
+                ("pm2_5", "pm2_5"),
+                ("pm10", "pm10"),
+                ("so2", "sulphur_dioxide"),
+                ("no2", "nitrogen_dioxide"),
+                ("o3", "ozone"),
+            ):
+                raw = row.get(src)
+                if raw is None or str(raw).strip() == "":
+                    continue
+                try:
+                    fila[dst] = float(raw)
+                except ValueError:
+                    continue
+            # ICAP best-effort
+            try:
+                from api_rest.aire_service import evaluar_icap
+
+                fila.update(evaluar_icap(fila.get("pm2_5"), fila.get("pm10")))
+            except Exception:
+                pass
+            filas.append(fila)
+    return filas
+
+
 def sincronizar_sinca(estaciones: list[str] | None = None) -> dict[str, Any]:
-    """ETL SINCA → aire_registros (observado). Stub: no escribe hasta tener códigos."""
+    """ETL SINCA → aire_registros (observado) vía CSV local o URL template."""
     estado = estado_sinca()
-    if estado["estaciones_con_codigo"] == 0:
+    cat = catalogo_efectivo()
+    slugs = estaciones or list(cat.keys())
+    csv_dir = (os.getenv("METGO_SINCA_CSV_DIR") or "").strip()
+    url_tpl = (os.getenv("METGO_SINCA_CSV_URL") or "").strip()
+    # Ej.: https://ejemplo/sinca/{slug}.csv  o  .../{id}.csv
+
+    if not csv_dir and not url_tpl:
+        motivo = "sin_codigos_sinca" if estado["estaciones_con_codigo"] == 0 else "sin_csv_dir"
         return {
             "sinca_sync": {},
             "omitido": True,
-            "motivo": "sin_codigos_sinca",
+            "motivo": motivo,
             "estado": estado,
         }
-    # Futuro: fetch + aire_store.guardar_aire(slug, filas, fuente='sinca', tipo_dato='observado')
+
+    try:
+        from api_rest.integracion import aire_store
+    except Exception as exc:
+        return {"sinca_sync": {}, "omitido": True, "motivo": f"aire_store: {exc}", "estado": estado}
+
+    base = Path(csv_dir) if csv_dir else None
+    detalle: dict[str, int] = {}
+    for slug in slugs:
+        if slug not in cat:
+            continue
+        filas: list[dict[str, Any]] = []
+        if base is not None:
+            filas = _leer_csv_estacion(base / f"{slug}.csv")
+        if not filas and url_tpl:
+            filas = _fetch_csv_url(url_tpl, slug, cat[slug].get("sinca_id"))
+        if not filas:
+            detalle[slug] = 0
+            continue
+        detalle[slug] = aire_store.guardar_aire(
+            slug, filas, fuente="sinca", tipo_dato="observado"
+        )
+
+    escritos = sum(detalle.values())
     return {
-        "sinca_sync": {},
-        "omitido": True,
-        "motivo": "fetch_no_implementado",
-        "estado": estado,
+        "sinca_sync": detalle,
+        "omitido": escritos == 0,
+        "motivo": None if escritos else "csv_sin_filas",
+        "estado": estado_sinca(),
+    }
+
+
+def _fetch_csv_url(template: str, slug: str, sinca_id: Any) -> list[dict[str, Any]]:
+    """Descarga CSV remoto. Template puede incluir {slug} y {id}."""
+    import tempfile
+
+    url = template.replace("{slug}", slug).replace("{id}", str(sinca_id or slug))
+    try:
+        import requests
+
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".csv", delete=False
+        ) as tmp:
+            tmp.write(r.text)
+            path = Path(tmp.name)
+        try:
+            return _leer_csv_estacion(path)
+        finally:
+            path.unlink(missing_ok=True)
+    except Exception as exc:
+        print(f"sinca_service._fetch_csv_url {slug}: {exc}")
+        return []
+
+
+def sesgo_cams_vs_sinca(estacion_id: str, dias: int = 14) -> dict[str, Any]:
+    """Compara últimos días CAMS (modelo) vs SINCA (observado) en aire_registros."""
+    slug = estacion_id.lower().replace("-", "_")
+    cat = catalogo_efectivo()
+    if slug not in cat:
+        return {"error": "estacion_no_en_catalogo_sinca", "estacion_id": slug}
+
+    try:
+        from api_rest.integracion import aire_store
+    except Exception as exc:
+        return {"error": str(exc), "estacion_id": slug}
+
+    cams = aire_store.leer_aire_por_fuente(slug, fuente="openmeteo_cams", dias=dias)
+    sinca = aire_store.leer_aire_por_fuente(slug, fuente="sinca", dias=dias)
+
+    def _por_dia(filas: list[dict[str, Any]], prefix: str) -> dict[str, dict[str, float]]:
+        out: dict[str, dict[str, float]] = {}
+        for f in filas:
+            dia = str(f.get("fecha") or f.get("fecha_hora") or "")[:10]
+            if not dia:
+                continue
+            bucket = out.setdefault(dia, {})
+            if f.get("pm2_5") is not None:
+                bucket[f"{prefix}_pm25"] = float(f["pm2_5"])
+            if f.get("pm10") is not None:
+                bucket[f"{prefix}_pm10"] = float(f["pm10"])
+        return out
+
+    por_cams = _por_dia(cams, "cams")
+    por_sinca = _por_dia(sinca, "sinca")
+    pares: list[dict[str, Any]] = []
+    for dia in sorted(set(por_cams) & set(por_sinca)):
+        pares.append({"fecha": dia, **por_cams[dia], **por_sinca[dia]})
+
+    metricas = calcular_sesgo(pares)
+    return {
+        "estacion_id": slug,
+        "dias": dias,
+        "n_cams": len(cams),
+        "n_sinca": len(sinca),
+        "pares": pares[-dias:],
+        **metricas,
+        "estado_sinca": estado_sinca()["estado"],
     }

@@ -39,7 +39,7 @@
       <p v-if="seleccionada" class="fuente">
         Fuente: {{ seleccionada.fuente || '—' }} ·
         actualizado {{ seleccionada.actualizado || '—' }} ·
-        tipo {{ seleccionada.tipo_dato || 'modelo' }}
+        <TipoDatoBadge :tipo="seleccionada.tipo_dato || 'modelo'" />
       </p>
     </template>
   </div>
@@ -50,6 +50,7 @@ import { computed, inject, onMounted, reactive, ref } from 'vue'
 import IcapHero from '@/components/aire/IcapHero.vue'
 import EstacionAireCard from '@/components/aire/EstacionAireCard.vue'
 import AlertaAireBanner from '@/components/aire/AlertaAireBanner.vue'
+import TipoDatoBadge from '@/components/aire/TipoDatoBadge.vue'
 import { wakeApi, fetchAireActual, fetchEstacionesSitio } from '@/services/aireApi'
 
 const site = inject('site')

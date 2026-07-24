@@ -286,20 +286,15 @@ def fuentes_datos() -> dict[str, Any]:
         "e7_e8": _conteos_e7_e8(),
     }
     try:
-        from pathlib import Path
-        import importlib.util
+        from api_rest.integracion import fuentes_store
 
-        root = Path(__file__).resolve()
-        for p in root.parents:
-            if (p / "metgo_paths.py").exists():
-                script = p / "backend" / "08_Gestion_Datos" / "scripts" / "fuentes_oficiales_chile.py"
-                if script.is_file():
-                    spec = importlib.util.spec_from_file_location("fuentes_oficiales_chile", script)
-                    if spec and spec.loader:
-                        mod = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(mod)
-                        out["oficiales_chile"] = mod.estado_fuentes()
-                break
+        out["gobernanza"] = fuentes_store.resumen_gobernanza()
+    except Exception as exc:
+        out["gobernanza"] = {"error": str(exc)}
+    try:
+        from api_rest import oficiales_service
+
+        out["oficiales_chile"] = oficiales_service.estado_fuentes()
     except Exception as exc:
         out["oficiales_chile"] = {"error": str(exc)}
     return out

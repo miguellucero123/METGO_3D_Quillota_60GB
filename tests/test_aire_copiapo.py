@@ -168,6 +168,152 @@ def test_sinca_stub_estado():
     assert r.get_json()["estado"] == "pendiente_fuente"
 
 
+def test_sinca_calcular_sesgo():
+    _setup_api()
+    from api_rest.sinca_service import calcular_sesgo
+
+    metricas = calcular_sesgo(
+        [
+            {"fecha": "2026-07-20", "cams_pm10": 40.0, "sinca_pm10": 30.0, "cams_pm25": 12.0, "sinca_pm25": 10.0},
+            {"fecha": "2026-07-21", "cams_pm10": 50.0, "sinca_pm10": 40.0, "cams_pm25": 14.0, "sinca_pm25": 10.0},
+        ]
+    )
+    assert metricas["n_pares"] == 2
+    assert metricas["pm10"]["sesgo_medio"] == 10.0
+    assert metricas["pm25"]["mae"] == 3.0
+
+
+def test_api_public_sinca_sesgo_y_fuentes_y_ml_dominios():
+    _setup_api()
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    rs = c.get("/api/public/aire/sinca/sesgo?estacion_id=copiapo_centro")
+    assert rs.status_code == 200
+    body = rs.get_json()
+    assert body["estacion_id"] == "copiapo_centro"
+    assert "n_pares" in body
+
+    rf = c.get("/api/public/datos/fuentes?sitio=copiapo")
+    assert rf.status_code == 200
+    fuentes = rf.get_json()
+    assert fuentes["total"] >= 1
+    assert any(f.get("proveedor") == "sinca_mma" for f in fuentes["fuentes"])
+
+    rm = c.get("/api/public/ml/dominios?sitio=copiapo")
+    assert rm.status_code == 200
+    ml = rm.get_json()
+    assert ml["total"] >= 1
+    assert ml["servibles"] >= 1
+    assert any(m["id"] == "pm10_episodio_copiapo" and m.get("servible") for m in ml["modelos"])
+
+
+def test_sinca_csv_ingest(tmp_path, monkeypatch):
+    _setup_api()
+    from pathlib import Path
+    import shutil
+    from api_rest import sinca_service
+
+    fixture = Path(__file__).resolve().parent / "fixtures" / "sinca"
+    dest = tmp_path / "sinca"
+    dest.mkdir()
+    shutil.copy(fixture / "copiapo_centro.csv", dest / "copiapo_centro.csv")
+    monkeypatch.setenv("METGO_SINCA_CSV_DIR", str(dest))
+    monkeypatch.setenv("METGO_SINCA_IDS", '{"copiapo_centro":"DEMO"}')
+
+    # Sin Supabase: guardar_aire → 0, pero sync no debe omitir por sin_csv
+    sync = sinca_service.sincronizar_sinca(["copiapo_centro"])
+    assert sync.get("motivo") in (None, "csv_sin_filas")
+    assert "copiapo_centro" in sync.get("sinca_sync", {})
+    assert sinca_service.estado_sinca()["estaciones_con_codigo"] >= 1
+
+
+def test_oficiales_dmc_csv(tmp_path, monkeypatch):
+    _setup_api()
+    from pathlib import Path
+    import shutil
+    from api_rest import oficiales_service
+
+    fixture = Path(__file__).resolve().parent / "fixtures" / "dmc"
+    dest = tmp_path / "dmc"
+    dest.mkdir()
+    shutil.copy(fixture / "quillota.csv", dest / "quillota.csv")
+    monkeypatch.setenv("METGO_DMC_CSV_DIR", str(dest))
+    monkeypatch.setenv("METGO_DMC_IDS", '{"quillota":"330007"}')
+
+    filas = oficiales_service.fetch_dmc_historico("quillota", dias=10)
+    assert len(filas) == 3
+    assert filas[0]["fecha"] == "2026-07-20"
+    assert filas[0]["temperatura_max"] == 18.5
+
+    est = oficiales_service.estado_fuentes()
+    assert est["dmc"]["disponible"] is True
+    assert est["dmc"]["estaciones"]["quillota"]["codigo"] == "330007"
+
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    r = c.get("/api/public/datos/oficiales/estado")
+    assert r.status_code == 200
+    assert "agromet" in r.get_json()
+
+
+def test_ml_pm10_episodio_baseline():
+    _setup_api()
+    from api_rest import ml_domain_service
+
+    assert ml_domain_service._prob_desde_icap(100) < 0.5
+    assert ml_domain_service._prob_desde_icap(200) >= 0.55
+    assert ml_domain_service._prob_desde_icap(400) > 0.7
+
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    r = c.get(
+        "/api/public/ml/dominios/pm10_episodio_copiapo/prediccion?estacion_id=copiapo_centro"
+    )
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["servible"] is True
+    assert body["modo"] in ("sklearn_regresor", "baseline_regla")
+    assert "prediccion" in body
+    if body["modo"] == "sklearn_regresor" and body.get("prediccion"):
+        assert "icap_predicho" in body["prediccion"]
+
+
+def test_ml_viento_extremo_baseline():
+    _setup_api()
+    from api_rest import ml_domain_service
+
+    out = ml_domain_service.prediccion_dominio(
+        "viento_extremo_mantos", viento_ms=15.0
+    )
+    assert out["servible"] is True
+    assert out["prediccion"]["extremo"] is True
+
+    out2 = ml_domain_service.prediccion_dominio(
+        "viento_extremo_paine", viento_ms=5.0
+    )
+    assert out2["prediccion"]["extremo"] is False
+
+
+def test_artefacto_pm10_existe():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    joblib = (
+        root
+        / "backend"
+        / "06_Modelos_ML_IA"
+        / "modelos"
+        / "modelos_dominio_copiapo"
+        / "pm10_episodio.joblib"
+    )
+    meta = joblib.with_name("meta.json")
+    assert joblib.is_file()
+    assert meta.is_file()
+
+
 # --------------------------------------------------- dispersión de contaminantes
 
 

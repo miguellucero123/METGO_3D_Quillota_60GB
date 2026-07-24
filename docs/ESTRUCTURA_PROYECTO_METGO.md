@@ -12,7 +12,7 @@
 | **Raíz mínima** | Solo entrypoints, configuración global y documentación de entrada |
 | **Módulos numerados** | Cada dominio en su carpeta `NN_NombreModulo/` |
 | **Compatibilidad** | Wrappers en raíz para scripts y despliegues existentes |
-| **Frontend Vue.js** | UI moderna en `04_Dashboards_Unificados/frontend_vue/` |
+| **Frontend Vue.js** | UI moderna en `frontend/vue/` (antes `04_Dashboards_Unificados/frontend_vue`) |
 | **Backend Python** | Lógica, ML, APIs y Streamlit en módulos `01`–`12` |
 
 ---
@@ -112,8 +112,8 @@ NN_NombreModulo/           # NN = 01–12 (existente) o 13+ (nuevo dominio)
 ### 4.2 Checklist al crear una carpeta
 
 - [ ] ¿Encaja en un módulo `01`–`12` existente? → crear subcarpeta ahí  
-- [ ] ¿Es UI web moderna? → `04_Dashboards_Unificados/frontend_vue/src/views/`  
-- [ ] ¿Es dashboard interno rápido? → `04_Dashboards_Unificados/dashboards/`  
+- [ ] ¿Es UI web moderna? → `frontend/vue/src/views/`
+- [ ] ¿Es dashboard interno rápido? → `frontend/dashboards/` (Streamlit local 8501–8513)
 - [ ] ¿Es script de deploy? → `10_Deployment_Produccion/scripts/`  
 - [ ] ¿Es documentación? → `11_Documentacion/manuales/`  
 - [ ] Registrar ruta en `metgo_paths.py` → `MODULE_PATHS`  
@@ -142,7 +142,7 @@ python NN_Modulo/nombre_feature/scripts/main.py
 - Externas: ver requirements.txt
 
 ## Frontend Vue (si aplica)
-Ruta: `04_Dashboards_Unificados/frontend_vue/src/views/NombreView.vue`
+Ruta: `frontend/vue/src/views/NombreView.vue`
 ```
 
 ---
@@ -174,7 +174,7 @@ flowchart LR
 
 | Capa | Tecnología | Ubicación |
 |------|------------|-----------|
-| UI principal moderna | Vue 3 + Vite + Vue Router + Pinia | `frontend_vue/` |
+| UI principal moderna | Vue 3 + Vite + Vue Router + Pinia | `frontend/vue/` |
 | Dashboards internos | Streamlit | `dashboards/` |
 | App móvil nativa | React Native | `app_movil_metgo/` |
 | Datos en tiempo real | OpenMeteo + scripts 01 | `01_Sistema_Meteorologico/` |
@@ -186,7 +186,7 @@ flowchart LR
 python 10_Deployment_Produccion/scripts/iniciar_api_rest.py
 
 # Terminal 2 — Vue (proxy /api → :8080)
-cd 04_Dashboards_Unificados/frontend_vue
+cd frontend/vue
 npm install
 npm run dev
 npm run build    # Producción → dist/
@@ -232,7 +232,7 @@ streamlit run sistema_auth_dashboard_principal_metgo.py
 streamlit run streamlit_app.py
 
 # Frontend Vue
-cd 04_Dashboards_Unificados/frontend_vue && npm run dev
+cd frontend/vue && npm run dev
 
 # Reorganizar (dry-run primero)
 python 10_Deployment_Produccion/scripts/reorganizar_proyecto_v2.py --dry-run

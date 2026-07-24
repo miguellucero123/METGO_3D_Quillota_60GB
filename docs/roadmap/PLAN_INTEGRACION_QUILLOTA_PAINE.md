@@ -12,7 +12,8 @@
 
 ## Etapa 0 — Pre-trabajo en Quillota (cerrar pendientes de fases)
 
-Cosas que conviene dejar listas ANTES de compartir código, para no exportar deuda a Paine.
+> **Estado (2026-07-23):** Etapa 0.1 docs — fase-2/01 y fichas DT hechas.  
+> **2026-07-24:** §6.3 ML Δ cerrado; sync maestro §4; DT-1 docs paths actualizados.
 
 ### 0.1 Sincronizar docs desalineados (rápido, solo documentación)
 
@@ -31,7 +32,7 @@ La auditoría detectó checklists que contradicen el código ya desplegado:
 - [x] Click en barra (`HorizontalBarChart`) → set `estacionActiva` + navegar `/meteo` (consistente en todas las vistas)
 - [x] Export PNG universal (ya existe en algunos; unificar helper)
 - [x] Skeleton loaders unificados para cargas OpenMeteo largas
-- [ ] ML: barras agrupadas con Δ coloreado (posterior, no bloquea)
+- [x] ML: barras agrupadas con Δ coloreado (tooltip Δ ML−obs + color por |error|)
 
 **Por qué antes:** el trío `TimeSeriesChart` / `ComboMeteoChart` / `HorizontalBarChart` se copiará a Paine; mejor portarlos ya mejorados y no mantener dos versiones.
 

@@ -21,12 +21,30 @@ const props = defineProps({
 })
 
 const DOMAIN = {
-  temperatura_max: { label: 'T. máx', unit: '°C' },
-  temperatura_min: { label: 'T. mín', unit: '°C' },
-  humedad: { label: 'Humedad', unit: '%' },
-  precipitacion: { label: 'Lluvia', unit: 'mm' },
-  presion: { label: 'Presión', unit: 'hPa' },
-  viento: { label: 'Viento', unit: 'm/s' },
+  temperatura_max: { label: 'T. máx', unit: '°C', umbralOk: 1.0, umbralWarn: 2.5 },
+  temperatura_min: { label: 'T. mín', unit: '°C', umbralOk: 1.0, umbralWarn: 2.5 },
+  humedad: { label: 'Humedad', unit: '%', umbralOk: 5, umbralWarn: 12 },
+  precipitacion: { label: 'Lluvia', unit: 'mm', umbralOk: 1.5, umbralWarn: 4 },
+  presion: { label: 'Presión', unit: 'hPa', umbralOk: 2, umbralWarn: 5 },
+  viento: { label: 'Viento', unit: 'm/s', umbralOk: 1.5, umbralWarn: 3.5 },
+}
+
+const COLOR_OK = '#10b981'
+const COLOR_WARN = '#f59e0b'
+const COLOR_BAD = '#ef4444'
+const COLOR_NA = CHART_COLORS.azul
+
+function colorPorError(absDelta, umbralOk, umbralWarn) {
+  if (absDelta == null || Number.isNaN(absDelta)) return COLOR_NA
+  if (absDelta <= umbralOk) return COLOR_OK
+  if (absDelta <= umbralWarn) return COLOR_WARN
+  return COLOR_BAD
+}
+
+function etiquetaDelta(delta, unit) {
+  if (delta == null || Number.isNaN(delta)) return '—'
+  const sign = delta > 0 ? '+' : ''
+  return `${sign}${delta.toFixed(1)} ${unit || ''}`.trim()
 }
 
 const rows = computed(() =>
@@ -36,15 +54,23 @@ const rows = computed(() =>
       const meta = DOMAIN[r.variable] || {
         label: r.label || r.variable,
         unit: (r.unidad || '').trim() || '',
+        umbralOk: 1,
+        umbralWarn: 3,
       }
       const actual = Number(r.actual)
       const pred = Number(r.prediccion)
+      const actualOk = !Number.isNaN(actual)
+      const delta = actualOk ? pred - actual : null
+      const absDelta = delta == null ? null : Math.abs(delta)
       return {
         key: r.variable,
         label: meta.label || r.label,
         unit: meta.unit,
-        actual: Number.isNaN(actual) ? null : actual,
+        actual: actualOk ? actual : null,
         prediccion: pred,
+        delta,
+        absDelta,
+        colorMl: colorPorError(absDelta, meta.umbralOk, meta.umbralWarn),
       }
     })
 )
@@ -58,6 +84,11 @@ const chartOption = computed(() => ({
     params.forEach((p) => {
       html += `<div><span style="color:${p.color}">● ${p.seriesName}</span> <b>${p.value ?? '—'} ${row?.unit || ''}</b></div>`
     })
+    const dLabel = etiquetaDelta(row?.delta, row?.unit)
+    const dColor = row?.colorMl || COLOR_NA
+    html += `<div style="margin-top:6px;border-top:1px solid #475569;padding-top:4px;">`
+    html += `<span style="color:${dColor}">Δ ML−obs</span> <b style="color:${dColor}">${dLabel}</b>`
+    html += `</div>`
     return html
   }),
   legend: leyendaSuperior(['Observado', 'Modelo ML']),
@@ -89,22 +120,23 @@ const chartOption = computed(() => ({
     {
       name: 'Modelo ML',
       type: 'bar',
-      data: rows.value.map((r) => r.prediccion),
-      itemStyle: {
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 0,
-          y2: 1,
-          colorStops: [
-            { offset: 0, color: CHART_COLORS.celeste },
-            { offset: 1, color: CHART_COLORS.azul },
-          ],
-        },
-        borderRadius: [4, 4, 0, 0],
-      },
+      data: rows.value.map((r) => ({
+        value: r.prediccion,
+        itemStyle: { color: r.colorMl, borderRadius: [4, 4, 0, 0] },
+      })),
       barMaxWidth: 28,
+      label: {
+        show: true,
+        position: 'top',
+        color: CHART_COLORS.texto,
+        fontSize: 10,
+        formatter: (p) => {
+          const row = rows.value[p.dataIndex]
+          if (!row || row.delta == null) return ''
+          const sign = row.delta > 0 ? '+' : ''
+          return `${sign}${row.delta.toFixed(1)}`
+        },
+      },
     },
   ],
 }))
@@ -115,6 +147,7 @@ function exportCsv() {
       variable: r.label,
       observado: r.actual,
       prediccion: r.prediccion,
+      delta: r.delta,
       unidad: r.unit,
     })),
     props.exportName
@@ -125,6 +158,11 @@ function exportCsv() {
 <template>
   <div class="ml-proj">
     <div class="ml-proj__ctrl">
+      <span class="ml-proj__legend" title="Color de la barra ML según |Δ|">
+        <i class="swatch ok" /> ok
+        <i class="swatch warn" /> medio
+        <i class="swatch bad" /> alto
+      </span>
       <button type="button" @click="exportCsv">CSV</button>
     </div>
     <div v-if="!rows.length" class="empty">Sin proyecciones ML</div>
@@ -136,7 +174,29 @@ function exportCsv() {
 
 <style scoped>
 .ml-proj { width: 100%; }
-.ml-proj__ctrl { display: flex; justify-content: flex-end; margin-bottom: 0.35rem; }
+.ml-proj__ctrl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+.ml-proj__legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--color-muted, #94a3b8);
+}
+.swatch {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 2px;
+}
+.swatch.ok { background: #10b981; }
+.swatch.warn { background: #f59e0b; }
+.swatch.bad { background: #ef4444; }
 .ml-proj__ctrl button {
   padding: 0.3rem 0.6rem;
   font-size: 0.75rem;

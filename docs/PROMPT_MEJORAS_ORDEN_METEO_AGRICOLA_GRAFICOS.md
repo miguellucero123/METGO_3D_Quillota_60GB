@@ -263,7 +263,7 @@ Stack: **ECharts 5 + vue-echarts** (echartsTheme.js).
 
 - [x] Pronostico 7d combo lluvia + T — ComboMeteoChart.vue.
 - [ ] Comparativo valle: small multiples (parcial via SparklineGrid).
-- [ ] ML: barras agrupadas con tooltip Delta y color por error.
+- [x] ML: barras agrupadas con tooltip Delta y color por error.
 - [x] Export PNG/CSV — exportChart.js + botones en charts.
 
 **Fase C — mapa y viento**

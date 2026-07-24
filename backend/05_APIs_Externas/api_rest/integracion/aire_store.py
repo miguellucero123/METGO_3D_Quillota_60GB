@@ -98,6 +98,7 @@ def leer_aire(
     estacion_id: str,
     dias: int = 7,
     tipo_dato: str | None = None,
+    fuente: str | None = None,
 ) -> list[dict[str, Any]]:
     """Lee registros recientes desde aire_registros (fallback ante CAMS caído)."""
     client = _client()
@@ -111,12 +112,23 @@ def leer_aire(
         )
         if tipo_dato:
             q = q.eq("tipo_dato", tipo_dato)
+        if fuente:
+            q = q.eq("fuente", fuente)
         res = q.order("fecha_hora", desc=True).limit(max(1, dias) * 24).execute()
         filas = [_registro_a_fila(r) for r in (res.data or [])]
         return list(reversed(filas))
     except Exception as exc:
         print(f"aire_store.leer_aire {estacion_id}: {exc}")
         return []
+
+
+def leer_aire_por_fuente(
+    estacion_id: str,
+    fuente: str,
+    dias: int = 14,
+) -> list[dict[str, Any]]:
+    """Lee serie de una fuente concreta (p. ej. CAMS vs SINCA para sesgo E12)."""
+    return leer_aire(estacion_id, dias=dias, fuente=fuente)
 
 
 # ------------------------------------------------------------- aire_dispersion

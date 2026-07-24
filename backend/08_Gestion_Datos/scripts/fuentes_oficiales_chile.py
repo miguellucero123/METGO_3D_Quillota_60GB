@@ -1,57 +1,36 @@
 """Conectores oficiales Chile — Agromet (INIA) y DMC.
 
-Etapa E del plan de calidad: OpenMeteo Archive es la fuente inmediata.
-Este módulo define el contrato y stubs para estaciones físicas del valle.
-No inventa series: sin API key / estación registrada → datos vacíos.
+La implementación vive en ``api_rest.oficiales_service`` (E12).
+Este script reexporta el contrato para CLI / etl_sync.
 """
 
 from __future__ import annotations
 
-from typing import Any
+import sys
+from pathlib import Path
 
-# Códigos tentativos — completar tras registro oficial (ver estaciones_oficiales_mapeo.md)
-AGROMET_ESTACIONES: dict[str, dict[str, Any]] = {
-    "quillota": {"codigo": None, "nombre": "Quillota", "estado": "pendiente_registro"},
-    "los_nogales": {"codigo": None, "nombre": "Los Nogales", "estado": "pendiente_registro"},
-    "hijuelas": {"codigo": None, "nombre": "Hijuelas", "estado": "pendiente_registro"},
-    "limache": {"codigo": None, "nombre": "Limache", "estado": "pendiente_registro"},
-    "olmue": {"codigo": None, "nombre": "Olmue", "estado": "pendiente_registro"},
-}
+_API = Path(__file__).resolve().parents[2] / "05_APIs_Externas"
+if str(_API) not in sys.path:
+    sys.path.insert(0, str(_API))
 
-DMC_ESTACIONES: dict[str, dict[str, Any]] = {
-    "quillota": {"codigo": None, "nombre": "Quillota", "estado": "pendiente_registro"},
-    "limache": {"codigo": None, "nombre": "Limache", "estado": "pendiente_registro"},
-}
+from api_rest.oficiales_service import (  # noqa: E402
+    AGROMET_ESTACIONES,
+    DMC_ESTACIONES,
+    catalogo_agromet,
+    catalogo_dmc,
+    estado_fuentes,
+    fetch_agromet_historico,
+    fetch_dmc_historico,
+    sincronizar_oficiales,
+)
 
-
-def estado_fuentes() -> dict[str, Any]:
-    return {
-        "agromet": {
-            "disponible": False,
-            "motivo": "Sin códigos de estación ni credenciales AGROMET_* configurados",
-            "estaciones": AGROMET_ESTACIONES,
-        },
-        "dmc": {
-            "disponible": False,
-            "motivo": "Sin integración DMC activa; usar OpenMeteo Archive entre tanto",
-            "estaciones": DMC_ESTACIONES,
-        },
-        "fuente_activa": "openmeteo_archive",
-    }
-
-
-def fetch_agromet_historico(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
-    """Stub: devolver [] hasta registrar estación y API key."""
-    meta = AGROMET_ESTACIONES.get(estacion_id)
-    if not meta or not meta.get("codigo"):
-        return []
-    # Futuro: GET API Agromet → normalizar a filas meteo_registros
-    return []
-
-
-def fetch_dmc_historico(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
-    """Stub: devolver [] hasta conectar DMC."""
-    meta = DMC_ESTACIONES.get(estacion_id)
-    if not meta or not meta.get("codigo"):
-        return []
-    return []
+__all__ = [
+    "AGROMET_ESTACIONES",
+    "DMC_ESTACIONES",
+    "catalogo_agromet",
+    "catalogo_dmc",
+    "estado_fuentes",
+    "fetch_agromet_historico",
+    "fetch_dmc_historico",
+    "sincronizar_oficiales",
+]

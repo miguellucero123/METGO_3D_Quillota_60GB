@@ -80,7 +80,37 @@ def register_fase4_routes(app: Flask) -> None:
     @app.get("/api/datos/fuentes")
     @auth_required
     def datos_fuentes():
-        return jsonify(etl_sync.fuentes_datos())
+        sitio = (request.args.get("sitio") or "").strip().lower() or None
+        body = etl_sync.fuentes_datos()
+        if sitio:
+            try:
+                from api_rest.integracion import fuentes_store
+
+                body["gobernanza"] = fuentes_store.resumen_gobernanza(sitio)
+            except Exception as exc:
+                body["gobernanza"] = {"error": str(exc)}
+        return jsonify(body)
+
+    @app.get("/api/public/datos/fuentes")
+    def public_datos_fuentes():
+        """Catálogo de gobernanza de fuentes (E12), sin JWT."""
+        sitio = (request.args.get("sitio") or "").strip().lower() or None
+        try:
+            from api_rest.integracion import fuentes_store
+
+            return jsonify(fuentes_store.resumen_gobernanza(sitio))
+        except Exception as exc:
+            return jsonify({"error": str(exc)}), 503
+
+    @app.get("/api/public/datos/oficiales/estado")
+    def public_oficiales_estado():
+        """Estado Agromet/DMC (códigos env + CSV)."""
+        try:
+            from api_rest import oficiales_service
+
+            return jsonify(oficiales_service.estado_fuentes())
+        except Exception as exc:
+            return jsonify({"error": str(exc)}), 503
 
     @app.post("/api/datos/etl/sync")
     @auth_required
@@ -139,13 +169,20 @@ def register_fase4_routes(app: Flask) -> None:
             res["operaciones"] = operaciones_service.sincronizar_operaciones()
         except Exception as exc:
             res.setdefault("errores", []).append(f"operaciones: {exc}")
-        # E7/E12: SINCA observado (stub hasta tener códigos oficiales).
+        # E7/E12: SINCA observado (CSV/códigos).
         try:
             from api_rest import sinca_service
 
             res["sinca"] = sinca_service.sincronizar_sinca()
         except Exception as exc:
             res.setdefault("errores", []).append(f"sinca: {exc}")
+        # E12: Agromet/DMC observados (CSV / IDs env).
+        try:
+            from api_rest import oficiales_service
+
+            res["oficiales"] = oficiales_service.sincronizar_oficiales()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"oficiales: {exc}")
         return jsonify(res)
 
     @app.get("/api/datos/etl/status")

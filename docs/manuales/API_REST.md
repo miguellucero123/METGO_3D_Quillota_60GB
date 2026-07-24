@@ -110,18 +110,18 @@ Uso previsto: `site-web`, widgets externos o landing. Sin datos agrícolas ni al
 Terminal 1 — API:
 
 ```bash
-python 10_Deployment_Produccion/scripts/iniciar_api_rest.py
+python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py
 ```
 
 Terminal 2 — Vue (proxy `/api` → puerto 8080):
 
 ```bash
-cd 04_Dashboards_Unificados/frontend_vue
+cd frontend/vue
 npm install
 npm run dev
 ```
 
 ## Ubicación del código
 
-- `05_APIs_Externas/api_rest/auth_routes.py` — JWT login y decorador
-- `07_Sistema_Monitoreo/scripts/metgo_auth.py` (wrapper `metgo_auth.py` en raíz) — credenciales Streamlit + API
+- `backend/05_APIs_Externas/api_rest/auth_routes.py` — JWT login y decorador
+- `backend/07_Sistema_Monitoreo/scripts/metgo_auth.py` (wrapper `metgo_auth.py` en raíz) — credenciales Streamlit + API

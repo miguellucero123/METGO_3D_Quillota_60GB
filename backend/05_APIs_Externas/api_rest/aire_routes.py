@@ -72,6 +72,52 @@ def register_aire_routes(app: Flask) -> None:
             app.logger.warning("sinca_estado error: %s", exc)
             return jsonify(_ERROR_503), 503
 
+    @app.get("/api/public/aire/sinca/sesgo")
+    def public_sinca_sesgo():
+        """Sesgo CAMS(modelo) − SINCA(observado) por estación (E12)."""
+        estacion_id = (request.args.get("estacion_id") or "copiapo_centro").strip()
+        dias = max(1, min(request.args.get("dias", default=14, type=int), 92))
+        try:
+            from api_rest import sinca_service
+
+            data = sinca_service.sesgo_cams_vs_sinca(estacion_id, dias=dias)
+            if data.get("error") == "estacion_no_en_catalogo_sinca":
+                return jsonify(data), 404
+            return jsonify(data)
+        except Exception as exc:
+            app.logger.warning("sinca_sesgo error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/ml/dominios")
+    def public_ml_dominios():
+        """Catálogo stubs ML por dominio (E12)."""
+        sitio = (request.args.get("sitio") or "").strip().lower() or None
+        try:
+            from api_rest import ml_domain_service
+
+            return jsonify(ml_domain_service.listar_modelos_dominio(sitio))
+        except Exception as exc:
+            app.logger.warning("ml_dominios error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/ml/dominios/<modelo_id>/prediccion")
+    def public_ml_dominio_prediccion(modelo_id: str):
+        """Predicción por dominio (PM10 sklearn / viento baseline / stubs)."""
+        estacion_id = (request.args.get("estacion_id") or "copiapo_centro").strip()
+        viento_ms = request.args.get("viento_ms", type=float)
+        try:
+            from api_rest import ml_domain_service
+
+            data = ml_domain_service.prediccion_dominio(
+                modelo_id, estacion_id=estacion_id, viento_ms=viento_ms
+            )
+            if data.get("error") == "modelo_dominio_desconocido":
+                return jsonify(data), 404
+            return jsonify(data)
+        except Exception as exc:
+            app.logger.warning("ml_dominio_prediccion error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
     # ---------------------------------------------------- dispersión de contaminantes
 
     @app.get("/api/public/aire/dispersion/alertas")

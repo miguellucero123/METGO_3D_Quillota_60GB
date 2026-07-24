@@ -303,6 +303,82 @@ paths:
             nombre, icap, nivel, contaminante_rector, recomendaciones}] }
         "503":
           description: Servicio CAMS no disponible
+  /api/public/aire/sinca/estado:
+    get:
+      tags: [aire]
+      summary: Estado integración SINCA (MMA)
+      responses:
+        "200":
+          description: Catálogo, códigos, CSV dir, estado pendiente|parcial
+  /api/public/aire/sinca/sesgo:
+    get:
+      tags: [aire]
+      summary: Sesgo CAMS − SINCA (E12)
+      description: |
+        Compara medias diarias persistidas (fuente openmeteo_cams vs sinca).
+        Sin pares alineados, pm25/pm10 vienen null y n_pares=0.
+      parameters:
+        - name: estacion_id
+          in: query
+          schema: { type: string, default: copiapo_centro }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 14, maximum: 92 }
+      responses:
+        "200":
+          description: sesgo_medio, mae, pares
+        "404":
+          description: Estación fuera del catálogo SINCA
+  /api/public/datos/fuentes:
+    get:
+      tags: [datos]
+      summary: Gobernanza de fuentes (E12, público)
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, example: copiapo }
+      responses:
+        "200":
+          description: Catálogo licencia/frescura/cobertura
+  /api/public/ml/dominios:
+    get:
+      tags: [ml]
+      summary: Stubs ML por dominio (E12)
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, example: copiapo }
+      responses:
+        "200":
+          description: Lista modelos dominio (pm10 baseline servible)
+  /api/public/ml/dominios/{modelo_id}/prediccion:
+    get:
+      tags: [ml]
+      summary: Predicción dominio (baseline PM10 / stubs)
+      parameters:
+        - name: modelo_id
+          in: path
+          required: true
+          schema: { type: string, example: pm10_episodio_copiapo }
+        - name: estacion_id
+          in: query
+          schema: { type: string, default: copiapo_centro }
+        - name: viento_ms
+          in: query
+          schema: { type: number }
+          description: Forzar viento (modelos viento_extremo_*)
+      responses:
+        "200":
+          description: prediccion sklearn/baseline o stub
+        "404":
+          description: modelo desconocido
+  /api/public/datos/oficiales/estado:
+    get:
+      tags: [datos]
+      summary: Estado Agromet/DMC (E12)
+      responses:
+        "200":
+          description: códigos env, CSV dirs, estaciones
   /api/public/aire/{estacion_id}/dispersion:
     get:
       tags: [aire]
