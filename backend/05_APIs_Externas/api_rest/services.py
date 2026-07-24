@@ -1067,13 +1067,20 @@ def health_check() -> dict[str, Any]:
         out["openmeteo_cooldown_s"] = cooldown_restante
     # Diagnóstico E10: sin Supabase en Render el fallback meteo falla → 503 en SPA
     try:
-        from api_rest.integracion.supabase_store import supabase_configurado
+        from api_rest.integracion.supabase_store import supabase_configurado, SUPABASE_URL
         from api_rest.integracion import meteo_store
 
         out["supabase_configurado"] = bool(supabase_configurado())
         st = meteo_store.estadisticas_store()
         out["meteo_store_registros"] = st.get("registros", 0)
-    except Exception:
+        out["meteo_store_db"] = (st.get("db") or SUPABASE_URL or "")[:60]
+        if st.get("error"):
+            out["meteo_store_error"] = str(st["error"])[:200]
+        # Muestra rápida: ¿hay filas de Quillota?
+        sample = meteo_store.leer_registros("quillota", 3)
+        out["meteo_store_quillota"] = len(sample)
+    except Exception as exc:
         out["supabase_configurado"] = False
         out["meteo_store_registros"] = 0
+        out["meteo_store_error"] = str(exc)[:200]
     return out
