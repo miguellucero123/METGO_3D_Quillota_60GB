@@ -297,6 +297,72 @@ def test_ml_viento_extremo_baseline():
     assert out2["prediccion"]["extremo"] is False
 
 
+def test_ml_helada_baseline():
+    _setup_api()
+    from api_rest import ml_domain_service
+
+    # Sin API meteo: aún debe ser servible (puede devolver sin_temperatura o prediccion)
+    out = ml_domain_service.prediccion_helada_quillota("quillota", cultivo="palto")
+    assert out["servible"] is True
+    assert out["modo"] == "baseline_regla"
+
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    r = c.get(
+        "/api/public/ml/dominios/helada_quillota/prediccion?estacion_id=quillota&cultivo=palto"
+    )
+    assert r.status_code == 200
+    assert r.get_json()["servible"] is True
+
+
+def test_etl_retry_queue(tmp_path, monkeypatch):
+    _setup_api()
+    from api_rest.integracion import etl_retry_queue
+
+    qpath = tmp_path / "etl_retry_queue.jsonl"
+    monkeypatch.setattr(etl_retry_queue, "_queue_path", lambda: qpath)
+    monkeypatch.setattr(etl_retry_queue, "_drain_limit", lambda: 5)
+    monkeypatch.setattr(etl_retry_queue, "_max_attempts", lambda: 3)
+
+    etl_retry_queue.enqueue("sinca", "boom")
+    assert etl_retry_queue.estado_cola()["pendientes"] == 1
+
+    # Job omitido por sin_csv no debe quedar en cola
+    monkeypatch.setattr(
+        etl_retry_queue,
+        "_resolver_job",
+        lambda name: (lambda: {"omitido": True, "motivo": "sin_csv_dir"}),
+    )
+    out = etl_retry_queue.drain()
+    assert out["ok"] >= 1
+    assert etl_retry_queue.estado_cola()["pendientes"] == 0
+
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    r = c.get("/api/public/datos/etl/retry-queue")
+    assert r.status_code == 200
+    assert "pendientes" in r.get_json()
+
+
+def test_sinca_circuit_breaker(monkeypatch):
+    _setup_api()
+    from api_rest import sinca_service
+
+    monkeypatch.setattr(sinca_service, "_CB_FALLA", 0)
+    monkeypatch.setattr(sinca_service, "_CB_HASTA", 0.0)
+    monkeypatch.setattr(sinca_service, "_CB_UMBRAL", 2)
+    monkeypatch.setattr(sinca_service, "_CB_COOLDOWN_S", 60)
+
+    import api_rest.sinca_service as mod
+
+    for _ in range(2):
+        mod._cb_registrar_fallo()
+    assert mod._cb_abierto() is True
+    assert mod._fetch_csv_url("http://invalid/{slug}.csv", "copiapo_centro", None) == []
+
+
 def test_artefacto_pm10_existe():
     from pathlib import Path
 

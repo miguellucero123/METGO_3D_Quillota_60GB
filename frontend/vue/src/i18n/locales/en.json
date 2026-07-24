@@ -1,0 +1,25 @@
+{
+  "app": {
+    "title": "Monitoring system",
+    "subtitle": "Quillota region · Aconcagua Valley",
+    "station": "Station",
+    "logout": "Sign out",
+    "preferences": "Preferences",
+    "skipContent": "Skip to content",
+    "menuToggle": "Open or close menu",
+    "offline": "Offline — showing cached data when available."
+  },
+  "login": {
+    "title": "METGO",
+    "subtitle": "Agrometeorological monitoring",
+    "user": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "loading": "Signing in…"
+  },
+  "lang": {
+    "es": "ES",
+    "en": "EN",
+    "label": "Language"
+  }
+}

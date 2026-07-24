@@ -166,7 +166,13 @@ function exportPng() {
       </button>
     </div>
     <div v-if="!labels.length" class="empty">Sin serie temporal</div>
-    <div v-else class="chart-wrap" :style="{ height: height + 'px' }">
+    <div
+      v-else
+      class="chart-wrap"
+      :style="{ height: height + 'px' }"
+      role="img"
+      :aria-label="`Serie temporal ${seriesMaxLabel}${unit ? ' en ' + unit : ''}, ${labels.length} puntos`"
+    >
       <v-chart ref="chartRef" class="chart" :option="chartOption" autoresize />
     </div>
   </div>

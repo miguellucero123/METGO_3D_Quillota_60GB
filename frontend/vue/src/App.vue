@@ -53,7 +53,7 @@ onMounted(async () => {
     <RouterView />
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--embed': isEmbedded, 'app-shell--nav-open': navOpen }">
-    <a href="#contenido-principal" class="skip-link">Saltar al contenido</a>
+    <a href="#contenido-principal" class="skip-link">{{ $t('app.skipContent') }}</a>
     <OfflineBanner />
     <MetgoHeader />
     <div class="app-body">

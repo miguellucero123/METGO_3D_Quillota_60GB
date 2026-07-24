@@ -1,0 +1,11 @@
+# Cloudflare Pages — METGO Quillota (SPA Vue)
+# Dashboard: crear proyecto "metgo-quillota" con root = frontend/vue
+# Docs: docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md
+#
+# CLI local (opcional):
+#   npm run build
+#   npx wrangler pages deploy dist --project-name=metgo-quillota
+
+name = "metgo-quillota"
+compatibility_date = "2026-07-01"
+pages_build_output_dir = "dist"

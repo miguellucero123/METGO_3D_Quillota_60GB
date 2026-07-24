@@ -112,6 +112,16 @@ def register_fase4_routes(app: Flask) -> None:
         except Exception as exc:
             return jsonify({"error": str(exc)}), 503
 
+    @app.get("/api/public/datos/etl/retry-queue")
+    def public_etl_retry_queue():
+        """Estado de la cola de reintento ETL (E10, sin Redis)."""
+        try:
+            from api_rest.integracion import etl_retry_queue
+
+            return jsonify(etl_retry_queue.estado_cola())
+        except Exception as exc:
+            return jsonify({"error": str(exc)}), 503
+
     @app.post("/api/datos/etl/sync")
     @auth_required
     def datos_etl_sync():
@@ -155,6 +165,12 @@ def register_fase4_routes(app: Flask) -> None:
             res["aire"] = aire_service.sincronizar_aire()
         except Exception as exc:
             res.setdefault("errores", []).append(f"aire: {exc}")
+            try:
+                from api_rest.integracion import etl_retry_queue
+
+                etl_retry_queue.enqueue("aire", str(exc))
+            except Exception:
+                pass
         # E7: ETL dispersión (inversión/viento/niebla → aire_dispersion).
         try:
             from api_rest import dispersion_service
@@ -162,6 +178,12 @@ def register_fase4_routes(app: Flask) -> None:
             res["dispersion"] = dispersion_service.sincronizar_dispersion()
         except Exception as exc:
             res.setdefault("errores", []).append(f"dispersion: {exc}")
+            try:
+                from api_rest.integracion import etl_retry_queue
+
+                etl_retry_queue.enqueue("dispersion", str(exc))
+            except Exception:
+                pass
         # E8: ETL ventanas operacionales (faena → operaciones_ventanas).
         try:
             from api_rest import operaciones_service
@@ -169,6 +191,12 @@ def register_fase4_routes(app: Flask) -> None:
             res["operaciones"] = operaciones_service.sincronizar_operaciones()
         except Exception as exc:
             res.setdefault("errores", []).append(f"operaciones: {exc}")
+            try:
+                from api_rest.integracion import etl_retry_queue
+
+                etl_retry_queue.enqueue("operaciones", str(exc))
+            except Exception:
+                pass
         # E7/E12: SINCA observado (CSV/códigos).
         try:
             from api_rest import sinca_service
@@ -176,6 +204,12 @@ def register_fase4_routes(app: Flask) -> None:
             res["sinca"] = sinca_service.sincronizar_sinca()
         except Exception as exc:
             res.setdefault("errores", []).append(f"sinca: {exc}")
+            try:
+                from api_rest.integracion import etl_retry_queue
+
+                etl_retry_queue.enqueue("sinca", str(exc))
+            except Exception:
+                pass
         # E12: Agromet/DMC observados (CSV / IDs env).
         try:
             from api_rest import oficiales_service
@@ -183,6 +217,19 @@ def register_fase4_routes(app: Flask) -> None:
             res["oficiales"] = oficiales_service.sincronizar_oficiales()
         except Exception as exc:
             res.setdefault("errores", []).append(f"oficiales: {exc}")
+            try:
+                from api_rest.integracion import etl_retry_queue
+
+                etl_retry_queue.enqueue("oficiales", str(exc))
+            except Exception:
+                pass
+        # E10: drenar cola de reintentos (JSONL, sin Redis).
+        try:
+            from api_rest.integracion import etl_retry_queue
+
+            res["etl_retry"] = etl_retry_queue.drain()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"etl_retry: {exc}")
         return jsonify(res)
 
     @app.get("/api/datos/etl/status")

@@ -105,11 +105,15 @@ def register_aire_routes(app: Flask) -> None:
         """Predicción por dominio (PM10 sklearn / viento baseline / stubs)."""
         estacion_id = (request.args.get("estacion_id") or "copiapo_centro").strip()
         viento_ms = request.args.get("viento_ms", type=float)
+        cultivo = (request.args.get("cultivo") or "").strip() or None
         try:
             from api_rest import ml_domain_service
 
             data = ml_domain_service.prediccion_dominio(
-                modelo_id, estacion_id=estacion_id, viento_ms=viento_ms
+                modelo_id,
+                estacion_id=estacion_id,
+                viento_ms=viento_ms,
+                cultivo=cultivo,
             )
             if data.get("error") == "modelo_dominio_desconocido":
                 return jsonify(data), 404

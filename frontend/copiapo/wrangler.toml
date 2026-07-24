@@ -1,0 +1,6 @@
+# Cloudflare Pages — METGO Copiapó
+# Root directory en el dashboard: frontend/copiapo
+
+name = "metgo-copiapo"
+compatibility_date = "2026-07-01"
+pages_build_output_dir = "dist"

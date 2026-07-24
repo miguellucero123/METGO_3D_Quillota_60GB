@@ -1,95 +1,109 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Launcher Streamlit local (DT-1) — rutas vía metgo.paths.
+
+Deprecado frente a ``iniciar_metgo_desarrollo.bat`` + Vue; útil para smoke 8501–8513.
 """
-Ejecutar Sistema METGO_3D Organizado
-Ejecuta el sistema desde las carpetas organizadas
-"""
+
+from __future__ import annotations
 
 import subprocess
 import sys
 import time
-import webbrowser
-import os
 from pathlib import Path
 
 _scripts = Path(__file__).resolve().parent
 if str(_scripts) not in sys.path:
     sys.path.insert(0, str(_scripts))
-from _deprecated_notice import warn_if_deprecated
+
+# Bootstrap raíz del monorepo
+_root = Path(__file__).resolve()
+for p in _root.parents:
+    if (p / "metgo_paths.py").exists() or (p / "metgo" / "paths.py").exists():
+        if str(p) not in sys.path:
+            sys.path.insert(0, str(p))
+        break
+
+from _deprecated_notice import warn_if_deprecated  # noqa: E402
 
 warn_if_deprecated(__file__, "iniciar_metgo_desarrollo.bat + Centro de servicios (Vue)")
 
+try:
+    from metgo.paths import PROJECT_ROOT, frontend_vue_dir, streamlit_dashboard_path
+except ImportError:
+    from metgo_paths import PROJECT_ROOT  # type: ignore
 
-def ejecutar_dashboard(ruta_dashboard, puerto):
-    """Ejecutar un dashboard desde su ruta organizada"""
+    def streamlit_dashboard_path(filename: str) -> Path:  # type: ignore
+        return PROJECT_ROOT / "frontend" / "dashboards" / filename
+
+    def frontend_vue_dir() -> Path:  # type: ignore
+        return PROJECT_ROOT / "frontend" / "vue"
+
+
+# Checklist F — puertos 8501–8513 (portal + dashboards)
+DASHBOARDS: list[tuple[Path, int, str]] = [
+    (PROJECT_ROOT / "streamlit_app.py", 8501, "Portal Streamlit"),
+    (streamlit_dashboard_path("dashboard_meteorologico_profesional.py"), 8502, "Meteorológico"),
+    (streamlit_dashboard_path("dashboard_agricola_inteligente.py"), 8503, "Agrícola"),
+    (streamlit_dashboard_path("dashboard_monitoreo_tiempo_real.py"), 8504, "Monitoreo"),
+    (streamlit_dashboard_path("dashboard_ia_ml_avanzado.py"), 8505, "ML/IA"),
+    (streamlit_dashboard_path("dashboard_visualizaciones_avanzadas.py"), 8506, "Visualizaciones"),
+    (streamlit_dashboard_path("dashboard_global_metricas.py"), 8507, "Métricas globales"),
+    (streamlit_dashboard_path("dashboard_agricultura_precision.py"), 8508, "Agricultura precisión"),
+    (streamlit_dashboard_path("dashboard_analisis_comparativo.py"), 8509, "Comparativo"),
+    (streamlit_dashboard_path("dashboard_alertas_automaticas.py"), 8510, "Alertas"),
+    (streamlit_dashboard_path("dashboard_simple_optimizado.py"), 8511, "Simple"),
+    (streamlit_dashboard_path("dashboard_unificado_diferenciado.py"), 8512, "Unificado"),
+    (streamlit_dashboard_path("dashboard_mobile_optimizado.py"), 8513, "Mobile"),
+]
+
+
+def ejecutar_dashboard(ruta: Path, puerto: int) -> bool:
+    if not ruta.is_file():
+        print(f"WARNING no encontrado: {ruta}")
+        return False
     try:
-        print(f"Ejecutando {ruta_dashboard} en puerto {puerto}...")
-        subprocess.Popen([
-            sys.executable, '-m', 'streamlit', 'run', ruta_dashboard,
-            '--server.port', str(puerto), '--server.headless', 'true'
-        ])
-        time.sleep(2)
-        print(f"OK {ruta_dashboard} ejecutandose en http://localhost:{puerto}")
+        print(f"Ejecutando {ruta.name} en puerto {puerto}...")
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "streamlit",
+                "run",
+                str(ruta),
+                "--server.port",
+                str(puerto),
+                "--server.headless",
+                "true",
+            ],
+            cwd=str(PROJECT_ROOT),
+        )
+        time.sleep(1.5)
+        print(f"OK http://localhost:{puerto}")
         return True
-    except Exception as e:
-        print(f"ERROR ejecutando {ruta_dashboard}: {e}")
+    except Exception as exc:
+        print(f"ERROR {ruta.name}: {exc}")
         return False
 
-def main():
-    print("=" * 80)
-    print("METGO_3D - SISTEMA ORGANIZADO EJECUTANDOSE")
-    print("=" * 80)
-    print("Ejecutando desde carpetas organizadas...")
-    
-    # Dashboards organizados por carpetas
-    dashboards_organizados = [
-        ('04_Dashboards_Unificados/dashboards/sistema_auth_dashboard_principal_metgo.py', 8500, "Sistema Principal (Autenticación)"),
-        ('01_Sistema_Meteorologico/main.py', 8501, "Sistema Meteorológico (Nuevo)"),
-        ('04_Dashboards_Unificados/dashboards/dashboard_meteorologico_final.py', 8502, "Dashboard Meteorológico (Original)"),
-        ('02_Sistema_Agricola/main.py', 8503, "Sistema Agrícola (Nuevo)"),
-        ('04_Dashboards_Unificados/main_dashboard.py', 8504, "Dashboard Unificado"),
-        ('06_Modelos_ML_IA/main.py', 8505, "Modelos ML/IA")
-    ]
-    
-    dashboards_ejecutados = 0
-    
-    for ruta, puerto, descripcion in dashboards_organizados:
-        if os.path.exists(ruta):
-            if ejecutar_dashboard(ruta, puerto):
-                dashboards_ejecutados += 1
-        else:
-            print(f"WARNING {ruta} no encontrado")
-    
-    print(f"\nSistema ejecutado: {dashboards_ejecutados}/{len(dashboards_organizados)} dashboards activos")
-    
-    if dashboards_ejecutados > 0:
-        print("\n" + "=" * 80)
-        print("DASHBOARDS ORGANIZADOS DISPONIBLES:")
-        print("=" * 80)
-        
-        for ruta, puerto, descripcion in dashboards_organizados:
-            if os.path.exists(ruta):
-                print(f"  - {descripcion}: http://localhost:{puerto}")
-        
-        print("\nCREDENCIALES:")
-        print("  Usuario: admin")
-        print("  Contraseña: admin123")
-        
-        print("\nESTRUCTURA ORGANIZADA:")
-        print("  ✅ 01_Sistema_Meteorologico/")
-        print("  ✅ 02_Sistema_Agricola/")
-        print("  ✅ 03_Sistema_IoT_Drones/")
-        print("  ✅ 04_Dashboards_Unificados/")
-        print("  ✅ 05_APIs_Externas/")
-        print("  ✅ 06_Modelos_ML_IA/")
-        print("  ✅ 07_Sistema_Monitoreo/")
-        print("  ✅ 08_Gestion_Datos/")
-        print("  ✅ 09_Testing_Validacion/")
-        print("  ✅ 10_Deployment_Produccion/")
-        print("  ✅ 11_Documentacion/")
-        print("  ✅ 12_Respaldos_Archivos/")
-        
-        print("\n¡Sistema METGO_3D completamente organizado y funcionando!")
+
+def main() -> None:
+    print("=" * 72)
+    print("METGO — Streamlit local (metgo.paths / checklist F)")
+    print(f"Vue SPA: {frontend_vue_dir()}")
+    print("=" * 72)
+    # Por defecto solo portal + meteo + agrícola (evitar abrir 13 procesos)
+    seleccion = DASHBOARDS[:3]
+    if "--all" in sys.argv:
+        seleccion = DASHBOARDS
+
+    n = 0
+    for ruta, puerto, desc in seleccion:
+        if ejecutar_dashboard(ruta, puerto):
+            n += 1
+            print(f"  - {desc}: http://localhost:{puerto}")
+    print(f"\nActivos: {n}/{len(seleccion)} (usa --all para 8501–8513)")
+    print("Preferido UI: cd frontend/vue && npm run dev → :5173")
+
 
 if __name__ == "__main__":
     main()

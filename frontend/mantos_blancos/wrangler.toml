@@ -1,0 +1,6 @@
+# Cloudflare Pages — METGO Mantos Blancos
+# Root directory en el dashboard: frontend/mantos_blancos
+
+name = "metgo-mantos"
+compatibility_date = "2026-07-01"
+pages_build_output_dir = "dist"

@@ -3,12 +3,16 @@ import { seriesHistoricoPorDia, seriePronosticoPorDia } from '@/utils/meteoDates
 
 const TOKEN_KEY = 'metgo_access_token'
 
-/** API en Render; en Netlify el proxy /api suele dar 504 si el servicio está dormido (>26 s). */
+/** API en Render; proxy /api en Pages/Netlify suele dar 504 si Render duerme (>~26 s). */
 const RENDER_API_BASE = 'https://metgo-api.onrender.com/api'
 
 function resolveApiBaseURL() {
-  if (typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')) {
-    return RENDER_API_BASE
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    // Hosting estático en CDN: ir directo a Render (CORS allowlist obligatorio).
+    if (host.includes('netlify.app') || host.includes('pages.dev')) {
+      return RENDER_API_BASE
+    }
   }
   const fromEnv = import.meta.env.VITE_METGO_API
   if (fromEnv) return fromEnv

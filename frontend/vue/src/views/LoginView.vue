@@ -1,13 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Leaf, LogIn } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useMetgoStore } from '@/stores/metgo'
 import { wakeApi } from '@/api/metgoApi'
 import { sanitizeRedirectPath } from '@/utils/sanitizeRedirectPath'
 import { AUTH_ERROR_INVALID } from '@/services/authService'
+import { setLocale } from '@/i18n'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const metgo = useMetgoStore()
@@ -18,7 +21,6 @@ const error = ref('')
 const cargando = ref(false)
 
 onMounted(() => {
-  // Despertar la API de forma silenciosa al entrar a la página (Render Cold Start)
   wakeApi().catch(() => {})
 })
 
@@ -53,12 +55,20 @@ async function onSubmit() {
 <template>
   <div class="auth-page">
     <div class="auth-panel">
+      <div class="auth-lang" role="group" :aria-label="t('lang.label')">
+        <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
+          {{ t('lang.es') }}
+        </button>
+        <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">
+          {{ t('lang.en') }}
+        </button>
+      </div>
       <div class="auth-brand">
         <div class="auth-logo">
           <Leaf aria-hidden="true" />
         </div>
-        <h1>METGO</h1>
-        <p class="auth-tagline">Monitoreo meteorológico y agrícola</p>
+        <h1>{{ t('login.title') }}</h1>
+        <p class="auth-tagline">{{ t('login.subtitle') }}</p>
         <p class="auth-region">Quillota · Región de Valparaíso</p>
         <p class="login-hint muted">
           Demo: <strong>admin</strong>/admin123 · <strong>agronomo</strong>/agro123 ·
@@ -68,7 +78,7 @@ async function onSubmit() {
 
       <form class="auth-form" @submit.prevent="onSubmit">
         <label class="field">
-          <span>Usuario</span>
+          <span>{{ t('login.user') }}</span>
           <input
             v-model="username"
             type="text"
@@ -78,7 +88,7 @@ async function onSubmit() {
           />
         </label>
         <label class="field">
-          <span>Contraseña</span>
+          <span>{{ t('login.password') }}</span>
           <input
             v-model="password"
             type="password"
@@ -89,7 +99,7 @@ async function onSubmit() {
         <p v-if="error" class="auth-msg auth-msg--error" role="alert">{{ error }}</p>
         <button type="submit" class="btn btn--full" :disabled="cargando">
           <LogIn class="btn-icon" aria-hidden="true" />
-          {{ cargando ? 'Ingresando…' : 'Iniciar sesión' }}
+          {{ cargando ? t('login.loading') : t('login.submit') }}
         </button>
       </form>
 
@@ -104,4 +114,23 @@ async function onSubmit() {
 
 <style scoped>
 @import '@/assets/auth-page.css';
+.auth-lang {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.auth-lang button {
+  border: 1px solid var(--color-border, #334155);
+  background: transparent;
+  color: var(--color-muted, #94a3b8);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.auth-lang button.active {
+  color: var(--color-primary, #00ffaa);
+  border-color: var(--color-primary, #00ffaa);
+}
 </style>

@@ -275,7 +275,10 @@ onMounted(() => cargarTodo())
       </details>
     </SectionCard>
 
-    <SectionCard title="Gráfico de proyecciones" subtitle="Valor actual vs predicción ML">
+    <SectionCard
+      title="Gráfico de proyecciones"
+      subtitle="Observado OpenMeteo vs ML · paneles por escala o solo Δ error"
+    >
       <template #icon><Sparkles /></template>
       <p v-if="cargandoChart" class="muted">Generando gráfico…</p>
       <MlProjectionChart v-else :items="mlChart" />

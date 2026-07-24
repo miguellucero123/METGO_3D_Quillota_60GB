@@ -184,7 +184,7 @@ watch(() => store.estacionActiva, cargarResumen)
 
       <SectionCard
         title="Proyecciones ML"
-        subtitle="Observado OpenMeteo (misma entrada del modelo) vs predicción ML"
+        subtitle="OpenMeteo vs ML · paneles por escala (°C / % / hPa / lluvia·viento) o solo Δ"
         class="ml-section"
       >
         <p v-if="cargandoMl" class="muted">Calculando proyecciones…</p>

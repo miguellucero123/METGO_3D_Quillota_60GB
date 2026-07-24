@@ -86,6 +86,8 @@ def estado_sinca() -> dict[str, Any]:
         "estaciones_con_codigo": configuradas,
         "csv_dir_configurado": bool(csv_dir),
         "csv_url_configurado": bool((os.getenv("METGO_SINCA_CSV_URL") or "").strip()),
+        "circuit_breaker_abierto": _cb_abierto(),
+        "circuit_breaker_fallas": _CB_FALLA,
         "estaciones": {
             slug: {
                 "sinca_id": m.get("sinca_id"),
@@ -225,9 +227,41 @@ def sincronizar_sinca(estaciones: list[str] | None = None) -> dict[str, Any]:
     }
 
 
+# Circuit breaker ligero (E10): tras N fallos de fetch URL, cooldown.
+_CB_FALLA = 0
+_CB_HASTA = 0.0  # epoch seconds
+_CB_UMBRAL = int(os.getenv("METGO_SINCA_CB_FALLAS", "3"))
+_CB_COOLDOWN_S = int(os.getenv("METGO_SINCA_CB_COOLDOWN_S", "900"))
+
+
+def _cb_abierto() -> bool:
+    import time
+
+    return time.time() < _CB_HASTA
+
+
+def _cb_registrar_exito() -> None:
+    global _CB_FALLA, _CB_HASTA
+    _CB_FALLA = 0
+    _CB_HASTA = 0.0
+
+
+def _cb_registrar_fallo() -> None:
+    global _CB_FALLA, _CB_HASTA
+    import time
+
+    _CB_FALLA += 1
+    if _CB_FALLA >= _CB_UMBRAL:
+        _CB_HASTA = time.time() + _CB_COOLDOWN_S
+
+
 def _fetch_csv_url(template: str, slug: str, sinca_id: Any) -> list[dict[str, Any]]:
     """Descarga CSV remoto. Template puede incluir {slug} y {id}."""
     import tempfile
+
+    if _cb_abierto():
+        print(f"sinca_service: circuit breaker abierto; skip fetch {slug}")
+        return []
 
     url = template.replace("{slug}", slug).replace("{id}", str(sinca_id or slug))
     try:
@@ -241,10 +275,13 @@ def _fetch_csv_url(template: str, slug: str, sinca_id: Any) -> list[dict[str, An
             tmp.write(r.text)
             path = Path(tmp.name)
         try:
-            return _leer_csv_estacion(path)
+            filas = _leer_csv_estacion(path)
+            _cb_registrar_exito()
+            return filas
         finally:
             path.unlink(missing_ok=True)
     except Exception as exc:
+        _cb_registrar_fallo()
         print(f"sinca_service._fetch_csv_url {slug}: {exc}")
         return []
 

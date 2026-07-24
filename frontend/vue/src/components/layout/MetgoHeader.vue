@@ -1,16 +1,19 @@
 <script setup>
 import { inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { MapPin, LogOut, Activity, Settings, Menu } from 'lucide-vue-next'
 import { useMetgoStore } from '@/stores/metgo'
 import { useAuthStore } from '@/stores/auth'
 import { usePreferencesStore } from '@/stores/preferences'
+import { setLocale } from '@/i18n'
 
 const store = useMetgoStore()
 const auth = useAuthStore()
 const prefs = usePreferencesStore()
 const router = useRouter()
 const route = useRoute()
+const { t, locale } = useI18n()
 
 const navOpen = inject('navOpen', null)
 const toggleNav = inject('toggleNav', () => {})
@@ -24,6 +27,10 @@ function logout() {
 function setTempUnit(unit) {
   prefs.setTempUnit(unit)
 }
+
+function switchLang(lang) {
+  setLocale(lang)
+}
 </script>
 
 <template>
@@ -34,20 +41,38 @@ function setTempUnit(unit) {
         class="nav-toggle"
         :aria-expanded="navOpen ? 'true' : 'false'"
         aria-controls="metgo-sidebar"
-        aria-label="Abrir o cerrar menú"
+        :aria-label="t('app.menuToggle')"
         @click="toggleNav"
       >
         <Menu aria-hidden="true" />
       </button>
       <div class="header__title-block">
-        <h1 class="header__title">Sistema de monitoreo</h1>
+        <h1 class="header__title">{{ t('app.title') }}</h1>
         <p class="header__subtitle">
           <MapPin class="header__pin" aria-hidden="true" />
-          Región de Quillota · Valle del Aconcagua
+          {{ t('app.subtitle') }}
         </p>
       </div>
     </div>
     <div class="header__right">
+      <div class="lang-switch" role="group" :aria-label="t('lang.label')">
+        <button
+          type="button"
+          class="lang-btn"
+          :class="{ active: locale === 'es' }"
+          @click="switchLang('es')"
+        >
+          {{ t('lang.es') }}
+        </button>
+        <button
+          type="button"
+          class="lang-btn"
+          :class="{ active: locale === 'en' }"
+          @click="switchLang('en')"
+        >
+          {{ t('lang.en') }}
+        </button>
+      </div>
       <div class="status-pill" :class="store.apiOnline ? 'status-pill--on' : 'status-pill--off'">
         <Activity class="status-pill__icon" aria-hidden="true" />
         {{ store.apiOnline ? 'En línea' : 'Sin conexión' }}
@@ -75,21 +100,21 @@ function setTempUnit(unit) {
         </button>
       </div>
 
-      <router-link to="/preferencias" class="header-link" title="Preferencias de clima">
+      <router-link to="/preferencias" class="header-link" :title="t('app.preferences')">
         <Settings aria-hidden="true" />
-        <span class="sr-only">Preferencias</span>
+        <span class="sr-only">{{ t('app.preferences') }}</span>
       </router-link>
       <label class="station-select">
-        <span class="station-select__label">Estación</span>
+        <span class="station-select__label">{{ t('app.station') }}</span>
         <select v-model="store.estacionActiva" @change="store.cargarDatosMeteo()">
           <option v-for="e in store.estaciones" :key="e.id" :value="e.id">
             {{ e.nombre }}
           </option>
         </select>
       </label>
-      <button type="button" class="btn-logout" title="Cerrar sesión" @click="logout">
+      <button type="button" class="btn-logout" :title="t('app.logout')" @click="logout">
         <LogOut aria-hidden="true" />
-        <span>Salir</span>
+        <span>{{ t('app.logout') }}</span>
       </button>
     </div>
   </header>
@@ -219,6 +244,29 @@ function setTempUnit(unit) {
   border-radius: 999px;
   padding: 0.15rem;
   gap: 0.15rem;
+}
+
+.lang-switch {
+  display: flex;
+  gap: 0.2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.15rem;
+}
+.lang-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  border-radius: 6px;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.lang-btn.active {
+  color: var(--color-primary);
+  background: var(--color-primary-muted, rgba(0, 255, 170, 0.12));
 }
 
 .unit-btn {

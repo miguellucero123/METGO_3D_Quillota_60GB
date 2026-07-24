@@ -112,7 +112,8 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 - [x] Banner de alerta ICAP (`AlertaAireBanner.vue`)
 - [x] Vista Dispersión (`DispersionView.vue`): inversión, viento, niebla, índice + 3 horizontes
 - [x] Mapa del airshed (`MapaView.vue` + `MapaEstacionesChart`): 7 puntos coloreados por ICAP / dispersión (ECharts, sin tiles)
-- [ ] Deploy Netlify + CORS origen producción (en pausa por créditos Netlify)
+- [ ] Deploy Netlify Copiapó/Mantos (en pausa créditos) → migrar a Cloudflare Pages (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`)
+- [ ] Runbook ops A1–A3: `docs/roadmap/RUNBOOK_OPS_A1_A3.md`
 
 ### E8 — Mantos Blancos (Antofagasta): enfoque minero-operacional
 
@@ -126,7 +127,7 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] Puntos seed: rajo, campamento, chancado, ruta de acceso
 - [x] Identidad cobre, SPA faena
 - [x] Migración + sync Supabase (`operaciones_ventanas` 192 filas, 2026-07-24)
-- [ ] Deploy Netlify + CORS origen producción (CORS ya incluye `metgo-mantos.netlify.app` en `render.yaml`)
+- [ ] Deploy Cloudflare Pages + CORS (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`; CORS en `render.yaml` incluye `*.pages.dev` plantilla)
 - [ ] Redeploy API Render con código E7/E8 (aún no pusheado a `origin/main`)
 
 ### E9 — Multi-tenant real + auth unificada
@@ -154,9 +155,11 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] Histograma `metgo_http_request_duration_ms` + gauges frescura en `/api/metrics`
 - [x] Sentry opcional API (`METGO_SENTRY_DSN`) + SPAs (`VITE_SENTRY_DSN`)
 - [x] Contract smoke OpenAPI + Playwright `e2e/api-smoke.spec.ts` + `loadtests/k6_smoke.js`
+- [x] Circuit breaker ligero SINCA (`METGO_SINCA_CB_*`, cooldown en fetch URL) — 2026-07-24
+- [x] Cola reintento ETL JSONL (`etl_retry_queue`, drenada en cron) — sin Redis
+- [ ] Redis / cola distribuida (escalamiento)
+- [ ] E2E UI login por SPA (spec listo: `e2e/ui-login-smoke.spec.ts` + `METGO_UI_BASE`)
 - [ ] Grafana Cloud scrape + alertas (checklist en SLO_E10.md)
-- [ ] E2E UI login por SPA (cuando Netlify/deploys estables)
-- [ ] Circuit breaker SINCA + colas reintento ETL dedicadas
 
 ### E11 — Clase mundial II: experiencia
 
@@ -164,7 +167,9 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] **Offline banner** + shell instalable (caché SW; i18n diferido)
 - [x] **Móvil:** sidebar → drawer + backdrop + skip-link (`:focus-visible`)
 - [ ] **a11y charts:** aria en ECharts / deck.gl (resto WCAG)
-- [ ] **i18n:** ES base + EN (vue-i18n por sitio) — Paine + contratistas
+- [x] **a11y charts (parcial):** `role="img"` + `aria-label` en TimeSeriesChart y MlProjectionChart
+- [x] **i18n MVP Quillota:** vue-i18n ES/EN (login + header + offline); expandir vistas restantes
+- [ ] **i18n:** Copiapó/Mantos/Paine + más claves
 - [ ] **Performance:** Lighthouse > 90 en 4 sitios; code-split charts fino
 
 ### E12 — Datos oficiales + ML por dominio (continuo)
@@ -182,6 +187,8 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [ ] Pegar keys reales SINCA Atacama en Render + CSV diario prod
 - [ ] Confirmar Agromet código portal Quillota + DMC en Render env
 - [ ] Helada Quillota: artefacto sklearn (sigue stub)
+- [x] Helada Quillota baseline servible (`clasificar_dano_cultivo` + Tmín)
+- [ ] Helada Quillota: artefacto sklearn entrenado (sustituir baseline)
 - [ ] Reentrenar PM10 cuando exista histórico SINCA (etiqueta observada)
 
 ---
@@ -192,11 +199,11 @@ Heredados de fases Quillota (detalle en `PLAN_INTEGRACION_QUILLOTA_PAINE.md` E0)
 
 - [x] §6.3 gaps gráficos (leyenda, click→estación, PNG, skeletons, **ML Δ** 2026-07-24)
 - [x] Docs fase-2/01 + fichas DT-2/DT-3 (Etapa 0.1) — sync maestro 2026-07-24
-- [~] DT-1 rutas hardcodeadas — runtime vía `metgo.paths`; residual en scripts `10_Deployment` + docs legacy
+- [~] DT-1 rutas hardcodeadas — launchers `ejecutar_sistema_*.py` usan `metgo.paths` (2026-07-24); residual solo scripts migración histórica
 - [ ] SMTP real en prod (código Zoho listo; falta `METGO_SMTP_*` en Render)
 - [ ] Redis (escalamiento) — webhooks + `/api/metrics` Prometheus-lite ya existen
 - [ ] Fase 3.5 Streamlit dedicado (decisión de negocio)
-- [ ] Smoke visual Streamlit 8501–8513 (checklist F; 8502–8513 smoke estático OK)
+- [ ] Smoke visual Streamlit 8501–8513 (checklist F; launcher local vía `ejecutar_sistema_organizado.py`)
 - [ ] Secrets producción: `CRON_SECRET` real en Render + cron-job.org wake
 
 Nuevos de plataforma:
@@ -208,15 +215,20 @@ Nuevos de plataforma:
 - [x] Login Copiapó/Mantos + `user_sitio_membresia` + RLS write service_role (E9)
 - [ ] Login SPA Paine contra metgo-api (E9 resto / repo aparte)
 - [x] Health sitios + SLOs + metrics histograma + smoke E2E/k6 (E10 parcial)
-- [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto)
+- [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto; spec UI listo)
 - [x] PWA + drawer móvil + skip-link (E11 MVP)
+- [x] i18n ES/EN Quillota MVP (E11)
 - [ ] i18n EN + a11y charts + Lighthouse 90 (E11 resto)
 - [x] Tabla `fuentes` + sesgo SINCA + stubs ML dominio (E12 parcial)
 - [x] Agromet/DMC CSV+env + baseline PM10 (E12 continuación)
 - [x] PM10 sklearn (ICAP t+1) + viento baseline + SINCA URL (E12)
-- [ ] Keys SINCA/Agromet en prod + helada ML (E12 resto)
+- [x] Helada baseline + CB SINCA + cola ETL retry (E12/E10)
+- [ ] Keys SINCA/Agromet en prod + helada ML sklearn (E12 resto)
 
 ---
+
+- Runbook A1–A3: [`docs/roadmap/RUNBOOK_OPS_A1_A3.md`](RUNBOOK_OPS_A1_A3.md)
+- Front Cloudflare: [`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`](../manuales/DESPLIEGUE_VUE_CLOUDFLARE.md)
 
 ## 5. Cronograma sugerido (inicio inmediato)
 

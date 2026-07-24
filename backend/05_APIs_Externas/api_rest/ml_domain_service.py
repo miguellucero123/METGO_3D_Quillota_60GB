@@ -63,11 +63,12 @@ MODELOS_DOMINIO: list[dict[str, Any]] = [
         "sitio": "quillota",
         "dominio": "agro",
         "variable": "riesgo_helada",
-        "descripcion": "Clasificador/riesgo de helada Valle de Aconcagua",
-        "estado": "stub_e12",
-        "servible": False,
-        "modo": "stub",
-        "fuente_features": "meteo_registros + openmeteo_forecast",
+        "descripcion": "Riesgo de helada por Tmín + umbrales cultivo (baseline)",
+        "estado": "baseline_e12",
+        "servible": True,
+        "modo": "baseline_regla",
+        "fuente_features": "resumen_meteo temperatura_min + cultivo_helada",
+        "umbral_meteo_c": 0.0,
     },
     {
         "id": "viento_extremo_paine",
@@ -133,8 +134,7 @@ def listar_modelos_dominio(sitio: str | None = None) -> dict[str, Any]:
         "servibles": sum(1 for r in rows if r.get("servible")),
         "modelos": rows,
         "nota": (
-            "E12: pm10 usa GradientBoosting sobre ICAP t+1 (CAMS); "
-            "viento extremo = baseline por umbral; helada sigue stub."
+            "E12: pm10 = GradientBoosting ICAP t+1; helada/viento = baseline por umbral."
         ),
     }
 
@@ -310,10 +310,84 @@ def prediccion_viento_extremo(
     }
 
 
+def prediccion_helada_quillota(
+    estacion_id: str = "quillota",
+    cultivo: str = "palto",
+) -> dict[str, Any]:
+    """Baseline: clasifica riesgo con Tmín actual y umbrales de cultivo."""
+    slug = estacion_id.lower().replace("-", "_")
+    try:
+        from api_rest import services
+        from api_rest.meteo_avanzado.cultivo_helada import clasificar_dano_cultivo
+
+        resumen = services.resumen_meteo(slug)
+    except Exception as exc:
+        return {
+            "modelo_id": "helada_quillota",
+            "servible": True,
+            "modo": "baseline_regla",
+            "error": str(exc),
+            "prediccion": None,
+        }
+
+    if not resumen or resumen.get("temperatura_min") is None:
+        return {
+            "modelo_id": "helada_quillota",
+            "servible": True,
+            "modo": "baseline_regla",
+            "estacion_id": slug,
+            "prediccion": None,
+            "motivo": "sin_temperatura_min",
+        }
+
+    t_min = float(resumen["temperatura_min"])
+    try:
+        eval_ = clasificar_dano_cultivo(t_min, cultivo)
+    except Exception:
+        eval_ = {
+            "helada_meteorologica": t_min <= 0.0,
+            "tipo_helada": "helada_meteorologica" if t_min <= 0.0 else "sin_helada",
+            "temperatura_minima": t_min,
+        }
+
+    riesgo = bool(eval_.get("helada_meteorologica") or eval_.get("tipo_helada") not in (
+        None,
+        "sin_helada",
+        "",
+    ))
+    # Probabilidad suave: 1.0 a ≤0 °C, 0 a ≥4 °C
+    if t_min <= 0:
+        prob = 0.95
+    elif t_min >= 4:
+        prob = 0.05
+    else:
+        prob = round(0.95 - (t_min / 4.0) * 0.9, 3)
+
+    return {
+        "modelo_id": "helada_quillota",
+        "servible": True,
+        "modo": "baseline_regla",
+        "estado": "baseline_e12",
+        "estacion_id": slug,
+        "cultivo": cultivo,
+        "prediccion": {
+            "riesgo_helada": riesgo,
+            "probabilidad": prob,
+            "temperatura_min": t_min,
+            "evaluacion": eval_,
+            "fuente": resumen.get("fuente"),
+            "tipo_dato": resumen.get("tipo_dato"),
+            "actualizado": resumen.get("actualizado"),
+        },
+        "nota": "Baseline por umbral cultivo; reemplazar por sklearn cuando haya etiquetas históricas.",
+    }
+
+
 def prediccion_dominio(
     modelo_id: str,
     estacion_id: str | None = None,
     viento_ms: float | None = None,
+    cultivo: str | None = None,
     **_: Any,
 ) -> dict[str, Any]:
     hit = next((m for m in MODELOS_DOMINIO if m["id"] == modelo_id), None)
@@ -321,6 +395,10 @@ def prediccion_dominio(
         return {"error": "modelo_dominio_desconocido", "modelo_id": modelo_id}
     if modelo_id == "pm10_episodio_copiapo":
         return prediccion_pm10_episodio(estacion_id or "copiapo_centro")
+    if modelo_id == "helada_quillota":
+        return prediccion_helada_quillota(
+            estacion_id or "quillota", cultivo=cultivo or "palto"
+        )
     if modelo_id.startswith("viento_extremo_"):
         return prediccion_viento_extremo(modelo_id, estacion_id=estacion_id, viento_ms=viento_ms)
     return {

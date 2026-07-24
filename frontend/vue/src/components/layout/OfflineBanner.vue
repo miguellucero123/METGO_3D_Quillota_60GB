@@ -1,7 +1,9 @@
 <script setup>
 import { useOnline } from '@/composables/useOnline'
+import { useI18n } from 'vue-i18n'
 
 const { online } = useOnline()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -11,7 +13,7 @@ const { online } = useOnline()
     role="status"
     aria-live="polite"
   >
-    Sin conexión — mostrando datos en caché cuando estén disponibles.
+    {{ t('app.offline') }}
   </div>
 </template>
 

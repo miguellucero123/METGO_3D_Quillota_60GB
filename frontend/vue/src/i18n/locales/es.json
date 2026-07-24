@@ -1,0 +1,25 @@
+{
+  "app": {
+    "title": "Sistema de monitoreo",
+    "subtitle": "Región de Quillota · Valle del Aconcagua",
+    "station": "Estación",
+    "logout": "Salir",
+    "preferences": "Preferencias",
+    "skipContent": "Saltar al contenido",
+    "menuToggle": "Abrir o cerrar menú",
+    "offline": "Sin conexión — mostrando datos en caché cuando estén disponibles."
+  },
+  "login": {
+    "title": "METGO",
+    "subtitle": "Monitoreo agrometeorológico",
+    "user": "Usuario",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "loading": "Entrando…"
+  },
+  "lang": {
+    "es": "ES",
+    "en": "EN",
+    "label": "Idioma"
+  }
+}
