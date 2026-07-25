@@ -50,22 +50,37 @@ export async function wakeApi() {
 }
 
 export async function fetchEstacionesSitio() {
-  return fetchJson(`/public/estaciones?sitio=${encodeURIComponent(SITIO)}`)
+  const data = await fetchJson(`/public/estaciones?sitio=${encodeURIComponent(SITIO)}`)
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.estaciones)) return data.estaciones
+  return []
 }
 
 export async function fetchAireActual(estacionId) {
-  return fetchJson(`/public/aire/${encodeURIComponent(estacionId)}`)
+  const id = String(estacionId || '').trim()
+  if (!id || id === 'undefined') {
+    throw new Error('estacion_id_requerido')
+  }
+  return fetchJson(`/public/aire/${encodeURIComponent(id)}`)
 }
 
 export async function fetchAirePronostico(estacionId, dias = 5) {
+  const id = String(estacionId || '').trim()
+  if (!id || id === 'undefined') {
+    throw new Error('estacion_id_requerido')
+  }
   return fetchJson(
-    `/public/aire/${encodeURIComponent(estacionId)}/pronostico?dias=${dias}`
+    `/public/aire/${encodeURIComponent(id)}/pronostico?dias=${dias}`
   )
 }
 
 export async function fetchAireHistorico(estacionId, dias = 7) {
+  const id = String(estacionId || '').trim()
+  if (!id || id === 'undefined') {
+    throw new Error('estacion_id_requerido')
+  }
   return fetchJson(
-    `/public/aire/${encodeURIComponent(estacionId)}/historico?dias=${dias}`
+    `/public/aire/${encodeURIComponent(id)}/historico?dias=${dias}`
   )
 }
 
@@ -74,20 +89,32 @@ export async function fetchAireAlertas(sitio = SITIO) {
 }
 
 export async function fetchDispersionHoraria(estacionId, horas = 72) {
+  const id = String(estacionId || '').trim()
+  if (!id || id === 'undefined') {
+    throw new Error('estacion_id_requerido')
+  }
   return fetchJson(
-    `/public/aire/${encodeURIComponent(estacionId)}/dispersion?horas=${horas}`
+    `/public/aire/${encodeURIComponent(id)}/dispersion?horas=${horas}`
   )
 }
 
 export async function fetchDispersionDiaria(estacionId, dias = 7) {
+  const id = String(estacionId || '').trim()
+  if (!id || id === 'undefined') {
+    throw new Error('estacion_id_requerido')
+  }
   return fetchJson(
-    `/public/aire/${encodeURIComponent(estacionId)}/dispersion/diaria?dias=${dias}`
+    `/public/aire/${encodeURIComponent(id)}/dispersion/diaria?dias=${dias}`
   )
 }
 
 export async function fetchDispersionProyeccion(estacionId) {
+  const id = String(estacionId || '').trim()
+  if (!id || id === 'undefined') {
+    throw new Error('estacion_id_requerido')
+  }
   return fetchJson(
-    `/public/aire/${encodeURIComponent(estacionId)}/dispersion/proyeccion`
+    `/public/aire/${encodeURIComponent(id)}/dispersion/proyeccion`
   )
 }
 

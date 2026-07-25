@@ -103,18 +103,31 @@ async function cargar() {
       lista = site.stations.map((s) => ({
         slug: s.slug,
         nombre: s.nombre,
-        estacion_id: s.slug,
+        id: s.slug,
       }))
     }
-    estaciones.value = lista.map((e) => ({
-      slug: e.slug || e.estacion_id,
-      nombre: e.nombre || e.slug,
-    }))
+    estaciones.value = lista
+      .map((e) => {
+        const slug = e.slug || e.estacion_id || e.id
+        if (!slug) return null
+        return {
+          slug: String(slug),
+          nombre: e.nombre || String(slug),
+        }
+      })
+      .filter(Boolean)
+    if (!estaciones.value.length) {
+      estaciones.value = site.stations.map((s) => ({
+        slug: s.slug,
+        nombre: s.nombre,
+      }))
+    }
     if (!estaciones.value.find((e) => e.slug === slugActivo.value)) {
-      slugActivo.value = estaciones.value[0]?.slug
+      slugActivo.value = estaciones.value[0]?.slug || 'copiapo_centro'
     }
     await Promise.all(
       estaciones.value.map(async (est) => {
+        if (!est.slug) return
         try {
           lecturas[est.slug] = await fetchAireActual(est.slug)
         } catch {
