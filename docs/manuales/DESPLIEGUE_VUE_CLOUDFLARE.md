@@ -74,6 +74,8 @@ Tras el primer deploy, anota las URLs `*.pages.dev` (y dominio custom si lo hay)
 https://metgo3d.netlify.app,https://metgo-quillota.pages.dev,https://metgo-copiapo.pages.dev,https://metgo-mantos.pages.dev,https://metgo-3d-quillota-60gb.streamlit.app,...
 ```
 
+La API también acepta **previews** automáticamente (`https://{hash}.metgo-copiapo.pages.dev`) vía regex en `expand_cors_origins` — no hace falta listar cada deploy preview. Tras cambiar CORS en código: **redeploy Render**.
+
 También actualiza `METGO_VUE_URL` (Streamlit) al dominio Cloudflare de Quillota cuando sea el canónico.
 
 Plantilla en repo: `render.yaml` → clave `METGO_CORS_ORIGINS` (ajusta tras el deploy real).

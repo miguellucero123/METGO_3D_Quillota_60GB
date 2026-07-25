@@ -7,8 +7,10 @@ API REST METGO — Flask + CORS + JWT para frontend Vue.
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 for _p in Path(__file__).resolve().parents:
@@ -78,15 +80,59 @@ def _error_openmeteo_503():
     return jsonify(payload), 503
 
 
+# Preview Cloudflare: https://8705dcc4.metgo-copiapo.pages.dev
+# Preview Netlify: https://deploy-preview-12--site.netlify.app
+_CORS_PREVIEW_REGEX = [
+    re.compile(r"^https://([a-z0-9-]+\.)*pages\.dev$", re.IGNORECASE),
+    re.compile(r"^https://([a-z0-9-]+\.)*netlify\.app$", re.IGNORECASE),
+]
+
+
+def expand_cors_origins(raw: list[str] | None = None) -> Any:
+    """Expande METGO_CORS_ORIGINS: exactos, https://*.dominio y previews CF/Netlify.
+
+    Con supports_credentials=True no se puede usar '*'; se listan orígenes/regex.
+    """
+    if raw is None:
+        raw = [
+            o.strip()
+            for o in os.getenv("METGO_CORS_ORIGINS", "*").split(",")
+            if o.strip()
+        ] or ["*"]
+    if not raw or "*" in raw:
+        return [
+            re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$", re.I),
+            *_CORS_PREVIEW_REGEX,
+            "https://metgo3d.netlify.app",
+            "https://metgo-quillota.pages.dev",
+            "https://metgo-copiapo.pages.dev",
+            "https://metgo-mantos.pages.dev",
+            "https://metgo-3d-quillota-60gb.streamlit.app",
+        ]
+
+    out: list[Any] = []
+    for o in raw:
+        if o == "*":
+            continue
+        if "*." in o:
+            parts = o.split("://", 1)
+            if len(parts) != 2:
+                continue
+            scheme, rest = parts
+            rest_esc = re.escape(rest).replace(r"\*\.", r"([a-z0-9-]+\.)*")
+            out.append(re.compile(rf"^{re.escape(scheme)}://{rest_esc}$", re.I))
+        else:
+            out.append(o)
+    # Siempre cubrir deploys preview (hash.proyecto.pages.dev)
+    out.extend(_CORS_PREVIEW_REGEX)
+    return out
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
     # Strip espacios; orígenes mal formados hacen que el browser muestre "blocked by CORS"
     # aunque el fallo real sea 502/timeout de Render free (cold start).
-    _cors_origins = [
-        o.strip()
-        for o in os.getenv("METGO_CORS_ORIGINS", "*").split(",")
-        if o.strip()
-    ] or ["*"]
+    _cors_origins = expand_cors_origins()
     CORS(
         app,
         resources={r"/api/*": {"origins": _cors_origins}},
