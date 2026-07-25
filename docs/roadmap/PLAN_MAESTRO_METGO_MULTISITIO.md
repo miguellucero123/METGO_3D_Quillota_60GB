@@ -112,8 +112,9 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 - [x] Banner de alerta ICAP (`AlertaAireBanner.vue`)
 - [x] Vista Dispersión (`DispersionView.vue`): inversión, viento, niebla, índice + 3 horizontes
 - [x] Mapa del airshed (`MapaView.vue` + `MapaEstacionesChart`): 7 puntos coloreados por ICAP / dispersión (ECharts, sin tiles)
-- [ ] Deploy Netlify Copiapó/Mantos (en pausa créditos) → migrar a Cloudflare Pages (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`)
-- [ ] Runbook ops A1–A3: `docs/roadmap/RUNBOOK_OPS_A1_A3.md`
+- [x] Deploy Quillota Cloudflare Pages (`metgo-quillota.pages.dev`, 2026-07-24)
+- [ ] Deploy Copiapó/Mantos Cloudflare Pages (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`)
+- [x] Runbook ops A1–A3: `docs/roadmap/RUNBOOK_OPS_A1_A3.md`
 
 ### E8 — Mantos Blancos (Antofagasta): enfoque minero-operacional
 
@@ -167,9 +168,10 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] **Offline banner** + shell instalable (caché SW; i18n diferido)
 - [x] **Móvil:** sidebar → drawer + backdrop + skip-link (`:focus-visible`)
 - [ ] **a11y charts:** aria en ECharts / deck.gl (resto WCAG)
-- [x] **a11y charts (parcial):** `role="img"` + `aria-label` en TimeSeriesChart y MlProjectionChart
+- [x] **a11y charts (parcial):** TimeSeries, MlProjection, ComboMeteo, HorizontalBar + AireSeries/Mapa + Ventanas
 - [x] **i18n MVP Quillota:** vue-i18n ES/EN (login + header + offline); expandir vistas restantes
-- [ ] **i18n:** Copiapó/Mantos/Paine + más claves
+- [x] **i18n MVP Copiapó/Mantos:** login + header + offline + skip-link (2026-07-24)
+- [ ] **i18n:** más claves Quillota/Copiapó/Mantos + Paine
 - [ ] **Performance:** Lighthouse > 90 en 4 sitios; code-split charts fino
 
 ### E12 — Datos oficiales + ML por dominio (continuo)
@@ -184,12 +186,11 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] **Modelo PM10 entrenado:** `GradientBoostingRegressor` ICAP t+1 (CAMS 93 d, MAE≈3.7) en `modelos_dominio_copiapo/`
 - [x] **Viento extremo baseline** (Paine/Mantos) servible por umbral
 - [x] **SINCA URL template** `METGO_SINCA_CSV_URL` + doc `fase-3/sinca_activacion.md`
+- [x] Helada Quillota baseline servible (`clasificar_dano_cultivo` + Tmín)
+- [x] Helada Quillota sklearn (`entrenar_helada_quillota.py` + `helada_riesgo.joblib`; fallback baseline)
+- [ ] Reentrenar helada/PM10 con histórico oficial (Agromet/DMC/SINCA) cuando haya CSV prod
 - [ ] Pegar keys reales SINCA Atacama en Render + CSV diario prod
 - [ ] Confirmar Agromet código portal Quillota + DMC en Render env
-- [ ] Helada Quillota: artefacto sklearn (sigue stub)
-- [x] Helada Quillota baseline servible (`clasificar_dano_cultivo` + Tmín)
-- [ ] Helada Quillota: artefacto sklearn entrenado (sustituir baseline)
-- [ ] Reentrenar PM10 cuando exista histórico SINCA (etiqueta observada)
 
 ---
 
@@ -217,13 +218,14 @@ Nuevos de plataforma:
 - [x] Health sitios + SLOs + metrics histograma + smoke E2E/k6 (E10 parcial)
 - [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto; spec UI listo)
 - [x] PWA + drawer móvil + skip-link (E11 MVP)
-- [x] i18n ES/EN Quillota MVP (E11)
-- [ ] i18n EN + a11y charts + Lighthouse 90 (E11 resto)
+- [x] i18n ES/EN Quillota + Copiapó/Mantos MVP (E11)
+- [ ] i18n claves restantes + a11y charts resto + Lighthouse 90 (E11 resto)
 - [x] Tabla `fuentes` + sesgo SINCA + stubs ML dominio (E12 parcial)
 - [x] Agromet/DMC CSV+env + baseline PM10 (E12 continuación)
 - [x] PM10 sklearn (ICAP t+1) + viento baseline + SINCA URL (E12)
-- [x] Helada baseline + CB SINCA + cola ETL retry (E12/E10)
-- [ ] Keys SINCA/Agromet en prod + helada ML sklearn (E12 resto)
+- [x] Helada baseline + sklearn GBT + CB SINCA + cola ETL retry (E12/E10)
+- [ ] Keys SINCA/Agromet en prod + reentrenar con observado (E12 resto)
+- [x] Quillota en Cloudflare Pages (`metgo-quillota.pages.dev`)
 
 ---
 

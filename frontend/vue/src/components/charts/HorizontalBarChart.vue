@@ -111,7 +111,12 @@ function onClick(params) {
 <template>
   <div class="hbar">
     <div v-if="!labels.length" class="empty">Sin datos</div>
-    <div v-else class="chart-wrap">
+    <div
+      v-else
+      class="chart-wrap"
+      role="img"
+      :aria-label="`Barras horizontales${unit ? ' en ' + unit : ''}, ${labels.length} categorías`"
+    >
       <v-chart class="chart" :option="chartOption" autoresize @click="onClick" />
     </div>
   </div>

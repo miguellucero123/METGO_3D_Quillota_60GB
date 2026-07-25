@@ -1,0 +1,22 @@
+{
+  "modelo_id": "helada_quillota",
+  "tipo": "clasificador_helada",
+  "features": [
+    "temperatura_min",
+    "temperatura_max",
+    "humedad",
+    "precipitacion",
+    "viento",
+    "dia_año",
+    "sin_doy",
+    "cos_doy"
+  ],
+  "accuracy": 1.0,
+  "f1": 1.0,
+  "n_train": 175,
+  "n_test": 44,
+  "positivos": 122,
+  "origen_datos": "sintetico",
+  "entrenado": "2026-07-25T00:49:04.738607+00:00",
+  "umbral_tmin_c": 0.0
+}

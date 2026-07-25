@@ -52,7 +52,12 @@
         </div>
       </section>
 
-      <section v-if="labels.length" class="grafico">
+      <section
+        v-if="labels.length"
+        class="grafico"
+        role="img"
+        :aria-label="`Serie de ventanas operacionales, ${labels.length} horas`"
+      >
         <v-chart class="chart" :option="chartOption" autoresize />
       </section>
 

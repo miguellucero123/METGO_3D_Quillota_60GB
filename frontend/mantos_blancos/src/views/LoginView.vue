@@ -1,14 +1,17 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { HardHat, LogIn } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 import { wakeApi } from '@/services/authApi'
+import { setLocale } from '@/i18n'
 
 const site = inject('site')
 const router = useRouter()
 const route = useRoute()
 const auth = useAuth()
+const { t, locale } = useI18n()
 
 const username = ref('')
 const password = ref('')
@@ -38,25 +41,31 @@ async function onSubmit() {
 <template>
   <div class="auth-page">
     <div class="auth-panel">
+      <div class="auth-lang" role="group" :aria-label="t('lang.label')">
+        <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
+          {{ t('lang.es') }}
+        </button>
+        <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">
+          {{ t('lang.en') }}
+        </button>
+      </div>
       <div class="auth-brand">
         <div class="auth-logo">
           <HardHat aria-hidden="true" />
         </div>
         <h1>{{ site.productName }}</h1>
-        <p class="auth-tagline">{{ site.tagline }}</p>
+        <p class="auth-tagline">{{ t('login.subtitle') }}</p>
         <p class="auth-region">{{ site.region }}</p>
-        <p class="login-hint">
-          Demo: <strong>mantos</strong>/mantos123 · <strong>admin</strong>/admin123
-        </p>
+        <p class="login-hint">{{ t('login.hint') }}</p>
       </div>
 
       <form class="auth-form" @submit.prevent="onSubmit">
         <label class="field">
-          <span>Usuario</span>
+          <span>{{ t('login.user') }}</span>
           <input v-model="username" type="text" autocomplete="username" required placeholder="mantos" />
         </label>
         <label class="field">
-          <span>Contraseña</span>
+          <span>{{ t('login.password') }}</span>
           <input
             v-model="password"
             type="password"
@@ -67,7 +76,7 @@ async function onSubmit() {
         <p v-if="error" class="auth-msg" role="alert">{{ error }}</p>
         <button type="submit" class="btn-primary auth-btn" :disabled="cargando">
           <LogIn :size="18" aria-hidden="true" />
-          {{ cargando ? 'Ingresando…' : 'Iniciar sesión' }}
+          {{ cargando ? t('login.loading') : t('login.submit') }}
         </button>
       </form>
       <p class="auth-footer">JWT · sitio <code>{{ site.sitio }}</code> · E9</p>
@@ -84,8 +93,8 @@ async function onSubmit() {
   padding: 1.5rem;
   background: var(--color-bg);
   background-image:
-    radial-gradient(circle at 18% 45%, rgba(251, 146, 60, 0.2), transparent 28%),
-    radial-gradient(circle at 82% 18%, rgba(253, 186, 116, 0.12), transparent 24%);
+    radial-gradient(circle at 20% 40%, rgba(249, 115, 22, 0.16), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.1), transparent 26%);
 }
 .auth-panel {
   width: 100%;
@@ -96,6 +105,28 @@ async function onSubmit() {
   border-radius: var(--radius-lg);
   padding: 2.25rem 1.75rem;
   box-shadow: var(--shadow-lg);
+}
+.auth-lang {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.auth-lang button {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.auth-lang button.active {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: rgba(249, 115, 22, 0.12);
 }
 .auth-brand {
   text-align: center;

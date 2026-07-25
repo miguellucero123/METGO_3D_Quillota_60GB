@@ -113,7 +113,13 @@ function exportPng() {
       <button type="button" class="export" @click="exportPng">PNG</button>
     </div>
     <div v-if="!labels.length" class="empty">Sin datos combinados</div>
-    <div v-else class="chart-wrap" :style="{ height: height + 'px' }">
+    <div
+      v-else
+      class="chart-wrap"
+      :style="{ height: height + 'px' }"
+      role="img"
+      :aria-label="`Combo temperatura y precipitación, ${labels.length} días`"
+    >
       <v-chart ref="chartRef" class="chart" :option="chartOption" autoresize />
     </div>
   </div>

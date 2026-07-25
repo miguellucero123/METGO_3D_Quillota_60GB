@@ -1,5 +1,9 @@
 <template>
-  <div class="chart-wrap">
+  <div
+    class="chart-wrap"
+    role="img"
+    :aria-label="`Mapa de estaciones airshed, ${puntos.length} puntos, variable ${valorLabel}`"
+  >
     <v-chart class="chart" :option="option" autoresize @click="onClick" />
   </div>
 </template>

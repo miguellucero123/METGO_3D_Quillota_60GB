@@ -10,6 +10,16 @@ from pathlib import Path
 from typing import Any
 
 FEATURES_PM10 = ["pm10", "pm25", "so2", "no2", "o3", "dia_año", "sin_doy", "cos_doy"]
+FEATURES_HELADA = [
+    "temperatura_min",
+    "temperatura_max",
+    "humedad",
+    "precipitacion",
+    "viento",
+    "dia_año",
+    "sin_doy",
+    "cos_doy",
+]
 
 
 def _modelos_dir() -> Path | None:
@@ -19,6 +29,18 @@ def _modelos_dir() -> Path | None:
         if cand.is_dir():
             return cand
         cand2 = p / "06_Modelos_ML_IA" / "modelos" / "modelos_dominio_copiapo"
+        if cand2.is_dir():
+            return cand2
+    return None
+
+
+def _modelos_dir_quillota() -> Path | None:
+    here = Path(__file__).resolve()
+    for p in here.parents:
+        cand = p / "backend" / "06_Modelos_ML_IA" / "modelos" / "modelos_dominio_quillota"
+        if cand.is_dir():
+            return cand
+        cand2 = p / "06_Modelos_ML_IA" / "modelos" / "modelos_dominio_quillota"
         if cand2.is_dir():
             return cand2
     return None
@@ -37,9 +59,27 @@ def _meta_pm10() -> dict[str, Any]:
     return {}
 
 
+def _meta_helada() -> dict[str, Any]:
+    d = _modelos_dir_quillota()
+    if not d:
+        return {}
+    meta_path = d / "meta.json"
+    if meta_path.is_file():
+        try:
+            return json.loads(meta_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
 def _artefacto_pm10_disponible() -> bool:
     d = _modelos_dir()
     return bool(d and (d / "pm10_episodio.joblib").is_file())
+
+
+def _artefacto_helada_disponible() -> bool:
+    d = _modelos_dir_quillota()
+    return bool(d and (d / "helada_riesgo.joblib").is_file())
 
 
 def _cargar_pm10():
@@ -57,17 +97,32 @@ def _cargar_pm10():
         return None
 
 
+def _cargar_helada():
+    d = _modelos_dir_quillota()
+    if not d:
+        return None
+    path = d / "helada_riesgo.joblib"
+    if not path.is_file():
+        return None
+    try:
+        import joblib
+
+        return joblib.load(path)
+    except Exception:
+        return None
+
+
 MODELOS_DOMINIO: list[dict[str, Any]] = [
     {
         "id": "helada_quillota",
         "sitio": "quillota",
         "dominio": "agro",
         "variable": "riesgo_helada",
-        "descripcion": "Riesgo de helada por Tmín + umbrales cultivo (baseline)",
-        "estado": "baseline_e12",
+        "descripcion": "Riesgo de helada (sklearn o baseline Tmín + cultivo)",
+        "estado": "entrenado_e12" if _artefacto_helada_disponible() else "baseline_e12",
         "servible": True,
-        "modo": "baseline_regla",
-        "fuente_features": "resumen_meteo temperatura_min + cultivo_helada",
+        "modo": "sklearn_clasificador" if _artefacto_helada_disponible() else "baseline_regla",
+        "fuente_features": "resumen_meteo + cultivo_helada / modelos_dominio_quillota",
         "umbral_meteo_c": 0.0,
     },
     {
@@ -124,6 +179,18 @@ def listar_modelos_dominio(sitio: str | None = None) -> dict[str, Any]:
                 }
                 item["estado"] = "entrenado_e12"
                 item["modo"] = "sklearn_regresor"
+                item["servible"] = True
+        if item["id"] == "helada_quillota":
+            meta_h = _meta_helada()
+            if meta_h and _artefacto_helada_disponible():
+                item["metrics"] = {
+                    "accuracy": meta_h.get("accuracy"),
+                    "f1": meta_h.get("f1"),
+                    "origen_datos": meta_h.get("origen_datos"),
+                    "entrenado": meta_h.get("entrenado"),
+                }
+                item["estado"] = "entrenado_e12"
+                item["modo"] = "sklearn_clasificador"
                 item["servible"] = True
         rows.append(item)
     if sitio:
@@ -310,11 +377,32 @@ def prediccion_viento_extremo(
     }
 
 
+def _vector_helada(resumen: dict[str, Any]) -> list[float]:
+    from datetime import date as date_cls
+
+    try:
+        dt = date_cls.fromisoformat(str(resumen.get("fecha") or resumen.get("actualizado") or "")[:10])
+    except ValueError:
+        dt = date_cls.today()
+    doy = dt.timetuple().tm_yday
+    ang = 2 * math.pi * doy / 366.0
+    return [
+        float(resumen.get("temperatura_min") or 0.0),
+        float(resumen.get("temperatura_max") or 0.0),
+        float(resumen.get("humedad") or 60.0),
+        float(resumen.get("precipitacion") or 0.0),
+        float(resumen.get("viento") or 0.0),
+        float(doy),
+        math.sin(ang),
+        math.cos(ang),
+    ]
+
+
 def prediccion_helada_quillota(
     estacion_id: str = "quillota",
     cultivo: str = "palto",
 ) -> dict[str, Any]:
-    """Baseline: clasifica riesgo con Tmín actual y umbrales de cultivo."""
+    """Prefiere clasificador sklearn; fallback baseline Tmín + cultivo."""
     slug = estacion_id.lower().replace("-", "_")
     try:
         from api_rest import services
@@ -350,12 +438,53 @@ def prediccion_helada_quillota(
             "temperatura_minima": t_min,
         }
 
+    bundle = _cargar_helada()
+    if bundle and bundle.get("tipo") == "clasificador_helada":
+        model = bundle["model"]
+        vec = _vector_helada(resumen)
+        try:
+            proba_arr = model.predict_proba([vec])[0]
+            # clase 1 = helada
+            classes = list(getattr(model, "classes_", [0, 1]))
+            if 1 in classes:
+                prob = float(proba_arr[classes.index(1)])
+            else:
+                pred = int(model.predict([vec])[0])
+                prob = 0.9 if pred == 1 else 0.1
+        except Exception:
+            pred = int(model.predict([vec])[0])
+            prob = 0.9 if pred == 1 else 0.1
+        riesgo = prob >= 0.5
+        meta = bundle.get("meta") or _meta_helada()
+        return {
+            "modelo_id": "helada_quillota",
+            "servible": True,
+            "modo": "sklearn_clasificador",
+            "estado": "entrenado_e12",
+            "estacion_id": slug,
+            "cultivo": cultivo,
+            "prediccion": {
+                "riesgo_helada": riesgo,
+                "probabilidad": round(prob, 3),
+                "temperatura_min": t_min,
+                "evaluacion": eval_,
+                "fuente": resumen.get("fuente"),
+                "tipo_dato": resumen.get("tipo_dato"),
+                "actualizado": resumen.get("actualizado"),
+            },
+            "metrics": {
+                "accuracy": meta.get("accuracy"),
+                "f1": meta.get("f1"),
+                "origen_datos": meta.get("origen_datos"),
+            },
+            "nota": "Clasificador GBT Tmín→helada t+1; validar con histórico Agromet/DMC.",
+        }
+
     riesgo = bool(eval_.get("helada_meteorologica") or eval_.get("tipo_helada") not in (
         None,
         "sin_helada",
         "",
     ))
-    # Probabilidad suave: 1.0 a ≤0 °C, 0 a ≥4 °C
     if t_min <= 0:
         prob = 0.95
     elif t_min >= 4:
@@ -379,7 +508,7 @@ def prediccion_helada_quillota(
             "tipo_dato": resumen.get("tipo_dato"),
             "actualizado": resumen.get("actualizado"),
         },
-        "nota": "Baseline por umbral cultivo; reemplazar por sklearn cuando haya etiquetas históricas.",
+        "nota": "Baseline por umbral cultivo; sin artefacto joblib.",
     }
 
 

@@ -1,0 +1,24 @@
+{
+  "app": {
+    "title": "Sistema de monitoreo",
+    "subtitle": "Calidad del aire · Atacama",
+    "logout": "Salir",
+    "skipContent": "Saltar al contenido",
+    "menuToggle": "Abrir o cerrar menú",
+    "offline": "Sin conexión — mostrando datos en caché cuando estén disponibles."
+  },
+  "login": {
+    "title": "METGO",
+    "subtitle": "Calidad del aire urbana",
+    "user": "Usuario",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "loading": "Ingresando…",
+    "hint": "Demo: copiapo/copiapo123 · admin/admin123"
+  },
+  "lang": {
+    "es": "ES",
+    "en": "EN",
+    "label": "Idioma"
+  }
+}

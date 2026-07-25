@@ -3,7 +3,7 @@
     <router-view />
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--nav-open': navOpen }">
-    <a href="#contenido-principal" class="skip-link">Saltar al contenido</a>
+    <a href="#contenido-principal" class="skip-link">{{ t('app.skipContent') }}</a>
     <OfflineBanner />
     <AppHeader />
     <div class="app-body">
@@ -24,11 +24,13 @@
 <script setup>
 import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import OfflineBanner from '@/components/layout/OfflineBanner.vue'
 import { useAuth } from '@/stores/auth'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()

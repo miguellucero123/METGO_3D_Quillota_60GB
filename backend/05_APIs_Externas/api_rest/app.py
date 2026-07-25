@@ -80,10 +80,18 @@ def _error_openmeteo_503():
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    # Strip espacios; orígenes mal formados hacen que el browser muestre "blocked by CORS"
+    # aunque el fallo real sea 502/timeout de Render free (cold start).
+    _cors_origins = [
+        o.strip()
+        for o in os.getenv("METGO_CORS_ORIGINS", "*").split(",")
+        if o.strip()
+    ] or ["*"]
     CORS(
         app,
-        resources={r"/api/*": {"origins": os.getenv("METGO_CORS_ORIGINS", "*").split(",")}},
+        resources={r"/api/*": {"origins": _cors_origins}},
         supports_credentials=True,
+        expose_headers=["Content-Type", "Authorization"],
     )
 
     register_observability(app)

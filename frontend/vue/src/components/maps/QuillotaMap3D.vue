@@ -153,7 +153,9 @@ const getLayers = async () => {
       getBackgroundColor: d => [...(d.color || [0,0,0]), 200],
       fontFamily: 'system-ui, sans-serif',
       fontWeight: 'bold',
-      billboard: true
+      billboard: true,
+      // Incluye ° y acentos (nombres locales); el default ASCII no trae U+00B0.
+      characterSet: 'auto',
     })
   );
 

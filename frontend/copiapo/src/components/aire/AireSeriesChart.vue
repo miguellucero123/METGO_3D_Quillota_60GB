@@ -1,5 +1,9 @@
 <template>
-  <div class="chart-wrap">
+  <div
+    class="chart-wrap"
+    role="img"
+    :aria-label="`Serie de calidad del aire${yName ? ' en ' + yName : ''}, ${labels.length} puntos`"
+  >
     <v-chart class="chart" :option="option" autoresize />
   </div>
 </template>
