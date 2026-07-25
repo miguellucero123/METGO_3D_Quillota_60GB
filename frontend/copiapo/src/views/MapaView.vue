@@ -259,15 +259,17 @@ async function cargar() {
     await wakeApi()
     await Promise.all(
       site.stations.map(async (s) => {
+        const slug = s.slug
+        if (!slug || slug === 'undefined') return
         try {
           if (modo.value === 'icap') {
-            const a = await fetchAireActual(s.slug)
+            const a = await fetchAireActual(slug)
             let viento_velocidad = a?.viento_velocidad
             let viento_direccion = a?.viento_direccion
             // Fallback: primera hora de dispersión si aire aún no trae viento (API vieja en Render).
             if (viento_velocidad == null || viento_direccion == null) {
               try {
-                const serie = await fetchDispersionHoraria(s.slug, 3)
+                const serie = await fetchDispersionHoraria(slug, 3)
                 const f = Array.isArray(serie) ? serie[0] : null
                 viento_velocidad = f?.viento_velocidad ?? viento_velocidad
                 viento_direccion = f?.viento_direccion ?? viento_direccion
@@ -275,7 +277,7 @@ async function cargar() {
                 /* ignore */
               }
             }
-            datos.value[s.slug] = {
+            datos.value[slug] = {
               valor: a?.icap,
               nivel: a?.nivel,
               etiqueta: a?.etiqueta,
@@ -286,9 +288,9 @@ async function cargar() {
               serie: a?.serie_24h || [],
             }
           } else {
-            const serie = await fetchDispersionHoraria(s.slug, 24)
+            const serie = await fetchDispersionHoraria(slug, 24)
             const f = Array.isArray(serie) ? serie[0] : null
-            datos.value[s.slug] = {
+            datos.value[slug] = {
               valor: f?.indice_dispersion,
               nivel: f?.potencial_dispersion,
               etiqueta: ETIQ_DISP[f?.potencial_dispersion] || '—',
@@ -303,7 +305,7 @@ async function cargar() {
             }
           }
         } catch {
-          datos.value[s.slug] = {}
+          datos.value[slug] = {}
         }
       })
     )

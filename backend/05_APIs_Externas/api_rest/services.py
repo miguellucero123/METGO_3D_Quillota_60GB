@@ -94,6 +94,8 @@ def listar_estaciones(
             continue
         item: dict[str, Any] = {
             "id": slug,
+            "slug": slug,
+            "estacion_id": slug,
             "nombre": nombre,
             "activa": True,
             "lat": coords["lat"],

@@ -51,14 +51,14 @@ import IcapHero from '@/components/aire/IcapHero.vue'
 import EstacionAireCard from '@/components/aire/EstacionAireCard.vue'
 import AlertaAireBanner from '@/components/aire/AlertaAireBanner.vue'
 import TipoDatoBadge from '@/components/aire/TipoDatoBadge.vue'
-import { wakeApi, fetchAireActual, fetchEstacionesSitio } from '@/services/aireApi'
+import { wakeApi, fetchAireActual, fetchEstacionesSitio, estacionSlug } from '@/services/aireApi'
 
 const site = inject('site')
 const loading = ref(true)
 const error = ref(null)
 const estaciones = ref([])
 const lecturas = reactive({})
-const slugActivo = ref(site.stations[0]?.slug || 'copiapo_centro')
+const slugActivo = ref(estacionSlug(site.stations[0]) || 'copiapo_centro')
 
 const ICAP_UMBRAL = 200
 
@@ -88,6 +88,26 @@ const alerta = computed(() => {
   }
 })
 
+function normalizarLista(lista) {
+  const fromApi = (Array.isArray(lista) ? lista : [])
+    .map((e) => {
+      const slug = estacionSlug(e)
+      if (!slug) return null
+      return { slug, nombre: e.nombre || slug }
+    })
+    .filter(Boolean)
+  // Fuente de verdad: site.config; enriquecer con API si hay match
+  const seed = (site.stations || [])
+    .map((s) => {
+      const slug = estacionSlug(s)
+      if (!slug) return null
+      const api = fromApi.find((a) => a.slug === slug)
+      return { slug, nombre: api?.nombre || s.nombre || slug }
+    })
+    .filter(Boolean)
+  return seed.length ? seed : fromApi
+}
+
 async function cargar() {
   loading.value = true
   error.value = null
@@ -99,39 +119,18 @@ async function cargar() {
     } catch {
       lista = []
     }
-    if (!Array.isArray(lista) || !lista.length) {
-      lista = site.stations.map((s) => ({
-        slug: s.slug,
-        nombre: s.nombre,
-        id: s.slug,
-      }))
-    }
-    estaciones.value = lista
-      .map((e) => {
-        const slug = e.slug || e.estacion_id || e.id
-        if (!slug) return null
-        return {
-          slug: String(slug),
-          nombre: e.nombre || String(slug),
-        }
-      })
-      .filter(Boolean)
-    if (!estaciones.value.length) {
-      estaciones.value = site.stations.map((s) => ({
-        slug: s.slug,
-        nombre: s.nombre,
-      }))
-    }
+    estaciones.value = normalizarLista(lista)
     if (!estaciones.value.find((e) => e.slug === slugActivo.value)) {
       slugActivo.value = estaciones.value[0]?.slug || 'copiapo_centro'
     }
     await Promise.all(
       estaciones.value.map(async (est) => {
-        if (!est.slug) return
+        const slug = estacionSlug(est)
+        if (!slug) return
         try {
-          lecturas[est.slug] = await fetchAireActual(est.slug)
+          lecturas[slug] = await fetchAireActual(slug)
         } catch {
-          lecturas[est.slug] = null
+          lecturas[slug] = null
         }
       })
     )

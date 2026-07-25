@@ -8,6 +8,18 @@ const RENDER_API = site.api?.defaultPublicBase || 'https://metgo-api.onrender.co
 const SITIO = site.sitio
 const TIMEOUT_MS = 60000
 
+/** Normaliza id de estación (API a veces solo manda `id`, no `slug`). */
+export function estacionSlug(raw) {
+  if (raw == null) return null
+  if (typeof raw === 'object') {
+    const s = raw.slug ?? raw.estacion_id ?? raw.id
+    return estacionSlug(s)
+  }
+  const id = String(raw).trim()
+  if (!id || id === 'undefined' || id === 'null') return null
+  return id
+}
+
 function resolveBaseURL() {
   const fromEnv = import.meta.env.VITE_METGO_API || import.meta.env.VITE_API_BASE
   if (fromEnv) return String(fromEnv).replace(/\/$/, '')
@@ -57,16 +69,16 @@ export async function fetchEstacionesSitio() {
 }
 
 export async function fetchAireActual(estacionId) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') {
+  const id = estacionSlug(estacionId)
+  if (!id) {
     throw new Error('estacion_id_requerido')
   }
   return fetchJson(`/public/aire/${encodeURIComponent(id)}`)
 }
 
 export async function fetchAirePronostico(estacionId, dias = 5) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') {
+  const id = estacionSlug(estacionId)
+  if (!id) {
     throw new Error('estacion_id_requerido')
   }
   return fetchJson(
@@ -75,8 +87,8 @@ export async function fetchAirePronostico(estacionId, dias = 5) {
 }
 
 export async function fetchAireHistorico(estacionId, dias = 7) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') {
+  const id = estacionSlug(estacionId)
+  if (!id) {
     throw new Error('estacion_id_requerido')
   }
   return fetchJson(
@@ -89,8 +101,8 @@ export async function fetchAireAlertas(sitio = SITIO) {
 }
 
 export async function fetchDispersionHoraria(estacionId, horas = 72) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') {
+  const id = estacionSlug(estacionId)
+  if (!id) {
     throw new Error('estacion_id_requerido')
   }
   return fetchJson(
@@ -99,8 +111,8 @@ export async function fetchDispersionHoraria(estacionId, horas = 72) {
 }
 
 export async function fetchDispersionDiaria(estacionId, dias = 7) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') {
+  const id = estacionSlug(estacionId)
+  if (!id) {
     throw new Error('estacion_id_requerido')
   }
   return fetchJson(
@@ -109,8 +121,8 @@ export async function fetchDispersionDiaria(estacionId, dias = 7) {
 }
 
 export async function fetchDispersionProyeccion(estacionId) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') {
+  const id = estacionSlug(estacionId)
+  if (!id) {
     throw new Error('estacion_id_requerido')
   }
   return fetchJson(
@@ -136,8 +148,8 @@ export async function fetchAirshedModel({ sitio = SITIO, nx = 28, ny = 28, frame
 }
 
 export async function fetchSounding(estacionId, horas = 24) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') throw new Error('estacion_id_requerido')
+  const id = estacionSlug(estacionId)
+  if (!id) throw new Error('estacion_id_requerido')
   return fetchJson(`/public/aire/${encodeURIComponent(id)}/sounding?horas=${horas}`)
 }
 
@@ -171,8 +183,8 @@ export async function fetchConjuntoCatalogo() {
 }
 
 export async function fetchConjuntoSeries(estacionId, { horas = 72, series = [] } = {}) {
-  const id = String(estacionId || '').trim()
-  if (!id || id === 'undefined') throw new Error('estacion_id_requerido')
+  const id = estacionSlug(estacionId)
+  if (!id) throw new Error('estacion_id_requerido')
   const q = new URLSearchParams({ horas: String(horas) })
   if (series?.length) q.set('series', series.join(','))
   return fetchJson(`/public/operaciones/${encodeURIComponent(id)}/conjunto?${q}`)

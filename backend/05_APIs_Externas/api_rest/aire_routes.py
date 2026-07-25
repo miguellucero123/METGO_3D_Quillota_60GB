@@ -20,10 +20,17 @@ def _responder(data, estacion_id: str):
     return jsonify(data)
 
 
+def _slug_ok(estacion_id: str) -> bool:
+    s = (estacion_id or "").strip().lower()
+    return bool(s) and s not in ("undefined", "null", "none")
+
+
 def register_aire_routes(app: Flask) -> None:
     @app.get("/api/public/aire/<estacion_id>")
     def public_aire_actual(estacion_id: str):
         """Calidad del aire actual (CAMS) + ICAP, sin JWT."""
+        if not _slug_ok(estacion_id):
+            return jsonify({"error": "estacion_id_requerido"}), 400
         try:
             data = aire_service.aire_actual(estacion_id)
         except Exception as exc:
