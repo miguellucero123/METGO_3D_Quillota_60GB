@@ -197,6 +197,13 @@ def register_fase4_routes(app: Flask) -> None:
                 etl_retry_queue.enqueue("operaciones", str(exc))
             except Exception:
                 pass
+        # E7 Paipote: corrida ventilación N/R/M (ideal 06/18 UTC).
+        try:
+            from api_rest import ventilacion_service
+
+            res["ventilacion_paipote"] = ventilacion_service.sincronizar_corrida("paipote")
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"ventilacion_paipote: {exc}")
         # E7/E12: SINCA observado (CSV/códigos).
         try:
             from api_rest import sinca_service

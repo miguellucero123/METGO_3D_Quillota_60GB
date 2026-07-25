@@ -92,6 +92,14 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 - Meteo normal OpenMeteo (viento clave para dispersión)
 
 > **Ampliación (2026-07-24):** módulo **dispersión de contaminantes** — malla airshed de **7 puntos** (≈15 km), `dispersion_service.py` (inversión térmica, capa límite, viento, niebla/estratos costeros, índice de dispersión 0-100), horizontes horaria 72 h / diaria 7 d / **proyección climatológica 16-30 d**, tabla `aire_dispersion`, endpoints `/api/public/aire/*/dispersion*`, vista Vue `DispersionView`. Tests 13/13.
+>
+> **Ampliación (2026-07-25):** **METGO Airshed Modeler (MAM)** — proxy operativo innovador inspirado en AERMOD/CALMET–CALPUFF–CALPOST (sin binarios EPA). Pipeline 5 pasos, pluma gaussiana + fusión IDW con PM estaciones, frames horarios, vectores de viento. API `GET /api/public/aire/modelo/airshed`, SPA `/airshed` (`AirshedModelView` + MapLibre satélite). No sustituye modelación regulatoria certificada.
+>
+> **Ampliación (2026-07-25 b):** **Faena Paipote — Observatorio operativo** — ventilación **N/R/M** por hora (72 h), diario 14 d, proyección 30–90 d; corridas **06 UTC** y **18 UTC**; histórico Archive 7 años; soundings modelados; informe HTML/PDF (`/operaciones`, `/sounding`). Cron ETL actualizado.
+>
+> **Ampliación (2026-07-25 c):** olas de calor otoño/invierno (P90); satélite GOES VIS/IR/WV + diagnóstico incursión nubosa (`/olas-calor`, `/satelite`).
+>
+> **Ampliación (2026-07-25 d):** panel **Variables en conjunto** (catálogo extensible + Combo multi-serie) — `/conjunto`, API `…/operaciones/{est}/conjunto`.
 
 **Backend (fase 2.x–3.x):**
 - [x] Tabla `aire_registros` (`supabase/migrations/20260723150000_copiapo_aire.sql`)
@@ -111,9 +119,10 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 - [x] Recomendaciones salud desde payload API
 - [x] Banner de alerta ICAP (`AlertaAireBanner.vue`)
 - [x] Vista Dispersión (`DispersionView.vue`): inversión, viento, niebla, índice + 3 horizontes
-- [x] Mapa del airshed (`MapaView.vue` + `MapaEstacionesChart`): 7 puntos coloreados por ICAP / dispersión (ECharts, sin tiles)
-- [x] Deploy Quillota Cloudflare Pages (`metgo-quillota.pages.dev`, 2026-07-24)
-- [ ] Deploy Copiapó/Mantos Cloudflare Pages (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`)
+- [x] Mapa del airshed (`MapaView.vue` + MapLibre dark/Carto + flechas viento + plumas dispersión)
+- [x] METGO Airshed Modeler (`/airshed` + `/api/public/aire/modelo/airshed`) — proxy AERMOD/CALPUFF
+- [x] Faena Paipote: ventilación N/R/M (72h / 14d / 30–90d), corridas 06/18 UTC, informe PDF, soundings, histórico 7a API
+- [x] Deploy Copiapó Cloudflare Pages (`metgo-copiapo.pages.dev`) · Mantos pendiente
 - [x] Runbook ops A1–A3: `docs/roadmap/RUNBOOK_OPS_A1_A3.md`
 
 ### E8 — Mantos Blancos (Antofagasta): enfoque minero-operacional

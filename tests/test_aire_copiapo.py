@@ -301,10 +301,13 @@ def test_ml_helada_baseline():
     _setup_api()
     from api_rest import ml_domain_service
 
-    # Sin API meteo: aún debe ser servible (puede devolver sin_temperatura o prediccion)
+    # Con o sin artefacto joblib: debe ser servible (baseline o sklearn).
     out = ml_domain_service.prediccion_helada_quillota("quillota", cultivo="palto")
     assert out["servible"] is True
-    assert out["modo"] == "baseline_regla"
+    assert out["modo"] in ("sklearn_clasificador", "baseline_regla")
+    if out["modo"] == "sklearn_clasificador" and out.get("prediccion"):
+        assert "probabilidad" in out["prediccion"]
+        assert "riesgo_helada" in out["prediccion"]
 
     from api_rest.app import create_app
 
@@ -313,7 +316,9 @@ def test_ml_helada_baseline():
         "/api/public/ml/dominios/helada_quillota/prediccion?estacion_id=quillota&cultivo=palto"
     )
     assert r.status_code == 200
-    assert r.get_json()["servible"] is True
+    body = r.get_json()
+    assert body["servible"] is True
+    assert body["modo"] in ("sklearn_clasificador", "baseline_regla")
 
 
 def test_etl_retry_queue(tmp_path, monkeypatch):
@@ -471,3 +476,28 @@ def test_api_dispersion_endpoints():
         body = ra.get_json()
         assert body["horizonte"] == "horaria"
         assert "hay_alerta" in body
+
+
+def test_api_airshed_modeler():
+    """METGO Airshed Modeler (proxy AERMOD) — smoke endpoint."""
+    _setup_api()
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+
+    r404 = c.get("/api/public/aire/modelo/airshed?sitio=no_existe")
+    assert r404.status_code == 404
+
+    r = c.get("/api/public/aire/modelo/airshed?sitio=copiapo&nx=16&ny=16&frames=2")
+    assert r.status_code in (200, 503)
+    if r.status_code == 200:
+        body = r.get_json()
+        assert body["modelo"] == "METGO-Airshed-v1"
+        assert len(body["pipeline"]) == 5
+        assert isinstance(body["frames"], list)
+        assert len(body["frames"]) >= 1
+        g0 = body["frames"][0]["grid"]
+        assert "values" in g0
+        assert "heat_geojson" in g0
+        assert "wind_vectors" in g0
+        assert g0["max"]["value"] >= 0

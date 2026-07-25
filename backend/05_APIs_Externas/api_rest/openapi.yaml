@@ -232,6 +232,8 @@ paths:
         Open-Meteo Air Quality (modelo CAMS) + **ICAP** chileno calculado server-side
         (contaminante rector PM2.5/PM10, categorías Bueno…Emergencia) y
         recomendaciones de salud por categoría. Sitio E7 Copiapó.
+        Incluye `viento_velocidad` / `viento_direccion` (m/s, grados FROM) desde
+        Forecast API y `serie_24h` horaria de ICAP/PM para el mapa airshed.
       parameters:
         - name: estacion_id
           in: path
@@ -239,7 +241,9 @@ paths:
           schema: { type: string, example: copiapo_centro }
       responses:
         "200":
-          description: PM2.5, PM10, SO2, NO2, O3, CO, polvo, icap, nivel, recomendaciones
+          description: |
+            PM2.5, PM10, SO2, NO2, O3, CO, polvo, icap, nivel, recomendaciones,
+            viento_velocidad, viento_direccion, serie_24h[]
         "404":
           description: Estación desconocida
         "503":
@@ -379,6 +383,34 @@ paths:
       responses:
         "200":
           description: códigos env, CSV dirs, estaciones
+  /api/public/aire/modelo/airshed:
+    get:
+      tags: [aire]
+      summary: METGO Airshed Modeler (proxy AERMOD/CALPUFF)
+      description: |
+        Campo de concentración proxy + vectores de viento + frames horarios
+        para el airshed Copiapó. Pipeline 5 pasos inspirado en CALMET/CALPUFF/CALPOST.
+        **No** es un binario EPA certificado; uso operativo / demo innovador METGO.
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: copiapo }
+        - name: nx
+          in: query
+          schema: { type: integer, default: 28, maximum: 48 }
+        - name: ny
+          in: query
+          schema: { type: integer, default: 28, maximum: 48 }
+        - name: frames
+          in: query
+          schema: { type: integer, default: 6, maximum: 12 }
+      responses:
+        "200":
+          description: pipeline, frames[].grid (values, heat_geojson, wind_vectors, max)
+        "404":
+          description: sitio desconocido
+        "503":
+          description: error de modelación / meteo
   /api/public/aire/{estacion_id}/dispersion:
     get:
       tags: [aire]
@@ -477,6 +509,139 @@ paths:
           description: Igual que la variante pública
         "401":
           description: Sin token
+  /api/public/operaciones/paipote/ventilacion:
+    get:
+      tags: [operaciones]
+      summary: Ventilación Paipote N/R/M (corridas 06/18 UTC)
+      parameters:
+        - name: horizonte
+          in: query
+          schema: { type: string, enum: [horaria, diaria, proyeccion], default: horaria }
+        - name: estacion
+          in: query
+          schema: { type: string, default: paipote }
+        - name: forzar
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Serie con ventilacion N|R|M y metadatos de corrida
+        "404":
+          description: Estación desconocida
+        "503":
+          description: Sin meteo
+  /api/public/operaciones/paipote/paquete:
+    get:
+      tags: [operaciones]
+      summary: Paquete completo ventilación Paipote (72h + 14d + 30-90 + tramos 3h)
+      responses:
+        "200":
+          description: Snapshot corrida vigente
+        "503":
+          description: Error de modelación
+  /api/public/operaciones/paipote/informe:
+    get:
+      tags: [operaciones]
+      summary: Informe HTML o PDF ventilación Paipote
+      parameters:
+        - name: formato
+          in: query
+          schema: { type: string, enum: [html, pdf], default: html }
+      responses:
+        "200":
+          description: HTML o application/pdf
+        "503":
+          description: Sin datos
+  /api/public/operaciones/paipote/historico:
+    get:
+      tags: [operaciones]
+      summary: Histórico diario Archive (~7 años) Paipote
+      parameters:
+        - name: anios
+          in: query
+          schema: { type: integer, default: 7, maximum: 10 }
+      responses:
+        "200":
+          description: Serie diaria
+        "503":
+          description: Archive no disponible
+  /api/public/operaciones/paipote/olas-calor:
+    get:
+      tags: [operaciones]
+      summary: Olas de calor otoño/invierno (P90 climatológico)
+      parameters:
+        - name: estacion
+          in: query
+          schema: { type: string, default: paipote }
+        - name: estacion_ano
+          in: query
+          schema: { type: string, enum: [otono, invierno, todas], default: otono }
+        - name: anios
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: eventos[] con intensidad y anomalía
+        "503":
+          description: Sin histórico
+  /api/public/operaciones/paipote/satelite:
+    get:
+      tags: [operaciones]
+      summary: GOES VIS/IR/WV + diagnóstico incursión nubosa
+      parameters:
+        - name: estacion
+          in: query
+          schema: { type: string, default: paipote }
+        - name: bandas
+          in: query
+          schema: { type: string, default: "vis,ir,wv" }
+      responses:
+        "200":
+          description: bandas[].frames + diagnostico valle
+  /api/public/operaciones/conjunto/catalogo:
+    get:
+      tags: [operaciones]
+      summary: Catálogo de series del panel Variables en conjunto
+      responses:
+        "200":
+          description: slots[] versionados
+  /api/public/operaciones/{estacion_id}/conjunto:
+    get:
+      tags: [operaciones]
+      summary: Series horarias multi-variable (Combo extensible)
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: horas
+          in: query
+          schema: { type: integer, default: 72 }
+        - name: series
+          in: query
+          schema: { type: string, description: "ids separados por coma" }
+      responses:
+        "200":
+          description: labels + series + slots_activos
+        "404":
+          description: Estación no encontrada
+  /api/public/aire/{estacion_id}/sounding:
+    get:
+      tags: [aire]
+      summary: Sounding modelado (proxy MetPy)
+      parameters:
+        - name: estacion_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: horas
+          in: query
+          schema: { type: integer, default: 24 }
+      responses:
+        "200":
+          description: frames[].niveles + diagnostico
+        "404":
+          description: Estación no encontrada
   /api/public/operaciones/{estacion_id}/ventanas:
     get:
       tags: [operaciones]

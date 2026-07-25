@@ -27,6 +27,42 @@ const routes = [
     meta: { title: 'Dispersión' },
   },
   {
+    path: '/airshed',
+    name: 'airshed',
+    component: () => import('@/views/AirshedModelView.vue'),
+    meta: { title: 'Airshed Modeler' },
+  },
+  {
+    path: '/operaciones',
+    name: 'operaciones',
+    component: () => import('@/views/OperacionesPaipoteView.vue'),
+    meta: { title: 'Operaciones Paipote' },
+  },
+  {
+    path: '/sounding',
+    name: 'sounding',
+    component: () => import('@/views/SoundingView.vue'),
+    meta: { title: 'Sounding' },
+  },
+  {
+    path: '/satelite',
+    name: 'satelite',
+    component: () => import('@/views/SateliteAtmosView.vue'),
+    meta: { title: 'Satélite' },
+  },
+  {
+    path: '/olas-calor',
+    name: 'olas-calor',
+    component: () => import('@/views/OlasCalorView.vue'),
+    meta: { title: 'Olas de calor' },
+  },
+  {
+    path: '/conjunto',
+    name: 'conjunto',
+    component: () => import('@/views/VariablesConjuntoView.vue'),
+    meta: { title: 'Variables conjunto' },
+  },
+  {
     path: '/pronostico',
     name: 'pronostico',
     component: () => import('@/views/AirePronosticoView.vue'),

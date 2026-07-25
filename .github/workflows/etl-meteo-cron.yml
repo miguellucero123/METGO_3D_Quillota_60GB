@@ -1,14 +1,14 @@
 # ETL meteorológico + calidad del aire: OpenMeteo → Supabase vía GET /api/cron/sync
-# - 00:00 y 12:00 UTC: sync ligero (recientes + pronóstico + aire CAMS Copiapó)
-# - Domingos 03:00 UTC: sync + Archive ERA5
-# El endpoint /api/cron/sync también persiste aire_registros + aire_dispersion
-# (E7 Copiapó) y operaciones_ventanas (E8 Mantos Blancos).
+# - 06:00 y 18:00 UTC: corridas ventilación Paipote (N/R/M) + sync
+# - 00:00 y 12:00 UTC: sync ligero adicional
+# - Domingos 03:00 UTC: sync + Archive ERA5 (7 años)
 # Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
-# Si también usas cron-job.org: crea un job previo a /api/health (ver docs/roadmap/OPS_CRON_ETL.md).
-name: ETL Meteo (00 y 12 UTC)
+name: ETL Meteo (06/18 UTC Paipote)
 
 on:
   schedule:
+    - cron: "0 6 * * *"
+    - cron: "0 18 * * *"
     - cron: "0 0 * * *"
     - cron: "0 12 * * *"
     - cron: "0 3 * * 0"
@@ -25,7 +25,7 @@ on:
       anios_archive:
         description: "Años de archive"
         required: false
-        default: "5"
+        default: "7"
 
 jobs:
   sync:
@@ -56,13 +56,13 @@ jobs:
         id: flags
         run: |
           ARCH="false"
-          ANIOS="5"
+          ANIOS="7"
           if [ "${{ github.event.schedule }}" = "0 3 * * 0" ]; then
             ARCH="true"
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             ARCH="${{ github.event.inputs.incluir_archive || 'false' }}"
-            ANIOS="${{ github.event.inputs.anios_archive || '5' }}"
+            ANIOS="${{ github.event.inputs.anios_archive || '7' }}"
           fi
           echo "incluir_archive=$ARCH" >> "$GITHUB_OUTPUT"
           echo "anios_archive=$ANIOS" >> "$GITHUB_OUTPUT"
@@ -96,6 +96,20 @@ jobs:
             echo "Error no recuperable HTTP $code" && exit 1
           done
           echo "Agotados reintentos tras 502/503" && exit 1
+
+      - name: Corrida ventilación Paipote (forzar snapshot)
+        if: >-
+          github.event.schedule == '0 6 * * *' ||
+          github.event.schedule == '0 18 * * *' ||
+          github.event_name == 'workflow_dispatch'
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          code=$(curl -s -o /tmp/vent_paipote.json -w "%{http_code}" --max-time 180 -X POST \
+            "https://metgo-api.onrender.com/api/cron/paipote/ventilacion?token=${CRON_SECRET}" || true)
+          echo "ventilacion Paipote -> HTTP $code"
+          cat /tmp/vent_paipote.json || true
+          [ "$code" = "200" ] || [ "$code" = "503" ]
 
       - name: Verificar estado ETL
         run: |

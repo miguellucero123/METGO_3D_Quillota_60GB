@@ -200,6 +200,70 @@ def _promedios_diarios(payload: dict[str, Any]) -> list[dict[str, Any]]:
 # ------------------------------------------------------------------- servicios
 
 
+def _serie_24h_desde_payload(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Últimas ≤24 h de PM/ICAP a partir del bloque hourly CAMS."""
+    hourly = payload.get("hourly") or {}
+    tiempos = hourly.get("time") or []
+    if not tiempos:
+        return []
+    n = len(tiempos)
+    start = max(0, n - 24)
+    out: list[dict[str, Any]] = []
+    pm25_s = hourly.get("pm2_5") or []
+    pm10_s = hourly.get("pm10") or []
+    for idx in range(start, n):
+        pm25 = pm25_s[idx] if idx < len(pm25_s) else None
+        pm10 = pm10_s[idx] if idx < len(pm10_s) else None
+        try:
+            pm25_f = float(pm25) if pm25 is not None else None
+        except (TypeError, ValueError):
+            pm25_f = None
+        try:
+            pm10_f = float(pm10) if pm10 is not None else None
+        except (TypeError, ValueError):
+            pm10_f = None
+        eval_ = evaluar_icap(pm25_f, pm10_f)
+        out.append(
+            {
+                "fecha_hora": tiempos[idx],
+                "pm2_5": round(pm25_f, 1) if pm25_f is not None else None,
+                "pm10": round(pm10_f, 1) if pm10_f is not None else None,
+                "icap": eval_.get("icap"),
+                "nivel": eval_.get("nivel"),
+            }
+        )
+    return out
+
+
+def _enrich_viento(data: dict[str, Any], lat: float, lon: float) -> dict[str, Any]:
+    """Añade viento 10 m desde Forecast API (CAMS AQ no trae viento)."""
+    # TODO: viento — unificar con serie horaria de dispersion_service cuando haya caché compartida.
+    data.setdefault("viento_velocidad", None)
+    data.setdefault("viento_direccion", None)
+    data.setdefault("viento_unidad", "m/s")
+    try:
+        from api_rest.dispersion_service import FORECAST_API_BASE, _get_json
+
+        payload = _get_json(
+            FORECAST_API_BASE,
+            {
+                "latitude": lat,
+                "longitude": lon,
+                "current": "wind_speed_10m,wind_direction_10m",
+                "wind_speed_unit": "ms",
+                "timezone": "America/Santiago",
+            },
+        )
+        cur = (payload or {}).get("current") or {}
+        if cur.get("wind_speed_10m") is not None:
+            data["viento_velocidad"] = round(float(cur["wind_speed_10m"]), 2)
+        if cur.get("wind_direction_10m") is not None:
+            data["viento_direccion"] = round(float(cur["wind_direction_10m"]), 1)
+    except Exception:
+        pass
+    return data
+
+
 def aire_actual(estacion_id: str) -> dict[str, Any] | None:
     """Condición actual de calidad del aire + ICAP + recomendaciones."""
     coords = _coords_de(estacion_id)
@@ -222,14 +286,19 @@ def aire_actual(estacion_id: str) -> dict[str, Any] | None:
             val = current.get(var)
             data[var] = round(float(val), 1) if val is not None else None
         data.update(evaluar_icap(data.get("pm2_5"), data.get("pm10")))
+        data["serie_24h"] = _serie_24h_desde_payload(payload)
+        _enrich_viento(data, coords["lat"], coords["lon"])
         return data
 
-    data = _json_cached(f"aire_actual|{estacion_id}", fetch)
+    data = _json_cached(f"aire_actual_v2|{estacion_id}", fetch)
     if data is None:
         # Fallback: último registro persistido (CAMS caído o en cooldown).
         respaldo = _ultimo_aire_store(estacion_id.lower().replace("-", "_"))
         if respaldo is not None:
             respaldo["degradado"] = True
+            respaldo.setdefault("viento_velocidad", None)
+            respaldo.setdefault("viento_direccion", None)
+            respaldo.setdefault("serie_24h", [])
             return respaldo
     return data
 

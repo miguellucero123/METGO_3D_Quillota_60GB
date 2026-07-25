@@ -2,13 +2,32 @@
   <div class="page">
     <header class="page-head">
       <h1>Mapa del airshed</h1>
-      <p>7 puntos del valle de Copiapó — color según {{ modo === 'icap' ? 'ICAP' : 'potencial de dispersión' }}</p>
+      <p>
+        Valle de Copiapó · fondo satelital ·
+        {{ modo === 'icap' ? 'ICAP + viento' : 'potencial de dispersión + plumas' }}
+      </p>
     </header>
 
     <div class="controls">
-      <div class="tabs">
-        <button type="button" :class="['tab', { active: modo === 'icap' }]" @click="setModo('icap')">ICAP</button>
-        <button type="button" :class="['tab', { active: modo === 'dispersion' }]" @click="setModo('dispersion')">Dispersión</button>
+      <div class="tabs" role="tablist" aria-label="Capa del mapa">
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="modo === 'icap'"
+          :class="['tab', { active: modo === 'icap' }]"
+          @click="setModo('icap')"
+        >
+          ICAP
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="modo === 'dispersion'"
+          :class="['tab', { active: modo === 'dispersion' }]"
+          @click="setModo('dispersion')"
+        >
+          Dispersión
+        </button>
       </div>
     </div>
 
@@ -19,42 +38,111 @@
     </div>
 
     <template v-else>
-      <MapaEstacionesChart
-        :puntos="puntos"
-        :valor-label="modo === 'icap' ? 'ICAP' : 'Índice dispersión'"
-        @select="slugActivo = $event"
-      />
+      <div class="layout" :class="{ 'layout--open': detalle }">
+        <div class="map-col">
+          <AirshedMapLibre
+            :puntos="puntos"
+            :modo="modo"
+            :slug-activo="slugActivo"
+            @select="onSelect"
+          />
+          <ul class="leyenda">
+            <li v-for="l in leyenda" :key="l.nivel">
+              <span class="dot" :style="{ background: l.color }" />{{ l.label }}
+            </li>
+          </ul>
+        </div>
 
-      <ul class="leyenda">
-        <li v-for="l in leyenda" :key="l.nivel">
-          <span class="dot" :style="{ background: l.color }" />{{ l.label }}
-        </li>
-      </ul>
+        <aside v-if="detalle" class="panel" aria-label="Detalle de estación">
+          <button type="button" class="panel-close" aria-label="Cerrar panel" @click="slugActivo = null">
+            ×
+          </button>
+          <h2>{{ detalle.nombre }}</h2>
+          <p class="coords">
+            {{ detalle.lat?.toFixed(3) }}, {{ detalle.lon?.toFixed(3) }}
+          </p>
 
-      <section v-if="detalle" class="detalle">
-        <h2>{{ detalle.nombre }}</h2>
-        <p v-if="modo === 'icap'">
-          ICAP <strong>{{ Math.round(detalle.valor ?? 0) }}</strong> · {{ detalle.etiqueta }}
-        </p>
-        <p v-else>
-          Índice dispersión <strong>{{ Math.round(detalle.valor ?? 0) }}/100</strong> · {{ detalle.etiqueta }}
-        </p>
-      </section>
+          <div class="kpi">
+            <template v-if="modo === 'icap'">
+              <span class="kpi-label">ICAP</span>
+              <strong class="kpi-val" :style="{ color: detalle.color }">
+                {{ detalle.valor != null ? Math.round(detalle.valor) : '—' }}
+              </strong>
+              <span class="kpi-sub">{{ detalle.etiqueta || '—' }}</span>
+            </template>
+            <template v-else>
+              <span class="kpi-label">Dispersión</span>
+              <strong class="kpi-val" :style="{ color: detalle.color }">
+                {{ detalle.valor != null ? Math.round(detalle.valor) : '—' }}/100
+              </strong>
+              <span class="kpi-sub">{{ detalle.etiqueta || '—' }}</span>
+            </template>
+          </div>
+
+          <p v-if="detalle.pm25 != null" class="meta">
+            PM2.5 <strong>{{ detalle.pm25 }}</strong> µg/m³
+            <span v-if="detalle.pm10 != null"> · PM10 <strong>{{ detalle.pm10 }}</strong></span>
+          </p>
+
+          <div v-if="detalle.vientoTexto" class="viento-block">
+            <h3>Viento</h3>
+            <p class="viento-txt">{{ detalle.vientoTexto }}</p>
+            <div
+              class="mini-rose"
+              role="img"
+              :aria-label="`Dirección del viento ${detalle.vientoTexto}`"
+            >
+              <span
+                class="mini-rose__arrow"
+                :style="{ transform: `rotate(${detalle.vientoRot}deg)` }"
+              />
+              <span class="mini-rose__n">N</span>
+            </div>
+          </div>
+          <p v-else class="meta muted">Sin dato de viento en esta estación</p>
+
+          <div v-if="sparkPoints.length" class="spark-block">
+            <h3>{{ modo === 'icap' ? 'ICAP · 24 h' : 'Índice · 24 h' }}</h3>
+            <svg
+              class="spark"
+              viewBox="0 0 200 48"
+              preserveAspectRatio="none"
+              role="img"
+              :aria-label="`Serie ${sparkPoints.length} puntos`"
+            >
+              <polyline
+                fill="none"
+                stroke="var(--color-primary)"
+                stroke-width="2"
+                :points="sparkPolyline"
+              />
+            </svg>
+          </div>
+        </aside>
+      </div>
     </template>
   </div>
 </template>
 
 <script setup>
 import { computed, inject, onMounted, ref } from 'vue'
-import MapaEstacionesChart from '@/components/aire/MapaEstacionesChart.vue'
-import { wakeApi, fetchAireActual, fetchDispersionHoraria } from '@/services/aireApi'
+import AirshedMapLibre from '@/components/aire/AirshedMapLibre.vue'
+import {
+  wakeApi,
+  fetchAireActual,
+  fetchDispersionHoraria,
+} from '@/services/aireApi'
+import {
+  textoViento,
+  rotacionFlechaHacia,
+} from '@/utils/airshedMap'
 
 const site = inject('site')
 const loading = ref(true)
 const error = ref(null)
 const modo = ref('icap')
 const slugActivo = ref(site.stations[0]?.slug || null)
-const datos = ref({}) // slug -> { valor, nivel, etiqueta }
+const datos = ref({})
 
 const COLOR_ICAP = {
   bueno: '#22c55e',
@@ -109,15 +197,53 @@ const puntos = computed(() =>
       etiqueta: d.etiqueta,
       color: palette[d.nivel] || SIN_DATO,
       activo: s.slug === slugActivo.value,
+      pm25: d.pm25,
+      pm10: d.pm10,
+      viento_velocidad: d.viento_velocidad,
+      viento_direccion: d.viento_direccion,
+      serie: d.serie || [],
     }
   })
 )
 
 const detalle = computed(() => {
-  const s = site.stations.find((x) => x.slug === slugActivo.value)
-  if (!s) return null
-  return { nombre: s.nombre, ...(datos.value[s.slug] || {}) }
+  if (!slugActivo.value) return null
+  const p = puntos.value.find((x) => x.slug === slugActivo.value)
+  if (!p) return null
+  const vientoTexto = textoViento(p.viento_velocidad, p.viento_direccion)
+  return {
+    ...p,
+    vientoTexto,
+    vientoRot: rotacionFlechaHacia(p.viento_direccion),
+  }
 })
+
+const sparkPoints = computed(() => {
+  const serie = detalle.value?.serie || []
+  return serie
+    .map((r) => (modo.value === 'icap' ? r.icap : r.indice_dispersion ?? r.icap))
+    .filter((v) => v != null && !Number.isNaN(Number(v)))
+    .map(Number)
+})
+
+const sparkPolyline = computed(() => {
+  const vals = sparkPoints.value
+  if (!vals.length) return ''
+  const min = Math.min(...vals)
+  const max = Math.max(...vals)
+  const span = max - min || 1
+  return vals
+    .map((v, i) => {
+      const x = vals.length === 1 ? 100 : (i / (vals.length - 1)) * 200
+      const y = 44 - ((v - min) / span) * 40
+      return `${x.toFixed(1)},${y.toFixed(1)}`
+    })
+    .join(' ')
+})
+
+function onSelect(slug) {
+  slugActivo.value = slug
+}
 
 async function setModo(m) {
   if (modo.value === m && Object.keys(datos.value).length) return
@@ -136,7 +262,29 @@ async function cargar() {
         try {
           if (modo.value === 'icap') {
             const a = await fetchAireActual(s.slug)
-            datos.value[s.slug] = { valor: a?.icap, nivel: a?.nivel, etiqueta: a?.etiqueta }
+            let viento_velocidad = a?.viento_velocidad
+            let viento_direccion = a?.viento_direccion
+            // Fallback: primera hora de dispersión si aire aún no trae viento (API vieja en Render).
+            if (viento_velocidad == null || viento_direccion == null) {
+              try {
+                const serie = await fetchDispersionHoraria(s.slug, 3)
+                const f = Array.isArray(serie) ? serie[0] : null
+                viento_velocidad = f?.viento_velocidad ?? viento_velocidad
+                viento_direccion = f?.viento_direccion ?? viento_direccion
+              } catch {
+                /* ignore */
+              }
+            }
+            datos.value[s.slug] = {
+              valor: a?.icap,
+              nivel: a?.nivel,
+              etiqueta: a?.etiqueta,
+              pm25: a?.pm2_5,
+              pm10: a?.pm10,
+              viento_velocidad,
+              viento_direccion,
+              serie: a?.serie_24h || [],
+            }
           } else {
             const serie = await fetchDispersionHoraria(s.slug, 24)
             const f = Array.isArray(serie) ? serie[0] : null
@@ -144,6 +292,14 @@ async function cargar() {
               valor: f?.indice_dispersion,
               nivel: f?.potencial_dispersion,
               etiqueta: ETIQ_DISP[f?.potencial_dispersion] || '—',
+              viento_velocidad: f?.viento_velocidad,
+              viento_direccion: f?.viento_direccion,
+              serie: Array.isArray(serie)
+                ? serie.slice(0, 24).map((r) => ({
+                    icap: r.indice_dispersion,
+                    indice_dispersion: r.indice_dispersion,
+                  }))
+                : [],
             }
           }
         } catch {
@@ -162,7 +318,7 @@ onMounted(cargar)
 </script>
 
 <style scoped>
-.page { max-width: 1100px; }
+.page { max-width: 1200px; }
 .page-head { margin-bottom: 1rem; }
 .page-head h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
 .page-head p { margin: 0; color: var(--color-text-secondary); }
@@ -175,8 +331,24 @@ onMounted(cargar)
   color: var(--color-text-secondary);
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
 }
-.tab.active { background: var(--color-primary-muted); color: var(--color-primary); border-color: var(--color-primary); }
+.tab.active {
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 900px) {
+  .layout--open {
+    grid-template-columns: 1fr minmax(240px, 300px);
+    align-items: start;
+  }
+}
 .leyenda {
   list-style: none;
   display: flex;
@@ -189,15 +361,89 @@ onMounted(cargar)
 }
 .leyenda li { display: flex; align-items: center; gap: 0.4rem; }
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-.detalle {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
+
+.panel {
+  position: relative;
+  padding: 1rem 1.1rem;
   border: 1px solid var(--color-border);
   border-left: 4px solid var(--color-primary);
-  border-radius: 10px;
+  border-radius: 12px;
+  background: var(--color-surface, #111827);
 }
-.detalle h2 { margin: 0 0 0.35rem; font-size: 1.1rem; }
-.detalle p { margin: 0; }
+.panel-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.55rem;
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 1.35rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.panel h2 { margin: 0 0 0.2rem; font-size: 1.15rem; padding-right: 1.5rem; }
+.coords {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.kpi { display: flex; flex-direction: column; gap: 0.15rem; margin-bottom: 0.65rem; }
+.kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-muted); }
+.kpi-val { font-size: 1.75rem; line-height: 1.1; }
+.kpi-sub { font-size: 0.9rem; color: var(--color-text-secondary); }
+.meta { margin: 0 0 0.75rem; font-size: 0.85rem; }
+.meta.muted { color: var(--color-muted); }
+
+.viento-block { margin: 0.75rem 0; }
+.viento-block h3,
+.spark-block h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+.viento-txt { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600; }
+.mini-rose {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: #0f172a;
+}
+.mini-rose__n {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--color-muted);
+}
+.mini-rose__arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin: -14px 0 0 -5px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 22px solid rgba(255, 255, 255, 0.85);
+  transform-origin: 50% 100%;
+}
+
+.spark-block { margin-top: 0.75rem; }
+.spark {
+  width: 100%;
+  height: 48px;
+  display: block;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+}
+
 .state { padding: 2rem; text-align: center; color: var(--color-text-secondary); }
 .state.error { color: var(--color-danger); }
 .btn {

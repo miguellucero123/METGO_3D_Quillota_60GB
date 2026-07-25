@@ -6,12 +6,12 @@ export default {
   sitio: 'copiapo',
   productName: 'METGO',
   siteLabel: 'Copiapó',
-  tagline: 'Calidad del aire · Atacama',
-  region: 'Copiapó / Tierra Amarilla',
-  versionLabel: 'v0.1 · METGO Aire',
-  documentTitle: 'METGO Copiapó — Calidad del aire',
+  tagline: 'Aire · ventilación faena Paipote · Atacama',
+  region: 'Copiapó / Paipote / Tierra Amarilla',
+  versionLabel: 'v0.2 · METGO Aire + Paipote',
+  documentTitle: 'METGO Copiapó — Aire y faena Paipote',
   documentDescription:
-    'ICAP, PM2.5/PM10 y recomendaciones de salud para Copiapó y Tierra Amarilla.',
+    'ICAP, ventilación N/R/M para faena Paipote, soundings y calidad del aire en el valle de Copiapó.',
   center: { lat: -27.3668, lon: -70.3323 },
   api: {
     defaultPublicBase: 'https://metgo-api.onrender.com/api',
@@ -28,11 +28,11 @@ export default {
     precipitacion: false,
     lugares: false,
     aire: true,
-    operaciones: false,
+    operaciones: true,
   },
   storagePrefix: 'metgo_copiapo',
   copy: {
-    headerTitle: 'Monitoreo de aire',
+    headerTitle: 'Aire y operaciones Paipote',
   },
   stations: [
     {
@@ -46,10 +46,10 @@ export default {
     {
       id: 2,
       slug: 'paipote',
-      nombre: 'Paipote',
+      nombre: 'Paipote (faena)',
       lat: -27.4064,
       lon: -70.2853,
-      descripcion: 'Sector industrial / valle',
+      descripcion: 'Sector industrial / faena — ancla ventilación',
     },
     {
       id: 3,

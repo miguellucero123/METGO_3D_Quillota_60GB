@@ -137,6 +137,51 @@ def register_aire_routes(app: Flask) -> None:
             app.logger.warning("dispersion_alertas %s error: %s", sitio, exc)
             return jsonify(_ERROR_503), 503
 
+    @app.get("/api/public/aire/modelo/airshed")
+    def public_airshed_model():
+        """METGO Airshed Modeler — campo concentración + viento (proxy AERMOD/CALPUFF)."""
+        sitio = (request.args.get("sitio") or "copiapo").strip().lower()
+        nx = request.args.get("nx", default=28, type=int)
+        ny = request.args.get("ny", default=28, type=int)
+        frames = request.args.get("frames", default=6, type=int)
+        try:
+            from api_rest import airshed_model_service
+
+            data = airshed_model_service.modelar_airshed(
+                sitio=sitio, nx=nx, ny=ny, frames=frames
+            )
+            if data.get("error"):
+                return jsonify(data), 404
+            return jsonify(data)
+        except Exception as exc:
+            app.logger.warning("airshed_model error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/aire/sounding/sitio")
+    def public_sounding_sitio():
+        """Resumen de soundings modelados por estaciones del sitio."""
+        from api_rest import sounding_service
+
+        sitio = (request.args.get("sitio") or "copiapo").strip().lower()
+        try:
+            return jsonify(sounding_service.soundings_sitio(sitio))
+        except Exception as exc:
+            app.logger.warning("sounding_sitio error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/aire/<estacion_id>/sounding")
+    def public_aire_sounding(estacion_id: str):
+        """Perfil vertical modelado (Open-Meteo) — proxy MetPy / Skew-T."""
+        from api_rest import sounding_service
+
+        horas = max(1, min(request.args.get("horas", default=24, type=int), 72))
+        try:
+            data = sounding_service.sounding_estacion(estacion_id, horas=horas)
+        except Exception as exc:
+            app.logger.warning("sounding %s error: %s", estacion_id, exc)
+            return jsonify(_ERROR_503), 503
+        return _responder(data, estacion_id)
+
     @app.get("/api/public/aire/<estacion_id>/dispersion")
     def public_dispersion_horaria(estacion_id: str):
         """Serie horaria de dispersión: inversión, viento, capa límite, niebla (24/48/72 h)."""
