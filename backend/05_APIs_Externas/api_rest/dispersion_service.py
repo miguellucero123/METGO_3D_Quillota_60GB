@@ -76,9 +76,9 @@ def _cooldown_helpers():
 # --------------------------------------------------------------------- fetch HTTP
 
 
-def _get_json(base: str, params: dict[str, Any]) -> dict[str, Any] | None:
+def _get_json(base: str, params: dict[str, Any], *, ignore_cooldown: bool = False) -> dict[str, Any] | None:
     en_cooldown, marcar = _cooldown_helpers()
-    if en_cooldown():
+    if not ignore_cooldown and en_cooldown():
         return None
     for intento in range(1, _RETRIES + 1):
         try:

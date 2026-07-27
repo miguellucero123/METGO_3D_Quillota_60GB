@@ -100,7 +100,7 @@ export const MAP_STYLE_DARK = {
     hillshade: {
       type: 'raster',
       tiles: [
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
       attribution: 'Esri',
@@ -146,7 +146,7 @@ export const MAP_STYLE_SATELLITE = {
     hillshade: {
       type: 'raster',
       tiles: [
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
       attribution: 'Esri',

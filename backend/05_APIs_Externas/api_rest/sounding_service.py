@@ -69,7 +69,7 @@ def sounding_estacion(estacion_id: str, horas: int = 24) -> dict[str, Any] | Non
         "timezone": "America/Santiago",
         "forecast_days": dias,
     }
-    data = _get_json(FORECAST_API_BASE, params)
+    data = _get_json(FORECAST_API_BASE, params, ignore_cooldown=True)
     if not data:
         # Fallback subset
         params["hourly"] = ",".join(
@@ -89,7 +89,7 @@ def sounding_estacion(estacion_id: str, horas: int = 24) -> dict[str, Any] | Non
                 "wind_direction_850hPa",
             ]
         )
-        data = _get_json(FORECAST_API_BASE, params)
+        data = _get_json(FORECAST_API_BASE, params, ignore_cooldown=True)
     if not data:
         return None
 

@@ -187,7 +187,24 @@ def register_aire_routes(app: Flask) -> None:
         except Exception as exc:
             app.logger.warning("sounding %s error: %s", estacion_id, exc)
             return jsonify(_ERROR_503), 503
-        return _responder(data, estacion_id)
+        if data is None:
+            # Distinguir estación inválida vs Open-Meteo en cooldown / sin datos
+            if aire_service._coords_de(estacion_id) is None:
+                return jsonify({"error": "Estación no encontrada", "estacion_id": estacion_id}), 404
+            payload = {
+                **_ERROR_503,
+                "detalle": "sounding_openmeteo_no_disponible",
+            }
+            try:
+                from datos_reales_openmeteo import openmeteo_cooldown_restante, openmeteo_en_cooldown
+
+                if openmeteo_en_cooldown():
+                    payload["retry_after_s"] = openmeteo_cooldown_restante()
+                    payload["detalle"] = "openmeteo_cooldown"
+            except Exception:
+                pass
+            return jsonify(payload), 503
+        return jsonify(data)
 
     @app.get("/api/public/aire/<estacion_id>/dispersion")
     def public_dispersion_horaria(estacion_id: str):

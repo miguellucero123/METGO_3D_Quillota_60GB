@@ -42,7 +42,18 @@ async function fetchJson(path, { timeout = TIMEOUT_MS } = {}) {
       headers: { Accept: 'application/json' },
     })
     if (!res.ok) {
-      const err = new Error(`HTTP ${res.status}`)
+      let detalle = ''
+      try {
+        const body = await res.json()
+        if (body?.retry_after_s != null) {
+          detalle = ` (reintentar en ~${body.retry_after_s}s)`
+        } else if (body?.error) {
+          detalle = `: ${body.error}`
+        }
+      } catch {
+        /* ignore */
+      }
+      const err = new Error(`HTTP ${res.status}${detalle}`)
       err.status = res.status
       throw err
     }
