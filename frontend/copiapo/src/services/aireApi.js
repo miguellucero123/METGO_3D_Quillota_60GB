@@ -181,12 +181,12 @@ export async function fetchOlasCalor({ estacion = 'paipote', estacionAno = 'oton
     estacion_ano: estacionAno,
     anios: String(anios),
   })
-  return fetchJson(`/public/operaciones/paipote/olas-calor?${q}`)
+  return fetchJson(`/public/operaciones/paipote/olas-calor?${q}`, { timeout: 120000 })
 }
 
 export async function fetchSateliteAtmos({ estacion = 'paipote', bandas = 'vis,ir,wv' } = {}) {
   const q = new URLSearchParams({ estacion, bandas })
-  return fetchJson(`/public/operaciones/paipote/satelite?${q}`)
+  return fetchJson(`/public/operaciones/paipote/satelite?${q}`, { timeout: 90000 })
 }
 
 export async function fetchConjuntoCatalogo() {

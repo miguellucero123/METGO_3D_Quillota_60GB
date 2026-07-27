@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Satélite atmosférico VIS / IR / WV (GOES sector Sudamérica) + diagnóstico valle.
 
-Fuente: NOAA STAR CDN (GOES-East sector `samer`). No es producto DMC oficial.
+Fuente: NOAA STAR CDN (GOES-East sector `ssa`). No es producto DMC oficial.
 Diagnóstico de incursión nubosa / niebla fusiona frames disponibles + meteo Open-Meteo.
 """
 
@@ -21,8 +21,8 @@ from api_rest.estaciones_catalogo import COORDS, SLUG_A_NOMBRE
 
 TZ_CHILE = ZoneInfo("America/Santiago")
 
-# GOES-19 (East) — sector South America
-_CDN = "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/samer"
+# GOES-19 (East) — Southern South America (ssa). El sector legacy `samer` ya no lista frames.
+_CDN = "https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/ssa"
 _BANDAS = {
     "vis": {
         "code": "02",
@@ -40,6 +40,7 @@ _BANDAS = {
         "descripcion": "Humedad troposfera media",
     },
 }
+_UA = {"User-Agent": "METGO-Copiapo/1.0 (airshed; +https://metgo-copiapo.pages.dev)"}
 
 _TIMEOUT = 20
 _CACHE: dict[str, tuple[float, Any]] = {}
@@ -55,23 +56,36 @@ def _listar_frames(banda_code: str, limite: int = 12) -> list[dict[str, Any]]:
 
     url = f"{_CDN}/{banda_code}/"
     try:
-        r = requests.get(url, timeout=_TIMEOUT)
-        if r.status_code != 200:
+        r = requests.get(url, headers=_UA, timeout=_TIMEOUT)
+        if r.status_code != 200 or "Index of" not in r.text:
             return []
-        # Archivos tipo 2026206120019_GOES19-ABI-samer-13-1000x1000.jpg
-        names = sorted(set(re.findall(r'href="(\d{13}_GOES19[^"]+\.jpg)"', r.text)))
-        # Preferir 1000x1000
-        pref = [n for n in names if "1000x1000" in n] or names
+        # Timestamps NOAA: YYYYDDDHHMM (11) o YYYYDDDHHMMSS (13)
+        names = sorted(set(re.findall(r'href="(\d{11,13}_GOES19[^"]+\.jpg)"', r.text)))
+        # Preferir resolución intermedia disponible en ssa
+        pref = (
+            [n for n in names if "1800x1080" in n]
+            or [n for n in names if "900x540" in n]
+            or [n for n in names if "1000x1000" in n]
+            or names
+        )
         pref = pref[-limite:]
         frames = []
         for name in pref:
-            # timestamp YYYY DDD HH MM SS (doy)
             ts = name.split("_", 1)[0]
             frames.append(
                 {
                     "id": ts,
                     "url": f"{url}{name}",
                     "thumb_url": f"{url}{name}",
+                }
+            )
+        # Alias "latest" del CDN (siempre el más reciente)
+        if "1800x1080.jpg" in r.text and not any(f["id"] == "latest" for f in frames):
+            frames.append(
+                {
+                    "id": "latest",
+                    "url": f"{url}1800x1080.jpg",
+                    "thumb_url": f"{url}1800x1080.jpg",
                 }
             )
         _CACHE[cache_key] = (now, frames)
@@ -156,7 +170,7 @@ def satelite_atmos(
         "estacion_nombre": SLUG_A_NOMBRE.get(slug, slug),
         "lat": coords.get("lat"),
         "lon": coords.get("lon"),
-        "sector": "samer",
+        "sector": "ssa",
         "satelite": "GOES-19",
         "fuente": "NOAA STAR CDN",
         "nota": (

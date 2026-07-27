@@ -77,6 +77,11 @@ def _cooldown_helpers():
 
 
 def _get_json(base: str, params: dict[str, Any], *, ignore_cooldown: bool = False) -> dict[str, Any] | None:
+    """HTTP JSON a Open-Meteo.
+
+    ignore_cooldown=True: usado por endpoints on-demand (sounding, archive olas).
+    No bloquea por circuit breaker global y ante 429 espera breve sin alargar el cooldown.
+    """
     en_cooldown, marcar = _cooldown_helpers()
     if not ignore_cooldown and en_cooldown():
         return None
@@ -86,6 +91,12 @@ def _get_json(base: str, params: dict[str, Any], *, ignore_cooldown: bool = Fals
             if r.status_code == 200:
                 return r.json()
             if r.status_code == 429:
+                if ignore_cooldown:
+                    # Backoff local corto; no reinicia el breaker global (evita bucle 2 min).
+                    if intento < _RETRIES:
+                        time.sleep(min(3 * intento, 10))
+                        continue
+                    return None
                 marcar()
                 return None
             if r.status_code in (500, 502, 503, 504) and intento < _RETRIES:

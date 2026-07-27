@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -471,13 +472,21 @@ def historico_diario(
             "wind_speed_unit": "ms",
             "timezone": "America/Santiago",
         }
-        data = dispersion_service._get_json(dispersion_service.ARCHIVE_API_BASE, params)
+        data = dispersion_service._get_json(
+            dispersion_service.ARCHIVE_API_BASE, params, ignore_cooldown=True
+        )
+        if not data and y < hoy.year:
+            # Espacio ante rate-limit; reintento suave de ese año
+            time.sleep(1.5)
+            data = dispersion_service._get_json(
+                dispersion_service.ARCHIVE_API_BASE, params, ignore_cooldown=True
+            )
         daily = (data or {}).get("daily") or {}
         times = daily.get("time") or []
         for i, t in enumerate(times):
-            def _v(key):
+            def _v(key, _i=i):
                 serie = daily.get(key) or []
-                v = serie[i] if i < len(serie) else None
+                v = serie[_i] if _i < len(serie) else None
                 return round(float(v), 2) if isinstance(v, (int, float)) else None
 
             filas.append(
@@ -491,6 +500,8 @@ def historico_diario(
                     "nubosidad": _v("cloud_cover_mean"),
                 }
             )
+        if data and y < hoy.year:
+            time.sleep(0.4)
     return {
         "estacion_id": slug,
         "anios": anios,
