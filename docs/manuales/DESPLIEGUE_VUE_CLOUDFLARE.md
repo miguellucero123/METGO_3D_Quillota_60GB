@@ -13,6 +13,7 @@ Usuario → Cloudflare Pages (SPA) → /api/* (proxy 200) → https://metgo-api.
 | Quillota | `frontend/vue` | `metgo-quillota` | sí |
 | Copiapó | `frontend/copiapo` | `metgo-copiapo` | sí |
 | Mantos Blancos | `frontend/mantos_blancos` | `metgo-mantos` | sí |
+| SPATI Izaje | `frontend/spati` | `metgo-spati` | sí |
 | Paine | repo `metgo-paine` | propio | en ese repo |
 
 `netlify.toml` se mantiene por compatibilidad; no hace falta borrarlo.

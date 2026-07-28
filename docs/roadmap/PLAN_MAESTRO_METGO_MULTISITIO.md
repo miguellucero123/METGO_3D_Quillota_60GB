@@ -139,8 +139,10 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] Migración + sync Supabase (`operaciones_ventanas` 192 filas, 2026-07-24)
 - [x] Catálogo `faena_catalogo` + rutas `/api/public/operaciones/faena/{id}/*` (ventilacion, paquete, olas, satélite)
 - [x] SPA Mantos v0.2: mapa MapLibre, dispersión, ventilación N/R/M, sounding, satélite, olas, ICAP, airshed (bbox/fuentes Mantos)
+- [x] **SPATI** (izaje 72 h × 15 min): física logarítmica + densidad/fuerza, alertas 0–3, asimilación dron, SPA `frontend/spati`, API `/api/public/spati/*`, migración Supabase
 - [ ] Deploy Cloudflare Pages + CORS (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`; CORS en `render.yaml` incluye `*.pages.dev` plantilla)
-- [ ] Redeploy API Render con código E7/E8
+- [ ] Redeploy API Render con código E7/E8/SPATI
+- [ ] Deploy Cloudflare Pages `metgo-spati` (root `frontend/spati`)
 
 ### E9 — Multi-tenant real + auth unificada
 

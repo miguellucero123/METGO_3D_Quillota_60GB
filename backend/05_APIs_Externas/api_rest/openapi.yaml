@@ -509,6 +509,93 @@ paths:
           description: Igual que la variante pública
         "401":
           description: Sin token
+  /api/public/spati/sitios:
+    get:
+      tags: [spati]
+      summary: Listado de sitios/grúas SPATI
+      responses:
+        "200":
+          description: sitios[]
+  /api/public/spati/{sitio_id}/pronostico:
+    get:
+      tags: [spati]
+      summary: Pronóstico izaje 72 h × 15 min (física + alertas 0–3)
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: escondida
+            description: >
+              Slugs alta montaña: quebrada_blanca, collahuasi, cerro_colorado,
+              el_abra, chuquicamata, radomiro_tomic, ministro_hales, spence,
+              escondida, el_penon, la_coipa, maricunga, candelaria, los_pelambres,
+              los_bronces, andina, el_teniente (+ mantos_blancos_rajo, paipote_izaje)
+      responses:
+        "200":
+          description: serie[], ventanas_seguras, resumen_ejecutivo
+        "404":
+          description: Sitio desconocido
+        "503":
+          description: NWP no disponible
+    post:
+      tags: [spati]
+      summary: Pronóstico SPATI con perfil de dron (asimilación)
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                perfil_dron: { type: object }
+                tau_horas: { type: number, default: 6 }
+      responses:
+        "200":
+          description: Igual que GET + sesgo_dron_kmh
+  /api/public/spati/physics/extrapolar:
+    post:
+      tags: [spati]
+      summary: Extrapolar viento a altura de pluma (perfil logarítmico)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [v_ref, h_objetivo, z0]
+              properties:
+                v_ref: { type: number }
+                h_objetivo: { type: number }
+                z0: { type: number }
+                h_ref: { type: number, default: 10 }
+      responses:
+        "200":
+          description: "{ v_kmh }"
+  /api/public/spati/physics/alta-montana:
+    post:
+      tags: [spati]
+      summary: Correcciones ISA — densidad, FR, v equivalente, GF por faena/altitud
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sitio_id: { type: string, example: quebrada_blanca }
+                altitud_msnm: { type: number }
+                temp_celsius: { type: number, description: T real del sitio (no ISA) }
+                tipo_terreno_eolico: { type: string }
+                zona_climatica: { type: string }
+      responses:
+        "200":
+          description: >
+            presion_barometrica_pa, rho_isa_kg_m3, factor_reduccion,
+            v_equiv_36_kmh, gust_factor (+ rho_real si se envía temp)
   /api/public/operaciones/faenas:
     get:
       tags: [operaciones]

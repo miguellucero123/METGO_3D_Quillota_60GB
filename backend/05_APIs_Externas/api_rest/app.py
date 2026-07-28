@@ -49,6 +49,7 @@ from api_rest.fase9_routes import register_fase9_routes
 from api_rest.fase10_routes import register_fase10_routes
 from api_rest.aire_routes import register_aire_routes
 from api_rest.operaciones_routes import register_operaciones_routes
+from api_rest.spati_routes import register_spati_routes
 from api_rest.precipitacion_routes import register_precipitacion_routes
 from api_rest.meteo_avanzada_routes import register_meteo_avanzada_routes
 from api_rest.mapas_routes import register_mapas_routes
@@ -151,6 +152,7 @@ def create_app() -> Flask:
     register_fase10_routes(app)
     register_aire_routes(app)
     register_operaciones_routes(app)
+    register_spati_routes(app)
     register_precipitacion_routes(app)
     register_meteo_avanzada_routes(app)
     register_mapas_routes(app)
