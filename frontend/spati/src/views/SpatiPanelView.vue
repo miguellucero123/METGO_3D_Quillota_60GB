@@ -94,6 +94,53 @@
       </section>
       <p v-else class="muted">Sin ventanas seguras ≥ 2 h en el horizonte.</p>
 
+      <section v-if="data.variables_zona_izaje" class="zona-ops">
+        <h2>Variables de zona de izaje (ahora)</h2>
+        <div class="ops-grid">
+          <div><span class="lbl">Condición</span><strong>{{ data.variables_zona_izaje.condicion_izaje }}</strong></div>
+          <div><span class="lbl">v 10 m</span><strong>{{ n(data.variables_zona_izaje.v_10m_kmh) }} km/h</strong></div>
+          <div><span class="lbl">v 80 m</span><strong>{{ n(data.variables_zona_izaje.v_80m_kmh) }} km/h</strong></div>
+          <div><span class="lbl">v 100 m</span><strong>{{ n(data.variables_zona_izaje.v_100m_kmh) }} km/h</strong></div>
+          <div><span class="lbl">v pluma {{ data.config?.altura_pluma_m }} m</span><strong>{{ n(data.variables_zona_izaje.v_pluma_kmh) }} km/h</strong></div>
+          <div><span class="lbl">Ráfaga 10 m</span><strong>{{ n(data.variables_zona_izaje.rafaga_10m_kmh) }} km/h</strong></div>
+          <div><span class="lbl">Cizalladura 10–100</span><strong>{{ n(data.variables_zona_izaje.cizalladura_10_100?.delta_v_kmh) }} km/h</strong></div>
+          <div><span class="lbl">Turbulencia</span><strong>{{ n(data.variables_zona_izaje.indice_turbulencia, 3) }}</strong></div>
+          <div><span class="lbl">Fuerza carga</span><strong>{{ n(data.variables_zona_izaje.fuerza_carga_n, 0) }} N</strong></div>
+          <div><span class="lbl">% límite</span><strong>{{ n(data.variables_zona_izaje.pct_limite_diseno, 0) }} %</strong></div>
+          <div><span class="lbl">Visibilidad</span><strong>{{ n(data.variables_zona_izaje.visibilidad_km, 1) }} km</strong></div>
+          <div><span class="lbl">RH / precip</span><strong>{{ n(data.variables_zona_izaje.rh_pct, 0) }} % · {{ n(data.variables_zona_izaje.precip_mmh, 1) }} mm/h</strong></div>
+        </div>
+      </section>
+
+      <section class="perfil-sec">
+        <h2>Perfil vertical de viento (10–200 m AGL)</h2>
+        <p class="muted">
+          Anclas NWP 10 / 80 / 100 m · niveles intermedios y 200 m por perfil logarítmico (z₀={{ data.config?.z0_terreno }})
+          · pluma marcada a {{ data.config?.altura_pluma_m }} m
+        </p>
+        <div class="perfil-charts">
+          <v-chart class="chart-perfil" :option="perfilAhoraOption" autoresize role="img" aria-label="Perfil ahora" />
+          <v-chart class="chart-perfil" :option="perfilPicoOption" autoresize role="img" aria-label="Perfil pico" />
+        </div>
+        <div class="perfil-tables" v-if="nivelesAhora.length">
+          <table>
+            <thead>
+              <tr><th>Altura (m)</th><th>Ahora (km/h)</th><th>F (N)</th><th>Pico (km/h)</th><th>Fuente</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in tablaPerfil" :key="row.h" :class="{ pluma: row.esPluma }">
+                <td>{{ row.h }}{{ row.esPluma ? ' · pluma' : '' }}</td>
+                <td>{{ n(row.vAhora) }}</td>
+                <td>{{ n(row.fAhora, 0) }}</td>
+                <td>{{ n(row.vPico) }}</td>
+                <td class="mono">{{ row.fuente }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <h2 class="serie-title">Serie 72 h</h2>
       <v-chart class="chart" :option="chartOption" autoresize role="img" aria-label="Serie SPATI" />
 
       <div class="legend">
@@ -139,6 +186,79 @@ function fmt(iso) {
     return iso
   }
 }
+
+function n(v, nd = 1) {
+  if (v == null || Number.isNaN(Number(v))) return '—'
+  return Number(v).toFixed(nd)
+}
+
+const nivelesAhora = computed(() => data.value?.perfil_vertical_ahora?.niveles || [])
+const nivelesPico = computed(() => data.value?.perfil_vertical_pico?.niveles || [])
+
+const tablaPerfil = computed(() => {
+  const ahora = Object.fromEntries((nivelesAhora.value || []).map((p) => [p.altura_m, p]))
+  const pico = Object.fromEntries((nivelesPico.value || []).map((p) => [p.altura_m, p]))
+  const hs = data.value?.config?.alturas_perfil_m || [10, 20, 30, 40, 50, 60, 70, 80, 100, 200]
+  const pluma = Number(data.value?.config?.altura_pluma_m || 55)
+  return hs.map((h) => ({
+    h,
+    vAhora: ahora[h]?.v_kmh,
+    fAhora: ahora[h]?.fuerza_n,
+    vPico: pico[h]?.v_kmh,
+    fuente: ahora[h]?.fuente || pico[h]?.fuente || '—',
+    esPluma: Math.abs(h - pluma) < 6,
+  }))
+})
+
+function perfilChart(niveles, titulo) {
+  const pts = (niveles || []).map((p) => [p.v_kmh, p.altura_m])
+  const pluma = Number(data.value?.config?.altura_pluma_m || 55)
+  return {
+    animation: false,
+    title: { text: titulo, left: 0, top: 0, textStyle: { fontSize: 12, color: '#94a3b8', fontWeight: 500 } },
+    tooltip: {
+      trigger: 'item',
+      formatter: (p) => `${p.value[1]} m AGL · ${p.value[0]} km/h`,
+    },
+    grid: { left: 48, right: 16, top: 32, bottom: 40 },
+    xAxis: { type: 'value', name: 'km/h', min: 0 },
+    yAxis: { type: 'value', name: 'm AGL', min: 0, max: 220 },
+    series: [
+      {
+        type: 'line',
+        data: pts,
+        symbolSize: 7,
+        lineStyle: { width: 2, color: '#14b8a6' },
+        itemStyle: { color: '#5eead4' },
+        markLine: {
+          symbol: 'none',
+          data: [
+            {
+              yAxis: pluma,
+              lineStyle: { color: '#3b82f6', type: 'dashed' },
+              label: { formatter: `pluma ${pluma} m`, position: 'insideEndTop' },
+            },
+            {
+              xAxis: 36,
+              lineStyle: { color: '#ef4444', type: 'dotted' },
+              label: { formatter: '36' },
+            },
+          ],
+        },
+      },
+    ],
+  }
+}
+
+const perfilAhoraOption = computed(() =>
+  perfilChart(nivelesAhora.value, `Ahora · ${fmt(data.value?.perfil_vertical_ahora?.valid_time)}`)
+)
+const perfilPicoOption = computed(() =>
+  perfilChart(
+    nivelesPico.value,
+    `Pico 72 h · ${fmt(data.value?.perfil_vertical_pico?.valid_time)} · ${n(data.value?.perfil_vertical_pico?.v_final_kmh)} km/h`
+  )
+)
 
 const chartOption = computed(() => {
   const serie = data.value?.serie || []
@@ -247,7 +367,18 @@ onMounted(async () => {
 .ventanas ul { margin: 0; padding-left: 1.1rem; }
 .muted { color: var(--color-muted); font-size: 0.85rem; }
 .ha-note { margin: 0 0 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border); }
-.chart { height: 360px; width: 100%; margin-top: 1rem; }
+.zona-ops, .perfil-sec { margin: 1.25rem 0; }
+.zona-ops h2, .perfil-sec h2, .serie-title { font-size: 1rem; margin: 0 0 0.5rem; }
+.ops-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.65rem; padding: 0.85rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.ops-grid .lbl { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); }
+.perfil-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; }
+.chart-perfil { height: 320px; width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.35rem; }
+.perfil-tables { margin-top: 0.75rem; overflow-x: auto; }
+.perfil-tables table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.perfil-tables th, .perfil-tables td { padding: 0.4rem 0.55rem; border-bottom: 1px solid var(--color-border); text-align: left; }
+.perfil-tables tr.pluma { background: rgba(59, 130, 246, 0.08); }
+.perfil-tables .mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.72rem; color: var(--color-muted); }
+.chart { height: 360px; width: 100%; margin-top: 0.5rem; }
 .legend { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
 .chip { font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--color-border); }
 .chip.n0 { color: #86efac; }

@@ -15,7 +15,11 @@ from api_rest.spati.drone_assimilator import DroneAssimilator, DroneProfileError
 from api_rest.spati.high_altitude_engine import HighAltitudeEngine
 from api_rest.spati.mos_corrector import MOSCorrector
 from api_rest.spati.nwp_ingestor import NWPDataUnavailableError, NWPIngestor
-from api_rest.spati.physics_engine import GruaConfig, PhysicsEngine
+from api_rest.spati.physics_engine import (
+    ALTURAS_PERFIL_IZAJES_M,
+    GruaConfig,
+    PhysicsEngine,
+)
 from api_rest.spati.sitios_catalogo import get_sitio, listar_sitios
 
 logger = logging.getLogger(__name__)
@@ -197,26 +201,76 @@ def run_spati(
 
     serie = []
     for ts, row in df.iterrows():
+        v10 = row.get("viento_modelo_10m")
+        perfil = None
+        ciz_10_100 = None
+        ciz_10_pluma = None
+        turb = None
+        try:
+            if v10 is not None and pd.notna(v10):
+                perfil = pe.perfil_vertical_izaje(
+                    float(v10),
+                    cfg.z0_terreno,
+                    alturas_m=ALTURAS_PERFIL_IZAJES_M,
+                    v_80m_kmh=_opt_float(row.get("viento_modelo_80m")),
+                    v_100m_kmh=_opt_float(row.get("viento_modelo_100m")),
+                    rho=_opt_float(row.get("rho")),
+                    area_m2=cfg.area_carga_m2,
+                    cd=float(row.get("coef_forma_cd_efectivo") or cfg.coef_forma_cd),
+                )
+                by_h = {p["altura_m"]: p["v_kmh"] for p in perfil}
+                if 10 in by_h and 100 in by_h:
+                    ciz_10_100 = pe.cizalladura_vertical(by_h[10], by_h[100], 10, 100)
+                v_pluma = _opt_float(row.get("v_fisica_grua"))
+                if v_pluma is not None and 10 in by_h:
+                    ciz_10_pluma = pe.cizalladura_vertical(
+                        by_h[10], v_pluma, 10, cfg.altura_pluma_m
+                    )
+                raf = _opt_float(row.get("rafaga_modelo_10m")) or _opt_float(
+                    row.get("v_final_kmh")
+                )
+                if raf is not None:
+                    turb = pe.indice_turbulencia(float(v10), raf)
+        except Exception as exc:
+            logger.debug("perfil vertical omitido: %s", exc)
+
+        nivel = int(row.get("nivel_alerta") or 0)
         serie.append(
             {
                 "valid_time": ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
                 "v_modelo_10m": _round(row.get("viento_modelo_10m")),
                 "v_modelo_80m": _round(row.get("viento_modelo_80m")),
+                "v_modelo_100m": _round(row.get("viento_modelo_100m")),
                 "v_fisica_grua": _round(row.get("v_fisica_grua")),
                 "v_mos_kmh": _round(row.get("v_mos_kmh")),
                 "v_final_kmh": _round(row.get("v_final_kmh")),
                 "v_eas_kmh": _round(row.get("v_eas_kmh")),
                 "dir_viento_deg": _round(row.get("dir_modelo")),
+                "dir_100m_deg": _round(row.get("dir_100m")),
                 "rafaga_modelo": _round(row.get("rafaga_modelo_10m")),
                 "temp_celsius": _round(row.get("temp_celsius")),
                 "presion_pa": _round(row.get("presion_pa"), 1),
+                "rh_pct": _round(row.get("rh_pct"), 1),
+                "visibilidad_m": _round(row.get("visibilidad_m"), 0),
+                "visibilidad_km": _round(
+                    (float(row["visibilidad_m"]) / 1000.0)
+                    if row.get("visibilidad_m") is not None
+                    and pd.notna(row.get("visibilidad_m"))
+                    else None,
+                    2,
+                ),
                 "rho": _round(row.get("rho"), 4),
                 "factor_reduccion": _round(row.get("factor_reduccion"), 4),
                 "fuerza_n": row.get("fuerza_n"),
                 "pct_fuerza": row.get("pct_limite_diseno"),
                 "precip_mmh": _round(row.get("precip_mmh"), 2),
                 "snowfall_mm": _round(row.get("snowfall_mm"), 2),
-                "nivel_alerta": int(row.get("nivel_alerta") or 0),
+                "perfil_vertical": perfil,
+                "cizalladura_10_100": ciz_10_100,
+                "cizalladura_10_pluma": ciz_10_pluma,
+                "indice_turbulencia": turb,
+                "condicion_izaje": _condicion_izaje(nivel),
+                "nivel_alerta": nivel,
                 "nivel_nombre": row.get("nivel_nombre"),
                 "flag_critico": bool(row.get("flag_critico")),
                 "flag_meteo": bool(row.get("flag_meteo")),
@@ -227,6 +281,22 @@ def run_spati(
                 "razon_alerta": row.get("razon_alerta"),
             }
         )
+
+    # Snapshots técnicos: ahora + instante de viento máximo en pluma
+    perfil_ahora = serie[0] if serie else None
+    idx_pico = 0
+    if serie:
+        vmax = -1.0
+        for i, s in enumerate(serie):
+            vf = s.get("v_final_kmh")
+            if vf is not None and float(vf) > vmax:
+                vmax = float(vf)
+                idx_pico = i
+    perfil_pico = serie[idx_pico] if serie else None
+
+    variables_zona = _variables_zona_izaje(
+        perfil_ahora, cfg, raw, gf, umbral_dron_ms, fr_isa, v_eq36
+    )
 
     nmax = int(df["nivel_alerta"].max()) if len(df) else 0
     return {
@@ -252,6 +322,7 @@ def run_spati(
             "factor_reduccion": fr_isa,
             "v_equiv_36_kmh": v_eq36,
             "umbral_dron_ms": round(umbral_dron_ms, 2) if umbral_dron_ms else None,
+            "alturas_perfil_m": list(ALTURAS_PERFIL_IZAJES_M),
         },
         "run_timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "horizonte_h": 72,
@@ -265,6 +336,20 @@ def run_spati(
         "ventanas_seguras": ventanas,
         "ventanas_restringidas": ventanas_rest,
         "resumen_ejecutivo": resumen,
+        "variables_zona_izaje": variables_zona,
+        "perfil_vertical_ahora": {
+            "valid_time": (perfil_ahora or {}).get("valid_time"),
+            "niveles": (perfil_ahora or {}).get("perfil_vertical"),
+            "cizalladura_10_100": (perfil_ahora or {}).get("cizalladura_10_100"),
+            "cizalladura_10_pluma": (perfil_ahora or {}).get("cizalladura_10_pluma"),
+        },
+        "perfil_vertical_pico": {
+            "valid_time": (perfil_pico or {}).get("valid_time"),
+            "v_final_kmh": (perfil_pico or {}).get("v_final_kmh"),
+            "niveles": (perfil_pico or {}).get("perfil_vertical"),
+            "cizalladura_10_100": (perfil_pico or {}).get("cizalladura_10_100"),
+            "cizalladura_10_pluma": (perfil_pico or {}).get("cizalladura_10_pluma"),
+        },
         "serie": serie,
         "umbrales": {
             "verde_max_kmh": 26,
@@ -275,6 +360,83 @@ def run_spati(
             "nota": "Umbral 36 km/h constante; control por fuerza F=½ρv²ACd (ρ corregida por altitud)",
             "v_equiv_nivel_mar_36_kmh": v_eq36,
         },
+    }
+
+
+def _opt_float(v: Any) -> float | None:
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return None
+    try:
+        return float(v)
+    except Exception:
+        return None
+
+
+def _condicion_izaje(nivel: int) -> str:
+    if nivel >= 3:
+        return "suspendido"
+    if nivel == 2:
+        return "restringido"
+    if nivel == 1:
+        return "precaucion"
+    return "apto"
+
+
+def _variables_zona_izaje(
+    actual: dict[str, Any] | None,
+    cfg: GruaConfig,
+    raw: dict[str, Any],
+    gust_factor: float,
+    umbral_dron_ms: float | None,
+    fr_isa: Any,
+    v_eq36: Any,
+) -> dict[str, Any]:
+    """KPIs operativos de la zona de trabajo de izaje (instante actual)."""
+    a = actual or {}
+    return {
+        "valid_time": a.get("valid_time"),
+        "altura_pluma_m": cfg.altura_pluma_m,
+        "z0_terreno_m": cfg.z0_terreno,
+        "gust_factor": gust_factor,
+        "altitud_msnm": raw.get("altitud_msnm"),
+        "zona_climatica": raw.get("zona_climatica"),
+        "riesgo_eolico": raw.get("riesgo_eolico"),
+        "v_10m_kmh": a.get("v_modelo_10m"),
+        "v_80m_kmh": a.get("v_modelo_80m"),
+        "v_100m_kmh": a.get("v_modelo_100m"),
+        "v_pluma_kmh": a.get("v_fisica_grua"),
+        "v_final_kmh": a.get("v_final_kmh"),
+        "v_eas_kmh": a.get("v_eas_kmh"),
+        "rafaga_10m_kmh": a.get("rafaga_modelo"),
+        "dir_10m_deg": a.get("dir_viento_deg"),
+        "dir_100m_deg": a.get("dir_100m_deg"),
+        "cizalladura_10_100": a.get("cizalladura_10_100"),
+        "cizalladura_10_pluma": a.get("cizalladura_10_pluma"),
+        "indice_turbulencia": a.get("indice_turbulencia"),
+        "temp_celsius": a.get("temp_celsius"),
+        "presion_pa": a.get("presion_pa"),
+        "rho_kg_m3": a.get("rho"),
+        "factor_reduccion": a.get("factor_reduccion") or fr_isa,
+        "fuerza_carga_n": a.get("fuerza_n"),
+        "pct_limite_diseno": a.get("pct_fuerza"),
+        "area_carga_m2": cfg.area_carga_m2,
+        "coef_forma_cd": cfg.coef_forma_cd,
+        "fuerza_limite_n": cfg.fuerza_limite_n,
+        "rh_pct": a.get("rh_pct"),
+        "visibilidad_km": a.get("visibilidad_km"),
+        "precip_mmh": a.get("precip_mmh"),
+        "snowfall_mm": a.get("snowfall_mm"),
+        "condicion_izaje": a.get("condicion_izaje"),
+        "nivel_alerta": a.get("nivel_alerta"),
+        "v_equiv_36_kmh": v_eq36,
+        "umbral_dron_ms": round(umbral_dron_ms, 2) if umbral_dron_ms else None,
+        "requiere_autorizacion_dgac": bool(raw.get("requiere_autorizacion_dgac")),
+        "alturas_perfil_m": list(ALTURAS_PERFIL_IZAJES_M),
+        "notas": [
+            "Perfil: anclas NWP 10/80/100 m + logarítmico a 20–70 y 200 m",
+            "Control operativo por fuerza aerodinámica y umbral 36 km/h (no se reduce por altitud)",
+            "Cizalladura 10–100 m crítica en rajos; validar con dron cuando DGAC lo permita",
+        ],
     }
 
 

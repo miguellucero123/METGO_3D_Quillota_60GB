@@ -534,7 +534,9 @@ paths:
               los_bronces, andina, el_teniente (+ mantos_blancos_rajo, paipote_izaje)
       responses:
         "200":
-          description: serie[], ventanas_seguras, resumen_ejecutivo
+          description: >
+            serie[] con perfil_vertical (10–200 m), cizalladura, variables_zona_izaje,
+            perfil_vertical_ahora / perfil_vertical_pico
         "404":
           description: Sitio desconocido
         "503":

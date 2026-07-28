@@ -130,6 +130,25 @@ def test_high_altitude_engine():
     n, raz = ha.elevar_nivel_por_flags(flags, 0)
     assert n >= 2 and "ZONDA" in raz
 
+def test_perfil_vertical_izaje():
+    _setup_api()
+    from api_rest.spati.physics_engine import ALTURAS_PERFIL_IZAJES_M, PhysicsEngine
+
+    pe = PhysicsEngine()
+    assert pe.velocidad_a_altura(20.0, 10.0, 0.15, 10.0) == 20.0
+    perfil = pe.perfil_vertical_izaje(
+        20.0, 0.25, v_80m_kmh=28.0, v_100m_kmh=30.0, rho=0.88, area_m2=12.5, cd=1.2
+    )
+    hs = [p["altura_m"] for p in perfil]
+    assert hs == list(ALTURAS_PERFIL_IZAJES_M)
+    assert perfil[0]["v_kmh"] == 20.0
+    assert perfil[-1]["altura_m"] == 200
+    assert perfil[-1]["v_kmh"] > perfil[0]["v_kmh"]
+    ciz = pe.cizalladura_vertical(20, 30, 10, 100)
+    assert ciz["delta_v_kmh"] == 10.0
+    assert pe.indice_turbulencia(20, 30) == 0.5
+
+
 def test_api_spati_sitios_y_physics():
     _setup_api()
     from api_rest.app import create_app
@@ -170,6 +189,17 @@ def test_api_spati_sitios_y_physics():
         assert body["config"]["alta_montana"] is True
         assert body["config"]["z0_terreno"] == 0.25
         assert body["config"]["factor_reduccion"] is not None
-        assert "serie" in body
+        assert body["config"]["alturas_perfil_m"] == [10, 20, 30, 40, 50, 60, 70, 80, 100, 200]
+        assert "variables_zona_izaje" in body
+        assert body["variables_zona_izaje"]["condicion_izaje"] in (
+            "apto",
+            "precaucion",
+            "restringido",
+            "suspendido",
+        )
+        assert body["perfil_vertical_ahora"]["niveles"]
+        assert len(body["perfil_vertical_ahora"]["niveles"]) == 10
+        assert body["serie"][0].get("perfil_vertical")
+        assert "cizalladura_10_100" in body["serie"][0]
         assert body["umbrales"]["flag_critico_kmh"] == 36
         assert body["serie"][0].get("factor_reduccion") is not None or body["serie"][0].get("rho") is not None
