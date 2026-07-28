@@ -4,7 +4,7 @@
 >
 > **Repos:** Quillota `D:\METGO_3D_Quillota_60GB` · Paine `D:\metgo-paine` (GitHub `miguellucero123/metgo-paine`).
 >
-> **Hosting Paine (2026-07-28):** canónico **Cloudflare Pages** (`metgo-paine` / `https://metgo-paine.pages.dev`). Netlify solo compatibilidad (stop builds tras cutover). Auth JWT E9 (`paine`/`paine123`). Módulo Carretera Austral en `/carretera`.
+> **Hosting Paine (2026-07-28):** canónico **Cloudflare Pages** (`metgo-paine` / `https://metgo-paine.pages.dev`). Netlify solo compatibilidad (stop builds tras cutover). Auth JWT E9 (`paine`/`paine123`). Módulo Carretera Austral en `/carretera` (**Leaflet + OpenStreetMap**, sin Google Maps).
 >
 > **Estado base (2026-07-23):** Paine ya usa el shell Quillota (header + sidebar + tokens dark) con acento cian y rutas `/`, `/estado`, `/meteo`, `/meteo/precipitacion`.
 >

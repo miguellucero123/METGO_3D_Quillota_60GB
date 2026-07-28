@@ -11,7 +11,7 @@ Migración: [`migrations/20260728120000_carretera_austral.sql`](migrations/20260
 
 Tablas `ca_localidades` / `ca_tramos` — lectura pública (anon), escritura `service_role`, Realtime en `ca_tramos`.
 
-SPA: repo `metgo-paine` → ruta `/carretera` (seed local si faltan `VITE_SUPABASE_*`).
+SPA: repo `metgo-paine` → ruta `/carretera` (Leaflet/OSM; seed local si faltan `VITE_SUPABASE_*`).
 
 ## Aplicar al remoto (recomendado)
 

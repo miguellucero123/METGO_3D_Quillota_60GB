@@ -22,7 +22,7 @@ Usuario → Cloudflare Pages (SPA) → /api/* (proxy 200) → https://metgo-api.
 
 1. Cloudflare Pages → Connect to Git → repo `metgo-paine` (root = `/`).
 2. Build: `npm ci && npm run build` · output `dist` · Node 20.
-3. Env: `VITE_METGO_API`, opcional `VITE_SUPABASE_*`, `VITE_GOOGLE_MAPS_API_KEY` (módulo `/carretera`).
+3. Env: `VITE_METGO_API`, opcional `VITE_SUPABASE_*` (Realtime tramos). Mapa `/carretera` = Leaflet + OpenStreetMap (**sin** API key de Google).
 4. CLI: `npm run pages:deploy` desde `D:\metgo-paine`.
 5. Cutover: stop builds en Netlify tras validar `https://metgo-paine.pages.dev`.
 6. Login demo: `paine` / `paine123` (JWT E9).
