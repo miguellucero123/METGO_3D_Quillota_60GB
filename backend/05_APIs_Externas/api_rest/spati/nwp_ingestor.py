@@ -155,8 +155,10 @@ class NWPIngestor:
             )
 
         df = pd.DataFrame(rows).set_index("valid_time").sort_index()
-        # Resample a 15 min
-        df = df.resample("15min").interpolate(method="time")
+        # All-None (p.ej. 500 hPa / rayos) → object dtype; interpolate("time") falla.
+        for col in list(df.columns):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+        df = df.resample("15min").interpolate(method="time", limit_direction="both")
         # Exactamente 72 h desde ahora (o desde primer timestamp)
         t0 = df.index.min()
         t1 = t0 + pd.Timedelta(hours=72)

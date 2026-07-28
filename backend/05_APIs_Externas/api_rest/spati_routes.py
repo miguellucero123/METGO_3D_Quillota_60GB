@@ -35,7 +35,7 @@ def register_spati_routes(app: Flask) -> None:
             data = run_spati(sitio_id)
         except Exception as exc:
             app.logger.warning("spati_pronostico %s: %s", sitio_id, exc)
-            return jsonify(_ERROR_503), 503
+            return jsonify({**_ERROR_503, "detalle": str(exc)}), 503
         if data.get("error") == "sitio_no_encontrado":
             return jsonify(data), 404
         if data.get("error"):
