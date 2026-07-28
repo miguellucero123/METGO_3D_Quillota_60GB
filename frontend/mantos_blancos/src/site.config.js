@@ -6,13 +6,19 @@ export default {
   sitio: 'mantos_blancos',
   productName: 'METGO',
   siteLabel: 'Mantos Blancos',
-  tagline: 'Operaciones de faena · Antofagasta',
+  tagline: 'Atmósfera · ventilación faena · operaciones · Antofagasta',
   region: 'Antofagasta · faena minera',
-  versionLabel: 'v0.1 · METGO Faena',
-  documentTitle: 'METGO Mantos Blancos — Operaciones',
+  versionLabel: 'v0.2 · METGO Faena + Atmósfera',
+  documentTitle: 'METGO Mantos Blancos — Faena y atmósfera',
   documentDescription:
-    'Ventanas operacionales: tronadura, transporte e izaje según viento, visibilidad y precipitación.',
+    'Ventanas operacionales, ventilación N/R/M, ICAP, dispersión y modelación airshed en faena Mantos Blancos.',
   center: { lat: -23.43, lon: -70.06 },
+  faena: {
+    id: 'mantos_blancos',
+    nombre: 'Mantos Blancos',
+    estacionAncla: 'mb_rajo',
+  },
+  bounds: { west: -70.35, south: -23.55, east: -69.95, north: -23.30 },
   api: {
     defaultPublicBase: 'https://metgo-api.onrender.com/api',
     localBase: 'http://127.0.0.1:8080/api',
@@ -32,8 +38,8 @@ export default {
   },
   storagePrefix: 'metgo_mantos',
   copy: {
-    headerTitle: 'Ventanas operacionales',
-  },
+  headerTitle: 'Faena y atmósfera',
+},
   stations: [
     {
       id: 1,

@@ -1,8 +1,21 @@
 <template>
   <aside id="metgo-sidebar" class="metgo-sidebar" aria-label="Navegación principal">
     <nav>
+      <p class="nav-section">Operaciones</p>
       <router-link
-        v-for="item in items"
+        v-for="item in operaciones"
+        :key="item.to"
+        :to="item.to"
+        class="nav-item"
+        active-class="nav-item--active"
+      >
+        <component :is="item.icon" :size="18" />
+        <span>{{ item.label }}</span>
+      </router-link>
+
+      <p class="nav-section">Observatorio</p>
+      <router-link
+        v-for="item in observatorio"
         :key="item.to"
         :to="item.to"
         class="nav-item"
@@ -18,13 +31,37 @@
 
 <script setup>
 import { inject } from 'vue'
-import { Gauge, Clock3, SlidersHorizontal } from 'lucide-vue-next'
+import {
+  Gauge,
+  Clock3,
+  SlidersHorizontal,
+  Map,
+  Waves,
+  HardHat,
+  Activity,
+  Satellite,
+  Thermometer,
+  Wind,
+  Layers,
+} from 'lucide-vue-next'
 
 const site = inject('site')
-const items = [
+
+const operaciones = [
   { to: '/', label: 'Panel turno', icon: Gauge },
-  { to: '/ventanas', label: 'Ventanas 48 h', icon: Clock3 },
+  { to: '/ventanas', label: 'Ventanas', icon: Clock3 },
   { to: '/umbrales', label: 'Umbrales', icon: SlidersHorizontal },
+]
+
+const observatorio = [
+  { to: '/mapa', label: 'Mapa', icon: Map },
+  { to: '/dispersion', label: 'Dispersión', icon: Waves },
+  { to: '/ventilacion', label: 'Ventilación N/R/M', icon: HardHat },
+  { to: '/sounding', label: 'Sounding', icon: Activity },
+  { to: '/satelite', label: 'Satélite', icon: Satellite },
+  { to: '/olas-calor', label: 'Olas de calor', icon: Thermometer },
+  { to: '/aire', label: 'Aire ICAP', icon: Wind },
+  { to: '/airshed', label: 'Airshed', icon: Layers },
 ]
 </script>
 
@@ -39,6 +76,18 @@ const items = [
   flex-direction: column;
   gap: 1rem;
   min-height: calc(100vh - 64px);
+}
+.nav-section {
+  margin: 0.65rem 0 0.35rem;
+  padding: 0 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+.nav-section:first-child {
+  margin-top: 0;
 }
 .nav-item {
   display: flex;

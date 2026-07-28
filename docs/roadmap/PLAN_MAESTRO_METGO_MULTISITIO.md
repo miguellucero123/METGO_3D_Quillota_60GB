@@ -127,7 +127,7 @@ El paso que permite "seguir incluyendo proyectos" sin costo marginal:
 
 ### E8 — Mantos Blancos (Antofagasta): enfoque minero-operacional
 
-> **Estado (2026-07-24):** backend + SPA + Supabase hechos — sync local pobló `operaciones_ventanas` (192 filas). Umbrales configurables + UV/SO₂. **Pendiente:** deploy Netlify (créditos) y redeploy Render con el código nuevo.
+> **Estado (2026-07-27):** backend + SPA operaciones ✅ · **observatorio atmósfera** (mapa, dispersión, ventilación N/R/M, sounding, satélite, olas, ICAP, airshed) portado con API faena genérica `/operaciones/faena/mantos_blancos/*`. **Pendiente:** deploy Cloudflare Pages `metgo-mantos` + redeploy Render.
 
 Reusa el 80 % de E7 (aire) + módulo operaciones:
 
@@ -137,8 +137,10 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] Puntos seed: rajo, campamento, chancado, ruta de acceso
 - [x] Identidad cobre, SPA faena
 - [x] Migración + sync Supabase (`operaciones_ventanas` 192 filas, 2026-07-24)
+- [x] Catálogo `faena_catalogo` + rutas `/api/public/operaciones/faena/{id}/*` (ventilacion, paquete, olas, satélite)
+- [x] SPA Mantos v0.2: mapa MapLibre, dispersión, ventilación N/R/M, sounding, satélite, olas, ICAP, airshed (bbox/fuentes Mantos)
 - [ ] Deploy Cloudflare Pages + CORS (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`; CORS en `render.yaml` incluye `*.pages.dev` plantilla)
-- [ ] Redeploy API Render con código E7/E8 (aún no pusheado a `origin/main`)
+- [ ] Redeploy API Render con código E7/E8
 
 ### E9 — Multi-tenant real + auth unificada
 

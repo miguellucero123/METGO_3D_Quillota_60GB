@@ -41,16 +41,32 @@ def register_operaciones_routes(app: Flask) -> None:
             app.logger.warning("operaciones_alertas %s error: %s", sitio, exc)
             return jsonify(_ERROR_503), 503
 
-    # ---- Paipote: ventilación N/R/M + informe + histórico ----
+    # ---- Faena genérica (Paipote / Mantos) + aliases /paipote/* ----
 
-    @app.get("/api/public/operaciones/paipote/ventilacion")
-    def public_paipote_ventilacion():
-        """Ventilación operativa N/R/M — corridas 06/18 UTC."""
+    def _faena_o_404(faena_id: str):
+        from api_rest.faena_catalogo import get_faena
+
+        f = get_faena(faena_id)
+        if not f:
+            return None, (jsonify({"error": "Faena no encontrada", "faena_id": faena_id}), 404)
+        return f, None
+
+    @app.get("/api/public/operaciones/faenas")
+    def public_operaciones_faenas():
+        from api_rest.faena_catalogo import listar_faenas
+
+        return jsonify({"faenas": listar_faenas()})
+
+    @app.get("/api/public/operaciones/faena/<faena_id>/ventilacion")
+    def public_faena_ventilacion(faena_id: str):
         from api_rest import ventilacion_service
 
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
         horizonte = (request.args.get("horizonte") or "horaria").strip().lower()
         forzar = (request.args.get("forzar") or "").strip().lower() in ("1", "true", "yes")
-        estacion = (request.args.get("estacion") or "paipote").strip().lower()
+        estacion = (request.args.get("estacion") or f["estacion_ancla"]).strip().lower()
         try:
             data = ventilacion_service.ventilacion_horizonte(
                 horizonte=horizonte, estacion_id=estacion, forzar=forzar
@@ -59,31 +75,36 @@ def register_operaciones_routes(app: Flask) -> None:
                 return jsonify({"error": "Estación no encontrada", "estacion_id": estacion}), 404
             return jsonify(data)
         except Exception as exc:
-            app.logger.warning("paipote_ventilacion error: %s", exc)
+            app.logger.warning("faena_ventilacion %s error: %s", faena_id, exc)
             return jsonify(_ERROR_503), 503
 
-    @app.get("/api/public/operaciones/paipote/paquete")
-    def public_paipote_paquete():
-        """Paquete completo (72h + 14d + 30-90 + tramos 3h + sinóptica)."""
+    @app.get("/api/public/operaciones/faena/<faena_id>/paquete")
+    def public_faena_paquete(faena_id: str):
         from api_rest import ventilacion_service
 
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
         forzar = (request.args.get("forzar") or "").strip().lower() in ("1", "true", "yes")
+        estacion = (request.args.get("estacion") or f["estacion_ancla"]).strip().lower()
         try:
-            data = ventilacion_service.construir_paquete("paipote", forzar_recalculo=forzar)
+            data = ventilacion_service.construir_paquete(estacion, forzar_recalculo=forzar)
             if data is None:
                 return jsonify(_ERROR_503), 503
             return jsonify(data)
         except Exception as exc:
-            app.logger.warning("paipote_paquete error: %s", exc)
+            app.logger.warning("faena_paquete %s error: %s", faena_id, exc)
             return jsonify(_ERROR_503), 503
 
-    @app.get("/api/public/operaciones/paipote/historico")
-    def public_paipote_historico():
-        """Histórico diario Archive (~7 años) para estudios."""
+    @app.get("/api/public/operaciones/faena/<faena_id>/historico")
+    def public_faena_historico(faena_id: str):
         from api_rest import ventilacion_service
 
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
         anios = max(1, min(request.args.get("anios", default=7, type=int) or 7, 10))
-        estacion = (request.args.get("estacion") or "paipote").strip().lower()
+        estacion = (request.args.get("estacion") or f["estacion_ancla"]).strip().lower()
         try:
             data = ventilacion_service.historico_diario(estacion, anios=anios)
             if data is None:
@@ -92,15 +113,17 @@ def register_operaciones_routes(app: Flask) -> None:
                 return jsonify(data), 503
             return jsonify(data)
         except Exception as exc:
-            app.logger.warning("paipote_historico error: %s", exc)
+            app.logger.warning("faena_historico %s error: %s", faena_id, exc)
             return jsonify(_ERROR_503), 503
 
-    @app.get("/api/public/operaciones/paipote/olas-calor")
-    def public_paipote_olas_calor():
-        """Olas de calor otoño/invierno (P90 climatológico 7 años)."""
+    @app.get("/api/public/operaciones/faena/<faena_id>/olas-calor")
+    def public_faena_olas_calor(faena_id: str):
         from api_rest import olas_calor_service
 
-        estacion = (request.args.get("estacion") or "paipote").strip().lower()
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        estacion = (request.args.get("estacion") or f["estacion_ancla"]).strip().lower()
         estacion_ano = (request.args.get("estacion_ano") or "otono").strip().lower()
         anios = max(3, min(request.args.get("anios", default=7, type=int) or 7, 10))
         try:
@@ -113,25 +136,50 @@ def register_operaciones_routes(app: Flask) -> None:
                 return jsonify(data), 503
             return jsonify(data)
         except Exception as exc:
-            app.logger.warning("paipote_olas_calor error: %s", exc)
+            app.logger.warning("faena_olas_calor %s error: %s", faena_id, exc)
             return jsonify(_ERROR_503), 503
 
-    @app.get("/api/public/operaciones/paipote/satelite")
-    def public_paipote_satelite():
-        """GOES VIS / IR / WV + diagnóstico incursión nubosa valle."""
+    @app.get("/api/public/operaciones/faena/<faena_id>/satelite")
+    def public_faena_satelite(faena_id: str):
         from api_rest import satelite_atmos_service
 
-        estacion = (request.args.get("estacion") or "paipote").strip().lower()
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        estacion = (request.args.get("estacion") or f["estacion_ancla"]).strip().lower()
         raw = (request.args.get("bandas") or "vis,ir,wv").strip().lower()
         bandas = [b.strip() for b in raw.split(",") if b.strip()]
         try:
             data = satelite_atmos_service.satelite_atmos(estacion, bandas=bandas)
             if data is None:
                 return jsonify({"error": "Estación no encontrada"}), 404
+            data["faena"] = f["id"]
+            data["faena_nombre"] = f["nombre"]
             return jsonify(data)
         except Exception as exc:
-            app.logger.warning("paipote_satelite error: %s", exc)
+            app.logger.warning("faena_satelite %s error: %s", faena_id, exc)
             return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/operaciones/paipote/ventilacion")
+    def public_paipote_ventilacion():
+        """Alias legacy → faena/paipote/ventilacion."""
+        return public_faena_ventilacion("paipote")
+
+    @app.get("/api/public/operaciones/paipote/paquete")
+    def public_paipote_paquete():
+        return public_faena_paquete("paipote")
+
+    @app.get("/api/public/operaciones/paipote/historico")
+    def public_paipote_historico():
+        return public_faena_historico("paipote")
+
+    @app.get("/api/public/operaciones/paipote/olas-calor")
+    def public_paipote_olas_calor():
+        return public_faena_olas_calor("paipote")
+
+    @app.get("/api/public/operaciones/paipote/satelite")
+    def public_paipote_satelite():
+        return public_faena_satelite("paipote")
 
     @app.get("/api/public/operaciones/conjunto/catalogo")
     def public_conjunto_catalogo():
@@ -206,6 +254,25 @@ def register_operaciones_routes(app: Flask) -> None:
             return jsonify(ventilacion_service.sincronizar_corrida("paipote"))
         except Exception as exc:
             app.logger.warning("cron_paipote_ventilacion error: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.post("/api/cron/faena/<faena_id>/ventilacion")
+    def cron_faena_ventilacion(faena_id: str):
+        from api_rest import ventilacion_service
+
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        token = request.args.get("token") or request.headers.get("X-Cron-Token") or ""
+        import os
+
+        secret = (os.getenv("CRON_SECRET") or "").strip()
+        if secret and token != secret:
+            return jsonify({"error": "no autorizado"}), 401
+        try:
+            return jsonify(ventilacion_service.sincronizar_corrida(f["estacion_ancla"]))
+        except Exception as exc:
+            app.logger.warning("cron_faena_ventilacion %s error: %s", faena_id, exc)
             return jsonify(_ERROR_503), 503
 
     @app.get("/api/public/operaciones/<estacion_id>/ventanas")

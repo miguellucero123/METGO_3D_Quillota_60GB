@@ -25,40 +25,83 @@ from api_rest.estaciones_catalogo import ESTACIONES_POR_SITIO, SLUG_A_NOMBRE
 
 TZ_CHILE = ZoneInfo("America/Santiago")
 
-# Dominio Copiapó (mismo bbox del mapa airshed)
-BBOX = {"west": -70.45, "south": -27.60, "east": -70.20, "north": -27.25}
+# Dominios por sitio (bbox mapa + airshed)
+BBOX_POR_SITIO: dict[str, dict[str, float]] = {
+    "copiapo": {"west": -70.45, "south": -27.60, "east": -70.20, "north": -27.25},
+    "mantos_blancos": {"west": -70.35, "south": -23.55, "east": -69.95, "north": -23.30},
+}
 
-# Fuentes de emisión seed (innovación: faenas + valle industrial)
-# Q relativo (µg/s equivalentes) para visualización operativa — no inventario legal.
-FUENTES_SEED: list[dict[str, Any]] = [
-    {
-        "id": "punta_del_cobre",
-        "nombre": "Punta del Cobre (faena)",
-        "lon": -70.21,
-        "lat": -27.44,
-        "q": 180.0,
-        "altura_m": 30.0,
-        "tipo": "mineria",
-    },
-    {
-        "id": "paipote",
-        "nombre": "Paipote (industrial)",
-        "lon": -70.2853,
-        "lat": -27.4064,
-        "q": 120.0,
-        "altura_m": 25.0,
-        "tipo": "industrial",
-    },
-    {
-        "id": "copiapo_centro",
-        "nombre": "Área urbana (área source)",
-        "lon": -70.3323,
-        "lat": -27.3668,
-        "q": 40.0,
-        "altura_m": 10.0,
-        "tipo": "urbano",
-    },
-]
+# Fuentes seed por sitio (Q relativo µg/s — visualización operativa)
+FUENTES_POR_SITIO: dict[str, list[dict[str, Any]]] = {
+    "copiapo": [
+        {
+            "id": "punta_del_cobre",
+            "nombre": "Punta del Cobre (faena)",
+            "lon": -70.21,
+            "lat": -27.44,
+            "q": 180.0,
+            "altura_m": 30.0,
+            "tipo": "mineria",
+        },
+        {
+            "id": "paipote",
+            "nombre": "Paipote (industrial)",
+            "lon": -70.2853,
+            "lat": -27.4064,
+            "q": 120.0,
+            "altura_m": 25.0,
+            "tipo": "industrial",
+        },
+        {
+            "id": "copiapo_centro",
+            "nombre": "Área urbana (área source)",
+            "lon": -70.3323,
+            "lat": -27.3668,
+            "q": 40.0,
+            "altura_m": 10.0,
+            "tipo": "urbano",
+        },
+    ],
+    "mantos_blancos": [
+        {
+            "id": "mb_rajo",
+            "nombre": "Rajo Mantos Blancos",
+            "lon": -70.06,
+            "lat": -23.43,
+            "q": 200.0,
+            "altura_m": 35.0,
+            "tipo": "mineria",
+        },
+        {
+            "id": "mb_chancado",
+            "nombre": "Chancado (polvo)",
+            "lon": -70.07,
+            "lat": -23.44,
+            "q": 110.0,
+            "altura_m": 20.0,
+            "tipo": "proceso",
+        },
+        {
+            "id": "mb_ruta_acceso",
+            "nombre": "Ruta de acceso (tráfico)",
+            "lon": -70.2,
+            "lat": -23.5,
+            "q": 55.0,
+            "altura_m": 5.0,
+            "tipo": "transporte",
+        },
+    ],
+}
+
+# Compat legacy
+BBOX = BBOX_POR_SITIO["copiapo"]
+FUENTES_SEED = FUENTES_POR_SITIO["copiapo"]
+
+
+def _dominio(sitio: str) -> tuple[dict[str, float], list[dict[str, Any]]]:
+    bbox = BBOX_POR_SITIO.get(sitio) or BBOX_POR_SITIO["copiapo"]
+    fuentes = FUENTES_POR_SITIO.get(sitio) or FUENTES_POR_SITIO["copiapo"]
+    return bbox, fuentes
 
 PIPELINE = [
     {
@@ -240,18 +283,18 @@ def _build_grid(
     ny: int = 36,
     sitio: str = "copiapo",
 ) -> dict[str, Any]:
+    bbox, fuentes = _dominio(sitio)
     u = float(meteo["viento_velocidad"])
     dir_from = float(meteo["viento_direccion"])
     pbl = meteo.get("altura_capa_limite")
     clase = _estabilidad_clase(bool(meteo.get("inversion")), u, pbl)
-    mid_lat = (BBOX["south"] + BBOX["north"]) / 2
+    mid_lat = (bbox["south"] + bbox["north"]) / 2
     m_lon, m_lat = _m_per_deg(mid_lat)
 
     # Muestras estación para fusión
     pm_map = _pm_estaciones(sitio)
     samples: dict[str, tuple[float, float, float]] = {}
     for slug, val in pm_map.items():
-        # coords from FUENTES or catalog — use site stations approx via COORDS
         from api_rest.estaciones_catalogo import COORDS
 
         c = COORDS.get(slug)
@@ -259,10 +302,10 @@ def _build_grid(
             samples[slug] = (c["lon"], c["lat"], val)
 
     lons = [
-        BBOX["west"] + (BBOX["east"] - BBOX["west"]) * (i + 0.5) / nx for i in range(nx)
+        bbox["west"] + (bbox["east"] - bbox["west"]) * (i + 0.5) / nx for i in range(nx)
     ]
     lats = [
-        BBOX["south"] + (BBOX["north"] - BBOX["south"]) * (j + 0.5) / ny for j in range(ny)
+        bbox["south"] + (bbox["north"] - bbox["south"]) * (j + 0.5) / ny for j in range(ny)
     ]
 
     values: list[list[float]] = []
@@ -275,7 +318,7 @@ def _build_grid(
         row: list[float] = []
         for i, lon in enumerate(lons):
             c_plume = 0.0
-            for src in FUENTES_SEED:
+            for src in fuentes:
                 east = (lon - src["lon"]) * m_lon
                 north = (lat - src["lat"]) * m_lat
                 x, y = _rot_wind_frame(east, north, dir_from)
@@ -325,8 +368,9 @@ def _build_grid(
         "max": {"value": vmax, "lon": round(vmax_lon, 5), "lat": round(vmax_lat, 5)},
         "heat_geojson": {"type": "FeatureCollection", "features": heat_points},
         "wind_vectors": wind_vectors,
-        "fuentes": FUENTES_SEED,
+        "fuentes": fuentes,
         "estaciones_pm": pm_map,
+        "bbox": bbox,
     }
 
 
@@ -345,8 +389,11 @@ def modelar_airshed(
     ny = max(12, min(int(ny), 48))
     frames = max(1, min(int(frames), 12))
 
-    meteo = _meteo_frame("copiapo_centro" if sitio == "copiapo" else ESTACIONES_POR_SITIO[sitio][0])
+    meteo = _meteo_frame(
+        "copiapo_centro" if sitio == "copiapo" else ESTACIONES_POR_SITIO[sitio][0]
+    )
     serie = meteo.pop("serie", []) or []
+    bbox, _fuentes = _dominio(sitio)
 
     frame_list: list[dict[str, Any]] = []
     # Frame 0 = ahora
@@ -408,7 +455,7 @@ def modelar_airshed(
             "regulatoria con AERMOD/CALPUFF certificados."
         ),
         "sitio": sitio,
-        "bbox": BBOX,
+        "bbox": bbox,
         "pipeline": PIPELINE,
         "estaciones": [
             {"id": s, "nombre": SLUG_A_NOMBRE.get(s, s)} for s in ESTACIONES_POR_SITIO.get(sitio, [])

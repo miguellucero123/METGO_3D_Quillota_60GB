@@ -153,3 +153,56 @@ def test_api_operaciones_endpoints():
     umb = ru.get_json()
     assert "umbrales" in umb
     assert "izaje" in umb["umbrales"]
+
+
+def test_faena_catalogo_mantos():
+    _setup_api()
+    from api_rest.faena_catalogo import get_faena, listar_faenas, estacion_ancla
+
+    f = get_faena("mantos_blancos")
+    assert f is not None
+    assert f["estacion_ancla"] == "mb_rajo"
+    assert estacion_ancla("mantos") == "mb_rajo"
+    ids = {x["id"] for x in listar_faenas()}
+    assert "paipote" in ids and "mantos_blancos" in ids
+
+
+def test_api_faena_mantos_endpoints():
+    _setup_api()
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    rl = c.get("/api/public/operaciones/faenas")
+    assert rl.status_code == 200
+    assert any(f["id"] == "mantos_blancos" for f in rl.get_json()["faenas"])
+
+    r404 = c.get("/api/public/operaciones/faena/no_existe/paquete")
+    assert r404.status_code == 404
+
+    # Puede ser 200 o 503 según red Open-Meteo
+    rv = c.get("/api/public/operaciones/faena/mantos_blancos/ventilacion?horizonte=horaria")
+    assert rv.status_code in (200, 503)
+    if rv.status_code == 200:
+        body = rv.get_json()
+        assert body.get("faena") == "mantos_blancos"
+        assert body.get("estacion_id") == "mb_rajo"
+
+    rs = c.get("/api/public/operaciones/faena/mantos_blancos/satelite?estacion=mb_rajo")
+    assert rs.status_code in (200, 404, 503)
+    if rs.status_code == 200:
+        body = rs.get_json()
+        assert "bandas" in body
+        assert body.get("faena") == "mantos_blancos"
+
+
+def test_airshed_mantos_bbox():
+    _setup_api()
+    from api_rest.airshed_model_service import BBOX_POR_SITIO, FUENTES_POR_SITIO, modelar_airshed
+
+    assert "mantos_blancos" in BBOX_POR_SITIO
+    assert any(f["id"] == "mb_rajo" for f in FUENTES_POR_SITIO["mantos_blancos"])
+    out = modelar_airshed(sitio="mantos_blancos", nx=12, ny=12, frames=1)
+    assert "error" not in out or out.get("error") != "sitio_desconocido"
+    if "error" not in out:
+        assert out["sitio"] == "mantos_blancos"
+        assert out["bbox"]["south"] > -24

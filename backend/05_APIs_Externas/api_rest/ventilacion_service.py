@@ -32,7 +32,7 @@ TZ_UTC = timezone.utc
 ESTACION_ANCLA = "paipote"
 CORRIDAS_UTC = (6, 18)
 
-_CACHE_DIR = Path(__file__).resolve().parents[3] / "metgo" / "cache" / "ventilacion_paipote"
+_CACHE_DIR = Path(__file__).resolve().parents[3] / "metgo" / "cache" / "ventilacion_faena"
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Índice de dispersión → código operativo
@@ -97,17 +97,24 @@ def corrida_vigente(ahora: datetime | None = None) -> dict[str, Any]:
     }
 
 
-def _cache_path(corrida_en: str) -> Path:
+def _cache_path(corrida_en: str, estacion_id: str = ESTACION_ANCLA) -> Path:
     safe = corrida_en.replace(":", "").replace("+", "_")
-    return _CACHE_DIR / f"corrida_{safe}.json"
+    est = (estacion_id or ESTACION_ANCLA).strip().lower().replace("-", "_")
+    return _CACHE_DIR / f"corrida_{est}_{safe}.json"
 
 
 def _guardar_snapshot(payload: dict[str, Any]) -> None:
     try:
-        path = _cache_path(payload.get("corrida_en") or "na")
+        est = payload.get("estacion_id") or ESTACION_ANCLA
+        path = _cache_path(payload.get("corrida_en") or "na", est)
         path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-        # Mantener solo últimas 6 corridas
-        archivos = sorted(_CACHE_DIR.glob("corrida_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        # Mantener solo últimas 6 corridas por estación
+        pref = f"corrida_{est}_"
+        archivos = sorted(
+            [p for p in _CACHE_DIR.glob("corrida_*.json") if p.name.startswith(pref)],
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
         for viejo in archivos[6:]:
             try:
                 viejo.unlink()
@@ -117,9 +124,15 @@ def _guardar_snapshot(payload: dict[str, Any]) -> None:
         pass
 
 
-def _cargar_ultimo_snapshot() -> dict[str, Any] | None:
+def _cargar_ultimo_snapshot(estacion_id: str = ESTACION_ANCLA) -> dict[str, Any] | None:
     try:
-        archivos = sorted(_CACHE_DIR.glob("corrida_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        est = (estacion_id or ESTACION_ANCLA).strip().lower().replace("-", "_")
+        pref = f"corrida_{est}_"
+        archivos = sorted(
+            [p for p in _CACHE_DIR.glob("corrida_*.json") if p.name.startswith(pref)],
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
         if not archivos:
             return None
         return json.loads(archivos[0].read_text(encoding="utf-8"))
@@ -186,16 +199,34 @@ def construir_paquete(
     forzar_recalculo: bool = False,
 ) -> dict[str, Any] | None:
     """Construye (o reusa snapshot) el paquete de ventilación de la corrida vigente."""
-    meta = corrida_vigente()
-    if not forzar_recalculo:
-        snap = _cargar_ultimo_snapshot()
-        if snap and snap.get("corrida_en") == meta["corrida_en"]:
-            snap["meta_consulta"] = meta
-            return snap
+    from api_rest.faena_catalogo import FAENAS, get_faena
 
+    meta = corrida_vigente()
     slug = (estacion_id or ESTACION_ANCLA).strip().lower().replace("-", "_")
     if slug not in SLUG_A_NOMBRE or COORDS.get(slug) is None:
         return None
+
+    if not forzar_recalculo:
+        snap = _cargar_ultimo_snapshot(slug)
+        if snap and snap.get("corrida_en") == meta["corrida_en"] and snap.get("estacion_id") == slug:
+            snap["meta_consulta"] = meta
+            return snap
+
+    # Resolver faena por estación ancla
+    faena_id = "paipote"
+    modelo = "METGO-Ventilacion-v1"
+    for fid, meta_f in FAENAS.items():
+        if meta_f.get("estacion_ancla") == slug or fid == slug:
+            faena_id = fid
+            modelo = meta_f.get("modelo_ventilacion") or modelo
+            break
+    else:
+        # estación no ancla: heredar faena del sitio si es mb_*
+        if slug.startswith("mb_"):
+            f = get_faena("mantos_blancos")
+            if f:
+                faena_id = f["id"]
+                modelo = f.get("modelo_ventilacion") or modelo
 
     horaria_raw = dispersion_service.dispersion_horaria(slug, horas=72) or []
     horaria = [_enriquecer_hora(f) for f in horaria_raw]
@@ -244,10 +275,10 @@ def construir_paquete(
     sinoptica = _sinoptica_heuristica(horaria)
 
     payload = {
-        "faena": "paipote",
+        "faena": faena_id,
         "estacion_id": slug,
         "estacion_nombre": SLUG_A_NOMBRE.get(slug, slug),
-        "modelo": "METGO-Ventilacion-Paipote-v1",
+        "modelo": modelo,
         "codigos": {"N": "normal", "R": "regular", "M": "mala"},
         "corrida_utc": meta["corrida_utc"],
         "corrida_en": meta["corrida_en"],

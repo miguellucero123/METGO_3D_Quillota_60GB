@@ -509,6 +509,99 @@ paths:
           description: Igual que la variante pública
         "401":
           description: Sin token
+  /api/public/operaciones/faenas:
+    get:
+      tags: [operaciones]
+      summary: Listado de faenas atmosféricas (Paipote, Mantos Blancos, …)
+      responses:
+        "200":
+          description: faenas[] con estacion_ancla, bbox, sitio
+  /api/public/operaciones/faena/{faena_id}/ventilacion:
+    get:
+      tags: [operaciones]
+      summary: Ventilación N/R/M por faena (corridas 06/18 UTC)
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string, enum: [paipote, mantos_blancos] }
+        - name: horizonte
+          in: query
+          schema: { type: string, enum: [horaria, diaria, proyeccion], default: horaria }
+        - name: estacion
+          in: query
+          schema: { type: string, description: "Default = estacion_ancla de la faena" }
+        - name: forzar
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Serie con ventilacion N|R|M
+        "404":
+          description: Faena o estación desconocida
+        "503":
+          description: Sin meteo
+  /api/public/operaciones/faena/{faena_id}/paquete:
+    get:
+      tags: [operaciones]
+      summary: Paquete completo ventilación por faena
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string, enum: [paipote, mantos_blancos] }
+        - name: estacion
+          in: query
+          schema: { type: string }
+        - name: forzar
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Snapshot corrida vigente
+        "503":
+          description: Error de modelación
+  /api/public/operaciones/faena/{faena_id}/olas-calor:
+    get:
+      tags: [operaciones]
+      summary: Olas de calor (P90) por faena
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string, enum: [paipote, mantos_blancos] }
+        - name: estacion
+          in: query
+          schema: { type: string }
+        - name: estacion_ano
+          in: query
+          schema: { type: string, enum: [otono, invierno, todas], default: otono }
+        - name: anios
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: eventos[]
+        "503":
+          description: Sin histórico
+  /api/public/operaciones/faena/{faena_id}/satelite:
+    get:
+      tags: [operaciones]
+      summary: GOES VIS/IR/WV + diagnóstico por faena
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string, enum: [paipote, mantos_blancos] }
+        - name: estacion
+          in: query
+          schema: { type: string }
+        - name: bandas
+          in: query
+          schema: { type: string, default: "vis,ir,wv" }
+      responses:
+        "200":
+          description: bandas[] + diagnostico
   /api/public/operaciones/paipote/ventilacion:
     get:
       tags: [operaciones]

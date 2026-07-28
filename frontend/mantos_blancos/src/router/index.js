@@ -26,6 +26,54 @@ const routes = [
     component: () => import('@/views/UmbralesView.vue'),
     meta: { title: 'Umbrales' },
   },
+  {
+    path: '/mapa',
+    name: 'mapa',
+    component: () => import('@/views/MapaView.vue'),
+    meta: { title: 'Mapa' },
+  },
+  {
+    path: '/dispersion',
+    name: 'dispersion',
+    component: () => import('@/views/DispersionView.vue'),
+    meta: { title: 'Dispersión' },
+  },
+  {
+    path: '/ventilacion',
+    name: 'ventilacion',
+    component: () => import('@/views/VentilacionFaenaView.vue'),
+    meta: { title: 'Ventilación N/R/M' },
+  },
+  {
+    path: '/sounding',
+    name: 'sounding',
+    component: () => import('@/views/SoundingView.vue'),
+    meta: { title: 'Sounding' },
+  },
+  {
+    path: '/satelite',
+    name: 'satelite',
+    component: () => import('@/views/SateliteAtmosView.vue'),
+    meta: { title: 'Satélite' },
+  },
+  {
+    path: '/olas-calor',
+    name: 'olas-calor',
+    component: () => import('@/views/OlasCalorView.vue'),
+    meta: { title: 'Olas de calor' },
+  },
+  {
+    path: '/aire',
+    name: 'aire',
+    component: () => import('@/views/AirePanelView.vue'),
+    meta: { title: 'Aire ICAP' },
+  },
+  {
+    path: '/airshed',
+    name: 'airshed',
+    component: () => import('@/views/AirshedModelView.vue'),
+    meta: { title: 'Airshed Modeler' },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
