@@ -108,6 +108,8 @@ def expand_cors_origins(raw: list[str] | None = None) -> Any:
             "https://metgo-quillota.pages.dev",
             "https://metgo-copiapo.pages.dev",
             "https://metgo-mantos.pages.dev",
+            "https://metgo-paine.pages.dev",
+            "https://metgo-spati.pages.dev",
             "https://metgo-3d-quillota-60gb.streamlit.app",
         ]
 

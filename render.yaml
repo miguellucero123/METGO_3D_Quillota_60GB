@@ -20,7 +20,7 @@ services:
         value: 0.0.0.0
       # Incluir *.pages.dev reales tras crear proyectos Cloudflare Pages.
       - key: METGO_CORS_ORIGINS
-        value: https://metgo3d.netlify.app,https://metgo-quillota.pages.dev,https://metgo-copiapo.pages.dev,https://metgo-mantos.pages.dev,https://metgo-3d-quillota-60gb.streamlit.app,https://metgo-paine.netlify.app,https://metgo-copiapo.netlify.app,https://metgo-mantos.netlify.app
+        value: https://metgo3d.netlify.app,https://metgo-quillota.pages.dev,https://metgo-copiapo.pages.dev,https://metgo-mantos.pages.dev,https://metgo-paine.pages.dev,https://metgo-spati.pages.dev,https://metgo-3d-quillota-60gb.streamlit.app,https://metgo-paine.netlify.app,https://metgo-copiapo.netlify.app,https://metgo-mantos.netlify.app
       - key: METGO_STREAMLIT_CLOUD_URL
         value: https://metgo-streamlit.onrender.com
       - key: METGO_JWT_SECRET

@@ -2,7 +2,9 @@
 
 > **Objetivo:** armonizar ambos productos (design system, gráficos, datos y API) manteniendo la identidad y el objetivo de cada uno: Quillota = AgriTech operacional (verde `#00ffaa`), Paine = clima outdoor/criósfera (cian `#22d3ee`).
 >
-> **Repos:** Quillota `D:\METGO_3D_Quillota_60GB` · Paine `D:\metgo-paine` (GitHub `miguellucero123/metgo-paine`, Netlify propio).
+> **Repos:** Quillota `D:\METGO_3D_Quillota_60GB` · Paine `D:\metgo-paine` (GitHub `miguellucero123/metgo-paine`).
+>
+> **Hosting Paine (2026-07-28):** canónico **Cloudflare Pages** (`metgo-paine` / `https://metgo-paine.pages.dev`). Netlify solo compatibilidad (stop builds tras cutover). Auth JWT E9 (`paine`/`paine123`). Módulo Carretera Austral en `/carretera`.
 >
 > **Estado base (2026-07-23):** Paine ya usa el shell Quillota (header + sidebar + tokens dark) con acento cian y rutas `/`, `/estado`, `/meteo`, `/meteo/precipitacion`.
 >
@@ -170,7 +172,7 @@ npm i echarts vue-echarts
 | 6 | 4 Paine → metgo-api | Paine + Render | Bajo | 5 |
 | 7 | 5 backports UX | Quillota | Bajo | 2 |
 
-Commits/push/deploy: solo con instrucción explícita del usuario (regla 5 AGENTS.md). Netlify Paine redeploya al push a `main` de `metgo-paine`.
+Commits/push/deploy: solo con instrucción explícita del usuario (regla 5 AGENTS.md). Cloudflare Pages Paine redeploya al push a `main` de `metgo-paine` (o `npm run pages:deploy`).
 
 ## Fase roadmap
 

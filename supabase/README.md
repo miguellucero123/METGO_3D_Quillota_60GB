@@ -2,8 +2,16 @@
 
 Proyecto linkeado: `ylivhjigvxqzpzchllte` (`supabase/.temp/project-ref`).
 
-Fuente canónica del SQL: `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`  
+Fuente canónica del SQL: `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`
 Migración CLI: `supabase/migrations/20260722011000_meteo_tablas_y_helada_cultivo.sql`
+
+## Carretera Austral (módulo Paine `/carretera`)
+
+Migración: [`migrations/20260728120000_carretera_austral.sql`](migrations/20260728120000_carretera_austral.sql)
+
+Tablas `ca_localidades` / `ca_tramos` — lectura pública (anon), escritura `service_role`, Realtime en `ca_tramos`.
+
+SPA: repo `metgo-paine` → ruta `/carretera` (seed local si faltan `VITE_SUPABASE_*`).
 
 ## Aplicar al remoto (recomendado)
 
@@ -33,6 +41,7 @@ Aplicadas (E7/E8 multi-sitio):
 | `…24120000_mantos_blancos_operaciones` | faena + `operaciones_ventanas` |
 | `…24130000_operaciones_uv_so2` | columnas UV/SO₂ |
 | `…24140000_e7_e8_grants_rls` | GRANTs `service_role` + RLS lectura |
+| `…28120000_carretera_austral` | `ca_localidades` + `ca_tramos` (módulo Paine) |
 
 Verificación:
 

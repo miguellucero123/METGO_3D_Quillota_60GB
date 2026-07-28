@@ -14,9 +14,18 @@ Usuario → Cloudflare Pages (SPA) → /api/* (proxy 200) → https://metgo-api.
 | Copiapó | `frontend/copiapo` | `metgo-copiapo` | sí |
 | Mantos Blancos | `frontend/mantos_blancos` | `metgo-mantos` | sí |
 | SPATI Izaje | `frontend/spati` | `metgo-spati` | sí |
-| Paine | repo `metgo-paine` | propio | en ese repo |
+| Paine | repo `metgo-paine` (`D:\metgo-paine`) | `metgo-paine` | sí (`wrangler.toml` en ese repo) |
 
 `netlify.toml` se mantiene por compatibilidad; no hace falta borrarlo.
+
+### Paine (repo aparte)
+
+1. Cloudflare Pages → Connect to Git → repo `metgo-paine` (root = `/`).
+2. Build: `npm ci && npm run build` · output `dist` · Node 20.
+3. Env: `VITE_METGO_API`, opcional `VITE_SUPABASE_*`, `VITE_GOOGLE_MAPS_API_KEY` (módulo `/carretera`).
+4. CLI: `npm run pages:deploy` desde `D:\metgo-paine`.
+5. Cutover: stop builds en Netlify tras validar `https://metgo-paine.pages.dev`.
+6. Login demo: `paine` / `paine123` (JWT E9).
 
 ---
 
@@ -72,7 +81,7 @@ Cloudflare Pages interpreta `_redirects` al estilo Netlify (status `200` = proxy
 Tras el primer deploy, anota las URLs `*.pages.dev` (y dominio custom si lo hay) y añádelas a `METGO_CORS_ORIGINS` en Render:
 
 ```text
-https://metgo3d.netlify.app,https://metgo-quillota.pages.dev,https://metgo-copiapo.pages.dev,https://metgo-mantos.pages.dev,https://metgo-3d-quillota-60gb.streamlit.app,...
+https://metgo3d.netlify.app,https://metgo-quillota.pages.dev,https://metgo-copiapo.pages.dev,https://metgo-mantos.pages.dev,https://metgo-paine.pages.dev,https://metgo-3d-quillota-60gb.streamlit.app,...
 ```
 
 La API también acepta **previews** automáticamente (`https://{hash}.metgo-copiapo.pages.dev`) vía regex en `expand_cors_origins` — no hace falta listar cada deploy preview. Tras cambiar CORS en código: **redeploy Render**.
@@ -92,7 +101,13 @@ npm run build
 npx wrangler pages deploy dist --project-name=metgo-quillota
 ```
 
-Repite con `frontend\copiapo` → `metgo-copiapo` y `frontend\mantos_blancos` → `metgo-mantos`.
+Repite con `frontend\copiapo` → `metgo-copiapo`, `frontend\mantos_blancos` → `metgo-mantos`, y Paine:
+
+```powershell
+cd D:\metgo-paine
+npm ci
+npm run pages:deploy
+```
 
 Requiere `npx wrangler login` una vez.
 
@@ -118,7 +133,7 @@ Invoke-WebRequest "$UI/api/health" | Select-Object StatusCode
 # Navegador: login admin / admin123 · Dashboard · Proyecciones ML (facetas)
 ```
 
-Copiapó: `copiapo` / `copiapo123` · Mantos: `mantos` / `mantos123`.
+Copiapó: `copiapo` / `copiapo123` · Mantos: `mantos` / `mantos123` · Paine: `paine` / `paine123` (`https://metgo-paine.pages.dev`).
 
 ---
 

@@ -148,7 +148,7 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 
 > **Estado (2026-07-24):** cerrado en monorepo — JWT `sitio`, filtro estaciones, preferencias,
 > login Quillota/Copiapó/Mantos, membresía demo + RLS (escritura solo `service_role`).
-> Paine: credencial `paine`/`paine123` lista en API; SPA en repo aparte (aplicar mismo patrón).
+> **2026-07-28:** SPA Paine cableada a JWT metgo-api + Cloudflare Pages (`wrangler.toml`, cutover desde Netlify).
 
 - [x] JWT `metgo-api` con claim `sitio`; RBAC por sitio (admin global `sitio=None`)
 - [x] Filtrado JWT de listados y estaciones fuera de membresía (meteo/aire/agrícola)
@@ -156,7 +156,7 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] SPA Quillota: login con `sitio=quillota` + sync prefs
 - [x] SPA Copiapó / Mantos Blancos: login JWT + guard de rutas
 - [x] Tabla `user_sitio_membresia` + RLS series (SELECT público, write service_role)
-- [ ] SPA Paine (repo `metgo-paine`): cablear login contra metgo-api (patrón Copiapó)
+- [x] SPA Paine (repo `metgo-paine`): login JWT metgo-api + CF Pages + módulo Carretera Austral
 
 ### E10 — Clase mundial I: confiabilidad
 
@@ -227,7 +227,7 @@ Nuevos de plataforma:
 - [x] Template repo + `site.config.js` (E6)
 - [x] Claim JWT `sitio` + preferencias usuario+sitio + filtro estaciones (E9)
 - [x] Login Copiapó/Mantos + `user_sitio_membresia` + RLS write service_role (E9)
-- [ ] Login SPA Paine contra metgo-api (E9 resto / repo aparte)
+- [x] Login SPA Paine contra metgo-api + Cloudflare Pages (E9 / 2026-07-28)
 - [x] Health sitios + SLOs + metrics histograma + smoke E2E/k6 (E10 parcial)
 - [ ] Grafana Cloud + E2E UI multi-SPA (E10 resto; spec UI listo)
 - [x] PWA + drawer móvil + skip-link (E11 MVP)
@@ -239,6 +239,7 @@ Nuevos de plataforma:
 - [x] Helada baseline + sklearn GBT + CB SINCA + cola ETL retry (E12/E10)
 - [ ] Keys SINCA/Agromet en prod + reentrenar con observado (E12 resto)
 - [x] Quillota en Cloudflare Pages (`metgo-quillota.pages.dev`)
+- [x] Paine en Cloudflare Pages (`metgo-paine` / wrangler + auth JWT; deploy productivo pendiente cutover)
 
 ---
 
