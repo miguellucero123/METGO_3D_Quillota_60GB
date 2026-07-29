@@ -52,9 +52,14 @@ def run_spati(
     if raw.get("requiere_autorizacion_dgac"):
         logger.info("SPATI %s: requiere autorización DGAC para vuelo de dron", cfg.sitio_id)
 
+    nwp_fuente = "openmeteo"
+    nwp_aviso = None
     try:
-        df = nwp.fetch_forecast(cfg.lat, cfg.lon, forecast_days=3)
+        df = nwp.fetch_forecast(
+            cfg.lat, cfg.lon, forecast_days=3, alt_msnm=raw.get("altitud_msnm")
+        )
         nwp_fuente = getattr(df, "attrs", {}).get("nwp_fuente") or "openmeteo"
+        nwp_aviso = getattr(df, "attrs", {}).get("nwp_aviso")
     except NWPDataUnavailableError as exc:
         logger.warning("SPATI NWP error: %s", exc)
         return {
@@ -335,6 +340,7 @@ def run_spati(
         },
         "run_timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "nwp_fuente": nwp_fuente,
+        "nwp_aviso": nwp_aviso,
         "horizonte_h": 72,
         "dt_min": 15,
         "n_intervalos": len(serie),

@@ -22,6 +22,7 @@
     </div>
 
     <template v-else-if="data">
+      <p v-if="data.nwp_aviso" class="aviso-nwp" role="status">{{ data.nwp_aviso }}</p>
       <section class="hero-nivel" :class="'n' + data.nivel_maximo">
         <div>
           <span class="lbl">Nivel máximo 72 h</span>
@@ -354,6 +355,15 @@ onMounted(() => cargar())
 .btn:disabled { opacity: 0.6; }
 .state { padding: 1.5rem; color: var(--color-muted); }
 .state.error { color: #fca5a5; }
+.aviso-nwp {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid #f59e0b66;
+  background: #f59e0b14;
+  color: #fde68a;
+  font-size: 0.88rem;
+}
 .hero-nivel { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 1rem; }
 .hero-nivel .lbl { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); }
 .hero-nivel.n0 { border-color: #22c55e55; }
