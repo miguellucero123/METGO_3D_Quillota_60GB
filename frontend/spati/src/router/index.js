@@ -95,12 +95,18 @@ router.beforeEach(async (to) => {
         faena: String(to.params.faena),
         tab: String(tab),
       })
-      if (access.tab_allowed === false) {
-        return { name: 'faena-panel', params: { faena: to.params.faena } }
+      const denied =
+        access.tab_allowed === false ||
+        (access.tabs && access.tabs[tab] === false)
+      if (denied) {
+        return {
+          name: 'faena-cuenta',
+          params: { faena: to.params.faena },
+          query: { blocked: String(tab) },
+        }
       }
-    // Si access falla (API fría / admin sin org): no bloquear navegación
     } catch {
-      /* allow */
+      // API fría / admin legacy sin org: no bloquear navegación
     }
   }
   return true

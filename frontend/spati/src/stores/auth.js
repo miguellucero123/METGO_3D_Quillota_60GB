@@ -8,6 +8,7 @@ import {
   clearSession,
   SITIO,
 } from '@/services/authApi'
+import { useAccess } from '@/stores/access'
 
 const state = reactive({
   token: getToken(),
@@ -27,6 +28,7 @@ export function useAuth() {
     state.token = data.access_token
     state.user = data.user
     setSession(data.access_token, data.user)
+    useAccess().invalidate()
     return data
   }
 
@@ -34,6 +36,7 @@ export function useAuth() {
     clearSession()
     state.token = ''
     state.user = null
+    useAccess().invalidate()
   }
 
   async function ensureValidSession() {

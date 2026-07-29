@@ -78,4 +78,4 @@ Plan: [`PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md`](PLAN_REGISTRO_SUSCRIPCION_MULT
 
 ## Fase
 
-DT-auth-sub / S3 cutover (SMTP + Stripe keys en Render cuando haya credenciales reales).
+DT-auth-sub / S4 entitlements UI (S3 SMTP/Stripe keys en Render cuando haya credenciales reales).

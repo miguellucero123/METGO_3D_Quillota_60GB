@@ -3,17 +3,27 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchCuenta, checkoutPlan, wakeApi } from '@/services/authApi'
 import { useAuth } from '@/stores/auth'
+import { useAccess } from '@/stores/access'
 
 const site = inject('site')
 const route = useRoute()
 const auth = useAuth()
+const accessStore = useAccess()
 const faena = computed(() => String(route.params.faena || '').toLowerCase())
+const blockedTab = computed(() => String(route.query.blocked || '').toLowerCase())
 
 const loading = ref(true)
 const error = ref('')
 const msg = ref('')
 const data = ref(null)
 const applying = ref('')
+
+const TAB_LABEL = {
+  panel: 'Pronóstico 72 h',
+  ambiente: 'Ambiente faena',
+  dron: 'Calibración dron',
+  umbrales: 'Umbrales',
+}
 
 onMounted(async () => {
   wakeApi().catch(() => {})
@@ -25,6 +35,8 @@ async function reload() {
   error.value = ''
   try {
     data.value = await fetchCuenta(faena.value)
+    accessStore.invalidate(faena.value)
+    await accessStore.refresh(faena.value, { force: true })
   } catch (e) {
     error.value = e.message || 'No se pudo cargar la cuenta'
   } finally {
@@ -62,6 +74,11 @@ const tabs = computed(() => data.value?.access?.tabs || {})
       <h1>Cuenta · {{ faena }}</h1>
       <p>Suscripción y acceso por pestaña para esta faena.</p>
     </header>
+
+    <p v-if="blockedTab" class="warn" role="status">
+      La pestaña <strong>{{ TAB_LABEL[blockedTab] || blockedTab }}</strong> no está
+      incluida en tu plan actual. Elige un plan superior para habilitarla.
+    </p>
 
     <p v-if="loading">Cargando…</p>
     <p v-else-if="error" class="err" role="alert">{{ error }}</p>
@@ -155,4 +172,13 @@ dd { margin: 0; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .err { color: var(--color-danger); }
 .ok { color: var(--color-primary); }
+.warn {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
 </style>

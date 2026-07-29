@@ -116,7 +116,15 @@ export async function fetchAccess({ sitio, faena, tab } = {}) {
   if (faena) q.set('faena', faena)
   if (tab) q.set('tab', tab)
   const qs = q.toString()
-  return request(`/auth/access${qs ? `?${qs}` : ''}`, { auth: true })
+  try {
+    return await request(`/auth/access${qs ? `?${qs}` : ''}`, { auth: true })
+  } catch (e) {
+    // 403 con payload de access = pestaña denegada (S4)
+    if (e.status === 403 && e.data && typeof e.data === 'object' && e.data.tabs) {
+      return { ...e.data, tab_allowed: false }
+    }
+    throw e
+  }
 }
 
 export async function fetchPlanes(sitio = 'spati', faena) {

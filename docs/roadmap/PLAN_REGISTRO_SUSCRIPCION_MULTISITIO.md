@@ -1,7 +1,7 @@
 # Plan: Registro, identidad confidencial y suscripción multi-producto
 
-**Fase:** DT-auth-sub / producto 2.x · **S1 en curso**  
-**Estado:** implementación iniciada  
+**Fase:** DT-auth-sub / producto 2.x · **S4 entitlements UI**  
+**Estado:** S1–S4 en código; S3 ops manual pendiente; S5/M10 siguiente  
 **Relacionado:** [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md) · [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) · E9 `sitios_auth.py`
 
 ---
@@ -193,6 +193,20 @@ Hub opcional `/` lista faenas (público) sin datos operativos.
 - [ ] KMS / rotación formal `METGO_PII_KEK`
 - [ ] Retirar por completo `METGO_PASSWORD_*` demos tras migrar usuarios
 
+### S4 — Entitlements en UI SPATI ✅
+
+- [x] `fetchAccess` interpreta 403 (tab denegada) sin fallar el router
+- [x] `beforeEach` redirige a `/f/:faena/cuenta?blocked=` si la pestaña no está en el plan
+- [x] Store `access.js`: cache de tabs por faena
+- [x] `AppSidebar` + `FaenaShellView`: ocultan enlaces sin entitlement
+- [x] `CuentaView`: aviso de upgrade cuando llega `?blocked=`
+- [x] Test: trial → `tab=umbrales` responde 403
+
+### S5 — Ops prod + M10 (siguiente)
+
+- Credenciales SMTP/Stripe en Render; cutover demos
+- **M10:** dashboard ops unificado multi-faena (Vue admin)
+
 ## 10. Fase roadmap
 
-**DT-auth-sub / S2–S3** · minería: faena-tenant post M9.
+**DT-auth-sub / S4** · minería: M10 pendiente.

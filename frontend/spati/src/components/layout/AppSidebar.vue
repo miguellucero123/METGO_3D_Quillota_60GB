@@ -17,24 +17,36 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid } from 'lucide-vue-next'
+import { useAccess } from '@/stores/access'
+import { getToken } from '@/services/authApi'
 
 const site = inject('site')
 const route = useRoute()
+const access = useAccess()
 const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+
+watch(
+  faena,
+  (f) => {
+    if (f && getToken()) access.refresh(f)
+  },
+  { immediate: true },
+)
 
 const items = computed(() => {
   const f = faena.value
-  return [
-    { to: `/f/${f}/`, label: 'Pronóstico 72 h', icon: Wind },
-    { to: `/f/${f}/ambiente`, label: 'Ambiente faena', icon: CloudSun },
-    { to: `/f/${f}/dron`, label: 'Calibración dron', icon: Plane },
-    { to: `/f/${f}/umbrales`, label: 'Umbrales', icon: SlidersHorizontal },
+  const all = [
+    { to: `/f/${f}/`, label: 'Pronóstico 72 h', icon: Wind, tab: 'panel' },
+    { to: `/f/${f}/ambiente`, label: 'Ambiente faena', icon: CloudSun, tab: 'ambiente' },
+    { to: `/f/${f}/dron`, label: 'Calibración dron', icon: Plane, tab: 'dron' },
+    { to: `/f/${f}/umbrales`, label: 'Umbrales', icon: SlidersHorizontal, tab: 'umbrales' },
     { to: `/f/${f}/cuenta`, label: 'Cuenta', icon: CreditCard },
     { to: '/', label: 'Todas las faenas', icon: LayoutGrid },
   ]
+  return all.filter((item) => !item.tab || access.canTab(f, item.tab))
 })
 </script>
 

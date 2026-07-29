@@ -165,3 +165,36 @@ def test_api_validate_and_register():
     reglas = client.get("/api/public/faenas/escondida/reglas")
     assert reglas.status_code == 200
     assert reglas.get_json()["enlace"] == "/f/escondida/"
+
+
+def test_access_tab_denied_returns_403():
+    from api_rest.app import create_app
+
+    app = create_app()
+    client = app.test_client()
+    body = _payload(email="trial.ops@example.com")
+    reg = client.post("/api/auth/register-v2", json=body)
+    assert reg.status_code == 201
+    tok = reg.get_json()["verify_token"]
+    assert client.get(f"/api/auth/verify-email?token={tok}").status_code == 200
+    login = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert login.status_code == 200
+    headers = {"Authorization": f"Bearer {login.get_json()['access_token']}"}
+    # trial: umbrales bloqueado → 403 + payload tabs
+    acc = client.get(
+        "/api/auth/access?sitio=spati&faena=escondida&tab=umbrales",
+        headers=headers,
+    )
+    assert acc.status_code == 403
+    body_acc = acc.get_json()
+    assert body_acc.get("tab_allowed") is False
+    assert body_acc["tabs"]["panel"] is True
+    assert body_acc["tabs"]["umbrales"] is False
