@@ -22,6 +22,7 @@
     </div>
 
     <template v-else-if="pkg">
+      <p v-if="pkg.aviso" class="aviso-deg" role="status">{{ pkg.aviso }}</p>
       <section class="hero">
         <div>
           <span class="lbl">Faena</span>
@@ -328,6 +329,15 @@ onMounted(() => cargar())
 }
 .state.error {
   color: #f87171;
+}
+.aviso-deg {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid #f59e0b66;
+  background: #f59e0b14;
+  color: #fde68a;
+  font-size: 0.88rem;
 }
 .hero {
   display: grid;

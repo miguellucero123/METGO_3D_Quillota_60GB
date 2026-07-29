@@ -78,9 +78,10 @@ def register_operaciones_routes(app: Flask) -> None:
                 f["id"], horas=horas
             )
             if data is None:
-                return jsonify(_ERROR_503), 503
+                return jsonify({**_ERROR_503, "detalle": "sin_paquete"}), 503
             if data.get("error") == "sin_coordenadas":
                 return jsonify(data), 422
+            # Paquete degradado / lastgood: 200 con aviso (no 503)
             if incluir_obs:
                 try:
                     from api_rest import modelo_vs_observado_service
@@ -95,7 +96,7 @@ def register_operaciones_routes(app: Flask) -> None:
             return jsonify(data)
         except Exception as exc:
             app.logger.warning("faena_paquete_ambiental %s error: %s", faena_id, exc)
-            return jsonify(_ERROR_503), 503
+            return jsonify({**_ERROR_503, "detalle": str(exc)}), 503
 
     @app.get("/api/public/operaciones/umbrales-operativos")
     def public_umbrales_operativos():

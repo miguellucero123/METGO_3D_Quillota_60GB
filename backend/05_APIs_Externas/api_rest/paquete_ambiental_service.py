@@ -4,12 +4,18 @@
 
 Meteo + viento + serie nival + calidad del aire CAMS + flags operativos
 (izaje / caminos / botaderos) para cualquier faena del catálogo.
+
+Ante Open-Meteo 429/cooldown: no devolver None (503). Usa lastgood o
+paquete degradado con aviso, igual que SPATI NWP.
 """
 
 from __future__ import annotations
 
+import logging
+import math
 import os
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -24,10 +30,20 @@ from api_rest.umbrales_faena_service import (
     umbrales_efectivos,
 )
 
+logger = logging.getLogger(__name__)
+
 TZ_CHILE = ZoneInfo("America/Santiago")
-FORECAST_API = "https://api.open-meteo.com/v1/forecast"
+FORECAST_API = (
+    os.getenv("METGO_OPENMETEO_FORECAST_URL") or "https://api.open-meteo.com/v1/forecast"
+).rstrip("/")
 AIR_API = "https://air-quality-api.open-meteo.com/v1/air-quality"
-_TIMEOUT = int(os.getenv("METGO_OPENMETEO_TIMEOUT", "25"))
+_TIMEOUT = int(os.getenv("METGO_OPENMETEO_TIMEOUT", "12"))
+_API_KEY = (os.getenv("METGO_OPENMETEO_API_KEY") or os.getenv("OPENMETEO_API_KEY") or "").strip()
+_ALLOW_DEGRADED = os.getenv("METGO_PAQUETE_ALLOW_DEGRADED", "1").strip() not in (
+    "0",
+    "false",
+    "no",
+)
 
 _METEO_HOURLY = (
     "temperature_2m,relative_humidity_2m,precipitation,snowfall,"
@@ -36,18 +52,53 @@ _METEO_HOURLY = (
     "wind_speed_100m,wind_direction_100m,"
     "cloud_cover,weather_code"
 )
+_METEO_MIN = (
+    "temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,"
+    "wind_gusts_10m,visibility,relative_humidity_2m"
+)
 _AIR_HOURLY = (
     "pm2_5,pm10,sulphur_dioxide,nitrogen_dioxide,ozone,carbon_monoxide,dust"
 )
 
+# Caché en memoria del último paquete OK por faena
+_LASTGOOD: dict[str, tuple[float, dict[str, Any]]] = {}
+_LASTGOOD_TTL = int(os.getenv("METGO_PAQUETE_CACHE_TTL", str(45 * 60)))
+
+
+def _openmeteo_cooldown() -> bool:
+    try:
+        from datos_reales_openmeteo import openmeteo_en_cooldown
+
+        return bool(openmeteo_en_cooldown())
+    except Exception:
+        return False
+
+
+def _mark_cooldown(seconds: int = 90) -> None:
+    try:
+        from datos_reales_openmeteo import marcar_openmeteo_cooldown
+
+        marcar_openmeteo_cooldown(seconds)
+    except Exception:
+        pass
+
 
 def _get(url: str, params: dict[str, Any]) -> dict[str, Any] | None:
+    if _openmeteo_cooldown() and "open-meteo.com" in url:
+        return None
+    p = dict(params)
+    if _API_KEY and "open-meteo.com" in url:
+        p.setdefault("apikey", _API_KEY)
     try:
-        r = requests.get(url, params=params, timeout=_TIMEOUT)
+        r = requests.get(url, params=p, timeout=_TIMEOUT)
+        if r.status_code == 429:
+            _mark_cooldown(90)
+            return None
         r.raise_for_status()
         data = r.json()
         return data if isinstance(data, dict) else None
-    except Exception:
+    except Exception as exc:
+        logger.warning("paquete_ambiental GET %s: %s", url.split("/")[2], exc)
         return None
 
 
@@ -85,6 +136,137 @@ def _sum_snowfall_mm(serie: list[dict[str, Any]]) -> float:
     return round(total, 2)
 
 
+def _save_lastgood(faena_id: str, data: dict[str, Any]) -> None:
+    _LASTGOOD[faena_id] = (time.time(), data)
+
+
+def _load_lastgood(faena_id: str) -> dict[str, Any] | None:
+    hit = _LASTGOOD.get(faena_id)
+    if not hit:
+        return None
+    ts, data = hit
+    if time.time() - ts > _LASTGOOD_TTL:
+        return None
+    out = dict(data)
+    out["degradado"] = True
+    out["aviso"] = "Datos en caché (Open-Meteo no disponible). Reintente en unos minutos."
+    fuente = dict(out.get("fuente") or {})
+    fuente["tipo_dato"] = "lastgood"
+    out["fuente"] = fuente
+    return out
+
+
+def _paquete_degradado(faena: dict[str, Any], horas: int) -> dict[str, Any]:
+    """Snapshot estimado para no devolver 503 ante rate limit."""
+    ahora = datetime.now(TZ_CHILE)
+    alt = float(faena.get("altitud_m") or 2500)
+    base_v = 4.0 + min(6.0, max(0.0, (alt - 1000) / 400.0))  # m/s
+    serie_meteo: list[dict[str, Any]] = []
+    for i in range(horas):
+        t = ahora + timedelta(hours=i)
+        hour = t.hour + t.minute / 60.0
+        diurno = 0.8 * math.sin((hour - 6) / 24.0 * 2 * math.pi)
+        v = max(1.5, base_v + diurno)
+        serie_meteo.append(
+            {
+                "fecha_hora": t.isoformat(timespec="minutes"),
+                "temperature_2m": round(10.0 - alt / 700.0 + diurno * 2, 1),
+                "relative_humidity_2m": 35.0,
+                "precipitation": 0.0,
+                "snowfall": 0.0,
+                "pressure_msl": round(1013.0 * math.exp(-alt / 8500.0), 1),
+                "visibility": 20000.0,
+                "wind_speed_10m": round(v, 2),
+                "wind_direction_10m": (220 + i) % 360,
+                "wind_gusts_10m": round(v * 1.35, 2),
+                "wind_speed_100m": round(v * 1.18, 2),
+                "wind_direction_100m": (225 + i) % 360,
+                "cloud_cover": 40.0,
+                "weather_code": 1,
+            }
+        )
+    cur = serie_meteo[0]
+    rafaga = cur["wind_gusts_10m"]
+    vis = cur["visibility"]
+    temp_act = cur["temperature_2m"]
+    serie_nival = construir_serie_nival(serie_meteo)
+    acum_24h_cm = 0.0
+    if serie_nival:
+        idx24 = min(23, len(serie_nival) - 1)
+        acum_24h_cm = serie_nival[idx24]["acum_desde_inicio_cm"]
+
+    actual = {
+        "temperatura_c": temp_act,
+        "humedad_relativa_pct": 35.0,
+        "precipitacion_mm": 0.0,
+        "snowfall_mm": 0.0,
+        "presion_msl_hpa": cur["pressure_msl"],
+        "visibilidad_m": vis,
+        "nubosidad_pct": 40.0,
+        "weather_code": 1,
+        "viento_10m_ms": cur["wind_speed_10m"],
+        "viento_10m_dir_deg": cur["wind_direction_10m"],
+        "rafaga_10m_ms": rafaga,
+        "viento_100m_ms": cur["wind_speed_100m"],
+        "viento_100m_dir_deg": cur["wind_direction_100m"],
+        "pm2_5": None,
+        "pm10": None,
+        "so2": None,
+        "no2": None,
+        "nox_proxy": None,
+        "o3": None,
+        "co": None,
+        "dust": None,
+        "icap": None,
+        "nivel_icap": None,
+    }
+    umb = umbrales_efectivos()
+    ops = evaluar_operaciones(
+        rafaga_ms=rafaga,
+        snowfall_hora_mm=0.0,
+        acum_24h_cm=acum_24h_cm,
+        visibilidad_m=vis,
+        umbrales=umb,
+    )
+    flags = flags_desde_serie_y_actual(serie_nival, actual, ops)
+    return {
+        "faena_id": faena["id"],
+        "nombre": faena.get("nombre"),
+        "sitio": faena.get("sitio"),
+        "lat": faena.get("lat"),
+        "lon": faena.get("lon"),
+        "altitud_m": faena.get("altitud_m"),
+        "estaciones_area": faena.get("estaciones_area") or [],
+        "capacidades": faena.get("capacidades") or [],
+        "generado_en": ahora.isoformat(timespec="seconds"),
+        "horizonte_horas": horas,
+        "degradado": True,
+        "aviso": (
+            "Paquete estimado: Open-Meteo no respondió (rate limit/cooldown). "
+            "No usar para decisión crítica hasta recuperar modelo."
+        ),
+        "fuente": {
+            "meteo": "synthetic_degraded",
+            "aire": None,
+            "tipo_dato": "estimado",
+        },
+        "actual": actual,
+        "nieve": {
+            "snowfall_mm_acum_horizonte": 0.0,
+            "snowfall_mm_acum_24h": 0.0,
+            "acumulacion_proxy_cm": 0.0,
+            "acumulacion_24h_cm": acum_24h_cm,
+            "factor_conversion": "mm_agua→cm con factor T",
+            "nota": "Sin dato nival real (modo degradado).",
+        },
+        "serie_nival": serie_nival,
+        "operaciones": ops,
+        "flags": flags,
+        "serie_meteo": serie_meteo,
+        "serie_aire": [],
+    }
+
+
 def construir_paquete_ambiental(
     faena_id: str,
     *,
@@ -108,31 +290,59 @@ def construir_paquete_ambiental(
 
     horas = max(6, min(int(horas or 72), 168))
     forecast_days = max(1, min((horas + 23) // 24, 7))
+    fid = faena["id"]
 
     meteo = _get(
         FORECAST_API,
         {
             "latitude": lat,
             "longitude": lon,
-            "hourly": _METEO_HOURLY,
-            "current": _METEO_HOURLY,
+            "hourly": _METEO_MIN,
+            "current": _METEO_MIN,
             "timezone": "America/Santiago",
             "forecast_days": forecast_days,
             "wind_speed_unit": "ms",
         },
     )
-    aire = _get(
-        AIR_API,
-        {
-            "latitude": lat,
-            "longitude": lon,
-            "hourly": _AIR_HOURLY,
-            "current": _AIR_HOURLY,
-            "timezone": "America/Santiago",
-            "forecast_days": min(forecast_days, 5),
-        },
-    )
+    # Reintento con vars completas solo si el mínimo funcionó o no hay cooldown
+    if meteo and not _openmeteo_cooldown():
+        meteo_full = _get(
+            FORECAST_API,
+            {
+                "latitude": lat,
+                "longitude": lon,
+                "hourly": _METEO_HOURLY,
+                "current": _METEO_HOURLY,
+                "timezone": "America/Santiago",
+                "forecast_days": forecast_days,
+                "wind_speed_unit": "ms",
+            },
+        )
+        if meteo_full:
+            meteo = meteo_full
+
+    aire = None
+    if meteo and not _openmeteo_cooldown():
+        aire = _get(
+            AIR_API,
+            {
+                "latitude": lat,
+                "longitude": lon,
+                "hourly": _AIR_HOURLY,
+                "current": _AIR_HOURLY,
+                "timezone": "America/Santiago",
+                "forecast_days": min(forecast_days, 5),
+            },
+        )
+
     if not meteo:
+        cached = _load_lastgood(fid)
+        if cached:
+            logger.warning("paquete_ambiental %s → lastgood", fid)
+            return cached
+        if _ALLOW_DEGRADED:
+            logger.warning("paquete_ambiental %s → degradado", fid)
+            return _paquete_degradado(faena, horas)
         return None
 
     cur_m = meteo.get("current") or {}
@@ -196,7 +406,7 @@ def construir_paquete_ambiental(
     )
     flags = flags_desde_serie_y_actual(serie_nival, actual, ops)
 
-    return {
+    out = {
         "faena_id": faena["id"],
         "nombre": faena.get("nombre"),
         "sitio": faena.get("sitio"),
@@ -227,3 +437,5 @@ def construir_paquete_ambiental(
         "serie_meteo": serie_meteo,
         "serie_aire": serie_aire,
     }
+    _save_lastgood(fid, out)
+    return out
