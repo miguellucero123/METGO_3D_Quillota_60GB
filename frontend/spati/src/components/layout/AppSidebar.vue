@@ -18,11 +18,12 @@
 
 <script setup>
 import { inject } from 'vue'
-import { Wind, Plane, SlidersHorizontal } from 'lucide-vue-next'
+import { Wind, Plane, SlidersHorizontal, CloudSun } from 'lucide-vue-next'
 
 const site = inject('site')
 const items = [
   { to: '/', label: 'Pronóstico 72 h', icon: Wind },
+  { to: '/ambiente', label: 'Ambiente faena', icon: CloudSun },
   { to: '/dron', label: 'Calibración dron', icon: Plane },
   { to: '/umbrales', label: 'Umbrales', icon: SlidersHorizontal },
 ]

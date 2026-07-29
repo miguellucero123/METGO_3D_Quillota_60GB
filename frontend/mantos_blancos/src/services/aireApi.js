@@ -220,4 +220,30 @@ export function getApiBase() {
   return resolveBaseURL()
 }
 
+export async function fetchPaqueteAmbiental({ faenaId = FAENA, horas = 72 } = {}) {
+  const id = encodeURIComponent(faenaId)
+  return fetchJson(`/public/operaciones/faena/${id}/paquete-ambiental?horas=${horas}`)
+}
+
+export async function fetchModeloVsObservado({ faenaId = FAENA, dias = 14 } = {}) {
+  const id = encodeURIComponent(faenaId)
+  return fetchJson(`/public/operaciones/faena/${id}/modelo-vs-observado?dias=${dias}`)
+}
+
+export async function fetchObservadoStatus({ faenaId = FAENA, dias = 14 } = {}) {
+  const id = encodeURIComponent(faenaId)
+  return fetchJson(`/public/operaciones/faena/${id}/observado-status?dias=${dias}`)
+}
+
+export function urlInformeFaena(formato = 'pdf', faenaId = FAENA) {
+  const id = encodeURIComponent(faenaId)
+  const fmt = ['csv', 'pdf', 'html'].includes(formato) ? formato : 'pdf'
+  return `${resolveBaseURL()}/public/operaciones/faena/${id}/informe?formato=${fmt}`
+}
+
+export function urlModeloVsObservadoCsv(faenaId = FAENA, dias = 14) {
+  const id = encodeURIComponent(faenaId)
+  return `${resolveBaseURL()}/public/operaciones/faena/${id}/modelo-vs-observado?formato=csv&dias=${dias}`
+}
+
 export { SITIO, FAENA, ESTACION_ANCLA }

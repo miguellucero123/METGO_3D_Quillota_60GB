@@ -138,6 +138,13 @@ Reusa el 80 % de E7 (aire) + módulo operaciones:
 - [x] Identidad cobre, SPA faena
 - [x] Migración + sync Supabase (`operaciones_ventanas` 192 filas, 2026-07-24)
 - [x] Catálogo `faena_catalogo` + rutas `/api/public/operaciones/faena/{id}/*` (ventilacion, paquete, olas, satélite)
+- [x] **M1 multi-faena** (2026-07-28): catálogo unificado SPATI + `paquete-ambiental` + informe HTML/PDF genérico — ver [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md)
+- [x] **M2** (2026-07-28): informe enriquecido (resumen 72 h + tramos 3 h) + SPA SPATI/Mantos `/ambiente`
+- [x] **M3** (2026-07-28): `serie_nival` + umbrales izaje/caminos/botaderos + flags en paquete-ambiental
+- [x] **M4** (2026-07-28): `faena_estaciones_area` + sync cron + GET estaciones-area (Mantos/Paipote seed; SPATI sync)
+- [x] **M5** (2026-07-28): `modelo-vs-observado` (aire/meteo/IoT) + `tipo_dato=observado` + UI `/ambiente`
+- [x] **M6** (2026-07-28): informes **CSV + PDF** oficiales + plantilla SINCA + botones SPA
+- [x] **M7** (2026-07-28): demo observado + `observado-status` + [`CHECKLIST_M7_DEPLOY.md`](CHECKLIST_M7_DEPLOY.md)
 - [x] SPA Mantos v0.2: mapa MapLibre, dispersión, ventilación N/R/M, sounding, satélite, olas, ICAP, airshed (bbox/fuentes Mantos)
 - [x] **SPATI** (izaje 72 h × 15 min): física logarítmica + densidad/fuerza, alertas 0–3, asimilación dron, SPA `frontend/spati`, API `/api/public/spati/*`, migración Supabase
 - [ ] Deploy Cloudflare Pages + CORS (`docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md`; CORS en `render.yaml` incluye `*.pages.dev` plantilla)

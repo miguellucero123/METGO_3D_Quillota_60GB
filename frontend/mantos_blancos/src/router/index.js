@@ -69,6 +69,12 @@ const routes = [
     meta: { title: 'Aire ICAP' },
   },
   {
+    path: '/ambiente',
+    name: 'ambiente',
+    component: () => import('@/views/AmbientalesView.vue'),
+    meta: { title: 'Ambiente faena' },
+  },
+  {
     path: '/airshed',
     name: 'airshed',
     component: () => import('@/views/AirshedModelView.vue'),

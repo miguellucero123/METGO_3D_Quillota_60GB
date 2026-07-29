@@ -135,8 +135,15 @@ Invoke-WebRequest "$UI/api/health" | Select-Object StatusCode
 
 Copiapó: `copiapo` / `copiapo123` · Mantos: `mantos` / `mantos123` · Paine: `paine` / `paine123` (`https://metgo-paine.pages.dev`).
 
+Minería M7 (API):
+
+```powershell
+python scripts/smoke_mineria_m7.py --base https://metgo-api.onrender.com --faena paipote
+# SPA: /ambiente → Descargar CSV · PDF · MVO (metgo-spati / metgo-mantos)
+```
+
 ---
 
 ## Fase
 
-Ops / plataforma (migración hosting) · no cambia contrato OpenAPI.
+Ops / plataforma (migración hosting) · minería multi-faena M1–M7 en API + SPA `/ambiente`.

@@ -13,6 +13,8 @@
 
     <div class="actions">
       <button type="button" class="btn btn-ghost" @click="cargar" :disabled="loading">Actualizar</button>
+      <a class="btn btn-ghost" :href="urlInformeHtml" target="_blank" rel="noopener">Informe ambiental HTML</a>
+      <a class="btn btn-ghost" :href="urlInformePdf" target="_blank" rel="noopener">PDF ambiental</a>
     </div>
 
     <div v-if="loading" class="state">Calculando ventilación {{ site.faena?.nombre || 'faena' }}…</div>
@@ -146,8 +148,8 @@
 </template>
 
 <script setup>
-import { inject, onMounted, ref } from 'vue'
-import { fetchFaenaPaquete } from '@/services/aireApi'
+import { computed, inject, onMounted, ref } from 'vue'
+import { fetchFaenaPaquete, urlInformeFaena } from '@/services/aireApi'
 
 const site = inject('site')
 const loading = ref(true)
@@ -160,6 +162,8 @@ const tabs = [
   { id: '14d', label: '14 días' },
   { id: 'stm', label: '30–90 d' },
 ]
+const urlInformeHtml = computed(() => urlInformeFaena('html'))
+const urlInformePdf = computed(() => urlInformeFaena('pdf'))
 
 function horaCorta(ts) {
   if (!ts) return '—'

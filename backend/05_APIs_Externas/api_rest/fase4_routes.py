@@ -197,6 +197,13 @@ def register_fase4_routes(app: Flask) -> None:
                 etl_retry_queue.enqueue("operaciones", str(exc))
             except Exception:
                 pass
+        # M4: sync estaciones por área de faena → faena_estaciones_area.
+        try:
+            from api_rest.integracion import estaciones_area_store
+
+            res["estaciones_area"] = estaciones_area_store.sincronizar_desde_catalogo()
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"estaciones_area: {exc}")
         # E7 Paipote: corrida ventilación N/R/M (ideal 06/18 UTC).
         try:
             from api_rest import ventilacion_service

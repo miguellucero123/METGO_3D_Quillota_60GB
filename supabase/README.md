@@ -42,6 +42,7 @@ Aplicadas (E7/E8 multi-sitio):
 | `…24130000_operaciones_uv_so2` | columnas UV/SO₂ |
 | `…24140000_e7_e8_grants_rls` | GRANTs `service_role` + RLS lectura |
 | `…28120000_carretera_austral` | `ca_localidades` + `ca_tramos` (módulo Paine) |
+| `…28180000_faena_estaciones_area` | M4 puntos rajo/campamento/chancado/botadero por faena |
 
 Verificación:
 

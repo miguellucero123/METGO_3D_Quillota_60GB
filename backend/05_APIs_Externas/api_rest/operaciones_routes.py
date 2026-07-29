@@ -55,7 +55,232 @@ def register_operaciones_routes(app: Flask) -> None:
     def public_operaciones_faenas():
         from api_rest.faena_catalogo import listar_faenas
 
-        return jsonify({"faenas": listar_faenas()})
+        raw = (request.args.get("incluir_izaje") or "1").strip().lower()
+        incluir = raw not in ("0", "false", "no")
+        return jsonify({"faenas": listar_faenas(incluir_izaje=incluir)})
+
+    @app.get("/api/public/operaciones/faena/<faena_id>/paquete-ambiental")
+    def public_faena_paquete_ambiental(faena_id: str):
+        """Meteo + aire + nieve + viento + flags operativos (M1–M3)."""
+        from api_rest import paquete_ambiental_service
+
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        horas = max(6, min(request.args.get("horas", default=72, type=int) or 72, 168))
+        incluir_obs = (request.args.get("incluir_observado") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        try:
+            data = paquete_ambiental_service.construir_paquete_ambiental(
+                f["id"], horas=horas
+            )
+            if data is None:
+                return jsonify(_ERROR_503), 503
+            if data.get("error") == "sin_coordenadas":
+                return jsonify(data), 422
+            if incluir_obs:
+                try:
+                    from api_rest import modelo_vs_observado_service
+
+                    data["modelo_vs_observado"] = (
+                        modelo_vs_observado_service.reporte_modelo_vs_observado(
+                            f["id"], dias=14
+                        )
+                    )
+                except Exception as exc_obs:
+                    data["modelo_vs_observado"] = {"error": str(exc_obs)}
+            return jsonify(data)
+        except Exception as exc:
+            app.logger.warning("faena_paquete_ambiental %s error: %s", faena_id, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/operaciones/umbrales-operativos")
+    def public_umbrales_operativos():
+        """Umbrales M3 izaje/caminos/botaderos (defaults + factor env)."""
+        from api_rest.umbrales_faena_service import umbrales_efectivos
+
+        return jsonify(
+            {
+                "umbrales": umbrales_efectivos(),
+                "actividades": ["izaje", "caminos", "botaderos"],
+                "nota": "Aplicados en paquete-ambiental.flags / operaciones",
+            }
+        )
+
+    @app.get("/api/public/operaciones/faena/<faena_id>/estaciones-area")
+    def public_faena_estaciones_area(faena_id: str):
+        """Puntos meteo por área (catálogo + Supabase M4)."""
+        from api_rest.faena_catalogo import estaciones_area_faena
+
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        pts = estaciones_area_faena(f["id"])
+        return jsonify(
+            {
+                "faena_id": f["id"],
+                "nombre": f.get("nombre"),
+                "estaciones_area": pts,
+                "n": len(pts),
+            }
+        )
+
+    @app.post("/api/cron/faena/estaciones-area")
+    def cron_faena_estaciones_area():
+        """Sync catálogo → Supabase faena_estaciones_area (CRON_SECRET)."""
+        import os
+
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        if not secret or secret != os.getenv("CRON_SECRET"):
+            # Permitir en local sin secret si no hay CRON_SECRET configurado
+            if os.getenv("CRON_SECRET"):
+                return jsonify({"error": "No autorizado"}), 401
+        solo = (request.args.get("faena") or "").strip() or None
+        try:
+            from api_rest.integracion import estaciones_area_store
+
+            return jsonify(estaciones_area_store.sincronizar_desde_catalogo(solo_faena=solo))
+        except Exception as exc:
+            app.logger.warning("cron estaciones-area: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/operaciones/faena/<faena_id>/informe")
+    def public_faena_informe(faena_id: str):
+        """Informe ambiental: CSV o PDF (documentos) · HTML vista previa."""
+        from flask import Response
+
+        from api_rest import informe_faena_service
+
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        formato = (request.args.get("formato") or "pdf").strip().lower()
+        try:
+            if formato == "csv":
+                csv_doc = informe_faena_service.construir_informe_csv(f["id"])
+                if not csv_doc:
+                    return jsonify(_ERROR_503), 503
+                return Response(
+                    csv_doc.encode("utf-8"),
+                    mimetype="text/csv; charset=utf-8",
+                    headers={
+                        "Content-Disposition": (
+                            f"attachment; filename=informe_{f['id']}_ambiental.csv"
+                        )
+                    },
+                )
+            if formato == "pdf":
+                raw = informe_faena_service.construir_informe_pdf_bytes(f["id"])
+                if not raw:
+                    return jsonify(_ERROR_503), 503
+                return Response(
+                    raw,
+                    mimetype="application/pdf",
+                    headers={
+                        "Content-Disposition": (
+                            f"attachment; filename=informe_{f['id']}_ambiental.pdf"
+                        )
+                    },
+                )
+            if formato not in ("html", "htm"):
+                return jsonify(
+                    {
+                        "error": "formato_no_soportado",
+                        "formatos": ["csv", "pdf", "html"],
+                        "nota": "Documentos oficiales: csv y pdf",
+                    }
+                ), 400
+            html_doc = informe_faena_service.construir_informe_html(f["id"])
+            if not html_doc:
+                return jsonify(_ERROR_503), 503
+            return Response(
+                html_doc,
+                mimetype="text/html; charset=utf-8",
+                headers={
+                    "Content-Disposition": (
+                        f"inline; filename=informe_{f['id']}_ambiental.html"
+                    )
+                },
+            )
+        except Exception as exc:
+            app.logger.warning("faena_informe %s error: %s", faena_id, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/operaciones/faena/<faena_id>/modelo-vs-observado")
+    def public_faena_modelo_vs_observado(faena_id: str):
+        """M5: sesgo modelo vs observado (JSON o CSV)."""
+        from flask import Response
+
+        from api_rest import informe_faena_service, modelo_vs_observado_service
+
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        dias = max(3, min(request.args.get("dias", default=14, type=int) or 14, 60))
+        formato = (request.args.get("formato") or "json").strip().lower()
+        try:
+            if formato == "csv":
+                csv_doc = informe_faena_service.construir_mvo_csv(f["id"], dias=dias)
+                if not csv_doc:
+                    return jsonify(_ERROR_503), 503
+                return Response(
+                    csv_doc.encode("utf-8"),
+                    mimetype="text/csv; charset=utf-8",
+                    headers={
+                        "Content-Disposition": (
+                            f"attachment; filename=mvo_{f['id']}.csv"
+                        )
+                    },
+                )
+            data = modelo_vs_observado_service.reporte_modelo_vs_observado(
+                f["id"], dias=dias
+            )
+            if data is None:
+                return jsonify(_ERROR_503), 503
+            return jsonify(data)
+        except Exception as exc:
+            app.logger.warning("modelo_vs_observado %s: %s", faena_id, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.get("/api/public/operaciones/faena/<faena_id>/observado-status")
+    def public_faena_observado_status(faena_id: str):
+        """M7 readiness: conteos MVO + enlaces CSV/PDF."""
+        from api_rest import m7_observado_service
+
+        f, err = _faena_o_404(faena_id)
+        if err:
+            return err
+        dias = max(3, min(request.args.get("dias", default=14, type=int) or 14, 60))
+        try:
+            return jsonify(m7_observado_service.estado_observado_faena(f["id"], dias=dias))
+        except Exception as exc:
+            app.logger.warning("observado-status %s: %s", faena_id, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.post("/api/cron/faena/demo-observado")
+    def cron_faena_demo_observado():
+        """M7: carga demo observado+modelo+IoT (CRON_SECRET si está definido)."""
+        import os
+
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        if os.getenv("CRON_SECRET") and (
+            not secret or secret != os.getenv("CRON_SECRET")
+        ):
+            return jsonify({"error": "No autorizado"}), 401
+        solo = (request.args.get("faena") or "").strip() or None
+        dias = max(3, min(request.args.get("dias", default=7, type=int) or 7, 30))
+        try:
+            from api_rest import m7_observado_service
+
+            return jsonify(
+                m7_observado_service.activar_demo_observado(solo, dias=dias)
+            )
+        except Exception as exc:
+            app.logger.warning("demo-observado: %s", exc)
+            return jsonify(_ERROR_503), 503
 
     @app.get("/api/public/operaciones/faena/<faena_id>/ventilacion")
     def public_faena_ventilacion(faena_id: str):

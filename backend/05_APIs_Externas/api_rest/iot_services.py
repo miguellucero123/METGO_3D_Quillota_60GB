@@ -31,17 +31,40 @@ def _load() -> list[dict[str, Any]]:
                 return res.data
     except Exception as e:
         print(f"Error cargando iot de Supabase: {e}")
+    # Fallback JSON local (M7 demo / offline)
+    path = _store_path()
+    if path.is_file():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, list) and data:
+                return data
+        except Exception as e:
+            print(f"Error leyendo iot local: {e}")
     return _seed()
 
 
 def _save(items: list[dict[str, Any]]) -> None:
+    # Persistencia local siempre (demo M7 / degradación)
+    path = _store_path()
+    try:
+        prev: list[dict[str, Any]] = []
+        if path.is_file():
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(raw, list):
+                prev = raw
+        merged = items + prev
+        path.write_text(
+            json.dumps(merged[:500], ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except Exception as e:
+        print(f"Error guardando iot local: {e}")
     try:
         from api_rest.integracion.supabase_store import get_supabase_client
         client = get_supabase_client()
         if client and items:
             nuevos = []
             for item in items:
-                # Filtrar campos que quizas no existan en tabla
                 data = {
                     "sensor_id": item.get("sensor_id"),
                     "tipo": item.get("tipo"),

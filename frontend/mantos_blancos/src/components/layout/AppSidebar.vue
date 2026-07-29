@@ -43,6 +43,7 @@ import {
   Thermometer,
   Wind,
   Layers,
+  CloudSun,
 } from 'lucide-vue-next'
 
 const site = inject('site')
@@ -51,6 +52,7 @@ const operaciones = [
   { to: '/', label: 'Panel turno', icon: Gauge },
   { to: '/ventanas', label: 'Ventanas', icon: Clock3 },
   { to: '/umbrales', label: 'Umbrales', icon: SlidersHorizontal },
+  { to: '/ambiente', label: 'Ambiente faena', icon: CloudSun },
 ]
 
 const observatorio = [

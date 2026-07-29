@@ -26,6 +26,12 @@ const routes = [
     component: () => import('@/views/UmbralesSpatiView.vue'),
     meta: { title: 'Umbrales' },
   },
+  {
+    path: '/ambiente',
+    name: 'ambiente',
+    component: () => import('@/views/AmbientalesView.vue'),
+    meta: { title: 'Ambiente faena' },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

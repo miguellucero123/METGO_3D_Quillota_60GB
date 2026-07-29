@@ -601,10 +601,157 @@ paths:
   /api/public/operaciones/faenas:
     get:
       tags: [operaciones]
-      summary: Listado de faenas atmosféricas (Paipote, Mantos Blancos, …)
+      summary: Listado de faenas atmosféricas / mineras (Paipote, Mantos, SPATI)
+      parameters:
+        - name: incluir_izaje
+          in: query
+          schema: { type: boolean, default: true }
+          description: Incluir mineras del catálogo SPATI (izaje)
       responses:
         "200":
-          description: faenas[] con estacion_ancla, bbox, sitio
+          description: faenas[] con estacion_ancla, bbox, estaciones_area, capacidades
+  /api/public/operaciones/faena/{faena_id}/paquete-ambiental:
+    get:
+      tags: [operaciones]
+      summary: Paquete ambiental multi-faena (meteo + CAMS + nieve + viento)
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string, description: "paipote | mantos_blancos | escondida | …" }
+        - name: horas
+          in: query
+          schema: { type: integer, default: 72, minimum: 6, maximum: 168 }
+        - name: incluir_observado
+          in: query
+          schema: { type: boolean, default: false }
+          description: Adjunta bloque modelo_vs_observado (M5)
+      responses:
+        "200":
+          description: >
+            actual + serie_meteo + serie_aire + serie_nival + nieve +
+            operaciones (izaje/caminos/botaderos) + flags (M3) +
+            opcional modelo_vs_observado (M5)
+        "404":
+          description: Faena desconocida
+        "422":
+          description: Faena sin coordenadas
+        "503":
+          description: Open-Meteo no disponible
+  /api/public/operaciones/umbrales-operativos:
+    get:
+      tags: [operaciones]
+      summary: Umbrales M3 izaje / caminos / botaderos (nieve, viento, visibilidad)
+      responses:
+        "200":
+          description: umbrales{} por actividad
+  /api/public/operaciones/faena/{faena_id}/estaciones-area:
+    get:
+      tags: [operaciones]
+      summary: Estaciones meteo por área de faena (M4 · catálogo + Supabase)
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: estaciones_area[] con rol, lat/lon, fuente
+        "404":
+          description: Faena desconocida
+  /api/public/operaciones/faena/{faena_id}/modelo-vs-observado:
+    get:
+      tags: [operaciones]
+      summary: Reporte M5 modelo vs observado (JSON o CSV)
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 14, minimum: 3, maximum: 60 }
+        - name: formato
+          in: query
+          schema: { type: string, enum: [json, csv], default: json }
+      responses:
+        "200":
+          description: >
+            JSON estado ok|parcial|sin_observado · o CSV pares modelo/observado
+        "404":
+          description: Faena desconocida
+  /api/public/operaciones/faena/{faena_id}/observado-status:
+    get:
+      tags: [operaciones]
+      summary: M7 readiness modelo vs observado + enlaces CSV/PDF
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 14 }
+      responses:
+        "200":
+          description: estado_mvo, listo_produccion, documentos{}
+  /api/cron/faena/demo-observado:
+    post:
+      tags: [cron]
+      summary: M7 carga demo observado+modelo+IoT
+      parameters:
+        - name: token
+          in: query
+          schema: { type: string }
+        - name: faena
+          in: query
+          schema: { type: string }
+        - name: dias
+          in: query
+          schema: { type: integer, default: 7 }
+      responses:
+        "200":
+          description: totales observado/modelo/iot
+        "401":
+          description: CRON_SECRET inválido
+  /api/cron/faena/estaciones-area:
+    post:
+      tags: [cron]
+      summary: Sync catálogo → Supabase faena_estaciones_area
+      parameters:
+        - name: token
+          in: query
+          schema: { type: string }
+        - name: faena
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: { faenas, puntos, supabase }
+        "401":
+          description: CRON_SECRET inválido
+  /api/public/operaciones/faena/{faena_id}/informe:
+    get:
+      tags: [operaciones]
+      summary: Informe ambiental CSV/PDF (documentos) u HTML vista previa
+      parameters:
+        - name: faena_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: formato
+          in: query
+          schema: { type: string, enum: [csv, pdf, html], default: pdf }
+          description: Documentos oficiales csv|pdf; html solo vista previa
+      responses:
+        "200":
+          description: text/csv, application/pdf o text/html
+        "400":
+          description: Formato no soportado
+        "404":
+          description: Faena desconocida
+        "503":
+          description: Sin datos de modelo
   /api/public/operaciones/faena/{faena_id}/ventilacion:
     get:
       tags: [operaciones]
@@ -613,7 +760,7 @@ paths:
         - name: faena_id
           in: path
           required: true
-          schema: { type: string, enum: [paipote, mantos_blancos] }
+          schema: { type: string, description: "paipote | mantos_blancos (ventilación N/R/M)" }
         - name: horizonte
           in: query
           schema: { type: string, enum: [horaria, diaria, proyeccion], default: horaria }
@@ -638,7 +785,7 @@ paths:
         - name: faena_id
           in: path
           required: true
-          schema: { type: string, enum: [paipote, mantos_blancos] }
+          schema: { type: string, description: "paipote | mantos_blancos (ventilación N/R/M)" }
         - name: estacion
           in: query
           schema: { type: string }
@@ -658,7 +805,7 @@ paths:
         - name: faena_id
           in: path
           required: true
-          schema: { type: string, enum: [paipote, mantos_blancos] }
+          schema: { type: string, description: "paipote | mantos_blancos (ventilación N/R/M)" }
         - name: estacion
           in: query
           schema: { type: string }
@@ -681,7 +828,7 @@ paths:
         - name: faena_id
           in: path
           required: true
-          schema: { type: string, enum: [paipote, mantos_blancos] }
+          schema: { type: string, description: "paipote | mantos_blancos (ventilación N/R/M)" }
         - name: estacion
           in: query
           schema: { type: string }

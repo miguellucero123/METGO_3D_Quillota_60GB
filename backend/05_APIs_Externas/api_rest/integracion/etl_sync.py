@@ -309,7 +309,12 @@ def _conteos_e7_e8() -> dict[str, Any]:
         if not client:
             return {"activo": False}
         out: dict[str, Any] = {"activo": True}
-        for tabla in ("aire_registros", "aire_dispersion", "operaciones_ventanas"):
+        for tabla in (
+            "aire_registros",
+            "aire_dispersion",
+            "operaciones_ventanas",
+            "faena_estaciones_area",
+        ):
             try:
                 res = client.table(tabla).select("*", count="exact").limit(1).execute()
                 out[tabla] = res.count

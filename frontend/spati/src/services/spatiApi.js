@@ -71,3 +71,41 @@ export async function fetchSpatiPronosticoConDron(sitioId, perfilDron, tauHoras 
 export function getApiBase() {
   return resolveBaseURL()
 }
+
+/** Catálogo multi-faena (operaciones M1/M2). */
+export async function fetchFaenas({ incluirIzaje = true } = {}) {
+  const q = incluirIzaje ? '' : '?incluir_izaje=0'
+  const data = await fetchJson(`/public/operaciones/faenas${q}`)
+  return data.faenas || []
+}
+
+export async function fetchPaqueteAmbiental(faenaId, { horas = 72 } = {}) {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  return fetchJson(`/public/operaciones/faena/${id}/paquete-ambiental?horas=${horas}`)
+}
+
+export async function fetchEstacionesArea(faenaId) {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  return fetchJson(`/public/operaciones/faena/${id}/estaciones-area`)
+}
+
+export async function fetchModeloVsObservado(faenaId, { dias = 14 } = {}) {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  return fetchJson(`/public/operaciones/faena/${id}/modelo-vs-observado?dias=${dias}`)
+}
+
+export async function fetchObservadoStatus(faenaId, { dias = 14 } = {}) {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  return fetchJson(`/public/operaciones/faena/${id}/observado-status?dias=${dias}`)
+}
+
+export function urlInformeFaena(faenaId, formato = 'pdf') {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  const fmt = ['csv', 'pdf', 'html'].includes(formato) ? formato : 'pdf'
+  return `${resolveBaseURL()}/public/operaciones/faena/${id}/informe?formato=${fmt}`
+}
+
+export function urlModeloVsObservadoCsv(faenaId, dias = 14) {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  return `${resolveBaseURL()}/public/operaciones/faena/${id}/modelo-vs-observado?formato=csv&dias=${dias}`
+}

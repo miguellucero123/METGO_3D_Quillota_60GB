@@ -47,6 +47,15 @@ ESTACIONES_SINCA_COPIAPO: dict[str, dict[str, Any]] = {
         "portal": "https://sinca.mma.gob.cl",
         "nota": "Estación Tierra Amarilla",
     },
+    # M5 Mantos — placeholder hasta código SINCA / AWS faena
+    "mb_rajo": {
+        "sinca_id": None,
+        "nombre_sinca": "Mantos Blancos (rajo)",
+        "region": "Antofagasta",
+        "contaminantes": ["PM10", "PM25"],
+        "portal": "https://sinca.mma.gob.cl",
+        "nota": "M5: pegar código SINCA o CSV AWS faena en METGO_SINCA_IDS / CSV_DIR",
+    },
 }
 
 
