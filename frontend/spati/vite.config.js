@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
+      // Desactiva la PWA en este deploy para desalojar SW viejos (D_L8c-qw).
+      // Los clientes que actualicen sw.js se auto-desregistran y cargan red limpia.
+      selfDestroying: true,
       registerType: 'autoUpdate',
       manifest: {
         name: 'METGO SPATI Izaje',
@@ -26,21 +29,6 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/assets\//],
-        runtimeCaching: [
-          {
-            urlPattern: ({ url }) =>
-              url.pathname.startsWith('/api/') || url.hostname.includes('metgo-api.onrender.com'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'metgo-api-spati',
-              networkTimeoutSeconds: 12,
-              expiration: { maxEntries: 32, maxAgeSeconds: 3 * 3600 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
     }),
   ],

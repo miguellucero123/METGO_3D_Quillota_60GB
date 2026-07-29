@@ -7,7 +7,7 @@ export default {
   siteLabel: 'SPATI Izaje',
   tagline: 'Pronóstico 72 h · mineras alta montaña · alertas 0–3',
   region: 'Chile · 17 faenas de alta montaña',
-  versionLabel: 'v0.4 · SPATI Alta Montaña',
+  versionLabel: 'v0.4.1 · SPATI Alta Montaña',
   documentTitle: 'METGO SPATI — Izaje alta montaña',
   documentDescription:
     'Sistema de Pronóstico y Alerta Temprana para Izaje en mineras de altura: acceso por faena contratada.',

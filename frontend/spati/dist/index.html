@@ -9,11 +9,31 @@
   />
   <meta name="theme-color" content="#0b1120" />
   <title>METGO SPATI — Izaje</title>
+  <script>
+    /* Bust PWA stale (builds D_L8c-qw / v0.3). Corre antes del bundle. */
+    (function () {
+      var KEY = 'metgo_spati_sw_bust_v04';
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        var had = regs.length > 0;
+        return Promise.all(regs.map(function (r) { return r.unregister(); })).then(function () {
+          if (!window.caches) return null;
+          return caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+          });
+        }).then(function () {
+          if (!had || sessionStorage.getItem(KEY)) return;
+          sessionStorage.setItem(KEY, '1');
+          location.reload();
+        });
+      }).catch(function () {});
+    })();
+  </script>
   <link
     rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>"
   />
-  <script type="module" crossorigin src="/assets/index-CqOl97hF.js"></script>
+  <script type="module" crossorigin src="/assets/index-BBDU-yaW.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-DCn2VgVx.css">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 <body>

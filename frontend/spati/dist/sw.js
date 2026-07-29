@@ -1,1 +1,25 @@
-if(!self.define){let s,e={};const i=(i,n)=>(i=new URL(i+".js",n).href,e[i]||new Promise(e=>{if("document"in self){const s=document.createElement("script");s.src=i,s.onload=e,document.head.appendChild(s)}else s=i,importScripts(i),e()}).then(()=>{let s=e[i];if(!s)throw new Error(`Module ${i} didn’t register its module`);return s}));self.define=(n,l)=>{const r=s||("document"in self?document.currentScript.src:"")||location.href;if(e[r])return;let u={};const t=s=>i(s,r),a={module:{uri:r},exports:u,require:t};e[r]=Promise.all(n.map(s=>a[s]||t(s))).then(s=>(l(...s),u))}}define(["./workbox-efbd304a"],function(s){"use strict";self.skipWaiting(),s.clientsClaim(),s.precacheAndRoute([{url:"registerSW.js",revision:"1872c500de691dce40960bb85481de07"},{url:"index.html",revision:"22c11da25c986e9de78708d246efc2ef"},{url:"assets/VerificarEmailView-uMS4hm0Z.css",revision:null},{url:"assets/VerificarEmailView-DyZH4Bw7.js",revision:null},{url:"assets/UmbralesSpatiView-DovM2fiG.js",revision:null},{url:"assets/UmbralesSpatiView-BtSsyqed.css",revision:null},{url:"assets/SpatiPanelView-Cy502_H0.css",revision:null},{url:"assets/SpatiPanelView-6kMx5yxr.js",revision:null},{url:"assets/spatiApi-DL7hZl_V.js",revision:null},{url:"assets/RegistroView-REEvbyuL.css",revision:null},{url:"assets/RegistroView-C08u0GWH.js",revision:null},{url:"assets/LoginView-Ckw_hvcs.js",revision:null},{url:"assets/LoginView-Ccc7uWs3.css",revision:null},{url:"assets/index-DCn2VgVx.css",revision:null},{url:"assets/index-CqOl97hF.js",revision:null},{url:"assets/hard-hat-DTHH9zXZ.js",revision:null},{url:"assets/FaenasHubView-pwsOu6qR.js",revision:null},{url:"assets/FaenasHubView-D0UG7r6l.css",revision:null},{url:"assets/FaenaShellView-q1t1H-hw.js",revision:null},{url:"assets/FaenaShellView-Dp3jSlDO.css",revision:null},{url:"assets/DronCalibracionView-IYfzAZCY.js",revision:null},{url:"assets/DronCalibracionView-DX1UuR2l.css",revision:null},{url:"assets/CuentaView-C-FOBhpX.css",revision:null},{url:"assets/CuentaView-B85mudSW.js",revision:null},{url:"assets/AmbientalesView-Ddrf2wjB.css",revision:null},{url:"assets/AmbientalesView-B4u9Libg.js",revision:null},{url:"icons/icon-192.png",revision:"f29ed15c07370e0cd95203867060c5e8"},{url:"icons/icon-512.png",revision:"c739e740e91a9ea6b817567cb88747e8"},{url:"manifest.webmanifest",revision:"dbacdc095f81076216ea577ed99b26c9"}],{}),s.cleanupOutdatedCaches(),s.registerRoute(new s.NavigationRoute(s.createHandlerBoundToURL("/index.html"),{denylist:[/^\/api\//,/^\/assets\//]})),s.registerRoute(({url:s})=>s.pathname.startsWith("/api/")||s.hostname.includes("metgo-api.onrender.com"),new s.NetworkFirst({cacheName:"metgo-api-spati",networkTimeoutSeconds:12,plugins:[new s.ExpirationPlugin({maxEntries:32,maxAgeSeconds:10800}),new s.CacheableResponsePlugin({statuses:[0,200]})]}),"GET")});
+
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
+});
+self.addEventListener('activate', (e) => {
+  self.registration.unregister()
+    .then(() => self.clients.matchAll())
+    .then((clients) => {
+      clients.forEach((client) => {
+        if (client instanceof WindowClient)
+          client.navigate(client.url);
+      });
+      return Promise.resolve();
+    })
+    .then(() => {
+      self.caches.keys().then((cacheNames) => {
+        Promise.all(
+          cacheNames.map((cacheName) => {
+            return self.caches.delete(cacheName);
+          }),
+        );
+      })
+    });
+});
+    
