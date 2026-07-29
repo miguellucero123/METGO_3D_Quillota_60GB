@@ -6,14 +6,9 @@
     </header>
 
     <div class="controls">
-      <label>
-        Faena / minera
-        <select v-model="faenaId">
-          <option v-for="f in faenas" :key="f.id" :value="f.id">
-            {{ f.nombre }}{{ f.region ? ` · ${f.region}` : '' }}{{ f.altitud_m ? ` (${f.altitud_m} m)` : '' }}
-          </option>
-        </select>
-      </label>
+      <p class="faena-fija">
+        Faena: <strong>{{ faenaMeta?.nombre || faenaId }}</strong>
+      </p>
       <button type="button" class="btn" :disabled="loading" @click="cargar">Actualizar</button>
       <a class="btn btn-ghost" :href="urlCsv" target="_blank" rel="noopener">Descargar CSV</a>
       <a class="btn btn-ghost" :href="urlPdf" target="_blank" rel="noopener">Descargar PDF</a>
@@ -190,7 +185,6 @@ import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import site from '@/site.config.js'
 import {
-  fetchFaenas,
   fetchPaqueteAmbiental,
   fetchModeloVsObservado,
   fetchObservadoStatus,
@@ -200,10 +194,16 @@ import {
 
 const route = useRoute()
 const injectedFaena = inject('faena', null)
-const faenas = ref([])
-const faenaId = ref(
-  (injectedFaena && injectedFaena.value) ||
-    String(route.params.faena || site.spatiDefaultSitio || 'escondida'),
+const injectedMeta = inject('faenaMeta', null)
+const faenaId = computed(
+  () =>
+    (injectedFaena && injectedFaena.value) ||
+    String(route.params.faena || site.spatiDefaultSitio || 'escondida').toLowerCase(),
+)
+const faenaMeta = computed(
+  () =>
+    (injectedMeta && injectedMeta.value) ||
+    (site.stations || []).find((s) => s.slug === faenaId.value) || { slug: faenaId.value, nombre: faenaId.value },
 )
 const pkg = ref(null)
 const mvo = ref(null)
@@ -231,26 +231,6 @@ const hayFlags = computed(() => {
 function n(v, dec = 2) {
   if (v == null || Number.isNaN(Number(v))) return '—'
   return Number(v).toFixed(dec)
-}
-
-async function cargarLista() {
-  try {
-    const list = await fetchFaenas({ incluirIzaje: true })
-    faenas.value = list.filter(
-      (f) => (f.capacidades || []).includes('paquete_ambiental') || f.origen === 'spati'
-    )
-    if (!faenas.value.length) faenas.value = list
-    if (!faenas.value.some((f) => f.id === faenaId.value) && faenas.value[0]) {
-      faenaId.value = faenas.value[0].id
-    }
-  } catch {
-    faenas.value = (site.stations || []).map((s) => ({
-      id: s.slug,
-      nombre: s.nombre,
-      region: s.region,
-      altitud_m: s.altitud_msnm,
-    }))
-  }
 }
 
 async function cargarMvo() {
@@ -290,10 +270,7 @@ async function cargar() {
 }
 
 watch(faenaId, cargar)
-onMounted(async () => {
-  await cargarLista()
-  await cargar()
-})
+onMounted(() => cargar())
 </script>
 
 <style scoped>
@@ -313,22 +290,15 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  align-items: end;
+  align-items: center;
   margin: 1.25rem 0;
 }
-.controls label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.85rem;
+.faena-fija {
+  margin: 0;
+  font-size: 0.9rem;
   color: var(--color-text-secondary);
 }
-.controls select {
-  min-width: 16rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+.faena-fija strong {
   color: var(--color-text);
 }
 .btn {

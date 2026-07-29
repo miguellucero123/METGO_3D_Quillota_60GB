@@ -3,20 +3,10 @@
     <header class="page-head">
       <h1>Umbrales SPATI</h1>
       <p>
-        Escalafón operacional de izaje
-        <span v-if="sitioId">· {{ sitioId }}</span>
+        Escalafón operacional de izaje · {{ faenaMeta?.nombre || sitioId }}
         <span v-if="fuente" class="muted"> ({{ fuente }})</span>
       </p>
     </header>
-
-    <label class="field">
-      Sitio
-      <select v-model="sitioId" @change="cargar">
-        <option v-for="s in sitios" :key="s.sitio_id" :value="s.sitio_id">
-          {{ s.nombre }}
-        </option>
-      </select>
-    </label>
 
     <p v-if="error" class="err">{{ error }}</p>
     <p v-else-if="loading" class="muted">Cargando umbrales…</p>
@@ -51,7 +41,7 @@
         </tr>
         <tr class="n3">
           <td>3 ROJO</td>
-          <td>≥ {{ umb.rojo_min_kmh ?? 35 }} km/h (flag {{ umb.flag_critico_kmh ?? 36 }})</td>
+          <td>≥ {{ umb.rojo_min_kmh ?? 35 }} km/h</td>
           <td>&gt; {{ umb.fuerza_rojo_pct ?? 80 }}%</td>
           <td>Parada obligatoria · asegurar pluma</td>
         </tr>
@@ -65,12 +55,29 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { fetchSpatiSitios, fetchSpatiUmbrales } from '@/services/spatiApi'
-import site from '@/site.config'
+import { computed, inject, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { fetchSpatiUmbrales } from '@/services/spatiApi'
 
-const sitios = ref([])
-const sitioId = ref(site.spatiDefaultSitio || 'escondida')
+const site = inject('site')
+const route = useRoute()
+const injectedFaena = inject('faena', null)
+const injectedMeta = inject('faenaMeta', null)
+
+const sitioId = computed(
+  () =>
+    (injectedFaena && injectedFaena.value) ||
+    String(route.params.faena || site.spatiDefaultSitio || 'escondida').toLowerCase(),
+)
+const faenaMeta = computed(
+  () =>
+    (injectedMeta && injectedMeta.value) ||
+    (site.stations || []).find((s) => s.slug === sitioId.value) || {
+      slug: sitioId.value,
+      nombre: sitioId.value,
+    },
+)
+
 const umb = ref({})
 const alertas = ref(null)
 const fuente = ref('')
@@ -80,17 +87,6 @@ const error = ref('')
 function rango(arr) {
   if (!Array.isArray(arr) || arr.length < 2) return '—'
   return `${arr[0]} – ${arr[1]}`
-}
-
-async function cargarSitios() {
-  try {
-    sitios.value = await fetchSpatiSitios({ altaMontana: false })
-    if (!sitios.value.find((s) => s.sitio_id === sitioId.value) && sitios.value[0]) {
-      sitioId.value = sitios.value[0].sitio_id
-    }
-  } catch {
-    sitios.value = [{ sitio_id: sitioId.value, nombre: sitioId.value }]
-  }
 }
 
 async function cargar() {
@@ -109,25 +105,14 @@ async function cargar() {
   }
 }
 
-onMounted(async () => {
-  await cargarSitios()
-  await cargar()
-})
+watch(sitioId, cargar)
+onMounted(() => cargar())
 </script>
 
 <style scoped>
 .page { max-width: 800px; margin: 0 auto; padding: 1.25rem; }
 .page-head h1 { margin: 0 0 0.35rem; }
 .page-head p { margin: 0 0 1rem; color: var(--color-muted); }
-.field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--color-muted); }
-.field select {
-  max-width: 20rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
 .tbl { width: 100%; border-collapse: collapse; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
 .tbl th, .tbl td { padding: 0.65rem 0.75rem; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 0.9rem; }
 .tbl th { background: var(--color-surface); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-muted); }

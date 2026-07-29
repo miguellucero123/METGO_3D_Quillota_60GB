@@ -6,14 +6,12 @@
     </header>
 
     <div class="controls">
-      <label>
-        Sitio / grúa
-        <select v-model="sitioId">
-          <option v-for="s in sitios" :key="s.sitio_id || s.slug" :value="s.sitio_id || s.slug">
-            {{ s.nombre }}{{ s.region ? ` · ${s.region}` : '' }}{{ s.altitud_msnm ? ` (${s.altitud_msnm} m)` : '' }}
-          </option>
-        </select>
-      </label>
+      <p class="faena-fija">
+        Faena:
+        <strong>{{ faenaMeta?.nombre || sitioId }}</strong>
+        <span v-if="faenaMeta?.region" class="muted"> · {{ faenaMeta.region }}</span>
+        <span v-if="faenaMeta?.altitud_msnm" class="muted"> ({{ faenaMeta.altitud_msnm }} m)</span>
+      </p>
       <button type="button" class="btn" :disabled="loading" @click="cargar">Actualizar</button>
     </div>
 
@@ -155,24 +153,33 @@
 
 <script setup>
 import { computed, inject, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, ScatterChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { fetchSpatiPronostico, fetchSpatiSitios } from '@/services/spatiApi'
+import { fetchSpatiPronostico } from '@/services/spatiApi'
 
 use([CanvasRenderer, LineChart, ScatterChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent])
 
 const site = inject('site')
-const sitioId = ref(site.spatiDefaultSitio || 'escondida')
-const sitios = ref(
-  (site.stations || []).map((s) => ({
-    sitio_id: s.slug,
-    nombre: s.nombre,
-    region: s.region,
-    altitud_msnm: s.altitud_msnm,
-  }))
+const route = useRoute()
+const injectedFaena = inject('faena', null)
+const injectedMeta = inject('faenaMeta', null)
+
+const sitioId = computed(
+  () =>
+    (injectedFaena && injectedFaena.value) ||
+    String(route.params.faena || site.spatiDefaultSitio || 'escondida').toLowerCase(),
+)
+const faenaMeta = computed(
+  () =>
+    (injectedMeta && injectedMeta.value) ||
+    (site.stations || []).find((s) => s.slug === sitioId.value) || {
+      slug: sitioId.value,
+      nombre: sitioId.value,
+    },
 )
 const loading = ref(true)
 const error = ref(null)
@@ -327,31 +334,16 @@ async function cargar() {
 }
 
 watch(sitioId, cargar)
-onMounted(async () => {
-  try {
-    const list = await fetchSpatiSitios()
-    if (list?.length) {
-      sitios.value = list.map((s) => ({
-        sitio_id: s.sitio_id,
-        nombre: s.nombre,
-        region: s.region,
-        altitud_msnm: s.altitud_msnm,
-      }))
-    }
-  } catch {
-    /* seed local */
-  }
-  await cargar()
-})
+onMounted(() => cargar())
 </script>
 
 <style scoped>
 .page { max-width: 960px; margin: 0 auto; padding: 1.25rem; }
 .page-head h1 { margin: 0 0 0.35rem; }
 .page-head p { margin: 0; color: var(--color-muted); }
-.controls { display: flex; gap: 0.75rem; align-items: end; margin: 1.25rem 0; flex-wrap: wrap; }
-.controls label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.85rem; }
-.controls select { min-width: 220px; padding: 0.45rem 0.6rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.controls { display: flex; gap: 0.75rem; align-items: center; margin: 1.25rem 0; flex-wrap: wrap; }
+.faena-fija { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
+.faena-fija strong { color: var(--color-text); }
 .btn { padding: 0.5rem 1rem; border-radius: var(--radius-md); border: none; background: var(--color-primary); color: #0b1120; font-weight: 600; cursor: pointer; }
 .btn:disabled { opacity: 0.6; }
 .state { padding: 1.5rem; color: var(--color-muted); }
