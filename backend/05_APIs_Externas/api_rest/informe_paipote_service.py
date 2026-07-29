@@ -137,19 +137,50 @@ def construir_informe_pdf_bytes(estacion_id: str = "paipote") -> bytes | None:
     return _texto_a_pdf(lines)
 
 
-def _texto_a_pdf(lines: list[str]) -> bytes:
-    """Genera PDF 1.4 simple con texto Helvetica."""
-    # Escapar paréntesis para literales PDF
-    def esc_pdf(s: str) -> str:
-        return s.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+# Caracteres fuera de WinAnsi → equivalentes ASCII (flechas, superíndices, etc.)
+_PDF_UNICODE_MAP = str.maketrans(
+    {
+        "→": "->",
+        "←": "<-",
+        "↔": "<->",
+        "—": "-",
+        "–": "-",
+        "…": "...",
+        "“": '"',
+        "”": '"',
+        "„": '"',
+        "‘": "'",
+        "’": "'",
+        "´": "'",
+        "²": "2",
+        "³": "3",
+        "¹": "1",
+        "µ": "u",
+        "×": "x",
+        "•": "*",
+        "\u00a0": " ",
+    }
+)
 
+
+def _pdf_safe_text(s: str, *, max_len: int = 95) -> str:
+    """Texto seguro para Helvetica + WinAnsiEncoding (latin-1 occidental)."""
+    t = (s or "").translate(_PDF_UNICODE_MAP)
+    # WinAnsi ≈ latin-1 para español (áéíóúñ¿¡°·)
+    t = t.encode("latin-1", errors="replace").decode("latin-1")
+    t = t.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    return t[:max_len]
+
+
+def _texto_a_pdf(lines: list[str]) -> bytes:
+    """Genera PDF 1.4 simple con Helvetica + WinAnsi (acentos ES legibles)."""
     content_lines = ["BT", "/F1 10 Tf", "50 780 Td", "12 TL"]
     first = True
     y_lines = 0
-    max_lines = 60
+    max_lines = 58
     page_contents: list[str] = []
     for raw in lines:
-        text = esc_pdf(raw[:110])
+        text = _pdf_safe_text(raw)
         if y_lines >= max_lines:
             content_lines.append("ET")
             page_contents.append("\n".join(content_lines))
@@ -166,14 +197,14 @@ def _texto_a_pdf(lines: list[str]) -> bytes:
     content_lines.append("ET")
     page_contents.append("\n".join(content_lines))
 
-    objects: list[bytes] = []
-    # 1 catalog, 2 pages tree, then fonts + pages + contents
-    # We'll build dynamically
-    kids = []
     objs: dict[int, bytes] = {}
     objs[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
     font_id = 3
-    objs[font_id] = b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+    # WinAnsi: á, ñ, °, etc. (sin esto Helvetica StandardEncoding corrompe acentos)
+    objs[font_id] = (
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica "
+        b"/Encoding /WinAnsiEncoding >>"
+    )
     next_id = 4
     page_ids = []
     for stream in page_contents:
@@ -193,7 +224,6 @@ def _texto_a_pdf(lines: list[str]) -> bytes:
     kids_str = " ".join(f"{pid} 0 R" for pid in page_ids)
     objs[2] = f"<< /Type /Pages /Kids [{kids_str}] /Count {len(page_ids)} >>".encode()
 
-    # Assemble
     out = bytearray(b"%PDF-1.4\n")
     offsets = {0: 0}
     max_obj = max(objs)

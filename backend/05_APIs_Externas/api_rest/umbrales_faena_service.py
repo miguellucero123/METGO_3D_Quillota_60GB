@@ -127,13 +127,13 @@ def evaluar_actividad(
         nivel = _peor(nivel, n)
     razones: list[str] = []
     if n_raf != "verde":
-        razones.append(f"ráfaga→{n_raf}")
+        razones.append(f"rafaga->{n_raf}")
     if n_snow != "verde":
-        razones.append(f"snowfall_hora→{n_snow}")
+        razones.append(f"snowfall_hora->{n_snow}")
     if n_acum != "verde":
-        razones.append(f"acum_24h→{n_acum}")
+        razones.append(f"acum_24h->{n_acum}")
     if n_vis != "verde":
-        razones.append(f"visibilidad→{n_vis}")
+        razones.append(f"visibilidad->{n_vis}")
     return {
         "actividad": actividad,
         "nivel": nivel,

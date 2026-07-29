@@ -250,8 +250,40 @@ def construir_informe_html(faena_id: str) -> str | None:
 """
 
 
+def _fmt_num(v: Any, *, unit: str = "", nd: int | None = None) -> str:
+    """Valor legible para PDF (None → —)."""
+    if v is None or v == "":
+        return "—" if not unit else f"— {unit}".strip()
+    try:
+        if nd is not None and isinstance(v, (int, float)):
+            v = round(float(v), nd)
+    except (TypeError, ValueError):
+        pass
+    return f"{v} {unit}".strip() if unit else str(v)
+
+
+def _fmt_rango(st: dict[str, Any] | None, unit: str = "") -> str:
+    """min / max / media sin volcar el dict Python."""
+    st = st or {}
+    if st.get("min") is None and st.get("max") is None and st.get("avg") is None:
+        return "sin dato"
+    u = f" {unit}" if unit else ""
+    return (
+        f"min {_fmt_num(st.get('min'))} / max {_fmt_num(st.get('max'))} / "
+        f"media {_fmt_num(st.get('avg'))}{u}"
+    )
+
+
+def _fmt_bool(v: Any) -> str:
+    if v is True:
+        return "si"
+    if v is False:
+        return "no"
+    return "—"
+
+
 def construir_informe_pdf_bytes(faena_id: str) -> bytes | None:
-    """PDF texto enriquecido (M2)."""
+    """PDF texto enriquecido (M2/M3) — legible, sin dicts ni None crudos."""
     from api_rest.informe_paipote_service import _texto_a_pdf
     from api_rest.paquete_ambiental_service import construir_paquete_ambiental
 
@@ -263,68 +295,102 @@ def construir_informe_pdf_bytes(faena_id: str) -> bytes | None:
     flags = pkg.get("flags") or {}
     ops = pkg.get("operaciones") or {}
     res = resumen_horizonte(pkg)
+    fuente = pkg.get("fuente") or {}
+    aviso = pkg.get("aviso")
     lines = [
-        "METGO — Informe ambiental de faena (M3)",
+        "METGO - Informe ambiental de faena (M3)",
         f"{pkg.get('nombre')} ({pkg.get('faena_id')})",
-        f"Lat/Lon: {pkg.get('lat')}, {pkg.get('lon')}  alt: {pkg.get('altitud_m')} m",
+        f"Lat/Lon: {pkg.get('lat')}, {pkg.get('lon')}  alt: {_fmt_num(pkg.get('altitud_m'), unit='m')}",
         f"Generado: {pkg.get('generado_en')}",
-        "",
-        "--- Actual ---",
-        f"T: {a.get('temperatura_c')} C  HR: {a.get('humedad_relativa_pct')} %",
-        f"Precip: {a.get('precipitacion_mm')} mm  Snowfall: {a.get('snowfall_mm')} mm",
-        f"Vis: {a.get('visibilidad_m')} m  Pmsl: {a.get('presion_msl_hpa')} hPa",
-        f"Viento 10m: {a.get('viento_10m_ms')} m/s dir {a.get('viento_10m_dir_deg')}",
-        f"Rafaga: {a.get('rafaga_10m_ms')} m/s",
-        f"Viento 100m: {a.get('viento_100m_ms')} m/s dir {a.get('viento_100m_dir_deg')}",
-        f"PM2.5: {a.get('pm2_5')}  PM10: {a.get('pm10')}  SO2: {a.get('so2')}  NO2: {a.get('no2')}",
-        f"O3: {a.get('o3')}  Dust: {a.get('dust')}",
-        f"ICAP: {a.get('icap')} ({a.get('nivel_icap')})",
-        f"Acum nieve 72h: {nieve.get('acumulacion_proxy_cm')} cm  24h: {nieve.get('acumulacion_24h_cm')} cm",
-        "",
-        f"--- Flags M3 (global: {flags.get('nivel_global')}) ---",
-        f"nieve_activa={flags.get('flag_nieve_activa')} acum_relevante={flags.get('flag_acum_relevante')}",
-        f"izaje_rest={flags.get('flag_izaje_restringido')} caminos={flags.get('flag_caminos_restringido')} botaderos={flags.get('flag_botaderos_restringido')}",
     ]
-    for aid, av in (ops.get("actividades") or {}).items():
-        lines.append(f"  {aid}: {av.get('nivel')} ({', '.join(av.get('razones') or []) or 'ok'})")
+    if aviso:
+        lines += ["", f"AVISO: {aviso}"]
+    if fuente.get("meteo") == "synthetic_degraded" or pkg.get("degradado"):
+        lines.append("Nota: paquete estimado / degradado (Open-Meteo no disponible).")
     lines += [
         "",
-        "--- Resumen 72 h (min / max / media) ---",
-        f"T: {res['temperatura_c']}",
-        f"Viento 10m: {res['viento_10m_ms']}",
-        f"Rafaga: {res['rafaga_10m_ms']}",
-        f"Vis: {res['visibilidad_m']}",
-        f"Snowfall suma: {res['snowfall_mm_suma']} mm",
-        f"PM2.5: {res['pm2_5']}",
-        f"PM10: {res['pm10']}",
-        f"SO2: {res['so2']}  NO2: {res['no2']}",
+        "=== 1. Condicion actual ===",
+        f"Temperatura: {_fmt_num(a.get('temperatura_c'), unit='C', nd=1)}",
+        f"Humedad relativa: {_fmt_num(a.get('humedad_relativa_pct'), unit='%', nd=1)}",
+        f"Precipitacion: {_fmt_num(a.get('precipitacion_mm'), unit='mm', nd=2)}",
+        f"Snowfall: {_fmt_num(a.get('snowfall_mm'), unit='mm', nd=2)}",
+        f"Visibilidad: {_fmt_num(a.get('visibilidad_m'), unit='m', nd=0)}",
+        f"Presion MSL: {_fmt_num(a.get('presion_msl_hpa'), unit='hPa', nd=1)}",
+        f"Viento 10 m: {_fmt_num(a.get('viento_10m_ms'), unit='m/s', nd=2)}  "
+        f"dir {_fmt_num(a.get('viento_10m_dir_deg'), unit='deg', nd=0)}",
+        f"Rafaga 10 m: {_fmt_num(a.get('rafaga_10m_ms'), unit='m/s', nd=2)}",
+        f"Viento 100 m: {_fmt_num(a.get('viento_100m_ms'), unit='m/s', nd=2)}  "
+        f"dir {_fmt_num(a.get('viento_100m_dir_deg'), unit='deg', nd=0)}",
+        f"PM2.5: {_fmt_num(a.get('pm2_5'), unit='ug/m3', nd=1)}  "
+        f"PM10: {_fmt_num(a.get('pm10'), unit='ug/m3', nd=1)}",
+        f"SO2: {_fmt_num(a.get('so2'), unit='ug/m3', nd=1)}  "
+        f"NO2: {_fmt_num(a.get('no2'), unit='ug/m3', nd=1)}",
+        f"O3: {_fmt_num(a.get('o3'), unit='ug/m3', nd=1)}  "
+        f"Dust: {_fmt_num(a.get('dust'), unit='ug/m3', nd=1)}",
+        f"ICAP: {_fmt_num(a.get('icap'))} ({_fmt_num(a.get('nivel_icap'))})",
+        f"Acum. nieve 72 h: {_fmt_num(nieve.get('acumulacion_proxy_cm'), unit='cm', nd=1)}  "
+        f"24 h: {_fmt_num(nieve.get('acumulacion_24h_cm'), unit='cm', nd=1)}",
         "",
-        "Estaciones area:",
+        f"=== 2. Flags operativos M3 (global: {_fmt_num(flags.get('nivel_global'))}) ===",
+        f"Nieve activa: {_fmt_bool(flags.get('flag_nieve_activa'))}  "
+        f"Acum. relevante: {_fmt_bool(flags.get('flag_acum_relevante'))}",
+        f"Izaje restringido: {_fmt_bool(flags.get('flag_izaje_restringido'))}  "
+        f"Caminos: {_fmt_bool(flags.get('flag_caminos_restringido'))}  "
+        f"Botaderos: {_fmt_bool(flags.get('flag_botaderos_restringido'))}",
     ]
-    for e in pkg.get("estaciones_area") or []:
+    for aid, av in (ops.get("actividades") or {}).items():
+        razones = (av or {}).get("razones") or []
+        # flecha Unicode → ASCII en capa PDF
+        raz = ", ".join(str(r).replace("→", "->") for r in razones) or "ok"
+        lines.append(f"  {aid}: {_fmt_num((av or {}).get('nivel'))} ({raz})")
+    lines += [
+        "",
+        "=== 3. Resumen horizonte 72 h ===",
+        f"Temperatura: {_fmt_rango(res['temperatura_c'], 'C')}",
+        f"Viento 10 m: {_fmt_rango(res['viento_10m_ms'], 'm/s')}",
+        f"Rafaga: {_fmt_rango(res['rafaga_10m_ms'], 'm/s')}",
+        f"Visibilidad: {_fmt_rango(res['visibilidad_m'], 'm')}",
+        f"Snowfall suma: {_fmt_num(res['snowfall_mm_suma'], unit='mm', nd=2)}",
+        f"PM2.5: {_fmt_rango(res['pm2_5'], 'ug/m3')}",
+        f"PM10: {_fmt_rango(res['pm10'], 'ug/m3')}",
+        f"SO2: {_fmt_rango(res['so2'], 'ug/m3')}",
+        f"NO2: {_fmt_rango(res['no2'], 'ug/m3')}",
+        "",
+        "=== 4. Estaciones de area (modelo) ===",
+    ]
+    estaciones = pkg.get("estaciones_area") or []
+    if not estaciones:
+        lines.append("  (sin puntos de area)")
+    for e in estaciones:
         lines.append(
             f"  - {e.get('nombre')} ({e.get('rol')}): {e.get('lat')}, {e.get('lon')}"
         )
-    lines += ["", "Fuente: Open-Meteo + CAMS (modelo M3)"]
-    # M5: adjuntar resumen modelo vs observado si hay pares
+    lines += ["", "Fuente: Open-Meteo Forecast + CAMS (modelo M3)"]
     try:
         from api_rest.modelo_vs_observado_service import reporte_modelo_vs_observado
 
         mvo = reporte_modelo_vs_observado(faena_id, dias=14) or {}
+        aire = mvo.get("aire") or {}
+        meteo = mvo.get("meteo") or {}
+        iot = mvo.get("iot") or {}
         lines += [
             "",
-            f"--- Modelo vs observado (M5 · estado={mvo.get('estado')}) ---",
-            f"Estacion: {mvo.get('estacion_id')}  tipo_dato: modelo / observado",
-            f"Aire pares: {(mvo.get('aire') or {}).get('n_pares')}  "
-            f"PM25 sesgo: {((mvo.get('aire') or {}).get('pm25') or {}).get('sesgo_medio')}  "
-            f"PM10: {((mvo.get('aire') or {}).get('pm10') or {}).get('sesgo_medio')}",
-            f"Meteo pares: {(mvo.get('meteo') or {}).get('n_pares')}  "
-            f"T sesgo: {((mvo.get('meteo') or {}).get('temperatura') or {}).get('sesgo_medio')}",
-            f"IoT lecturas: {((mvo.get('iot') or {}).get('n_lecturas'))}",
+            f"=== 5. Modelo vs observado (M5 · estado={_fmt_num(mvo.get('estado'))}) ===",
+            f"Estacion: {_fmt_num(mvo.get('estacion_id'))}",
+            f"Aire pares: {_fmt_num(aire.get('n_pares'))}  "
+            f"PM2.5 sesgo: {_fmt_num((aire.get('pm25') or {}).get('sesgo_medio'), nd=1)}  "
+            f"PM10 sesgo: {_fmt_num((aire.get('pm10') or {}).get('sesgo_medio'), nd=1)}",
+            f"Meteo pares: {_fmt_num(meteo.get('n_pares'))}  "
+            f"T sesgo: {_fmt_num((meteo.get('temperatura') or {}).get('sesgo_medio'), nd=1)}",
+            f"IoT lecturas: {_fmt_num(iot.get('n_lecturas'))}",
         ]
     except Exception:
         pass
-    lines += ["", "Formatos: PDF y CSV (?formato=pdf|csv)"]
+    lines += [
+        "",
+        "Documentos: ?formato=pdf | ?formato=csv | HTML (sin query).",
+        "Producto METGO proxy operativo. No sustituye dictamen DMC ni modelacion regulatoria.",
+    ]
     return _texto_a_pdf(lines)
 
 
