@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from api_rest.identity import pii_crypto
+from api_rest.identity import plans_catalog
 from api_rest.identity.plans_catalog import features_for_plan
 
 _lock = threading.Lock()
@@ -22,19 +23,40 @@ _MEM: dict[str, list[dict[str, Any]]] = {
     "entitlements": [],
     "faena_reglas": [],
     "audit_auth": [],
+    "email_tokens": [],
 }
 
-# Seed reglas en memoria (mismas ideas que la migración)
-_DEFAULT_REGLAS = [
-    ("escondida", "izaje", True, "trial"),
-    ("escondida", "ambiente", True, "trial"),
-    ("escondida", "dron", True, "starter"),
-    ("escondida", "ops", True, "pro"),
-    ("los_bronces", "izaje", True, "trial"),
-    ("los_bronces", "ambiente", True, "trial"),
-    ("los_bronces", "dron", True, "starter"),
-    ("los_bronces", "ops", True, "pro"),
-]
+# Seed reglas en memoria — 17 faenas SPATI (izaje/ambiente trial; dron starter; ops/pro)
+_SPATI_FAENAS = (
+    "quebrada_blanca",
+    "collahuasi",
+    "cerro_colorado",
+    "el_abra",
+    "chuquicamata",
+    "radomiro_tomic",
+    "ministro_hales",
+    "spence",
+    "escondida",
+    "el_penon",
+    "la_coipa",
+    "maricunga",
+    "candelaria",
+    "los_pelambres",
+    "los_bronces",
+    "andina",
+    "el_teniente",
+)
+
+_DEFAULT_REGLAS: list[tuple[str, str, bool, str]] = []
+for _f in _SPATI_FAENAS:
+    _DEFAULT_REGLAS.extend(
+        [
+            (_f, "izaje", True, "trial"),
+            (_f, "ambiente", True, "trial"),
+            (_f, "dron", True, "starter"),
+            (_f, "ops", True, "pro"),
+        ]
+    )
 
 
 def use_memory() -> bool:
@@ -188,7 +210,8 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
             }
         )
 
-        return True, "Usuario creado (verifique email)", {
+        verify_token = _issue_email_token(user_id, locked=True)
+        out = {
             "usuario_id": user_id,
             "org_id": org_id,
             "sitio": sitio,
@@ -197,7 +220,10 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
             "plan_code": "trial",
             "sub_status": "trialing",
             "consent_version": ver,
+            "verify_token": verify_token,
+            "verify_path": f"/api/auth/verify-email?token={verify_token}",
         }
+        return True, "Usuario creado (verifique email)", out
 
 
 def _register_supabase(payload, email, sitio, faena, password, cons, ip):
@@ -304,7 +330,214 @@ def _register_supabase(payload, email, sitio, faena, password, cons, ip):
         "plan_code": "trial",
         "sub_status": "trialing",
         "consent_version": ver,
+        "verify_token": _issue_email_token(user_id),
     }
+
+
+def _issue_email_token(user_id: str, *, locked: bool = False) -> str:
+    import secrets
+
+    token = secrets.token_urlsafe(24)
+    exp = (_utcnow() + timedelta(hours=48)).isoformat()
+    row = {"token": token, "usuario_id": user_id, "expires_at": exp, "used": False}
+    if use_memory():
+        if locked:
+            _MEM["email_tokens"].append(row)
+        else:
+            with _lock:
+                _MEM["email_tokens"].append(row)
+        return token
+    # Token firmado user_id.exp.mac (sin tabla extra)
+    import hashlib
+    import hmac
+
+    mac = hmac.new(
+        pii_crypto._kek(),
+        f"{user_id}:{exp}".encode(),
+        hashlib.sha256,
+    ).hexdigest()[:24]
+    return f"{user_id}.{exp}.{mac}"
+
+
+def verificar_email(token: str) -> tuple[bool, str, dict[str, Any] | None]:
+    token = (token or "").strip()
+    if not token:
+        return False, "Token requerido", None
+
+    if use_memory():
+        with _lock:
+            for t in _MEM["email_tokens"]:
+                if t["token"] != token:
+                    continue
+                if t.get("used"):
+                    return False, "Token ya usado", None
+                if t["expires_at"] < _utcnow().isoformat():
+                    return False, "Token expirado", None
+                uid = t["usuario_id"]
+                t["used"] = True
+                for u in _MEM["usuarios_app"]:
+                    if u["id"] == uid:
+                        u["email_verified_at"] = _utcnow().isoformat()
+                        u["status"] = "active"
+                        return True, "Email verificado", {
+                            "usuario_id": uid,
+                            "status": "active",
+                            "email": u["email_norm"],
+                        }
+                return False, "Usuario no encontrado", None
+        return False, "Token invalido", None
+
+    # Token firmado user.exp.mac
+    parts = token.split(".")
+    if len(parts) != 3:
+        return False, "Token invalido", None
+    user_id, exp, mac = parts
+    import hashlib
+    import hmac
+
+    expect = hmac.new(
+        pii_crypto._kek(),
+        f"{user_id}:{exp}".encode(),
+        hashlib.sha256,
+    ).hexdigest()[:24]
+    if not hmac.compare_digest(mac, expect):
+        return False, "Token invalido", None
+    if exp < _utcnow().isoformat():
+        return False, "Token expirado", None
+    from api_rest.integracion import supabase_store as sb
+
+    rows = sb.rest_patch(
+        "usuarios_app",
+        {"id": f"eq.{user_id}"},
+        {"email_verified_at": _utcnow().isoformat(), "status": "active"},
+    )
+    if not rows:
+        return False, "No se pudo verificar (Supabase)", None
+    return True, "Email verificado", {
+        "usuario_id": user_id,
+        "status": "active",
+        "email": rows[0].get("email_norm"),
+    }
+
+
+def aplicar_plan(
+    org_id: str,
+    plan_code: str,
+    *,
+    status: str = "active",
+    stripe_customer_id: str | None = None,
+    stripe_subscription_id: str | None = None,
+) -> tuple[bool, str, dict[str, Any] | None]:
+    plan_code = (plan_code or "").strip().lower()
+    if plan_code not in ("trial", "starter", "pro", "enterprise"):
+        return False, "Plan desconocido", None
+    feats = features_for_plan(plan_code)
+    period_end = (_utcnow() + timedelta(days=30)).isoformat()
+
+    if use_memory():
+        with _lock:
+            sub = None
+            for s in _MEM["suscripciones"]:
+                if s["org_id"] == org_id:
+                    sub = s
+                    break
+            if not sub:
+                return False, "Suscripción no encontrada", None
+            sub["plan_code"] = plan_code
+            sub["status"] = status if plan_code != "trial" else "trialing"
+            sub["current_period_end"] = period_end
+            if stripe_customer_id:
+                sub["stripe_customer_id"] = stripe_customer_id
+            if stripe_subscription_id:
+                sub["stripe_subscription_id"] = stripe_subscription_id
+            sub_id = sub["id"]
+            _MEM["entitlements"] = [e for e in _MEM["entitlements"] if e["suscripcion_id"] != sub_id]
+            for fk in feats:
+                _MEM["entitlements"].append(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "suscripcion_id": sub_id,
+                        "feature_key": fk,
+                        "enabled": True,
+                    }
+                )
+            return True, "Plan aplicado", dict(sub)
+
+    from api_rest.integracion import supabase_store as sb
+
+    patch = {
+        "plan_code": plan_code,
+        "status": status if plan_code != "trial" else "trialing",
+        "current_period_end": period_end,
+    }
+    if stripe_customer_id:
+        patch["stripe_customer_id"] = stripe_customer_id
+    if stripe_subscription_id:
+        patch["stripe_subscription_id"] = stripe_subscription_id
+    rows = sb.rest_patch("suscripciones", {"org_id": f"eq.{org_id}"}, patch)
+    if not rows:
+        return False, "No se pudo actualizar suscripción", None
+    sub = rows[0]
+    sub_id = sub.get("id")
+    # Entitlements: insert nuevos (simplificado; no borra viejos por falta de DELETE genérico)
+    for fk in feats:
+        sb.rest_insert(
+            "entitlements",
+            {"suscripcion_id": sub_id, "feature_key": fk, "enabled": True},
+        )
+    return True, "Plan aplicado", sub
+
+
+def cuenta_resumen(*, email: str | None, org_id: str | None, sitio: str | None, faena: str | None) -> dict[str, Any]:
+    user = None
+    if email and sitio:
+        user = buscar_usuario_login(email, sitio, faena)
+        if not user and faena:
+            user = buscar_usuario_login(email, "spati", faena)
+    org_id = org_id or (user or {}).get("org_id")
+    sub = suscripcion_de_org(org_id) if org_id else None
+    plan = (sub or {}).get("plan_code") or "trial"
+    status = (sub or {}).get("status") or "trialing"
+    access = compute_access(
+        sitio=sitio or (user or {}).get("sitio") or "spati",
+        faena=faena or (user or {}).get("faena"),
+        plan_code=plan,
+        sub_status=status,
+    )
+    return {
+        "usuario": {
+            "email": (user or {}).get("email_norm") or email,
+            "status": (user or {}).get("status"),
+            "role": (user or {}).get("role"),
+            "email_verified": bool((user or {}).get("email_verified_at")),
+            "org_id": org_id,
+            "sitio": (user or {}).get("sitio") or sitio,
+            "faena": (user or {}).get("faena") or faena,
+        },
+        "suscripcion": sub,
+        "access": access,
+        "planes": plans_catalog.listar_planes(
+            (user or {}).get("sitio") or sitio or "spati",
+            (user or {}).get("faena") or faena,
+        ),
+    }
+
+
+def buscar_usuario_por_org(org_id: str) -> dict[str, Any] | None:
+    if use_memory():
+        with _lock:
+            for u in _MEM["usuarios_app"]:
+                if u.get("org_id") == org_id:
+                    return dict(u)
+        return None
+    from api_rest.integracion import supabase_store as sb
+
+    rows = sb.rest_select(
+        "usuarios_app",
+        params={"org_id": f"eq.{org_id}", "select": "*", "limit": "1"},
+        limit=1,
+    )
+    return rows[0] if rows else None
 
 
 def buscar_usuario_login(email: str, sitio: str, faena: str | None) -> dict[str, Any] | None:

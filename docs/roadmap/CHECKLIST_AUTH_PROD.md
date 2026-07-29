@@ -1,57 +1,81 @@
-# Checklist auth producción (DT-auth)
+# Checklist auth producción (DT-auth + identity S1–S3)
 
-Endurecimiento JWT Flask — sin nuevo proyecto Supabase ni SSO WordPress.
+Endurecimiento JWT Flask + registro comercial multi-faena — sin nuevo proyecto Supabase Auth ni SSO WordPress.
 
 ## Render (`metgo-api`)
 
 | Variable | Valor |
 |----------|--------|
-| `METGO_ENV` | `production` (opcional si ya existe `RENDER=true`) |
-| `METGO_JWT_SECRET` | secreto largo aleatorio (**obligatorio**; sin fallback) |
-| `METGO_ALLOW_SELF_REGISTER` | `0` |
+| `METGO_ENV` | `production` (o confiar en `RENDER=true`) |
+| `METGO_JWT_SECRET` | secreto largo aleatorio (**obligatorio**) |
+| `METGO_PII_KEK` | secreto distinto al JWT para cifrar PII (**obligatorio** en prod) |
+| `METGO_IDENTITY_STORE` | `supabase` (omitir solo en tests `memory`) |
+| `METGO_ALLOW_SELF_REGISTER` | `0` (legacy JSON; usar `register-v2`) |
+| `METGO_EMAIL_DEV` | `0` en prod (no devolver `verify_token` en JSON) |
 | `METGO_API_AUTH_REQUIRED` | `1` |
-| `METGO_PASSWORD_ADMIN` | fuerte, rotada |
-| `METGO_PASSWORD_AGRONOMO` | opcional |
-| `METGO_PASSWORD_OPERADOR` | opcional |
-| `METGO_PASSWORD_LECTOR` | opcional |
-| `METGO_PASSWORD_COPIAPO` | fuerte |
-| `METGO_PASSWORD_MANTOS` | fuerte (también SPATI) |
-| `METGO_PASSWORD_PAINE` | fuerte |
-| `METGO_CORS_ORIGINS` | URLs `*.pages.dev` + dominios propios |
+| `METGO_SPATI_PUBLIC_URL` | `https://metgo-spati.pages.dev` |
+| `METGO_PASSWORD_ADMIN` | fuerte, rotada (break-glass) |
+| `METGO_PASSWORD_COPIAPO` / `_MANTOS` / `_PAINE` | opcionales hasta migrar 100% a `usuarios_app` |
+| `METGO_CORS_ORIGINS` | `*.pages.dev` + dominios propios (incluye `metgo-spati.pages.dev`) |
+
+### SMTP (verify-email)
+
+| Variable | Valor |
+|----------|--------|
+| `METGO_SMTP_HOST` | smtp.ejemplo.com |
+| `METGO_SMTP_PORT` | `587` |
+| `METGO_SMTP_USER` / `METGO_SMTP_PASSWORD` | credenciales |
+| `METGO_SMTP_FROM` | `noreply@metgo.cl` |
+| `METGO_SMTP_TLS` | `1` |
+
+Sin SMTP → el API solo registra el enlace en logs (`mode=log`).
+
+### Stripe (opcional S3)
+
+| Variable | Valor |
+|----------|--------|
+| `STRIPE_SECRET_KEY` | `sk_live_…` o `sk_test_…` |
+| `STRIPE_PRICE_STARTER` / `_PRO` | Price IDs |
+| `STRIPE_WEBHOOK_SECRET` | firma webhook → `POST /api/billing/webhook` |
+
+Sin Stripe → checkout **mock** aplica el plan al instante (útil en staging).
 
 Tras cambiar env: **Manual Deploy → Clear build cache & deploy**.
 
 ## Cloudflare Pages (SPAs)
 
-- Redeploy Quillota / Copiapó / Mantos / SPATI / Paine tras quitar demos de `/login`.
-- Quillota: **no** definir `VITE_ALLOW_SELF_REGISTER=1` en producción.
-- Paine: repo `metgo-paine` — commit + deploy aparte.
+- SPATI: hub `/` y faenas `/f/{faena}/registro|login|cuenta`.
+- Redeploy tras cambios de auth/UI.
+- Quillota: **no** `VITE_ALLOW_SELF_REGISTER=1` en prod.
 
 ## Smoke
 
 ```powershell
-# Debe fallar con password demo si ya rotó METGO_PASSWORD_ADMIN
+# Legacy demo (debe fallar si rotó passwords)
 Invoke-RestMethod -Method POST https://metgo-api.onrender.com/api/auth/login `
   -ContentType "application/json" `
   -Body '{"username":"admin","password":"admin123"}'
 
-# Debe OK con el password de Render
-Invoke-RestMethod -Method POST https://metgo-api.onrender.com/api/auth/login `
-  -ContentType "application/json" `
-  -Body '{"username":"admin","password":"SU_PASSWORD_RENDER"}'
+# Planes públicos
+Invoke-RestMethod "https://metgo-api.onrender.com/api/public/planes?sitio=spati&faena=escondida"
+
+# Reglas faena
+Invoke-RestMethod "https://metgo-api.onrender.com/api/public/faenas/escondida/reglas"
 ```
 
-UI: `/login` sin texto de usuario/password demo.
+UI SPATI: https://metgo-spati.pages.dev/f/escondida/registro — sin demos en pantalla.
 
 ## WordPress / Supabase
 
-- **No** crear otro proyecto Supabase para usuarios.
-- WordPress = marketing/CMS que **enlaza** a las SPAs (sin SSO por ahora).
+- **No** segundo proyecto Supabase para Auth.
+- Supabase = datos (`usuarios_app`, `suscripciones`, `faena_reglas`).
+- WordPress = marketing que **enlaza** a cada `/f/{faena}/`.
 
 ## Local
 
-Demos y tabla de usuarios: [`docs/DESARROLLO_LOCAL.md`](../DESARROLLO_LOCAL.md).
+Demos: [`docs/DESARROLLO_LOCAL.md`](../DESARROLLO_LOCAL.md).  
+Plan: [`PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md`](PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md).
 
 ## Fase
 
-DT-auth / ops prod.
+DT-auth-sub / S3 cutover (SMTP + Stripe keys en Render cuando haya credenciales reales).

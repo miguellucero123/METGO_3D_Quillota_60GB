@@ -73,7 +73,7 @@ async function onSubmit() {
       return
     }
     await registerV2(body)
-    msg.value = 'Registro OK. Revise su email y elija un plan.'
+    msg.value = 'Registro OK. Revise verificación de email y luego elija plan en Cuenta.'
     router.replace({ name: 'faena-login', params: { faena: faena.value } })
   } catch (e) {
     if (e.data?.validation?.errors) errors.value = e.data.validation.errors

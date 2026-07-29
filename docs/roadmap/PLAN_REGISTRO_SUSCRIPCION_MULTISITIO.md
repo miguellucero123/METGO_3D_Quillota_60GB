@@ -171,24 +171,28 @@ Hub opcional `/` lista faenas (público) sin datos operativos.
 
 - Consentimientos, validación, precios, faena-enlace.
 
-### S1 — Identidad + access + UI SPATI faena *(en curso)*
+### S1 — Identidad + access + UI SPATI faena ✅
 
-- [x] Plan actualizado (este doc).
-- [x] Migración SQL.
-- [x] `pii_crypto`, validators, store, register-v2, validate, access, planes.
+- [x] Plan, migración, crypto, register-v2, validate, access, planes.
 - [x] OpenAPI + tests memoria.
 - [x] SPATI: rutas `/f/:faena/*`, RegistroView, guard access.
 
-### S2 — Billing real Stripe + `/cuenta`
+### S2 — Billing + cuenta + verify-email ✅ (mock Stripe)
 
-### S3 — Cutover (quitar env demos), `sitio=spati`, hardening
+- [x] `GET /api/auth/verify-email`
+- [x] `GET /api/auth/cuenta` + UI `/f/:faena/cuenta`
+- [x] Checkout mock aplica plan; webhook mock; Stripe Price IDs cuando haya keys
+- [x] `sitio=spati` en catálogo + SPA; reglas 17 faenas
 
----
+### S3 — Cutover ✅ parcial (ops)
 
-## 9. Archivos
-
-Ver implementación bajo `api_rest/identity/`, `supabase/migrations/*_identity_suscripciones.sql`, `frontend/spati/src/...`.
+- [x] Checklist prod: `METGO_PII_KEK`, identity store, SMTP, Stripe Price IDs
+- [x] SMTP opcional (`email_notify`) + `verify_url` SPA
+- [x] Checkout Stripe Sessions vía API HTTP (si hay `STRIPE_SECRET_KEY` + Price IDs)
+- [ ] Credenciales reales SMTP/Stripe en Render (ops manual)
+- [ ] KMS / rotación formal `METGO_PII_KEK`
+- [ ] Retirar por completo `METGO_PASSWORD_*` demos tras migrar usuarios
 
 ## 10. Fase roadmap
 
-**DT-auth-sub / S1** · minería: extensión M-faena-tenant (post M9).
+**DT-auth-sub / S2–S3** · minería: faena-tenant post M9.

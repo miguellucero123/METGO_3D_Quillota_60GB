@@ -19,6 +19,7 @@ provide('faenaMeta', faenaMeta)
       <router-link :to="`/f/${faena}/ambiente`">Ambiente</router-link>
       <router-link :to="`/f/${faena}/dron`">Dron</router-link>
       <router-link :to="`/f/${faena}/umbrales`">Umbrales</router-link>
+      <router-link :to="`/f/${faena}/cuenta`">Cuenta</router-link>
       <router-link to="/">Todas</router-link>
     </nav>
     <router-view />

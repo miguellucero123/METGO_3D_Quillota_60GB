@@ -2,12 +2,12 @@
  * METGO SPATI — Pronóstico de izaje en mineras de alta montaña (Chile).
  */
 export default {
-  sitio: 'mantos_blancos',
+  sitio: 'spati',
   productName: 'METGO',
   siteLabel: 'SPATI Izaje',
   tagline: 'Pronóstico 72 h · mineras alta montaña · alertas 0–3',
   region: 'Chile · 17 faenas de alta montaña',
-  versionLabel: 'v0.2 · SPATI Alta Montaña',
+  versionLabel: 'v0.3 · SPATI Alta Montaña',
   documentTitle: 'METGO SPATI — Izaje alta montaña',
   documentDescription:
     'Sistema de Pronóstico y Alerta Temprana para Izaje en mineras de altura: Quebrada Blanca, Collahuasi, Escondida, Los Bronces, Andina, El Teniente y más.',

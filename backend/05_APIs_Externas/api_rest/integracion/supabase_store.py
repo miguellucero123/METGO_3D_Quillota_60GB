@@ -110,6 +110,35 @@ def rest_insert(table: str, row: dict[str, Any]) -> list[dict[str, Any]]:
         return []
 
 
+def rest_patch(table: str, match: dict[str, str], patch: dict[str, Any]) -> list[dict[str, Any]]:
+    """PATCH /rest/v1/{table}?col=eq.val"""
+    url, key = _resolve_supabase_creds()
+    if not url or not key or not patch:
+        return []
+    endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
+    params = dict(match or {})
+    try:
+        res = requests.patch(
+            endpoint,
+            headers=_rest_headers(key),
+            params=params,
+            json=patch,
+            timeout=30,
+        )
+        if res.status_code >= 400:
+            print(f"rest_patch {table}: {res.status_code} {res.text[:200]}")
+            return []
+        data = res.json()
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            return [data]
+        return []
+    except Exception as exc:
+        print(f"rest_patch {table}: {exc}")
+        return []
+
+
 def rest_upsert(table: str, rows: list[dict[str, Any]], on_conflict: str) -> int:
     url, key = _resolve_supabase_creds()
     if not url or not key or not rows:

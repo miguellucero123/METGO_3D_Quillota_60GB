@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 # Sitios conocidos (slug API)
-SITIOS = ("quillota", "paine", "copiapo", "mantos_blancos", "demo")
+SITIOS = ("quillota", "paine", "copiapo", "mantos_blancos", "spati", "demo")
 
 # Metadatos de producto / SPA (tabla sitios en Supabase es espejo)
 SITIOS_META: dict[str, dict[str, Any]] = {
@@ -53,6 +53,16 @@ SITIOS_META: dict[str, dict[str, Any]] = {
         "primary": "#fb923c",
         "center": {"lat": -23.43, "lon": -70.06},
         "modules": ["meteo", "aire", "operaciones"],
+    },
+    "spati": {
+        "slug": "spati",
+        "nombre": "METGO SPATI Izaje",
+        "region": "Chile · 17 faenas alta montaña",
+        "dominio": "izaje",
+        "estado": "activo",
+        "primary": "#3b82f6",
+        "center": {"lat": -24.25, "lon": -69.05},
+        "modules": ["spati", "operaciones", "alertas"],
     },
     "demo": {
         "slug": "demo",
@@ -166,6 +176,25 @@ ESTACIONES_POR_SITIO: dict[str, list[str]] = {
         "nantoco",
     ],
     "mantos_blancos": ["mb_rajo", "mb_campamento", "mb_chancado", "mb_ruta_acceso"],
+    "spati": [
+        "quebrada_blanca",
+        "collahuasi",
+        "cerro_colorado",
+        "el_abra",
+        "chuquicamata",
+        "radomiro_tomic",
+        "ministro_hales",
+        "spence",
+        "escondida",
+        "el_penon",
+        "la_coipa",
+        "maricunga",
+        "candelaria",
+        "los_pelambres",
+        "los_bronces",
+        "andina",
+        "el_teniente",
+    ],
     "demo": ["demo_norte", "demo_sur"],
 }
 

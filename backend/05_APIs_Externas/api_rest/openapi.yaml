@@ -201,7 +201,7 @@ paths:
   /api/billing/checkout:
     post:
       tags: [billing]
-      summary: Checkout Stripe o mock
+      summary: Checkout Stripe o mock (aplica plan si no hay STRIPE_SECRET_KEY)
       security: [{ bearerAuth: [] }]
       requestBody:
         content:
@@ -214,9 +214,42 @@ paths:
                 faena: { type: string }
       responses:
         "200":
-          description: mock checkout
+          description: mock aplicado o sesión
         "501":
           description: Stripe pendiente de Price IDs
+  /api/billing/webhook:
+    post:
+      tags: [billing]
+      summary: Webhook Stripe / mock aplica plan por org_id
+      responses:
+        "200":
+          description: received
+  /api/auth/verify-email:
+    get:
+      tags: [auth]
+      summary: Verificar email con token
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Email verificado
+        "400":
+          description: Token inválido
+  /api/auth/cuenta:
+    get:
+      tags: [auth]
+      summary: Resumen de cuenta, suscripción y planes
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: faena
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: cuenta + access + planes
   /api/auth/me:
     get:
       tags: [auth]

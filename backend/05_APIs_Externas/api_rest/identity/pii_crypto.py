@@ -66,19 +66,30 @@ def decrypt_pii(token: str) -> str:
 
 def hash_password(password: str) -> str:
     salt = secrets.token_bytes(16)
+    # Tests: METGO_SCRYPT_N=1024 para acelerar; prod default 2**14
+    n = int(os.getenv("METGO_SCRYPT_N", str(2**14)))
     dk = hashlib.scrypt(
-        password.encode("utf-8"), salt=salt, n=2**14, r=8, p=1, dklen=32
+        password.encode("utf-8"), salt=salt, n=max(2, n), r=8, p=1, dklen=32
     )
-    return "scrypt$" + base64.urlsafe_b64encode(salt + dk).decode("ascii")
+    return f"scrypt${n}$" + base64.urlsafe_b64encode(salt + dk).decode("ascii")
 
 
 def verify_password(password: str, stored: str) -> bool:
     if not stored.startswith("scrypt$"):
         return False
-    raw = base64.urlsafe_b64decode(stored.split("$", 1)[1].encode("ascii"))
+    parts = stored.split("$")
+    # scrypt$n$payload  or legacy scrypt$payload
+    if len(parts) == 3:
+        n = int(parts[1])
+        raw = base64.urlsafe_b64decode(parts[2].encode("ascii"))
+    elif len(parts) == 2:
+        n = 2**14
+        raw = base64.urlsafe_b64decode(parts[1].encode("ascii"))
+    else:
+        return False
     salt, expect = raw[:16], raw[16:]
     dk = hashlib.scrypt(
-        password.encode("utf-8"), salt=salt, n=2**14, r=8, p=1, dklen=32
+        password.encode("utf-8"), salt=salt, n=n, r=8, p=1, dklen=32
     )
     return hmac.compare_digest(dk, expect)
 

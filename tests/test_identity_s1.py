@@ -11,6 +11,8 @@ import pytest
 os.environ["METGO_IDENTITY_STORE"] = "memory"
 os.environ["METGO_JWT_SECRET"] = "test-secret-identity-s1"
 os.environ["METGO_API_AUTH_REQUIRED"] = "1"
+os.environ["METGO_SCRYPT_N"] = "1024"
+os.environ["METGO_EMAIL_DEV"] = "1"
 
 from api_rest.identity import identity_store, pii_crypto, validators
 from api_rest.identity.plans_catalog import listar_planes
@@ -124,6 +126,39 @@ def test_api_validate_and_register():
     assert r.get_json()["ok"] is True
     r2 = client.post("/api/auth/register-v2", json=body)
     assert r2.status_code == 201
+    data = r2.get_json()
+    assert data.get("verify_token")
+    v = client.get(f"/api/auth/verify-email?token={data['verify_token']}")
+    assert v.status_code == 200
+    # login + checkout mock
+    login = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert login.status_code == 200
+    token = login.get_json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    chk = client.post(
+        "/api/billing/checkout",
+        json={"plan_code": "starter", "sitio": "spati", "faena": "escondida"},
+        headers=headers,
+    )
+    assert chk.status_code == 200
+    assert chk.get_json().get("applied") is True
+    acc = client.get(
+        "/api/auth/access?sitio=spati&faena=escondida&tab=dron",
+        headers=headers,
+    )
+    assert acc.status_code == 200
+    assert acc.get_json().get("tab_allowed") is True
+    cuenta = client.get("/api/auth/cuenta?faena=escondida", headers=headers)
+    assert cuenta.status_code == 200
+    assert cuenta.get_json()["suscripcion"]["plan_code"] == "starter"
     planes = client.get("/api/public/planes?sitio=spati&faena=escondida")
     assert planes.status_code == 200
     assert len(planes.get_json()["planes"]) >= 3

@@ -129,4 +129,17 @@ export async function fetchFaenaReglas(faena) {
   return request(`/public/faenas/${encodeURIComponent(faena)}/reglas`)
 }
 
+export async function fetchCuenta(faena) {
+  const q = faena ? `?faena=${encodeURIComponent(faena)}` : ''
+  return request(`/auth/cuenta${q}`, { auth: true })
+}
+
+export async function checkoutPlan(body) {
+  return request('/billing/checkout', { method: 'POST', body, auth: true })
+}
+
+export async function verifyEmail(token) {
+  return request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
+}
+
 export { TOKEN_KEY, USER_KEY, SITIO, resolveBaseURL }

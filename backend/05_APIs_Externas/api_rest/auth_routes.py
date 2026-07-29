@@ -220,19 +220,54 @@ def register_auth_routes(app: Flask) -> None:
     @app.get("/api/auth/me")
     @auth_required
     def me():
-        return jsonify(
-            {
-                "username": g.current_user,
-                "role": g.user_role,
-                "tenant": g.tenant_id,
-                "sitio": getattr(g, "sitio_id", None),
-            }
-        )
+        body = {
+            "username": g.current_user,
+            "role": g.user_role,
+            "tenant": g.tenant_id,
+            "sitio": getattr(g, "sitio_id", None),
+            "faena": getattr(g, "faena_id", None),
+            "org_id": getattr(g, "org_id", None),
+            "plan_code": getattr(g, "plan_code", None),
+            "sub_status": getattr(g, "sub_status", None),
+        }
+        org_id = getattr(g, "org_id", None)
+        if org_id:
+            sub = None
+            try:
+                from api_rest.identity import identity_store
+
+                sub = identity_store.suscripcion_de_org(org_id)
+            except Exception:
+                sub = None
+            if sub:
+                body["plan_code"] = sub.get("plan_code") or body["plan_code"]
+                body["sub_status"] = sub.get("status") or body["sub_status"]
+                body["suscripcion"] = {
+                    "plan_code": sub.get("plan_code"),
+                    "status": sub.get("status"),
+                    "current_period_end": sub.get("current_period_end"),
+                    "faena": sub.get("faena"),
+                }
+        return jsonify(body)
 
     @app.post("/api/auth/refresh")
     @auth_required
     def refresh():
         try:
+            if getattr(g, "org_id", None) or (
+                g.current_user and "@" in str(g.current_user)
+            ):
+                return jsonify(
+                    metgo_auth.crear_token_identidad(
+                        sub=g.current_user,
+                        role=g.user_role or "operador",
+                        sitio=getattr(g, "sitio_id", None),
+                        faena=getattr(g, "faena_id", None),
+                        org_id=getattr(g, "org_id", None),
+                        plan_code=getattr(g, "plan_code", None),
+                        sub_status=getattr(g, "sub_status", None),
+                    )
+                )
             return jsonify(
                 metgo_auth.crear_token_acceso(
                     g.current_user, sitio=getattr(g, "sitio_id", None)

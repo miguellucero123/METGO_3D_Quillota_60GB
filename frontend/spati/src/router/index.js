@@ -38,6 +38,18 @@ const faenaChildren = [
     component: () => import('@/views/AmbientalesView.vue'),
     meta: { title: 'Ambiente faena', tab: 'ambiente' },
   },
+  {
+    path: 'cuenta',
+    name: 'faena-cuenta',
+    component: () => import('@/views/CuentaView.vue'),
+    meta: { title: 'Cuenta' },
+  },
+  {
+    path: 'verificar',
+    name: 'faena-verificar',
+    component: () => import('@/views/VerificarEmailView.vue'),
+    meta: { title: 'Verificar email', public: true },
+  },
 ]
 
 const routes = [
