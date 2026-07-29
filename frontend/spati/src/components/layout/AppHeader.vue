@@ -37,8 +37,8 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
-import { useRouter } from 'vue-router'
+import { inject, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Menu } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
@@ -49,12 +49,15 @@ const site = inject('site')
 const navOpen = inject('navOpen', null)
 const toggleNav = inject('toggleNav', () => {})
 const auth = useAuth()
+const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 
+const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+
 function onLogout() {
   auth.logout()
-  router.push({ name: 'login' })
+  router.push({ name: 'faena-login', params: { faena: faena.value } })
 }
 </script>
 

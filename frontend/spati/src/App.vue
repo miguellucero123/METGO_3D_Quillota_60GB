@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isLogin" class="app-login">
+  <div v-if="isPublicShell" class="app-login">
     <router-view />
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--nav-open': navOpen }">
@@ -44,7 +44,18 @@ provide('closeNav', () => {
   navOpen.value = false
 })
 
-const isLogin = computed(() => route.name === 'login')
+const PUBLIC_NAMES = new Set([
+  'faenas-hub',
+  'faena-login',
+  'faena-registro',
+  'faena-verificar',
+])
+
+const isPublicShell = computed(
+  () => Boolean(route.meta?.public) || PUBLIC_NAMES.has(String(route.name || '')),
+)
+
+const currentFaena = computed(() => String(route.params.faena || 'escondida'))
 
 watch(
   () => route.fullPath,
@@ -54,8 +65,14 @@ watch(
 )
 
 onMounted(async () => {
-  if (isLogin.value) return
+  if (isPublicShell.value) return
   const ok = await auth.ensureValidSession()
-  if (!ok) router.replace({ name: 'login', query: { redirect: route.fullPath } })
+  if (!ok) {
+    router.replace({
+      name: 'faena-login',
+      params: { faena: currentFaena.value },
+      query: { redirect: route.fullPath },
+    })
+  }
 })
 </script>

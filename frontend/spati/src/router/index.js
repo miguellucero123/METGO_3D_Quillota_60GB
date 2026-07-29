@@ -98,11 +98,9 @@ router.beforeEach(async (to) => {
       if (access.tab_allowed === false) {
         return { name: 'faena-panel', params: { faena: to.params.faena } }
       }
-    } catch (e) {
-      // Legacy JWT sin org: permitir hasta S2; solo bloquear 403 explícito de tab
-      if (e.status === 403) {
-        return { name: 'faena-panel', params: { faena: to.params.faena } }
-      }
+    // Si access falla (API fría / admin sin org): no bloquear navegación
+    } catch {
+      /* allow */
     }
   }
   return true

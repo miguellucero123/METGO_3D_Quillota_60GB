@@ -40,7 +40,10 @@ export function useAuth() {
     if (!state.token) return false
     try {
       const me = await fetchMe()
-      if (me?.sitio != null && me.sitio !== SITIO) {
+      const sitioUser = me?.sitio
+      const allowed = new Set([SITIO, 'spati', 'mantos_blancos'])
+      // admin global: sitio null → OK
+      if (sitioUser != null && sitioUser !== '' && !allowed.has(sitioUser)) {
         logout()
         return false
       }

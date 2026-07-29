@@ -17,16 +17,25 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
-import { Wind, Plane, SlidersHorizontal, CloudSun } from 'lucide-vue-next'
+import { computed, inject } from 'vue'
+import { useRoute } from 'vue-router'
+import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid } from 'lucide-vue-next'
 
 const site = inject('site')
-const items = [
-  { to: '/', label: 'Pronóstico 72 h', icon: Wind },
-  { to: '/ambiente', label: 'Ambiente faena', icon: CloudSun },
-  { to: '/dron', label: 'Calibración dron', icon: Plane },
-  { to: '/umbrales', label: 'Umbrales', icon: SlidersHorizontal },
-]
+const route = useRoute()
+const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+
+const items = computed(() => {
+  const f = faena.value
+  return [
+    { to: `/f/${f}/`, label: 'Pronóstico 72 h', icon: Wind },
+    { to: `/f/${f}/ambiente`, label: 'Ambiente faena', icon: CloudSun },
+    { to: `/f/${f}/dron`, label: 'Calibración dron', icon: Plane },
+    { to: `/f/${f}/umbrales`, label: 'Umbrales', icon: SlidersHorizontal },
+    { to: `/f/${f}/cuenta`, label: 'Cuenta', icon: CreditCard },
+    { to: '/', label: 'Todas las faenas', icon: LayoutGrid },
+  ]
+})
 </script>
 
 <style scoped>
