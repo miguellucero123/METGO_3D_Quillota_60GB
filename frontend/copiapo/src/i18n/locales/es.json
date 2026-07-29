@@ -14,7 +14,7 @@
     "password": "Contraseña",
     "submit": "Iniciar sesión",
     "loading": "Ingresando…",
-    "hint": "Demo: copiapo/copiapo123 · admin/admin123"
+    "hint": "Acceso restringido · JWT METGO"
   },
   "lang": {
     "es": "ES",

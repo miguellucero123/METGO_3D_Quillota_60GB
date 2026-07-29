@@ -336,7 +336,35 @@ body {
   padding: var(--space-md);
 }
 
-/* Tema oscuro manual eliminado - ahora es el predeterminado absoluto */
+/* Tema oscuro = :root (default). Claro = data-theme=light */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f0f4f2;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #e8eef0;
+  --color-border: #d1d9e0;
+  --color-border-strong: #94a3b8;
+  --color-text: #0f172a;
+  --color-text-secondary: #475569;
+  --color-muted: #64748b;
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-info-bg: rgba(14, 165, 233, 0.12);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.1);
+  --glow-primary: none;
+  --metgo-bg: var(--color-bg);
+  --metgo-card: var(--color-surface);
+  --metgo-text: var(--color-text);
+  --metgo-muted: var(--color-muted);
+}
 
 .alert-banner {
   padding: 0.75rem 1rem;

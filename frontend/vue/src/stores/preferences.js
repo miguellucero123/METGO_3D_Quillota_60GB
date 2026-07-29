@@ -18,17 +18,13 @@ function loadPrefs() {
 function applyTheme(theme) {
   if (typeof document === 'undefined') return
   const root = document.documentElement
-  if (theme === 'dark') {
-    root.setAttribute('data-theme', 'dark')
-  } else {
-    root.removeAttribute('data-theme')
-  }
+  root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark')
 }
 
 export const usePreferencesStore = defineStore('preferences', () => {
   const saved = loadPrefs()
   const tempUnit = ref(saved.tempUnit === 'F' ? 'F' : 'C')
-  const theme = ref(saved.theme === 'dark' ? 'dark' : 'light')
+  const theme = ref(saved.theme === 'light' ? 'light' : 'dark')
   const syncing = ref(false)
   let skipServer = false
 

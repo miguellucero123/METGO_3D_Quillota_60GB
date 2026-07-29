@@ -19,6 +19,7 @@ Estructura para ejecutar el [prompt MVP](../PROMPT_MVP_METGO.md) y el rol en **`
 | [`PROMPT_ESCALAMIENTO_MVP.md`](../PROMPT_ESCALAMIENTO_MVP.md) | **Prompt maestro escalamiento** post-fases 1–10 |
 | [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) | **Minería multi-faena** (M1–M7): paquete, CSV/PDF, MVO |
 | [`CHECKLIST_M7_DEPLOY.md`](CHECKLIST_M7_DEPLOY.md) | **Deploy M7** (Render + CF Pages + demo observado) |
+| [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md) | **Auth prod** (sin demos en UI; METGO_PASSWORD_*; self-register off) |
 | [`BACKEND_MODULOS_01-12_AUDITORIA.md`](BACKEND_MODULOS_01-12_AUDITORIA.md) | **Auditoría exhaustiva** por carpeta |
 | [`deuda-tecnica/`](deuda-tecnica/) | Tareas transversales (DT-1 … DT-3) |
 

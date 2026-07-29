@@ -25,7 +25,7 @@ Usuario → Cloudflare Pages (SPA) → /api/* (proxy 200) → https://metgo-api.
 3. Env: `VITE_METGO_API`, opcional `VITE_SUPABASE_*` (Realtime tramos). Mapa `/carretera` = Leaflet + OpenStreetMap (**sin** API key de Google).
 4. CLI: `npm run pages:deploy` desde `D:\metgo-paine`.
 5. Cutover: stop builds en Netlify tras validar `https://metgo-paine.pages.dev`.
-6. Login demo: `paine` / `paine123` (JWT E9).
+6. Login JWT E9: cuenta con `METGO_PASSWORD_PAINE` (u otra) en Render. Demos solo local: `docs/DESARROLLO_LOCAL.md`.
 
 ---
 
@@ -130,10 +130,10 @@ Requiere `npx wrangler login` una vez.
 $UI = "https://metgo-quillota.pages.dev"
 Invoke-WebRequest "$UI/" | Select-Object StatusCode
 Invoke-WebRequest "$UI/api/health" | Select-Object StatusCode
-# Navegador: login admin / admin123 · Dashboard · Proyecciones ML (facetas)
+# Navegador: login con cuenta de Render (METGO_PASSWORD_*) · Dashboard · Proyecciones ML
 ```
 
-Copiapó: `copiapo` / `copiapo123` · Mantos: `mantos` / `mantos123` · Paine: `paine` / `paine123` (`https://metgo-paine.pages.dev`).
+Copiapó / Mantos / Paine / SPATI: mismas cuentas vía env en Render. Demos locales: `docs/DESARROLLO_LOCAL.md`.
 
 Minería M7 (API):
 

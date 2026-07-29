@@ -9,6 +9,7 @@ import { wakeApi } from '@/api/metgoApi'
 import { sanitizeRedirectPath } from '@/utils/sanitizeRedirectPath'
 import { AUTH_ERROR_INVALID } from '@/services/authService'
 import { setLocale } from '@/i18n'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -19,6 +20,7 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const cargando = ref(false)
+const allowSelfRegister = import.meta.env.VITE_ALLOW_SELF_REGISTER === '1'
 
 onMounted(() => {
   wakeApi().catch(() => {})
@@ -56,6 +58,7 @@ async function onSubmit() {
   <div class="auth-page">
     <div class="auth-panel">
       <div class="auth-lang" role="group" :aria-label="t('lang.label')">
+        <ThemeToggle />
         <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
           {{ t('lang.es') }}
         </button>
@@ -70,10 +73,6 @@ async function onSubmit() {
         <h1>{{ t('login.title') }}</h1>
         <p class="auth-tagline">{{ t('login.subtitle') }}</p>
         <p class="auth-region">Quillota · Región de Valparaíso</p>
-        <p class="login-hint muted">
-          Demo: <strong>admin</strong>/admin123 · <strong>agronomo</strong>/agro123 ·
-          <strong>operador</strong>/op123 · <strong>lector</strong>/lec123
-        </p>
       </div>
 
       <form class="auth-form" @submit.prevent="onSubmit">
@@ -84,7 +83,6 @@ async function onSubmit() {
             type="text"
             autocomplete="username"
             required
-            placeholder="admin"
           />
         </label>
         <label class="field">
@@ -103,7 +101,7 @@ async function onSubmit() {
         </button>
       </form>
 
-      <p class="auth-footer">
+      <p v-if="allowSelfRegister" class="auth-footer">
         ¿No tiene cuenta?
         <router-link to="/registro">Registrarse</router-link>
       </p>

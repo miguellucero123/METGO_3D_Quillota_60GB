@@ -5,7 +5,7 @@ SPA Vue 3 — **calidad del aire** (ICAP, PM2.5/PM10, recomendaciones de salud).
 - Identidad: ámbar `#fbbf24` en `src/site.config.js`
 - API: `https://metgo-api.onrender.com/api/public/aire/*`
 - Estaciones: malla 7 puntos (ver `site.config.js`)
-- **Auth E9:** login JWT (`/login`) — demo `copiapo`/`copiapo123` o `admin`/`admin123`
+- **Auth E9:** login JWT (`/login`). Credenciales solo vía `METGO_PASSWORD_*` en Render (local: `docs/DESARROLLO_LOCAL.md`).
 
 ## Local
 

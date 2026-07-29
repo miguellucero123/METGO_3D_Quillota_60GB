@@ -128,13 +128,7 @@ Con Netlify en pausa por créditos:
 3. Actualizar `METGO_CORS_ORIGINS` + smoke login.
 4. Dejar Netlify en **Stop builds**.
 
-Credenciales demo:
-
-| Sitio | Usuario | Password |
-|-------|---------|----------|
-| Quillota | `admin` | `admin123` |
-| Copiapó | `copiapo` | `copiapo123` |
-| Mantos | `mantos` | `mantos123` |
+Auth: credenciales solo en Render (`METGO_PASSWORD_*`). Demos locales: `docs/DESARROLLO_LOCAL.md`.
 
 ---
 

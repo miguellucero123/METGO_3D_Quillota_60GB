@@ -7,6 +7,7 @@ import { useMetgoStore } from '@/stores/metgo'
 import { useAuthStore } from '@/stores/auth'
 import { usePreferencesStore } from '@/stores/preferences'
 import { setLocale } from '@/i18n'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 
 const store = useMetgoStore()
 const auth = useAuthStore()
@@ -73,6 +74,7 @@ function switchLang(lang) {
           {{ t('lang.en') }}
         </button>
       </div>
+      <ThemeToggle />
       <div class="status-pill" :class="store.apiOnline ? 'status-pill--on' : 'status-pill--off'">
         <Activity class="status-pill__icon" aria-hidden="true" />
         {{ store.apiOnline ? 'En línea' : 'Sin conexión' }}

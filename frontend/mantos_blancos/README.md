@@ -14,7 +14,7 @@ Puerto por defecto: **5176**.
 
 API: `VITE_METGO_API` o fallback a `https://metgo-api.onrender.com/api`.
 
-**Auth E9:** pantalla `/login` — demo `mantos`/`mantos123` o `admin`/`admin123`.
+**Auth E9:** pantalla `/login`. Credenciales solo vía `METGO_PASSWORD_*` en Render (local: `docs/DESARROLLO_LOCAL.md`).
 
 ## Endpoints usados
 

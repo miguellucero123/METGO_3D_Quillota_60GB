@@ -64,6 +64,19 @@ _warned_dev = False
 _USERNAME_RE = re.compile(r"^[a-z0-9_]{3,32}$")
 
 
+def es_entorno_produccion() -> bool:
+    """True en Render o METGO_ENV=production|prod."""
+    env = (os.getenv("METGO_ENV") or "").strip().lower()
+    if env in ("production", "prod"):
+        return True
+    return bool(os.getenv("RENDER"))
+
+
+def self_register_habilitado() -> bool:
+    """Default off. Activar solo con METGO_ALLOW_SELF_REGISTER=1 (local/demo)."""
+    return os.getenv("METGO_ALLOW_SELF_REGISTER", "0") == "1"
+
+
 def _registry_path() -> Path:
     for p in Path(__file__).resolve().parents:
         if (p / "metgo_paths.py").exists():
@@ -99,8 +112,8 @@ def registrar_usuario(
     email: str | None = None,
     sitio: str | None = None,
 ) -> tuple[bool, str]:
-    """Auto-registro demo (rol lectura). Requiere METGO_ALLOW_SELF_REGISTER=1."""
-    if os.getenv("METGO_ALLOW_SELF_REGISTER", "1") != "1":
+    """Auto-registro (rol lectura). Requiere METGO_ALLOW_SELF_REGISTER=1."""
+    if not self_register_habilitado():
         return False, "Registro deshabilitado en este entorno"
 
     u = usuario.lower().strip()
@@ -199,6 +212,9 @@ def obtener_password(usuario: str) -> str | None:
     value = os.getenv(env_key)
     if value:
         return value
+    # Producción: sin fallbacks demo (exige METGO_PASSWORD_* en el host).
+    if es_entorno_produccion():
+        return None
     if usuario in _DEV_FALLBACK:
         _warn_dev_fallback()
         return _DEV_FALLBACK[usuario]
@@ -220,6 +236,10 @@ def jwt_secret() -> str:
     secret = os.getenv("METGO_JWT_SECRET")
     if secret:
         return secret
+    if es_entorno_produccion():
+        raise RuntimeError(
+            "METGO_JWT_SECRET es obligatorio en producción (RENDER / METGO_ENV=production)"
+        )
     _warn_dev_fallback()
     return os.getenv("METGO_JWT_SECRET_DEV", "metgo-dev-jwt-change-in-production")
 

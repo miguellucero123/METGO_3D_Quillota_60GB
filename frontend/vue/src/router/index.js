@@ -171,11 +171,16 @@ router.beforeEach(async (to) => {
       return { name: 'forbidden' }
     }
   }
-  if (to.name === 'login' && auth.isAuthenticated) {
-    const ok = await auth.ensureValidSession()
-    if (ok) return { name: 'dashboard' }
+  if (to.name === 'registro') {
+    if (import.meta.env.VITE_ALLOW_SELF_REGISTER !== '1') {
+      return { name: 'login' }
+    }
+    if (auth.isAuthenticated) {
+      const ok = await auth.ensureValidSession()
+      if (ok) return { name: 'dashboard' }
+    }
   }
-  if (to.name === 'registro' && auth.isAuthenticated) {
+  if (to.name === 'login' && auth.isAuthenticated) {
     const ok = await auth.ensureValidSession()
     if (ok) return { name: 'dashboard' }
   }

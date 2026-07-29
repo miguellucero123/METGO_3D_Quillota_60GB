@@ -35,7 +35,7 @@ npm run dev
 
 Abrir **http://127.0.0.1:5173** (no usar el iframe de Cursor para login; usar Chrome/Edge).
 
-Login demo: `admin` / `admin123`
+> **Solo desarrollo local / no producción.** Credenciales demo: `admin` / `admin123` (ver tabla abajo). En Render no hay fallbacks: use `METGO_PASSWORD_*`.
 
 ### 3. Streamlit principal (opcional, 8501)
 
@@ -104,7 +104,9 @@ docker compose -f docker-compose.dev.yml up --build
 - API: http://127.0.0.1:8080/api/health
 - Vue: http://127.0.0.1:5173
 
-## Usuarios demo (Fase 2 RBAC)
+## Usuarios demo (Fase 2 RBAC) — solo local
+
+> **No usar en producción.** En Render defina `METGO_PASSWORD_*` fuertes y `METGO_ALLOW_SELF_REGISTER=0`.
 
 | Usuario   | Contraseña | Rol      |
 |-----------|------------|----------|
@@ -114,6 +116,9 @@ docker compose -f docker-compose.dev.yml up --build
 | lector    | lec123     | lectura  |
 | user      | user123    | operador |
 | metgo     | metgo2025  | agronomo |
+| copiapo   | copiapo123 | lectura  |
+| mantos    | mantos123  | operador |
+| paine     | paine123   | lectura  |
 
 ## Rutas Vue (Fase 2+)
 

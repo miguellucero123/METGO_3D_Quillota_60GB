@@ -4,13 +4,12 @@ Ciclo minería multi-faena: documentos **CSV/PDF** + sesgo modelo vs observado e
 
 ## 1. API Render (`metgo-api`)
 
-- [ ] Redeploy con código M1–M7
-- [ ] Env:
-  - `SUPABASE_URL` / `SUPABASE_KEY` (service_role)
-  - `CRON_SECRET`
-  - opcional: `METGO_SINCA_IDS`, `METGO_SINCA_CSV_DIR` o `METGO_SINCA_CSV_URL`
+- [x] Redeploy con código M1–M7 _(smoke 2026-07-28 PASS)_
+- [x] Env: `SUPABASE_URL` / `SUPABASE_KEY` (service_role)
+- [ ] Env: `CRON_SECRET` verificado en Render (para cron remoto)
+- [ ] opcional: `METGO_SINCA_IDS`, `METGO_SINCA_CSV_DIR` o `METGO_SINCA_CSV_URL`
 - [ ] CORS incluye orígenes SPATI / Mantos / Paine (`*.pages.dev`)
-- [ ] Smoke:
+- [x] Smoke:
   ```http
   GET /api/public/operaciones/faenas
   GET /api/public/operaciones/faena/escondida/informe?formato=csv
@@ -48,9 +47,10 @@ Plantilla: [`docs/ejemplos/plantilla_sinca_observado.csv`](../ejemplos/plantilla
 
 ## 5. Criterio de cierre M7
 
-- [ ] Informe CSV y PDF descargables en prod
-- [ ] Al menos una faena con `observado-status.listo_produccion=true`
-- [ ] Documentado en `PLAN_MINERIA_MULTI_FAENA.md`
+- [x] Informe CSV y PDF descargables en prod
+- [x] Al menos una faena con `observado-status.listo_produccion=true` _(Paipote; demo aire + tabla `datos_iot`)_
+- [x] Documentado en `PLAN_MINERIA_MULTI_FAENA.md`
+- [x] Migración `20260728220000_datos_iot.sql` aplicada en Supabase
 
 ## 6. Smoke automatizado
 

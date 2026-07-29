@@ -16,7 +16,7 @@ Archivo fuente: `backend/05_APIs_Externas/api_rest/openapi.yaml`
 POST /api/auth/login
 Content-Type: application/json
 
-{"username": "admin", "password": "admin123"}
+{"username": "admin", "password": "<METGO_PASSWORD_ADMIN>"}
 ```
 
 Respuesta: `access_token` (JWT). Enviar en rutas protegidas:

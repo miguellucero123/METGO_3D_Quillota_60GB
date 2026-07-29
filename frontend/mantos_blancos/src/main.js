@@ -5,9 +5,11 @@ import site from './site.config'
 import { applySiteTheme } from './utils/applySiteTheme'
 import { initSentry } from './utils/sentry'
 import i18n, { setLocale } from './i18n'
+import { initTheme } from './composables/useColorMode'
 import './styles/main.css'
 
 applySiteTheme(site)
+initTheme()
 
 const app = createApp(App)
 app.provide('site', site)

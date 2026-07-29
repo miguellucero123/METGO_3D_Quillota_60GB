@@ -6,6 +6,7 @@ import { HardHat, LogIn } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 import { wakeApi } from '@/services/authApi'
 import { setLocale } from '@/i18n'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 
 const site = inject('site')
 const router = useRouter()
@@ -42,6 +43,7 @@ async function onSubmit() {
   <div class="auth-page">
     <div class="auth-panel">
       <div class="auth-lang" role="group" :aria-label="t('lang.label')">
+        <ThemeToggle />
         <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
           {{ t('lang.es') }}
         </button>
@@ -62,7 +64,7 @@ async function onSubmit() {
       <form class="auth-form" @submit.prevent="onSubmit">
         <label class="field">
           <span>{{ t('login.user') }}</span>
-          <input v-model="username" type="text" autocomplete="username" required placeholder="mantos" />
+          <input v-model="username" type="text" autocomplete="username" required />
         </label>
         <label class="field">
           <span>{{ t('login.password') }}</span>

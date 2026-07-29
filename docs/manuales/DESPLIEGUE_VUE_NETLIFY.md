@@ -94,13 +94,8 @@ El proxy `_redirects` envía `/api` a Render. **No** suba URLs al repo (Netlify 
 
 Si el build falla por *secrets scanning*: elimine `VITE_METGO_API` de variables marcadas como secret, o añada `SECRETS_SCAN_OMIT_KEYS=VITE_METGO_API` solo si usa URL absoluta en el build.
 
-**Credenciales por defecto** (si no definió `METGO_PASSWORD_*` en Render):
-
-| Usuario | Contraseña |
-|---------|------------|
-| `admin` | `admin123` |
-| `user` | `user123` |
-| `metgo` | `metgo2025` |
+**Credenciales en producción:** definir `METGO_PASSWORD_*` y `METGO_JWT_SECRET` en Render.  
+Sin esas variables en prod el login falla (no hay fallbacks demo). Valores de desarrollo local: `docs/DESARROLLO_LOCAL.md`.
 
 Prueba API: `https://SU-API.onrender.com/api/health` debe responder JSON.
 

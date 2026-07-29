@@ -82,7 +82,7 @@ paths:
   /api/auth/register:
     post:
       tags: [auth]
-      summary: Registro de usuario (rol lectura, auto-registro demo)
+      summary: Registro de usuario (rol lectura; requiere METGO_ALLOW_SELF_REGISTER=1)
       requestBody:
         required: true
         content:

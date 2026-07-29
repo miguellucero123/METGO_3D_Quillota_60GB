@@ -56,7 +56,7 @@ La API en Render debe tener `METGO_STREAMLIT_CLOUD_URL=https://metgo-streamlit.o
 
 ### A) Usar METGO desde cualquier lugar (recomendado)
 
-1. https://metgo3d.netlify.app → login `admin` / `admin123`
+1. SPA Cloudflare/Netlify → login con cuenta de Render (`METGO_PASSWORD_*`)
 2. **Centro de servicios** o **Catálogo** → **Ver en Vue**
 
 ### B) Ver utilidad de cada puerto en la interfaz

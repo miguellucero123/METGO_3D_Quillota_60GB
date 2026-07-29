@@ -43,6 +43,8 @@ Aplicadas (E7/E8 multi-sitio):
 | `…24140000_e7_e8_grants_rls` | GRANTs `service_role` + RLS lectura |
 | `…28120000_carretera_austral` | `ca_localidades` + `ca_tramos` (módulo Paine) |
 | `…28180000_faena_estaciones_area` | M4 puntos rajo/campamento/chancado/botadero por faena |
+| `…28220000_datos_iot` | M7 lecturas IoT compartidas (`datos_iot`) |
+| `…28221000_estaciones_escondida` | Estaciones aire Escondida (FK `aire_registros`) |
 
 Verificación:
 

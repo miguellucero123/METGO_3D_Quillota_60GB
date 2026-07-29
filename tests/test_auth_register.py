@@ -36,5 +36,29 @@ def test_registrar_usuario_demo(tmp_path, monkeypatch):
     assert data["campo_norte"]["role"] == "lectura"
 
 
+def test_self_register_off_por_defecto(monkeypatch):
+    monkeypatch.delenv("METGO_ALLOW_SELF_REGISTER", raising=False)
+    ok, msg = metgo_auth.registrar_usuario("nuevo_user", "secreto1", None)
+    assert not ok
+    assert "deshabilitado" in msg.lower()
+
+
+def test_prod_sin_fallback_password(monkeypatch):
+    monkeypatch.setenv("METGO_ENV", "production")
+    monkeypatch.delenv("METGO_PASSWORD_ADMIN", raising=False)
+    assert metgo_auth.obtener_password("admin") is None
+    assert not metgo_auth.verificar_credenciales("admin", "admin123")
+
+
+def test_prod_exige_jwt_secret(monkeypatch):
+    monkeypatch.setenv("METGO_ENV", "production")
+    monkeypatch.delenv("METGO_JWT_SECRET", raising=False)
+    try:
+        metgo_auth.jwt_secret()
+        assert False, "debía fallar sin METGO_JWT_SECRET"
+    except RuntimeError as exc:
+        assert "METGO_JWT_SECRET" in str(exc)
+
+
 def test_usuario_o_contrasena_incorrectos():
     assert not metgo_auth.verificar_credenciales("admin", "mal")

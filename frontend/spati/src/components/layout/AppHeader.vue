@@ -18,6 +18,7 @@
     </div>
     <p class="header-tagline">{{ t('app.subtitle') }}</p>
     <div class="header-actions">
+      <ThemeToggle />
       <div class="lang-switch" role="group" :aria-label="t('lang.label')">
         <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
           {{ t('lang.es') }}
@@ -42,6 +43,7 @@ import { useI18n } from 'vue-i18n'
 import { Menu } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 import { setLocale } from '@/i18n'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 
 const site = inject('site')
 const navOpen = inject('navOpen', null)

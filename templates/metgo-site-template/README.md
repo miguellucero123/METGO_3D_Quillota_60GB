@@ -18,7 +18,7 @@ Plantilla multi-sitio (etapa **E6**). Base viva: repo **`metgo-paine`**. Identid
    - Render: añadir origen Netlify a `METGO_CORS_ORIGINS` si no es `*`
 5. **Deploy** Netlify (build `npm run build`, publish `dist`).
 6. **Auth E9:** login `POST /api/auth/login` con `{ username, password, sitio: '<slug>' }` + guard de rutas
-   (referencia: `frontend/copiapo/src/services/authApi.js`). Demo: usuario del sitio o `admin`/`admin123`.
+   (referencia: `frontend/copiapo/src/services/authApi.js`). Credenciales: `METGO_PASSWORD_*` en el API (local: `docs/DESARROLLO_LOCAL.md`).
 7. **Verificar**:
    - `GET /api/public/sitios` incluye el slug
    - `GET /api/public/estaciones?sitio=<slug>`

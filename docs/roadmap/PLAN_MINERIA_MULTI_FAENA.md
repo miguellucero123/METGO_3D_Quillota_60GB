@@ -1,7 +1,7 @@
 # Plan minería multi-faena — METGO
 
-> **Estado:** 2026-07-28 · **M1–M7 en código**.  
-> Checklist deploy: [`CHECKLIST_M7_DEPLOY.md`](CHECKLIST_M7_DEPLOY.md).
+> **Estado:** 2026-07-28 · **M1–M7 en código y prod**.  
+> Checklist deploy: [`CHECKLIST_M7_DEPLOY.md`](CHECKLIST_M7_DEPLOY.md) · smoke Render PASS · Paipote/Mantos `listo_produccion=true`.
 
 ## Visión
 
@@ -13,7 +13,8 @@ Cada minera = una configuración: izaje + aire + meteo + nieve + **CSV/PDF** + e
 |------|---------|--------|
 | M1–M5 | Catálogo → MVO | ✅ |
 | **M6** | Documentos CSV + PDF | ✅ |
-| **M7** | Demo observado + status + checklist deploy | ✅ |
+| **M7** | Demo observado + status + deploy | ✅ prod |
+| **M8** | Observado real SINCA/AWS + estaciones SPATI en `estaciones` | pendiente |
 
 ## Documentos
 
