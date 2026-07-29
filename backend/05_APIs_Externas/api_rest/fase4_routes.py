@@ -204,6 +204,15 @@ def register_fase4_routes(app: Flask) -> None:
             res["estaciones_area"] = estaciones_area_store.sincronizar_desde_catalogo()
         except Exception as exc:
             res.setdefault("errores", []).append(f"estaciones_area: {exc}")
+        # M8: sync catálogo → public.estaciones (FK aire_registros).
+        try:
+            from api_rest.integracion import estaciones_catalog_store
+
+            res["estaciones_publicas"] = (
+                estaciones_catalog_store.sincronizar_estaciones_publicas()
+            )
+        except Exception as exc:
+            res.setdefault("errores", []).append(f"estaciones_publicas: {exc}")
         # E7 Paipote: corrida ventilación N/R/M (ideal 06/18 UTC).
         try:
             from api_rest import ventilacion_service

@@ -390,3 +390,59 @@ def test_m7_demo_observado_y_status():
     rs = c.get("/api/public/operaciones/faena/paipote/observado-status")
     assert rs.status_code == 200
     assert "estado_mvo" in rs.get_json()
+
+
+def test_m8_filas_estaciones_publicas_desde_catalogo():
+    _setup_api()
+    from api_rest.integracion import estaciones_catalog_store
+
+    filas = estaciones_catalog_store.filas_desde_catalogo()
+    ids = {f["id"] for f in filas}
+    assert len(filas) >= 80
+    assert "escondida_rajo" in ids
+    assert "paipote" in ids
+    assert "mb_rajo" in ids
+
+
+def test_m8_sinca_incluye_rajo_escondida():
+    _setup_api()
+    from api_rest import sinca_service
+
+    cat = sinca_service.catalogo_efectivo()
+    assert "escondida_rajo" in cat
+    assert "paipote" in cat
+
+
+def test_m8_sinca_csv_cron_path(tmp_path, monkeypatch):
+    _setup_api()
+    from api_rest import sinca_service
+
+    csv_path = tmp_path / "escondida_rajo.csv"
+    csv_path.write_text(
+        "fecha,pm25,pm10,so2,no2,o3\n2026-07-20,12,28,3,8,45\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("METGO_SINCA_CSV_DIR", str(tmp_path))
+    with patch("api_rest.integracion.aire_store.guardar_aire", return_value=1) as mock_g, patch(
+        "api_rest.integracion.estaciones_catalog_store.marcar_fuente_observado",
+        return_value=1,
+    ) as mock_m:
+        res = sinca_service.sincronizar_sinca(estaciones=["escondida_rajo"])
+    assert res.get("omitido") is False
+    assert res["sinca_sync"].get("escondida_rajo") == 1
+    mock_g.assert_called()
+    mock_m.assert_called()
+
+
+def test_m8_api_sync_estaciones():
+    _setup_api()
+    from api_rest.app import create_app
+
+    c = create_app().test_client()
+    with patch(
+        "api_rest.integracion.estaciones_catalog_store.sincronizar_estaciones_publicas",
+        return_value={"fase": "M8", "puntos": 84, "catalogo": 84, "supabase": False},
+    ):
+        r = c.post("/api/cron/faena/sync-estaciones")
+        assert r.status_code == 200
+        assert r.get_json()["fase"] == "M8"

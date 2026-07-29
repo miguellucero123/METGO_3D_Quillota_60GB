@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-# Catálogo airshed Copiapó. sinca_id: completar con código portal MMA o vía env.
+# Catálogo airshed Copiapó + rajo Mantos. sinca_id: completar con código portal MMA o vía env.
 # nombres_sinca alineados al portal https://sinca.mma.gob.cl (Atacama).
 ESTACIONES_SINCA_COPIAPO: dict[str, dict[str, Any]] = {
     "copiapo_centro": {
@@ -70,11 +70,39 @@ def _ids_desde_env() -> dict[str, str]:
         return {}
 
 
+def _slugs_rajo_faenas() -> dict[str, dict[str, Any]]:
+    """M8: anclas rajo de cada faena (SPATI + ventilación) aceptan CSV en METGO_SINCA_CSV_DIR."""
+    try:
+        from api_rest.faena_catalogo import listar_faenas
+        from api_rest.modelo_vs_observado_service import _estacion_aire_faena
+    except Exception:
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for f in listar_faenas(incluir_izaje=True):
+        if not f:
+            continue
+        slug = _estacion_aire_faena(f)
+        if not slug or slug in ESTACIONES_SINCA_COPIAPO:
+            continue
+        out[slug] = {
+            "sinca_id": None,
+            "nombre_sinca": f"{f.get('nombre') or f['id']} (rajo)",
+            "region": f.get("region") or "",
+            "contaminantes": ["PM25", "PM10", "SO2", "NO2", "O3"],
+            "portal": "https://sinca.mma.gob.cl",
+            "nota": "M8: CSV AWS/SINCA en METGO_SINCA_CSV_DIR/{slug}.csv",
+            "faena_id": f["id"],
+        }
+    return out
+
+
 def catalogo_efectivo() -> dict[str, dict[str, Any]]:
-    """Catálogo con sinca_id resuelto (env pisa placeholders)."""
+    """Catálogo con sinca_id resuelto (env pisa placeholders) + rajos M8."""
     overrides = _ids_desde_env()
     out: dict[str, dict[str, Any]] = {}
-    for slug, meta in ESTACIONES_SINCA_COPIAPO.items():
+    base = dict(ESTACIONES_SINCA_COPIAPO)
+    base.update(_slugs_rajo_faenas())
+    for slug, meta in base.items():
         m = dict(meta)
         if overrides.get(slug):
             m["sinca_id"] = overrides[slug]
@@ -228,11 +256,23 @@ def sincronizar_sinca(estaciones: list[str] | None = None) -> dict[str, Any]:
         )
 
     escritos = sum(detalle.values())
+    # M8: marcar área con fuente observado cuando hubo escritura
+    ids_ok = [s for s, n in detalle.items() if n and n > 0]
+    marcados = 0
+    if ids_ok:
+        try:
+            from api_rest.integracion import estaciones_catalog_store
+
+            marcados = estaciones_catalog_store.marcar_fuente_observado(ids_ok)
+        except Exception as exc:
+            print(f"sinca marcar_observado: {exc}")
+
     return {
         "sinca_sync": detalle,
         "omitido": escritos == 0,
         "motivo": None if escritos else "csv_sin_filas",
         "estado": estado_sinca(),
+        "fuente_observado_marcados": marcados,
     }
 
 

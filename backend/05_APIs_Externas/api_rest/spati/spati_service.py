@@ -37,12 +37,15 @@ def run_spati(
     if not raw:
         return {"error": "sitio_no_encontrado", "sitio_id": sitio_id}
 
+    from api_rest.spati.umbrales_service import umbrales_efectivos, umbrales_internos
+
     cfg = GruaConfig.from_dict(raw)
     pe = PhysicsEngine()
     ha = HighAltitudeEngine()
     nwp = NWPIngestor()
     mos = MOSCorrector()
-    alerts = CraneSafetyAlertSystem()
+    umb_int = umbrales_internos(cfg.sitio_id)
+    alerts = CraneSafetyAlertSystem.from_umbrales(umb_int)
     drone = DroneAssimilator()
 
     alta = float(cfg.altitud_msnm or 0) > 1500
@@ -352,12 +355,7 @@ def run_spati(
         },
         "serie": serie,
         "umbrales": {
-            "verde_max_kmh": 26,
-            "amarillo": [26, 29],
-            "naranja": [30, 34],
-            "rojo_min_kmh": 35,
-            "flag_critico_kmh": 36,
-            "nota": "Umbral 36 km/h constante; control por fuerza F=½ρv²ACd (ρ corregida por altitud)",
+            **umbrales_efectivos(cfg.sitio_id),
             "v_equiv_nivel_mar_36_kmh": v_eq36,
         },
     }

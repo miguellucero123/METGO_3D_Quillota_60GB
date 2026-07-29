@@ -581,6 +581,71 @@ paths:
   /api/public/spati/physics/alta-montana:
     post:
       tags: [spati]
+      summary: Densidad ISA / FR / GF alta montaña
+      responses:
+        "200":
+          description: Parámetros físicos
+  /api/public/spati/{sitio_id}/umbrales:
+    get:
+      tags: [spati]
+      summary: M9 umbrales izaje efectivos por sitio/faena
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "{ sitio_id, umbrales, alertas }"
+        "404":
+          description: Sitio no encontrado
+    put:
+      tags: [spati]
+      summary: M9 guardar override umbrales (token CRON o Bearer)
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: token
+          in: query
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                umbrales: { type: object }
+                rojo_min_kmh: { type: number }
+                verde_max_kmh: { type: number }
+      responses:
+        "200":
+          description: Umbrales efectivos tras guardar
+        "401":
+          description: No autorizado
+  /api/cron/spati/alertas:
+    post:
+      tags: [cron]
+      summary: M9 evalúa SPATI y notifica transiciones de nivel
+      parameters:
+        - name: token
+          in: query
+          schema: { type: string }
+        - name: sitio
+          in: query
+          schema: { type: string }
+        - name: forzar
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Resultado evaluación / notificaciones
+        "401":
+          description: CRON_SECRET inválido
+
+    post:
+      tags: [spati]
       summary: Correcciones ISA — densidad, FR, v equivalente, GF por faena/altitud
       requestBody:
         content:
@@ -717,7 +782,7 @@ paths:
   /api/cron/faena/estaciones-area:
     post:
       tags: [cron]
-      summary: Sync catálogo → Supabase faena_estaciones_area
+      summary: Sync catálogo → faena_estaciones_area + public.estaciones (M4/M8)
       parameters:
         - name: token
           in: query
@@ -727,7 +792,23 @@ paths:
           schema: { type: string }
       responses:
         "200":
-          description: { faenas, puntos, supabase }
+          description: { estaciones_area, estaciones_publicas }
+        "401":
+          description: CRON_SECRET inválido
+  /api/cron/faena/sync-estaciones:
+    post:
+      tags: [cron]
+      summary: M8 sync catálogo → public.estaciones (FK aire_registros)
+      parameters:
+        - name: token
+          in: query
+          schema: { type: string }
+        - name: faena
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: "{ fase, puntos, catalogo, supabase }"
         "401":
           description: CRON_SECRET inválido
   /api/public/operaciones/faena/{faena_id}/informe:

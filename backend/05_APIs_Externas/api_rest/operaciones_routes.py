@@ -140,11 +140,33 @@ def register_operaciones_routes(app: Flask) -> None:
                 return jsonify({"error": "No autorizado"}), 401
         solo = (request.args.get("faena") or "").strip() or None
         try:
-            from api_rest.integracion import estaciones_area_store
+            from api_rest.integracion import estaciones_area_store, estaciones_catalog_store
 
-            return jsonify(estaciones_area_store.sincronizar_desde_catalogo(solo_faena=solo))
+            area = estaciones_area_store.sincronizar_desde_catalogo(solo_faena=solo)
+            pub = estaciones_catalog_store.sincronizar_estaciones_publicas(solo_faena=solo)
+            return jsonify({"estaciones_area": area, "estaciones_publicas": pub})
         except Exception as exc:
             app.logger.warning("cron estaciones-area: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.post("/api/cron/faena/sync-estaciones")
+    def cron_faena_sync_estaciones():
+        """M8: sync catálogo → public.estaciones (FK aire_registros)."""
+        import os
+
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        if not secret or secret != os.getenv("CRON_SECRET"):
+            if os.getenv("CRON_SECRET"):
+                return jsonify({"error": "No autorizado"}), 401
+        solo = (request.args.get("faena") or "").strip() or None
+        try:
+            from api_rest.integracion import estaciones_catalog_store
+
+            return jsonify(
+                estaciones_catalog_store.sincronizar_estaciones_publicas(solo_faena=solo)
+            )
+        except Exception as exc:
+            app.logger.warning("cron sync-estaciones: %s", exc)
             return jsonify(_ERROR_503), 503
 
     @app.get("/api/public/operaciones/faena/<faena_id>/informe")

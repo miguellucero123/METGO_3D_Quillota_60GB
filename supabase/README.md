@@ -45,6 +45,8 @@ Aplicadas (E7/E8 multi-sitio):
 | `…28180000_faena_estaciones_area` | M4 puntos rajo/campamento/chancado/botadero por faena |
 | `…28220000_datos_iot` | M7 lecturas IoT compartidas (`datos_iot`) |
 | `…28221000_estaciones_escondida` | Estaciones aire Escondida (FK `aire_registros`) |
+| `…28230000_estaciones_faenas_spati` | M8: 84 IDs faena/SPATI → `estaciones` |
+| `…28240000_spati_umbrales_alertas` | M9: `umbrales_json` + `spati_alert_state` |
 
 Verificación:
 

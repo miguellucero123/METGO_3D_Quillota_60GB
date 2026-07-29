@@ -23,6 +23,42 @@ class AlertResult:
 class CraneSafetyAlertSystem:
     """Clasificación multi-variable por intervalo de 15 min."""
 
+    def __init__(
+        self,
+        *,
+        amarillo_min_kmh: float = 26.0,
+        naranja_min_kmh: float = 30.0,
+        rojo_min_kmh: float = 35.0,
+        flag_critico_kmh: float = 36.0,
+        rayos_pct: float = 30.0,
+        precip_mmh: float = 2.0,
+        fuerza_naranja_pct: float = 55.0,
+        fuerza_rojo_pct: float = 80.0,
+        **_extra: Any,
+    ) -> None:
+        self.amarillo_min_kmh = float(amarillo_min_kmh)
+        self.naranja_min_kmh = float(naranja_min_kmh)
+        self.rojo_min_kmh = float(rojo_min_kmh)
+        self.flag_critico_kmh = float(flag_critico_kmh)
+        self.rayos_pct = float(rayos_pct)
+        self.precip_mmh = float(precip_mmh)
+        self.fuerza_naranja_pct = float(fuerza_naranja_pct)
+        self.fuerza_rojo_pct = float(fuerza_rojo_pct)
+
+    @classmethod
+    def from_umbrales(cls, umb: dict[str, Any] | None) -> "CraneSafetyAlertSystem":
+        u = umb or {}
+        return cls(
+            amarillo_min_kmh=u.get("amarillo_min_kmh", 26),
+            naranja_min_kmh=u.get("naranja_min_kmh", 30),
+            rojo_min_kmh=u.get("rojo_min_kmh", 35),
+            flag_critico_kmh=u.get("flag_critico_kmh", 36),
+            rayos_pct=u.get("rayos_pct", 30),
+            precip_mmh=u.get("precip_mmh", 2.0),
+            fuerza_naranja_pct=u.get("fuerza_naranja_pct", 55),
+            fuerza_rojo_pct=u.get("fuerza_rojo_pct", 80),
+        )
+
     def clasificar_nivel(
         self,
         rafaga_kmh: float | None,
@@ -33,22 +69,26 @@ class CraneSafetyAlertSystem:
         rafaga = float(rafaga_kmh or 0)
         razones: list[str] = []
 
-        if rafaga >= 35:
+        if rafaga >= self.rojo_min_kmh:
             nivel_viento = 3
-            razones.append(f"ráfaga {rafaga:.1f} ≥ 35 km/h")
-        elif rafaga >= 30:
+            razones.append(f"ráfaga {rafaga:.1f} ≥ {self.rojo_min_kmh:g} km/h")
+        elif rafaga >= self.naranja_min_kmh:
             nivel_viento = 2
-            razones.append(f"ráfaga {rafaga:.1f} en 30–34 km/h")
-        elif rafaga >= 26:
+            razones.append(
+                f"ráfaga {rafaga:.1f} en {self.naranja_min_kmh:g}–{self.rojo_min_kmh - 1:g} km/h"
+            )
+        elif rafaga >= self.amarillo_min_kmh:
             nivel_viento = 1
-            razones.append(f"ráfaga {rafaga:.1f} en 26–29 km/h")
+            razones.append(
+                f"ráfaga {rafaga:.1f} en {self.amarillo_min_kmh:g}–{self.naranja_min_kmh - 1:g} km/h"
+            )
         else:
             nivel_viento = 0
-            razones.append(f"ráfaga {rafaga:.1f} < 26 km/h")
+            razones.append(f"ráfaga {rafaga:.1f} < {self.amarillo_min_kmh:g} km/h")
 
         flag_meteo = False
-        if (prob_rayos_pct is not None and float(prob_rayos_pct) > 30) or (
-            precip_mmh is not None and float(precip_mmh) > 2.0
+        if (prob_rayos_pct is not None and float(prob_rayos_pct) > self.rayos_pct) or (
+            precip_mmh is not None and float(precip_mmh) > self.precip_mmh
         ):
             flag_meteo = True
             nivel_viento = max(nivel_viento, 2)
@@ -56,16 +96,16 @@ class CraneSafetyAlertSystem:
 
         if pct_fuerza is not None:
             pf = float(pct_fuerza)
-            if pf >= 80 and nivel_viento < 3:
+            if pf >= self.fuerza_rojo_pct and nivel_viento < 3:
                 nivel_viento = 3
-                razones.append(f"fuerza {pf:.0f}% ≥ 80% límite")
-            elif pf >= 55 and nivel_viento < 2:
+                razones.append(f"fuerza {pf:.0f}% ≥ {self.fuerza_rojo_pct:g}% límite")
+            elif pf >= self.fuerza_naranja_pct and nivel_viento < 2:
                 nivel_viento = 2
-                razones.append(f"fuerza {pf:.0f}% ≥ 55% límite")
+                razones.append(f"fuerza {pf:.0f}% ≥ {self.fuerza_naranja_pct:g}% límite")
 
-        flag_critico = rafaga >= 36.0
+        flag_critico = rafaga >= self.flag_critico_kmh
         if flag_critico:
-            razones.append("flag crítico ≥ 36 km/h")
+            razones.append(f"flag crítico ≥ {self.flag_critico_kmh:g} km/h")
 
         return AlertResult(
             nivel=nivel_viento,

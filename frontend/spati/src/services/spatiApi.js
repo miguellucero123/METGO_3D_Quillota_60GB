@@ -99,6 +99,11 @@ export async function fetchObservadoStatus(faenaId, { dias = 14 } = {}) {
   return fetchJson(`/public/operaciones/faena/${id}/observado-status?dias=${dias}`)
 }
 
+export async function fetchSpatiUmbrales(sitioId) {
+  const id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
+  return fetchJson(`/public/spati/${id}/umbrales`)
+}
+
 export function urlInformeFaena(faenaId, formato = 'pdf') {
   const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
   const fmt = ['csv', 'pdf', 'html'].includes(formato) ? formato : 'pdf'

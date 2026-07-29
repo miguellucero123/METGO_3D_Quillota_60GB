@@ -1,0 +1,48 @@
+# M8 — Observado real (SINCA/AWS CSV) + estaciones SPATI
+
+Sin portal MMA: CSV en `METGO_SINCA_CSV_DIR/{slug}.csv` + FK `estaciones`.
+
+## 1. Supabase
+
+- [x] Migración `20260728230000_estaciones_faenas_spati.sql` (84 IDs)
+- [ ] `npx supabase db push --yes`
+- [ ] Opcional: `POST /api/cron/faena/sync-estaciones` (re-upsert desde catálogo)
+
+## 2. CSV observado (AWS / SINCA export)
+
+Plantilla: [`docs/ejemplos/plantilla_sinca_observado.csv`](../ejemplos/plantilla_sinca_observado.csv)
+
+```text
+METGO_SINCA_CSV_DIR=/ruta/sinca
+# archivos: paipote.csv, mb_rajo.csv, escondida_rajo.csv, …
+```
+
+Columnas: `fecha,pm25,pm10,so2,no2,o3`
+
+## 3. Cron
+
+```http
+GET  /api/cron/sync?token=CRON_SECRET
+POST /api/cron/faena/sync-estaciones?token=…
+POST /api/cron/faena/estaciones-area?token=…
+```
+
+`sincronizar_sinca` escribe `aire_registros` (observado) y marca `faena_estaciones_area.fuente=observado`.
+
+## 4. Criterio de cierre
+
+- [ ] `escondida_rajo` (y/u otra faena) en `public.estaciones`
+- [ ] CSV sync → `observado-status` / MVO `ok|parcial` vía **cron SINCA** (no solo demo M7)
+- [ ] Documentado en `PLAN_MINERIA_MULTI_FAENA.md`
+
+## 5. Smoke
+
+```powershell
+python -m pytest tests/test_mineria_multi_faena.py -q -k m8
+# Prod (tras push + CSV en Render)
+Invoke-RestMethod -Method POST "https://metgo-api.onrender.com/api/cron/faena/sync-estaciones?token=$env:CRON_SECRET"
+```
+
+## Fase
+
+**M8** · minería multi-faena.

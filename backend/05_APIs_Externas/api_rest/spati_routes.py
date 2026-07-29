@@ -114,3 +114,80 @@ def register_spati_routes(app: Flask) -> None:
             return jsonify(params)
         except Exception as exc:
             return jsonify({"error": str(exc)}), 400
+
+    @app.get("/api/public/spati/<sitio_id>/umbrales")
+    def public_spati_umbrales(sitio_id: str):
+        """M9: umbrales efectivos de izaje (default + override por faena/cliente)."""
+        from api_rest.spati import get_sitio
+        from api_rest.spati.umbrales_service import alertas_destino, umbrales_efectivos
+
+        s = get_sitio(sitio_id)
+        if not s:
+            return jsonify({"error": "Sitio no encontrado", "sitio_id": sitio_id}), 404
+        sid = s.get("sitio_id") or sitio_id
+        return jsonify(
+            {
+                "sitio_id": sid,
+                "nombre": s.get("nombre"),
+                "umbrales": umbrales_efectivos(sid),
+                "alertas": {
+                    "nivel_minimo": alertas_destino(sid).get("nivel_minimo"),
+                    "tiene_email": bool(alertas_destino(sid).get("emails")),
+                    "tiene_webhook": bool(alertas_destino(sid).get("webhook_url")),
+                },
+            }
+        )
+
+    @app.put("/api/public/spati/<sitio_id>/umbrales")
+    def put_spati_umbrales(sitio_id: str):
+        """M9: guardar override de umbrales (local + Supabase si hay). Protegido por token admin o CRON."""
+        import os
+
+        from api_rest.spati import get_sitio
+        from api_rest.spati.umbrales_service import guardar_umbrales_local
+
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        cron = (os.getenv("CRON_SECRET") or "").strip()
+        # Permitir sin secret solo en local (sin CRON_SECRET)
+        if cron and secret != cron:
+            auth = request.headers.get("Authorization") or ""
+            if not auth.startswith("Bearer "):
+                return jsonify({"error": "No autorizado"}), 401
+        s = get_sitio(sitio_id)
+        if not s:
+            return jsonify({"error": "Sitio no encontrado", "sitio_id": sitio_id}), 404
+        body = request.get_json(silent=True) or {}
+        sid = s.get("sitio_id") or sitio_id
+        umb = body.get("umbrales") or body
+        try:
+            return jsonify(
+                {
+                    "sitio_id": sid,
+                    "umbrales": guardar_umbrales_local(sid, umb),
+                    "ok": True,
+                }
+            )
+        except Exception as exc:
+            app.logger.warning("put umbrales %s: %s", sid, exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.post("/api/cron/spati/alertas")
+    def cron_spati_alertas():
+        """M9: evalúa niveles SPATI y notifica transiciones (CRON_SECRET)."""
+        import os
+
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        if not secret or secret != os.getenv("CRON_SECRET"):
+            if os.getenv("CRON_SECRET"):
+                return jsonify({"error": "No autorizado"}), 401
+        solo = (request.args.get("sitio") or "").strip() or None
+        forzar = (request.args.get("forzar") or "").strip().lower() in ("1", "true", "yes")
+        try:
+            from api_rest.spati_alert_job import evaluar_sitios, evaluar_y_notificar
+
+            if solo:
+                return jsonify(evaluar_y_notificar(solo, forzar=forzar))
+            return jsonify(evaluar_sitios(forzar=forzar))
+        except Exception as exc:
+            app.logger.warning("cron spati alertas: %s", exc)
+            return jsonify(_ERROR_503), 503
