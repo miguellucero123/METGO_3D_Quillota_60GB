@@ -39,6 +39,7 @@ from api_rest.auth_routes import (
     requiere_estacion,
     requiere_rol,
 )
+from api_rest.identity.identity_routes import register_identity_routes
 from api_rest.docs_routes import register_docs_routes
 from api_rest.health import build_health_payload
 from api_rest.fase3_routes import register_fase3_routes
@@ -145,6 +146,7 @@ def create_app() -> Flask:
 
     register_observability(app)
     register_auth_routes(app)
+    register_identity_routes(app)
     register_alertas_routes(app)
     register_fase3_routes(app)
     register_fase4_routes(app)

@@ -45,7 +45,7 @@ export default defineConfig({
               url.hostname.includes('metgo-api.onrender.com'),
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'metgo-api-aire',
+              cacheName: 'metgo-api-aire-v2',
               networkTimeoutSeconds: 8,
               expiration: { maxEntries: 48, maxAgeSeconds: 6 * 3600 },
               cacheableResponse: { statuses: [0, 200] },

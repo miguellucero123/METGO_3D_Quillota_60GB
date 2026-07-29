@@ -100,6 +100,123 @@ paths:
           description: Usuario creado y token emitido
         "400":
           description: Validación fallida
+  /api/auth/validate-registro:
+    post:
+      tags: [auth]
+      summary: Dry-run validación de registro (formato + veracidad)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: "{ ok: true, errors, warnings }"
+        "400":
+          description: "{ ok: false, errors, warnings }"
+  /api/auth/register-v2:
+    post:
+      tags: [auth]
+      summary: Registro comercial (PII cifrada + consentimientos + trial)
+      description: |
+        Requiere consentimientos `almacenamiento_datos`, `tos`, `privacy`, `veracidad`.
+        En SPATI enviar `faena` (escondida, los_bronces, …).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, nombres, apellidos, razon_social, rut, sitio, consentimientos]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 10 }
+                password_confirm: { type: string }
+                nombres: { type: string }
+                apellidos: { type: string }
+                telefono: { type: string, example: "+56912345678" }
+                razon_social: { type: string }
+                rut: { type: string, example: "76.123.456-0" }
+                sitio: { type: string, example: spati }
+                faena: { type: string, example: escondida }
+                consentimientos:
+                  type: object
+                  properties:
+                    almacenamiento_datos: { type: boolean }
+                    tos: { type: boolean }
+                    privacy: { type: boolean }
+                    veracidad: { type: boolean }
+      responses:
+        "201":
+          description: Usuario/org creados (status pending + trial)
+        "400":
+          description: Validación o consentimiento faltante
+  /api/auth/access:
+    get:
+      tags: [auth]
+      summary: Acceso por pestaña (plan + faena_reglas)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string }
+        - name: faena
+          in: query
+          schema: { type: string, example: escondida }
+        - name: tab
+          in: query
+          schema: { type: string, enum: [panel, dron, umbrales, ambiente] }
+      responses:
+        "200":
+          description: "{ allowed, tabs, sistemas, plan_code, sub_status }"
+        "403":
+          description: tab no permitida
+  /api/public/planes:
+    get:
+      tags: [public]
+      summary: Catálogo de precios escalonados
+      parameters:
+        - name: sitio
+          in: query
+          schema: { type: string, default: spati }
+        - name: faena
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Planes con precio_mensual_clp
+  /api/public/faenas/{faena}/reglas:
+    get:
+      tags: [public]
+      summary: Reglas/sistemas anexables de una minera
+      parameters:
+        - name: faena
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "{ faena, reglas, enlace }"
+  /api/billing/checkout:
+    post:
+      tags: [billing]
+      summary: Checkout Stripe o mock
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan_code: { type: string, enum: [trial, starter, pro, enterprise] }
+                sitio: { type: string }
+                faena: { type: string }
+      responses:
+        "200":
+          description: mock checkout
+        "501":
+          description: Stripe pendiente de Price IDs
   /api/auth/me:
     get:
       tags: [auth]

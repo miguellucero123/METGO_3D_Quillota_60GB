@@ -17,10 +17,12 @@ const state = reactive({
 export function useAuth() {
   const isAuthenticated = computed(() => Boolean(state.token))
 
-  async function login(username, password) {
-    const data = await apiLogin(username, password)
-    if (data.user?.sitio != null && data.user.sitio !== SITIO) {
-      throw new Error(`Este acceso es para el sitio ${data.user.sitio}, no ${SITIO}`)
+  async function login(username, password, opts = {}) {
+    const data = await apiLogin(username, password, opts)
+    const sitioUser = data.user?.sitio
+    const allowed = new Set([SITIO, 'spati', 'mantos_blancos'])
+    if (sitioUser != null && !allowed.has(sitioUser)) {
+      throw new Error(`Este acceso es para el sitio ${sitioUser}, no SPATI`)
     }
     state.token = data.access_token
     state.user = data.user

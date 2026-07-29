@@ -1,37 +1,62 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getToken } from '@/services/authApi'
+import { fetchAccess, getToken } from '@/services/authApi'
 
-const routes = [
+const faenaChildren = [
   {
-    path: '/login',
-    name: 'login',
+    path: 'login',
+    name: 'faena-login',
     component: () => import('@/views/LoginView.vue'),
     meta: { title: 'Login', public: true },
   },
   {
-    path: '/',
-    name: 'panel',
+    path: 'registro',
+    name: 'faena-registro',
+    component: () => import('@/views/RegistroView.vue'),
+    meta: { title: 'Registro', public: true },
+  },
+  {
+    path: '',
+    name: 'faena-panel',
     component: () => import('@/views/SpatiPanelView.vue'),
-    meta: { title: 'Pronóstico izaje' },
+    meta: { title: 'Pronóstico izaje', tab: 'panel' },
   },
   {
-    path: '/dron',
-    name: 'dron',
+    path: 'dron',
+    name: 'faena-dron',
     component: () => import('@/views/DronCalibracionView.vue'),
-    meta: { title: 'Calibración dron' },
+    meta: { title: 'Calibración dron', tab: 'dron' },
   },
   {
-    path: '/umbrales',
-    name: 'umbrales',
+    path: 'umbrales',
+    name: 'faena-umbrales',
     component: () => import('@/views/UmbralesSpatiView.vue'),
-    meta: { title: 'Umbrales' },
+    meta: { title: 'Umbrales', tab: 'umbrales' },
   },
   {
-    path: '/ambiente',
-    name: 'ambiente',
+    path: 'ambiente',
+    name: 'faena-ambiente',
     component: () => import('@/views/AmbientalesView.vue'),
-    meta: { title: 'Ambiente faena' },
+    meta: { title: 'Ambiente faena', tab: 'ambiente' },
   },
+]
+
+const routes = [
+  {
+    path: '/',
+    name: 'faenas-hub',
+    component: () => import('@/views/FaenasHubView.vue'),
+    meta: { title: 'Faenas', public: true },
+  },
+  {
+    path: '/f/:faena',
+    component: () => import('@/views/FaenaShellView.vue'),
+    children: faenaChildren,
+  },
+  // Compat rutas antiguas → Escondida por defecto
+  { path: '/login', redirect: '/f/escondida/login' },
+  { path: '/dron', redirect: '/f/escondida/dron' },
+  { path: '/umbrales', redirect: '/f/escondida/umbrales' },
+  { path: '/ambiente', redirect: '/f/escondida/ambiente' },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
@@ -40,10 +65,33 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (to.meta?.public) return true
   if (!getToken()) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    const faena = to.params.faena || 'escondida'
+    return {
+      name: 'faena-login',
+      params: { faena },
+      query: { redirect: to.fullPath },
+    }
+  }
+  const tab = to.meta?.tab
+  if (tab && to.params.faena) {
+    try {
+      const access = await fetchAccess({
+        sitio: 'spati',
+        faena: String(to.params.faena),
+        tab: String(tab),
+      })
+      if (access.tab_allowed === false) {
+        return { name: 'faena-panel', params: { faena: to.params.faena } }
+      }
+    } catch (e) {
+      // Legacy JWT sin org: permitir hasta S2; solo bloquear 403 explícito de tab
+      if (e.status === 403) {
+        return { name: 'faena-panel', params: { faena: to.params.faena } }
+      }
+    }
   }
   return true
 })

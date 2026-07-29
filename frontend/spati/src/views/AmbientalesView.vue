@@ -186,7 +186,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import site from '@/site.config.js'
 import {
   fetchFaenas,
@@ -197,8 +198,13 @@ import {
   urlModeloVsObservadoCsv,
 } from '@/services/spatiApi'
 
+const route = useRoute()
+const injectedFaena = inject('faena', null)
 const faenas = ref([])
-const faenaId = ref(site.spatiDefaultSitio || 'escondida')
+const faenaId = ref(
+  (injectedFaena && injectedFaena.value) ||
+    String(route.params.faena || site.spatiDefaultSitio || 'escondida'),
+)
 const pkg = ref(null)
 const mvo = ref(null)
 const obsStatus = ref(null)

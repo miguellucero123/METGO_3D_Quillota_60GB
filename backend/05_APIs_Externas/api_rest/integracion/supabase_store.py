@@ -83,6 +83,33 @@ def rest_select(
         return []
 
 
+def rest_insert(table: str, row: dict[str, Any]) -> list[dict[str, Any]]:
+    """POST /rest/v1/{table} con Prefer return=representation."""
+    url, key = _resolve_supabase_creds()
+    if not url or not key or not row:
+        return []
+    endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
+    try:
+        res = requests.post(
+            endpoint,
+            headers=_rest_headers(key),
+            json=row,
+            timeout=30,
+        )
+        if res.status_code >= 400:
+            print(f"rest_insert {table}: {res.status_code} {res.text[:200]}")
+            return []
+        data = res.json()
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            return [data]
+        return []
+    except Exception as exc:
+        print(f"rest_insert {table}: {exc}")
+        return []
+
+
 def rest_upsert(table: str, rows: list[dict[str, Any]], on_conflict: str) -> int:
     url, key = _resolve_supabase_creds()
     if not url or not key or not rows:

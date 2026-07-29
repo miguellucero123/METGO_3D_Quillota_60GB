@@ -23,6 +23,10 @@ def auth_required(f: Callable) -> Callable:
             g.user_role = "admin"
             g.tenant_id = None
             g.sitio_id = None
+            g.faena_id = None
+            g.org_id = None
+            g.plan_code = "pro"
+            g.sub_status = "active"
             return f(*args, **kwargs)
 
         header = request.headers.get("Authorization", "")
@@ -43,6 +47,11 @@ def auth_required(f: Callable) -> Callable:
         g.sitio_id = payload.get("sitio")
         if g.sitio_id is None and "sitio" not in payload and g.current_user:
             g.sitio_id = metgo_auth.sitio_de_usuario(g.current_user)
+        # S1: faena minera + suscripción (claims opcionales)
+        g.faena_id = payload.get("faena")
+        g.org_id = payload.get("org_id")
+        g.plan_code = payload.get("plan_code")
+        g.sub_status = payload.get("sub_status")
         return f(*args, **kwargs)
 
     return wrapper
@@ -136,9 +145,44 @@ def register_auth_routes(app: Flask) -> None:
     @app.post("/api/auth/login")
     def login():
         data = request.get_json(silent=True) or {}
-        username = (data.get("username") or data.get("usuario") or "").strip()
+        username = (data.get("username") or data.get("usuario") or data.get("email") or "").strip()
         password = data.get("password") or data.get("contraseña") or data.get("contrasena") or ""
         sitio_req = data.get("sitio") or data.get("site")
+        faena_req = (data.get("faena") or "").strip().lower() or None
+
+        # S1: identidad comercial (email + sitio + faena)
+        try:
+            from api_rest.identity import identity_store, pii_crypto
+
+            sitio_try = (sitio_req or "").strip().lower() or None
+            # SPATI SPA aún declara sitio mantos_blancos: aceptar también spati
+            sitios_try = []
+            if sitio_try:
+                sitios_try.append(sitio_try)
+            if faena_req and "spati" not in sitios_try:
+                sitios_try.append("spati")
+            for sitio_id in sitios_try:
+                user = identity_store.buscar_usuario_login(username, sitio_id, faena_req)
+                if not user or not pii_crypto.verify_password(
+                    password, user.get("password_hash") or ""
+                ):
+                    continue
+                if user.get("status") == "suspended":
+                    return jsonify({"error": "Usuario suspendido"}), 403
+                sub = identity_store.suscripcion_de_org(user.get("org_id") or "") or {}
+                return jsonify(
+                    metgo_auth.crear_token_identidad(
+                        sub=user.get("email_norm") or username,
+                        role=user.get("role") or "operador",
+                        sitio=user.get("sitio") or sitio_id,
+                        faena=user.get("faena"),
+                        org_id=user.get("org_id"),
+                        plan_code=sub.get("plan_code") or "trial",
+                        sub_status=sub.get("status") or "trialing",
+                    )
+                )
+        except Exception:
+            pass
 
         if not metgo_auth.verificar_credenciales(username, password):
             return jsonify({"error": "Usuario o contraseña incorrectos"}), 401

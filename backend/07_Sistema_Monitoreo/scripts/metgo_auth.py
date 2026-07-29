@@ -292,6 +292,54 @@ def crear_token_acceso(usuario: str, sitio: str | None = None) -> dict[str, Any]
     }
 
 
+def crear_token_identidad(
+    *,
+    sub: str,
+    role: str,
+    sitio: str | None,
+    faena: str | None = None,
+    org_id: str | None = None,
+    plan_code: str | None = None,
+    sub_status: str | None = None,
+) -> dict[str, Any]:
+    """JWT para usuarios comerciales (usuarios_app), sin USER_TO_ROLE."""
+    if jwt is None:
+        raise RuntimeError("Instale PyJWT: pip install PyJWT")
+    exp_secs = jwt_expiration_seconds()
+    now = datetime.now(timezone.utc)
+    payload: dict[str, Any] = {
+        "sub": (sub or "").lower().strip(),
+        "role": role or "operador",
+        "tenant": None,
+        "sitio": sitio,
+        "faena": faena,
+        "org_id": org_id,
+        "plan_code": plan_code or "trial",
+        "sub_status": sub_status or "trialing",
+        "iat": now,
+        "exp": now + timedelta(seconds=exp_secs),
+    }
+    token = jwt.encode(payload, jwt_secret(), algorithm=jwt_algorithm())
+    if isinstance(token, bytes):
+        token = token.decode("utf-8")
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": exp_secs,
+        "user": {
+            "username": payload["sub"],
+            "email": payload["sub"],
+            "role": payload["role"],
+            "tenant": None,
+            "sitio": sitio,
+            "faena": faena,
+            "org_id": org_id,
+            "plan_code": payload["plan_code"],
+            "sub_status": payload["sub_status"],
+        },
+    }
+
+
 def decodificar_token(token: str) -> dict[str, Any] | None:
     if jwt is None or not token:
         return None

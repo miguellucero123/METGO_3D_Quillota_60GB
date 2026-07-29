@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { HardHat, LogIn } from 'lucide-vue-next'
@@ -13,6 +13,9 @@ const router = useRouter()
 const route = useRoute()
 const auth = useAuth()
 const { t, locale } = useI18n()
+
+const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faena.value))
 
 const username = ref('')
 const password = ref('')
@@ -28,9 +31,13 @@ async function onSubmit() {
   cargando.value = true
   try {
     await wakeApi()
-    await auth.login(username.value.trim(), password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-    router.replace(redirect.startsWith('/') ? redirect : '/')
+    await auth.login(username.value.trim(), password.value, {
+      faena: faena.value,
+      sitio: 'spati',
+    })
+    const redirect =
+      typeof route.query.redirect === 'string' ? route.query.redirect : `/f/${faena.value}/`
+    router.replace(redirect.startsWith('/') ? redirect : `/f/${faena.value}/`)
   } catch (e) {
     error.value = e.message || 'Usuario o contraseña incorrectos'
   } finally {
@@ -57,7 +64,7 @@ async function onSubmit() {
         </div>
         <h1>{{ site.productName }}</h1>
         <p class="auth-tagline">{{ t('login.subtitle') }}</p>
-        <p class="auth-region">{{ site.region }}</p>
+        <p class="auth-region">{{ faenaMeta?.nombre || faena }} · {{ faenaMeta?.region || site.region }}</p>
         <p class="login-hint">{{ t('login.hint') }}</p>
       </div>
 
@@ -81,7 +88,12 @@ async function onSubmit() {
           {{ cargando ? t('login.loading') : t('login.submit') }}
         </button>
       </form>
-      <p class="auth-footer">JWT · sitio <code>{{ site.sitio }}</code> · E9</p>
+      <p class="auth-footer">
+        Faena <code>{{ faena }}</code> ·
+        <router-link :to="{ name: 'faena-registro', params: { faena } }">Registrarse</router-link>
+        ·
+        <router-link :to="{ name: 'faenas-hub' }">Otras faenas</router-link>
+      </p>
     </div>
   </div>
 </template>

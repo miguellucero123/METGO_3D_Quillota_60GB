@@ -72,10 +72,15 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
   }
 }
 
-export async function login(username, password) {
+export async function login(username, password, { faena, sitio } = {}) {
   return request('/auth/login', {
     method: 'POST',
-    body: { username, password, sitio: SITIO },
+    body: {
+      username,
+      password,
+      sitio: sitio || SITIO,
+      ...(faena ? { faena } : {}),
+    },
   })
 }
 
@@ -90,6 +95,38 @@ export async function wakeApi() {
   } catch {
     return false
   }
+}
+
+export async function validateRegistro(body) {
+  try {
+    return await request('/auth/validate-registro', { method: 'POST', body })
+  } catch (e) {
+    if (e.data && typeof e.data.ok === 'boolean') return e.data
+    throw e
+  }
+}
+
+export async function registerV2(body) {
+  return request('/auth/register-v2', { method: 'POST', body })
+}
+
+export async function fetchAccess({ sitio, faena, tab } = {}) {
+  const q = new URLSearchParams()
+  if (sitio) q.set('sitio', sitio)
+  if (faena) q.set('faena', faena)
+  if (tab) q.set('tab', tab)
+  const qs = q.toString()
+  return request(`/auth/access${qs ? `?${qs}` : ''}`, { auth: true })
+}
+
+export async function fetchPlanes(sitio = 'spati', faena) {
+  const q = new URLSearchParams({ sitio })
+  if (faena) q.set('faena', faena)
+  return request(`/public/planes?${q}`)
+}
+
+export async function fetchFaenaReglas(faena) {
+  return request(`/public/faenas/${encodeURIComponent(faena)}/reglas`)
 }
 
 export { TOKEN_KEY, USER_KEY, SITIO, resolveBaseURL }
