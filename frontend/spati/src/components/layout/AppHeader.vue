@@ -16,7 +16,7 @@
         <span class="brand-site">{{ site.siteLabel }}</span>
       </div>
     </div>
-    <p class="header-tagline">{{ t('app.subtitle') }}</p>
+    <p class="header-tagline">{{ site.tagline || t('app.subtitle') }}</p>
     <div class="header-actions">
       <ThemeToggle />
       <div class="lang-switch" role="group" :aria-label="t('lang.label')">

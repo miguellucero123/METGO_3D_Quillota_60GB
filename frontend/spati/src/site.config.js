@@ -7,12 +7,12 @@ export default {
   siteLabel: 'SPATI Izaje',
   tagline: 'Pronóstico 72 h · mineras alta montaña · alertas 0–3',
   region: 'Chile · 17 faenas de alta montaña',
-  versionLabel: 'v0.3 · SPATI Alta Montaña',
+  versionLabel: 'v0.4 · SPATI Alta Montaña',
   documentTitle: 'METGO SPATI — Izaje alta montaña',
   documentDescription:
-    'Sistema de Pronóstico y Alerta Temprana para Izaje en mineras de altura: Quebrada Blanca, Collahuasi, Escondida, Los Bronces, Andina, El Teniente y más.',
+    'Sistema de Pronóstico y Alerta Temprana para Izaje en mineras de altura: acceso por faena contratada.',
   center: { lat: -24.25, lon: -69.05 },
-  spatiDefaultSitio: 'escondida',
+  spatiDefaultSitio: 'quebrada_blanca',
   api: {
     defaultPublicBase: 'https://metgo-api.onrender.com/api',
     localBase: 'http://127.0.0.1:8080/api',

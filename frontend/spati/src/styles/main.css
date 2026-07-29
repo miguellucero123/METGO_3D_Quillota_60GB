@@ -1,5 +1,5 @@
 /* METGO Paine — Design system (cian / celeste neón · Torres del Paine) */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap');
 
 :root {
   /* Diferenciado: ámbar desierto / alerta aire (E7 Copiapó) — applySiteTheme pisa en runtime */
@@ -74,6 +74,11 @@ body {
   font-size: 0.9375rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+.app-login {
+  min-height: 100vh;
+  background: var(--color-bg);
 }
 
 .app-shell {
