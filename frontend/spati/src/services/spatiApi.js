@@ -4,7 +4,7 @@
 import site from '@/site.config.js'
 
 const RENDER_API = site.api?.defaultPublicBase || 'https://metgo-api.onrender.com/api'
-const TIMEOUT_MS = 90000
+const TIMEOUT_MS = 120000
 
 function resolveBaseURL() {
   const fromEnv = import.meta.env.VITE_METGO_API || import.meta.env.VITE_API_BASE
@@ -19,7 +19,7 @@ function resolveBaseURL() {
 async function fetchJson(path, { method = 'GET', body, timeout = TIMEOUT_MS } = {}) {
   const base = resolveBaseURL()
   const ctrl = new AbortController()
-  const t = setTimeout(() => ctrl.abort(), timeout)
+  const t = setTimeout(() => ctrl.abort('timeout'), timeout)
   try {
     const res = await fetch(`${base}${path}`, {
       method,
@@ -36,6 +36,7 @@ async function fetchJson(path, { method = 'GET', body, timeout = TIMEOUT_MS } = 
         const j = await res.json()
         if (j?.error) detalle = `: ${j.error}`
         if (j?.detalle) detalle += ` (${j.detalle})`
+        if (j?.sugerencia) detalle += ` — ${j.sugerencia}`
       } catch {
         /* ignore */
       }
@@ -44,6 +45,15 @@ async function fetchJson(path, { method = 'GET', body, timeout = TIMEOUT_MS } = 
       throw err
     }
     return await res.json()
+  } catch (e) {
+    if (e?.name === 'AbortError' || e?.message === 'timeout' || String(e).includes('aborted')) {
+      const err = new Error(
+        'La API tardó demasiado (Open-Meteo o Render en frío). Espere unos segundos y reintente.',
+      )
+      err.code = 'TIMEOUT'
+      throw err
+    }
+    throw e
   } finally {
     clearTimeout(t)
   }

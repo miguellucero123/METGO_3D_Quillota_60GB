@@ -15,7 +15,7 @@
       <button type="button" class="btn" :disabled="loading" @click="cargar">Actualizar</button>
     </div>
 
-    <div v-if="loading" class="state">Calculando SPATI (Open-Meteo + física)…</div>
+    <div v-if="loading" class="state">Actualizando pronóstico…</div>
     <div v-else-if="error" class="state error">
       <p>{{ error }}</p>
       <button type="button" class="btn" @click="cargar">Reintentar</button>
@@ -159,7 +159,8 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, ScatterChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { fetchSpatiPronostico } from '@/services/spatiApi'
+import { fetchSpatiPronostico, getApiBase } from '@/services/spatiApi'
+import { wakeApi } from '@/services/authApi'
 
 use([CanvasRenderer, LineChart, ScatterChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent])
 
@@ -324,9 +325,14 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
+    await wakeApi()
     data.value = await fetchSpatiPronostico(sitioId.value)
   } catch (e) {
-    error.value = e?.message || 'Error SPATI'
+    const msg = e?.message || 'Error al calcular el pronóstico'
+    error.value =
+      e?.code === 'TIMEOUT'
+        ? msg
+        : `${msg}. API: ${getApiBase()}`
     data.value = null
   } finally {
     loading.value = false

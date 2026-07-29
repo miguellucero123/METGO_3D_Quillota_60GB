@@ -54,9 +54,15 @@ def run_spati(
 
     try:
         df = nwp.fetch_forecast(cfg.lat, cfg.lon, forecast_days=3)
+        nwp_fuente = getattr(df, "attrs", {}).get("nwp_fuente") or "openmeteo"
     except NWPDataUnavailableError as exc:
         logger.warning("SPATI NWP error: %s", exc)
-        return {"error": "nwp_no_disponible", "detalle": str(exc), "sitio_id": cfg.sitio_id}
+        return {
+            "error": "nwp_no_disponible",
+            "detalle": str(exc),
+            "sitio_id": cfg.sitio_id,
+            "sugerencia": "Open-Meteo saturado o lento; reintente en 1–2 minutos",
+        }
 
     df = pe.extrapolar_serie(df, cfg)
 
@@ -328,6 +334,7 @@ def run_spati(
             "alturas_perfil_m": list(ALTURAS_PERFIL_IZAJES_M),
         },
         "run_timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "nwp_fuente": nwp_fuente,
         "horizonte_h": 72,
         "dt_min": 15,
         "n_intervalos": len(serie),
