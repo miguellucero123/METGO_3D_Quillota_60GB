@@ -248,6 +248,28 @@ def register_auth_routes(app: Flask) -> None:
                     "current_period_end": sub.get("current_period_end"),
                     "faena": sub.get("faena"),
                 }
+        try:
+            from api_rest.identity import identity_store
+
+            hub = identity_store.resolver_hub_faenas(
+                email=g.current_user,
+                role=g.user_role,
+                sitio=getattr(g, "sitio_id", None),
+                faena_jwt=getattr(g, "faena_id", None),
+                plan_code=body.get("plan_code"),
+            )
+            body["hub"] = hub
+            body["multi_faena"] = bool(hub.get("multi_faena"))
+            body["catalogo_completo"] = bool(hub.get("catalogo_completo"))
+            body["faenas"] = hub.get("faenas") or []
+        except Exception:
+            body["hub"] = {
+                "catalogo_completo": (g.user_role or "") == "admin",
+                "multi_faena": False,
+                "faenas": (
+                    [{"slug": g.faena_id}] if getattr(g, "faena_id", None) else []
+                ),
+            }
         return jsonify(body)
 
     @app.post("/api/auth/refresh")

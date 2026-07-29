@@ -69,8 +69,7 @@ onMounted(async () => {
   const ok = await auth.ensureValidSession()
   if (!ok) {
     router.replace({
-      name: 'faena-login',
-      params: { faena: currentFaena.value },
+      path: `/f/${currentFaena.value}/login`,
       query: { redirect: route.fullPath },
     })
   }

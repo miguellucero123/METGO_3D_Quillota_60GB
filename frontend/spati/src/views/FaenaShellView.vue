@@ -33,7 +33,6 @@ const show = (tab) => access.canTab(faena.value, tab)
       <router-link v-if="show('dron')" :to="`/f/${faena}/dron`">Dron</router-link>
       <router-link v-if="show('umbrales')" :to="`/f/${faena}/umbrales`">Umbrales</router-link>
       <router-link :to="`/f/${faena}/cuenta`">Cuenta</router-link>
-      <router-link to="/">Todas</router-link>
     </nav>
     <router-view />
   </div>

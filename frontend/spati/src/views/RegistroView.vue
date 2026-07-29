@@ -74,7 +74,7 @@ async function onSubmit() {
     }
     await registerV2(body)
     msg.value = 'Registro OK. Revise verificación de email y luego elija plan en Cuenta.'
-    router.replace({ name: 'faena-login', params: { faena: faena.value } })
+    router.replace(`/f/${faena.value}/login`)
   } catch (e) {
     if (e.data?.validation?.errors) errors.value = e.data.validation.errors
     else msg.value = e.message || 'Error de registro'
@@ -89,7 +89,7 @@ async function onSubmit() {
     <div class="auth-panel wide">
       <div class="top">
         <ThemeToggle />
-        <router-link :to="{ name: 'faenas-hub' }">Todas las faenas</router-link>
+        <router-link :to="`/`">Inicio</router-link>
       </div>
       <div class="brand">
         <div class="logo"><HardHat aria-hidden="true" /></div>
@@ -153,7 +153,7 @@ async function onSubmit() {
 
       <p class="foot">
         ¿Ya tiene cuenta?
-        <router-link :to="{ name: 'faena-login', params: { faena } }">Ingresar</router-link>
+        <router-link :to="`/f/${faena}/login`">Ingresar</router-link>
       </p>
     </div>
   </div>

@@ -35,9 +35,13 @@ async function onSubmit() {
       faena: faena.value,
       sitio: 'spati',
     })
-    const redirect =
+    let redirect =
       typeof route.query.redirect === 'string' ? route.query.redirect : `/f/${faena.value}/`
-    router.replace(redirect.startsWith('/') ? redirect : `/f/${faena.value}/`)
+    // Nunca dejar al operador en el hub público tras login
+    if (redirect === '/' || redirect.startsWith('/?')) {
+      redirect = `/f/${faena.value}/`
+    }
+    await router.replace(redirect.startsWith('/') ? redirect : `/f/${faena.value}/`)
   } catch (e) {
     error.value = e.message || 'Usuario o contraseña incorrectos'
   } finally {
@@ -90,9 +94,7 @@ async function onSubmit() {
       </form>
       <p class="auth-footer">
         Faena <code>{{ faena }}</code> ·
-        <router-link :to="{ name: 'faena-registro', params: { faena } }">Registrarse</router-link>
-        ·
-        <router-link :to="{ name: 'faenas-hub' }">Otras faenas</router-link>
+        <router-link :to="`/f/${faena}/registro`">Registrarse</router-link>
       </p>
     </div>
   </div>

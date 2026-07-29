@@ -44,6 +44,7 @@ import { Menu } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 import { setLocale } from '@/i18n'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
+import { invalidateHubCache } from '@/stores/hubCache'
 
 const site = inject('site')
 const navOpen = inject('navOpen', null)
@@ -57,7 +58,8 @@ const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio
 
 function onLogout() {
   auth.logout()
-  router.push({ name: 'faena-login', params: { faena: faena.value } })
+  invalidateHubCache()
+  router.push(`/f/${faena.value}/login`)
 }
 </script>
 

@@ -121,6 +121,25 @@ def register_identity_routes(app: Flask) -> None:
             )
         )
 
+    @app.get("/api/auth/mis-faenas")
+    @auth_required
+    def auth_mis_faenas():
+        """Faenas visibles según suscripción (no el catálogo comercial completo)."""
+        plan_code = getattr(g, "plan_code", None) or "trial"
+        org_id = getattr(g, "org_id", None)
+        if org_id:
+            sub = identity_store.suscripcion_de_org(org_id)
+            if sub:
+                plan_code = sub.get("plan_code") or plan_code
+        hub = identity_store.resolver_hub_faenas(
+            email=g.current_user,
+            role=getattr(g, "user_role", None),
+            sitio=getattr(g, "sitio_id", None) or "spati",
+            faena_jwt=getattr(g, "faena_id", None),
+            plan_code=plan_code,
+        )
+        return jsonify(hub)
+
     @app.get("/api/public/planes")
     def public_planes():
         sitio = (request.args.get("sitio") or "spati").strip().lower()

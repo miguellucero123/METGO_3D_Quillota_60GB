@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { fetchAccess, getToken } from '@/services/authApi'
+import { fetchAccess, fetchMe, getToken } from '@/services/authApi'
+import { getHubCache, setHubCache, invalidateHubCache } from '@/stores/hubCache'
+
+export { invalidateHubCache }
 
 const faenaChildren = [
   {
@@ -64,7 +67,6 @@ const routes = [
     component: () => import('@/views/FaenaShellView.vue'),
     children: faenaChildren,
   },
-  // Compat rutas antiguas → Escondida por defecto
   { path: '/login', redirect: '/f/escondida/login' },
   { path: '/dron', redirect: '/f/escondida/dron' },
   { path: '/umbrales', redirect: '/f/escondida/umbrales' },
@@ -77,36 +79,64 @@ const router = createRouter({
   routes,
 })
 
+const HUB_TTL = 60_000
+
+async function loadHub() {
+  const cached = getHubCache()
+  if (cached && Date.now() - cached.at < HUB_TTL) return cached
+  const me = await fetchMe()
+  const hub = me.hub || {}
+  const slugs = new Set((hub.faenas || me.faenas || []).map((f) => f.slug || f))
+  if (me.faena) slugs.add(String(me.faena).toLowerCase())
+  const next = {
+    at: Date.now(),
+    catalogo_completo: Boolean(
+      hub.catalogo_completo ||
+        me.catalogo_completo ||
+        ['admin', 'administrador', 'superadmin'].includes(String(me.role || '').toLowerCase()),
+    ),
+    slugs,
+  }
+  setHubCache(next)
+  return next
+}
+
 router.beforeEach(async (to) => {
   if (to.meta?.public) return true
   if (!getToken()) {
     const faena = to.params.faena || 'escondida'
-    return {
-      name: 'faena-login',
-      params: { faena },
-      query: { redirect: to.fullPath },
+    return `/f/${faena}/login?redirect=${encodeURIComponent(to.fullPath)}`
+  }
+
+  const targetFaena = to.params.faena ? String(to.params.faena).toLowerCase() : ''
+  if (targetFaena) {
+    try {
+      const hub = await loadHub()
+      if (!hub.catalogo_completo && hub.slugs.size > 0 && !hub.slugs.has(targetFaena)) {
+        const first = [...hub.slugs][0]
+        return `/f/${first}/cuenta?blocked_faena=${encodeURIComponent(targetFaena)}`
+      }
+    } catch {
+      /* API fría: no bloquear */
     }
   }
+
   const tab = to.meta?.tab
-  if (tab && to.params.faena) {
+  if (tab && targetFaena) {
     try {
       const access = await fetchAccess({
         sitio: 'spati',
-        faena: String(to.params.faena),
+        faena: targetFaena,
         tab: String(tab),
       })
       const denied =
         access.tab_allowed === false ||
         (access.tabs && access.tabs[tab] === false)
       if (denied) {
-        return {
-          name: 'faena-cuenta',
-          params: { faena: to.params.faena },
-          query: { blocked: String(tab) },
-        }
+        return `/f/${targetFaena}/cuenta?blocked=${encodeURIComponent(String(tab))}`
       }
     } catch {
-      // API fría / admin legacy sin org: no bloquear navegación
+      /* allow */
     }
   }
   return true

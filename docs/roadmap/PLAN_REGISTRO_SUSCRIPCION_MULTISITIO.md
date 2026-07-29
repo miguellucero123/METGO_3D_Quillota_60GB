@@ -202,6 +202,13 @@ Hub opcional `/` lista faenas (público) sin datos operativos.
 - [x] `CuentaView`: aviso de upgrade cuando llega `?blocked=`
 - [x] Test: trial → `tab=umbrales` responde 403
 
+### S4.1 — Hub por membresía (no catálogo público) ✅
+
+- [x] Público `/`: sin listar las 17 minas (solo código de faena / enlace propio)
+- [x] `GET /api/auth/mis-faenas` + `hub` en `/auth/me`
+- [x] Router bloquea salto URL a faena ajena (salvo admin / plan `multi_faena`)
+- [x] Tras login con 1 faena → entra directo a `/f/{faena}/`
+
 ### S5 — Ops prod + M10 (siguiente)
 
 - Credenciales SMTP/Stripe en Render; cutover demos

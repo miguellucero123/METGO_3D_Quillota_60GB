@@ -17,16 +17,17 @@
 </template>
 
 <script setup>
-import { computed, inject, watch } from 'vue'
+import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
-import { getToken } from '@/services/authApi'
+import { fetchMe, getToken } from '@/services/authApi'
 
 const site = inject('site')
 const route = useRoute()
 const access = useAccess()
 const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+const showHubLink = ref(false)
 
 watch(
   faena,
@@ -36,6 +37,16 @@ watch(
   { immediate: true },
 )
 
+onMounted(async () => {
+  if (!getToken()) return
+  try {
+    const me = await fetchMe()
+    showHubLink.value = Boolean(me.catalogo_completo || me.multi_faena || (me.faenas || []).length > 1)
+  } catch {
+    showHubLink.value = false
+  }
+})
+
 const items = computed(() => {
   const f = faena.value
   const all = [
@@ -44,8 +55,10 @@ const items = computed(() => {
     { to: `/f/${f}/dron`, label: 'Calibración dron', icon: Plane, tab: 'dron' },
     { to: `/f/${f}/umbrales`, label: 'Umbrales', icon: SlidersHorizontal, tab: 'umbrales' },
     { to: `/f/${f}/cuenta`, label: 'Cuenta', icon: CreditCard },
-    { to: '/', label: 'Todas las faenas', icon: LayoutGrid },
   ]
+  if (showHubLink.value) {
+    all.push({ to: '/', label: 'Mis faenas', icon: LayoutGrid })
+  }
   return all.filter((item) => !item.tab || access.canTab(f, item.tab))
 })
 </script>

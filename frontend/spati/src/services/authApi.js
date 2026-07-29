@@ -142,6 +142,10 @@ export async function fetchCuenta(faena) {
   return request(`/auth/cuenta${q}`, { auth: true })
 }
 
+export async function fetchMisFaenas() {
+  return request('/auth/mis-faenas', { auth: true })
+}
+
 export async function checkoutPlan(body) {
   return request('/billing/checkout', { method: 'POST', body, auth: true })
 }

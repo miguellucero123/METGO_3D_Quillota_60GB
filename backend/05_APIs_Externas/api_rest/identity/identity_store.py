@@ -561,6 +561,83 @@ def buscar_usuario_login(email: str, sitio: str, faena: str | None) -> dict[str,
     return rows[0] if rows else None
 
 
+def listar_membresias_email(email: str, sitio: str = "spati") -> list[dict[str, Any]]:
+    """Membresías del mismo email en un producto (puede haber varias faenas)."""
+    email = (email or "").strip().lower()
+    sitio = (sitio or "").strip().lower() or "spati"
+    if not email:
+        return []
+    if use_memory():
+        with _lock:
+            return [
+                dict(u)
+                for u in _MEM["usuarios_app"]
+                if u.get("email_norm") == email and u.get("sitio") == sitio
+            ]
+    from api_rest.integracion import supabase_store as sb
+
+    return sb.rest_select(
+        "usuarios_app",
+        params={
+            "email_norm": f"eq.{email}",
+            "sitio": f"eq.{sitio}",
+            "select": "id,email_norm,sitio,faena,org_id,role,status",
+        },
+        limit=50,
+    )
+
+
+def resolver_hub_faenas(
+    *,
+    email: str | None,
+    role: str | None,
+    sitio: str | None,
+    faena_jwt: str | None,
+    plan_code: str | None,
+) -> dict[str, Any]:
+    """Qué faenas puede ver en el hub / cambiar de URL.
+
+    - admin / enterprise (multi_faena): catálogo completo
+    - resto: solo membresías (registro/login en esa faena) + claim JWT
+    """
+    from api_rest.identity.plans_catalog import features_for_plan
+
+    role_l = (role or "").strip().lower()
+    plan = (plan_code or "trial").strip().lower()
+    multi = "multi_faena" in features_for_plan(plan)
+    is_admin = role_l in ("admin", "administrador", "superadmin")
+    if is_admin or multi:
+        return {
+            "catalogo_completo": True,
+            "multi_faena": True,
+            "faenas": [],
+            "motivo": "admin" if is_admin else "plan_multi_faena",
+        }
+
+    sitio_l = (sitio or "spati").strip().lower()
+    memberships = listar_membresias_email(email or "", sitio_l)
+    if not memberships and sitio_l != "spati":
+        memberships = listar_membresias_email(email or "", "spati")
+
+    slugs: list[str] = []
+    seen: set[str] = set()
+    for m in memberships:
+        slug = (m.get("faena") or "").strip().lower()
+        if slug and slug not in seen:
+            seen.add(slug)
+            slugs.append(slug)
+    jwt_f = (faena_jwt or "").strip().lower()
+    if jwt_f and jwt_f not in seen:
+        slugs.insert(0, jwt_f)
+
+    return {
+        "catalogo_completo": False,
+        "multi_faena": False,
+        "faenas": [{"slug": s} for s in slugs],
+        "motivo": "membresia",
+    }
+
+
 def suscripcion_de_org(org_id: str) -> dict[str, Any] | None:
     if use_memory():
         with _lock:

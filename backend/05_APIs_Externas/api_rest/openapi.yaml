@@ -250,14 +250,24 @@ paths:
       responses:
         "200":
           description: cuenta + access + planes
-  /api/auth/me:
+  /api/auth/mis-faenas:
     get:
       tags: [auth]
-      summary: Usuario actual (JWT)
+      summary: Faenas visibles según membresía / plan multi_faena / admin
       security: [{ bearerAuth: [] }]
       responses:
         "200":
-          description: "{ username, role, tenant, sitio }"
+          description: "{ catalogo_completo, multi_faena, faenas: [{slug}] }"
+        "401":
+          description: Sin token
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Usuario actual (JWT) + hub faenas
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: "{ username, role, sitio, faena, hub, multi_faena, faenas }"
         "401":
           description: Sin token
   /api/auth/refresh:

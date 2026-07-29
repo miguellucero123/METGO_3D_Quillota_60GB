@@ -9,6 +9,7 @@ import {
   SITIO,
 } from '@/services/authApi'
 import { useAccess } from '@/stores/access'
+import { invalidateHubCache } from '@/stores/hubCache'
 
 const state = reactive({
   token: getToken(),
@@ -29,6 +30,7 @@ export function useAuth() {
     state.user = data.user
     setSession(data.access_token, data.user)
     useAccess().invalidate()
+    invalidateHubCache()
     return data
   }
 
@@ -37,6 +39,7 @@ export function useAuth() {
     state.token = ''
     state.user = null
     useAccess().invalidate()
+    invalidateHubCache()
   }
 
   async function ensureValidSession() {

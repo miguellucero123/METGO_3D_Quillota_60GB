@@ -198,3 +198,33 @@ def test_access_tab_denied_returns_403():
     assert body_acc.get("tab_allowed") is False
     assert body_acc["tabs"]["panel"] is True
     assert body_acc["tabs"]["umbrales"] is False
+
+
+def test_hub_faenas_solo_membresia():
+    hub = identity_store.resolver_hub_faenas(
+        email="ops@example.com",
+        role="operador",
+        sitio="spati",
+        faena_jwt="quebrada_blanca",
+        plan_code="starter",
+    )
+    assert hub["catalogo_completo"] is False
+    assert hub["faenas"] == [{"slug": "quebrada_blanca"}]
+
+    admin = identity_store.resolver_hub_faenas(
+        email="admin",
+        role="admin",
+        sitio="spati",
+        faena_jwt=None,
+        plan_code="pro",
+    )
+    assert admin["catalogo_completo"] is True
+
+    ent = identity_store.resolver_hub_faenas(
+        email="big@example.com",
+        role="operador",
+        sitio="spati",
+        faena_jwt="escondida",
+        plan_code="enterprise",
+    )
+    assert ent["multi_faena"] is True

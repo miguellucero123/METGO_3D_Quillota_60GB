@@ -11,6 +11,7 @@ const auth = useAuth()
 const accessStore = useAccess()
 const faena = computed(() => String(route.params.faena || '').toLowerCase())
 const blockedTab = computed(() => String(route.query.blocked || '').toLowerCase())
+const blockedFaena = computed(() => String(route.query.blocked_faena || '').toLowerCase())
 
 const loading = ref(true)
 const error = ref('')
@@ -78,6 +79,10 @@ const tabs = computed(() => data.value?.access?.tabs || {})
     <p v-if="blockedTab" class="warn" role="status">
       La pestaña <strong>{{ TAB_LABEL[blockedTab] || blockedTab }}</strong> no está
       incluida en tu plan actual. Elige un plan superior para habilitarla.
+    </p>
+    <p v-if="blockedFaena" class="warn" role="status">
+      No tiene membresía en la faena <strong>{{ blockedFaena }}</strong>.
+      Solo puede operar en las mineras de su contrato (plan Enterprise multi-faena o admin ven el catálogo completo).
     </p>
 
     <p v-if="loading">Cargando…</p>

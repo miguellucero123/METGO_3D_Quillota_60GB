@@ -20,7 +20,7 @@ onMounted(async () => {
     ok.value = true
     msg.value = res.message || 'Email verificado'
     setTimeout(() => {
-      router.replace({ name: 'faena-login', params: { faena } })
+      router.replace(`/f/${faena}/login`)
     }, 1500)
   } catch (e) {
     msg.value = e.message || 'No se pudo verificar'
