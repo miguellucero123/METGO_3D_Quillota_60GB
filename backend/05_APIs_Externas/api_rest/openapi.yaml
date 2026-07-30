@@ -794,6 +794,14 @@ paths:
               type: object
               properties:
                 umbrales: { type: object }
+                alertas:
+                  type: object
+                  properties:
+                    emails:
+                      type: array
+                      items: { type: string }
+                    webhook_url: { type: string, nullable: true }
+                    nivel_minimo: { type: integer, minimum: 0, maximum: 3 }
                 rojo_min_kmh: { type: number }
                 verde_max_kmh: { type: number }
       responses:

@@ -111,7 +111,47 @@ export async function fetchObservadoStatus(faenaId, { dias = 14 } = {}) {
 
 export async function fetchSpatiUmbrales(sitioId) {
   const id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
-  return fetchJson(`/public/spati/${id}/umbrales`)
+  const { getToken } = await import('@/services/authApi')
+  const token = getToken()
+  const base = resolveBaseURL()
+  const res = await fetch(`${base}/public/spati/${id}/umbrales`, {
+    headers: {
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+
+/** M9: guardar umbrales y/o alertas_destino (Bearer o sin CRON en local). */
+export async function putSpatiUmbrales(sitioId, body) {
+  const id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
+  const { getToken } = await import('@/services/authApi')
+  const token = getToken()
+  const base = resolveBaseURL()
+  const res = await fetch(`${base}/public/spati/${id}/umbrales`, {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body || {}),
+  })
+  if (!res.ok) {
+    let detalle = ''
+    try {
+      const j = await res.json()
+      if (j?.error) detalle = `: ${j.error}`
+    } catch {
+      /* ignore */
+    }
+    const err = new Error(`HTTP ${res.status}${detalle}`)
+    err.status = res.status
+    throw err
+  }
+  return res.json()
 }
 
 export function urlInformeFaena(faenaId, formato = 'pdf') {

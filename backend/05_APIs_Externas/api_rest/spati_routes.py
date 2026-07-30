@@ -119,58 +119,83 @@ def register_spati_routes(app: Flask) -> None:
     def public_spati_umbrales(sitio_id: str):
         """M9: umbrales efectivos de izaje (default + override por faena/cliente)."""
         from api_rest.spati import get_sitio
-        from api_rest.spati.umbrales_service import alertas_destino, umbrales_efectivos
+        from api_rest.spati.umbrales_service import alertas_destino_publico, umbrales_efectivos
 
         s = get_sitio(sitio_id)
         if not s:
             return jsonify({"error": "Sitio no encontrado", "sitio_id": sitio_id}), 404
         sid = s.get("sitio_id") or sitio_id
+        # Detalle (emails/webhook) si Bearer o ?detalle=1 (UI edición autenticada)
+        auth = request.headers.get("Authorization") or ""
+        detallado = auth.startswith("Bearer ") or (
+            (request.args.get("detalle") or "").strip().lower() in ("1", "true", "yes")
+        )
         return jsonify(
             {
                 "sitio_id": sid,
                 "nombre": s.get("nombre"),
                 "umbrales": umbrales_efectivos(sid),
-                "alertas": {
-                    "nivel_minimo": alertas_destino(sid).get("nivel_minimo"),
-                    "tiene_email": bool(alertas_destino(sid).get("emails")),
-                    "tiene_webhook": bool(alertas_destino(sid).get("webhook_url")),
-                },
+                "alertas": alertas_destino_publico(sid, detallado=detallado),
             }
         )
 
     @app.put("/api/public/spati/<sitio_id>/umbrales")
     def put_spati_umbrales(sitio_id: str):
-        """M9: guardar override de umbrales (local + Supabase si hay). Protegido por token admin o CRON."""
+        """M9: guardar override umbrales y/o alertas_destino. Token CRON o Bearer."""
         import os
 
         from api_rest.spati import get_sitio
-        from api_rest.spati.umbrales_service import guardar_umbrales_local
+        from api_rest.spati.umbrales_service import (
+            alertas_destino_publico,
+            guardar_alertas_destino,
+            guardar_umbrales_local,
+            umbrales_efectivos,
+        )
 
         secret = request.args.get("token") or request.headers.get("X-Cron-Token")
         cron = (os.getenv("CRON_SECRET") or "").strip()
-        # Permitir sin secret solo en local (sin CRON_SECRET)
-        if cron and secret != cron:
-            auth = request.headers.get("Authorization") or ""
-            if not auth.startswith("Bearer "):
-                return jsonify({"error": "No autorizado"}), 401
+        auth = request.headers.get("Authorization") or ""
+        if cron and secret != cron and not auth.startswith("Bearer "):
+            return jsonify({"error": "No autorizado"}), 401
         s = get_sitio(sitio_id)
         if not s:
             return jsonify({"error": "Sitio no encontrado", "sitio_id": sitio_id}), 404
         body = request.get_json(silent=True) or {}
         sid = s.get("sitio_id") or sitio_id
-        umb = body.get("umbrales") or body
         try:
+            umb_out = None
+            alertas_out = None
+            if "alertas" in body and isinstance(body.get("alertas"), dict):
+                alertas_out = guardar_alertas_destino(sid, body["alertas"])
+            umb_in = body.get("umbrales")
+            if umb_in is None and "alertas" not in body:
+                umb_in = body
+            if isinstance(umb_in, dict) and any(
+                k in umb_in
+                for k in (
+                    "rojo_min_kmh",
+                    "verde_max_kmh",
+                    "amarillo",
+                    "naranja",
+                    "flag_critico_kmh",
+                )
+            ):
+                umb_out = guardar_umbrales_local(sid, umb_in)
             return jsonify(
                 {
                     "sitio_id": sid,
-                    "umbrales": guardar_umbrales_local(sid, umb),
+                    "umbrales": umb_out or umbrales_efectivos(sid),
+                    "alertas": alertas_destino_publico(
+                        sid, detallado=True
+                    )
+                    if alertas_out is not None
+                    else alertas_destino_publico(sid, detallado=auth.startswith("Bearer ")),
                     "ok": True,
                 }
             )
         except Exception as exc:
             app.logger.warning("put umbrales %s: %s", sid, exc)
             return jsonify(_ERROR_503), 503
-
     @app.post("/api/cron/spati/alertas")
     def cron_spati_alertas():
         """M9: evalúa niveles SPATI y notifica transiciones (CRON_SECRET)."""

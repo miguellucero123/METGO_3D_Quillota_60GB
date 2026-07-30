@@ -80,6 +80,63 @@ def test_m9_evaluar_transicion_notifica(tmp_path, monkeypatch):
         assert r2["motivo"] == "sin_cambio"
 
 
+def test_guardar_alertas_destino_roundtrip(tmp_path, monkeypatch):
+    _setup()
+    from api_rest.spati import umbrales_service
+
+    monkeypatch.setattr(umbrales_service, "_runtime_overrides_path", lambda: tmp_path / "u.json")
+    monkeypatch.delenv("METGO_SPATI_ALERT_EMAIL", raising=False)
+    monkeypatch.delenv("METGO_NOTIFY_EMAIL", raising=False)
+    monkeypatch.delenv("METGO_SPATI_ALERT_WEBHOOK", raising=False)
+
+    saved = umbrales_service.guardar_alertas_destino(
+        "escondida",
+        {
+            "emails": "ops@escondida.cl, hse@escondida.cl",
+            "webhook_url": "https://hooks.example/spati",
+            "nivel_minimo": 2,
+        },
+    )
+    assert saved["emails"] == ["ops@escondida.cl", "hse@escondida.cl"]
+    assert saved["webhook_url"] == "https://hooks.example/spati"
+    assert saved["nivel_minimo"] == 2
+    again = umbrales_service.alertas_destino("escondida")
+    assert again["emails"] == saved["emails"]
+    pub = umbrales_service.alertas_destino_publico("escondida", detallado=False)
+    assert pub["tiene_email"] is True
+    assert "emails" not in pub
+    det = umbrales_service.alertas_destino_publico("escondida", detallado=True)
+    assert det["emails"] == saved["emails"]
+
+
+def test_m9_api_put_alertas(tmp_path, monkeypatch):
+    _setup()
+    from api_rest.app import create_app
+    from api_rest.spati import umbrales_service
+
+    monkeypatch.setattr(umbrales_service, "_runtime_overrides_path", lambda: tmp_path / "u.json")
+    monkeypatch.delenv("CRON_SECRET", raising=False)
+    monkeypatch.delenv("METGO_SPATI_ALERT_EMAIL", raising=False)
+
+    c = create_app().test_client()
+    r = c.put(
+        "/api/public/spati/escondida/umbrales",
+        json={
+            "alertas": {
+                "emails": ["turno@escondida.cl"],
+                "nivel_minimo": 3,
+                "webhook_url": None,
+            }
+        },
+    )
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["ok"] is True
+    assert body["alertas"]["emails"] == ["turno@escondida.cl"]
+    assert body["alertas"]["nivel_minimo"] == 3
+    assert umbrales_service.alertas_destino("escondida")["emails"] == ["turno@escondida.cl"]
+
+
 def test_m9_api_umbrales_y_cron():
     _setup()
     from api_rest.app import create_app

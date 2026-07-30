@@ -202,6 +202,62 @@ def guardar_umbrales_local(sitio_id: str, override: dict[str, Any]) -> dict[str,
     return umbrales_efectivos(sid)
 
 
+def guardar_alertas_destino(sitio_id: str, dest: dict[str, Any]) -> dict[str, Any]:
+    """Persiste destinos de alerta por faena (archivo + Supabase)."""
+    sid = (sitio_id or "").strip().lower()
+    emails_raw = dest.get("emails") or []
+    if isinstance(emails_raw, str):
+        emails = [e.strip() for e in emails_raw.replace(";", ",").split(",") if e.strip()]
+    else:
+        emails = [str(e).strip() for e in emails_raw if str(e).strip()]
+    webhook = dest.get("webhook_url")
+    if webhook is not None:
+        webhook = str(webhook).strip() or None
+    try:
+        nivel = int(dest.get("nivel_minimo", ALERTAS_DESTINO_DEFAULT["nivel_minimo"]))
+    except (TypeError, ValueError):
+        nivel = int(ALERTAS_DESTINO_DEFAULT["nivel_minimo"])
+    nivel = max(0, min(nivel, 3))
+    payload = {"emails": emails, "webhook_url": webhook, "nivel_minimo": nivel}
+
+    path = _runtime_overrides_path()
+    data: dict[str, Any] = {"umbrales": {}, "alertas": {}}
+    if path.is_file():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+    data.setdefault("alertas", {})[sid] = payload
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    try:
+        from api_rest.integracion.supabase_store import get_supabase_client
+
+        client = get_supabase_client()
+        if client:
+            client.table("spati_sitios_grua").update({"alertas_destino": payload}).eq(
+                "slug", sid
+            ).execute()
+    except Exception as exc:
+        print(f"umbrales_service alertas supabase: {exc}")
+    return alertas_destino(sid)
+
+
+def alertas_destino_publico(sitio_id: str, *, detallado: bool = False) -> dict[str, Any]:
+    """Metadatos públicos; con detallado=True incluye emails/webhook (edición)."""
+    dest = alertas_destino(sitio_id)
+    out = {
+        "nivel_minimo": dest.get("nivel_minimo"),
+        "tiene_email": bool(dest.get("emails")),
+        "tiene_webhook": bool(dest.get("webhook_url")),
+        "n_emails": len(dest.get("emails") or []),
+    }
+    if detallado:
+        out["emails"] = list(dest.get("emails") or [])
+        out["webhook_url"] = dest.get("webhook_url")
+    return out
+
+
 def alertas_destino(sitio_id: str) -> dict[str, Any]:
     out = deepcopy(ALERTAS_DESTINO_DEFAULT)
     # Env global
@@ -218,9 +274,9 @@ def alertas_destino(sitio_id: str) -> dict[str, Any]:
             data = json.loads(path.read_text(encoding="utf-8"))
             row = (data.get("alertas") or {}).get(sitio_id) or {}
             if isinstance(row, dict):
-                if row.get("emails"):
+                if row.get("emails") is not None:
                     out["emails"] = list(row["emails"])
-                if row.get("webhook_url"):
+                if "webhook_url" in row:
                     out["webhook_url"] = row["webhook_url"]
                 if row.get("nivel_minimo") is not None:
                     out["nivel_minimo"] = int(row["nivel_minimo"])
@@ -242,9 +298,9 @@ def alertas_destino(sitio_id: str) -> dict[str, Any]:
             rows = res.data or []
             if rows and isinstance(rows[0].get("alertas_destino"), dict):
                 dest = rows[0]["alertas_destino"]
-                if dest.get("emails"):
+                if dest.get("emails") is not None:
                     out["emails"] = list(dest["emails"])
-                if dest.get("webhook_url"):
+                if "webhook_url" in dest:
                     out["webhook_url"] = dest["webhook_url"]
                 if dest.get("nivel_minimo") is not None:
                     out["nivel_minimo"] = int(dest["nivel_minimo"])
