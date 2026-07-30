@@ -61,9 +61,15 @@ Invoke-RestMethod "https://metgo-api.onrender.com/api/public/planes?sitio=spati&
 
 # Reglas faena
 Invoke-RestMethod "https://metgo-api.onrender.com/api/public/faenas/escondida/reglas"
+
+# S5 readiness (booleans, sin secretos)
+(Invoke-RestMethod "https://metgo-api.onrender.com/api/health").s5_ops
+
+# M10 board (JWT admin / multi_faena)
+# Invoke-RestMethod https://metgo-api.onrender.com/api/auth/ops-board -Headers @{Authorization="Bearer …"}
 ```
 
-UI SPATI: https://metgo-spati.pages.dev/f/escondida/registro — sin demos en pantalla.
+UI SPATI: https://metgo-spati.pages.dev/ops (board) · `/f/escondida/registro` — sin demos en pantalla.
 
 ## WordPress / Supabase
 

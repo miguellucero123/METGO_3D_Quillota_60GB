@@ -53,8 +53,9 @@ SPATI → `/umbrales` lee umbrales del API por sitio.
 - [x] Umbrales parametrizables por sitio
 - [x] Cron alertas + outbox/email/webhook
 - [x] Tests M9
-- [ ] Cron programado en Render / GitHub Actions
+- [x] Cron programado (GitHub Actions `spati-alertas-cron.yml` cada 20 min)
 - [ ] Destinos por faena en Supabase (`alertas_destino`)
+- [ ] Secret `CRON_SECRET` verificado en GitHub Actions (mismo que Render)
 
 ## Fase
 

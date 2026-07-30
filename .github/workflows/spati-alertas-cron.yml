@@ -1,0 +1,75 @@
+# M9 — alertas izaje SPATI (webhook/email/outbox) cada 20 min
+# Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
+name: SPATI alertas izaje (M9)
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+    inputs:
+      sitio:
+        description: "Faena/sitio (vacío = todas con forzar=0)"
+        required: false
+        default: ""
+      forzar:
+        description: "forzar=1 recorre todos los sitios"
+        required: false
+        default: "0"
+        type: choice
+        options:
+          - "0"
+          - "1"
+
+jobs:
+  alertas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Verificar CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Falta secret CRON_SECRET (igual que en Render)."
+            exit 1
+          fi
+
+      - name: Despertar API
+        run: |
+          for i in $(seq 1 8); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 40 \
+              "https://metgo-api.onrender.com/api/health" || true)
+            echo "health $i -> $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 12
+          done
+          echo "API no respondió" && exit 1
+
+      - name: POST cron spati/alertas
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          SITIO="${{ github.event.inputs.sitio }}"
+          FORZAR="${{ github.event.inputs.forzar || '0' }}"
+          QS="token=${CRON_SECRET}"
+          if [ -n "$SITIO" ]; then
+            QS="${QS}&sitio=${SITIO}"
+          elif [ "$FORZAR" = "1" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            # En schedule: barrido completo (forzar=1) para no depender de un solo sitio
+            QS="${QS}&forzar=1"
+          fi
+          for i in $(seq 1 4); do
+            code=$(curl -s -o /tmp/spati_alertas.json -w "%{http_code}" --max-time 180 -X POST \
+              "https://metgo-api.onrender.com/api/cron/spati/alertas?${QS}" || true)
+            echo "intento $i -> HTTP $code"
+            cat /tmp/spati_alertas.json || true
+            if [ "$code" = "200" ]; then
+              exit 0
+            fi
+            if [ "$code" = "502" ] || [ "$code" = "503" ] || [ "$code" = "000" ]; then
+              sleep 15
+              continue
+            fi
+            exit 1
+          done
+          exit 1

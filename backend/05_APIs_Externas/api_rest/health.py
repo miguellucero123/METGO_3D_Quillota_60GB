@@ -82,4 +82,29 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
         pass
     if os.getenv("METGO_SENTRY_DSN"):
         base["observabilidad"]["sentry"] = True
+
+    # S5 readiness (sin secretos): qué falta configurar en Render
+    smtp_host = (os.getenv("METGO_SMTP_HOST") or "").strip()
+    stripe_key = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
+    pii_kek = (os.getenv("METGO_PII_KEK") or "").strip()
+    base["s5_ops"] = {
+        "fase": "S5",
+        "smtp_configurado": bool(smtp_host),
+        "stripe_configurado": bool(stripe_key),
+        "pii_kek_configurado": bool(pii_kek),
+        "email_dev": (os.getenv("METGO_EMAIL_DEV") or "").strip() not in ("0", "false", "no"),
+        "identity_store": (os.getenv("METGO_IDENTITY_STORE") or "supabase").strip().lower(),
+        "m10_ops_board": True,
+        "pendiente": [
+            k
+            for k, ok in (
+                ("METGO_SMTP_HOST", bool(smtp_host)),
+                ("STRIPE_SECRET_KEY", bool(stripe_key)),
+                ("METGO_PII_KEK", bool(pii_kek)),
+            )
+            if not ok
+        ],
+    }
+    if "ops_board" not in base["features"]:
+        base["features"] = list(base["features"]) + ["ops_board", "spati_m10"]
     return base
