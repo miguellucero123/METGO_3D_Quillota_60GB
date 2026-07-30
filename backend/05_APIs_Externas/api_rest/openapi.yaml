@@ -260,6 +260,23 @@ paths:
           description: "{ catalogo_completo, multi_faena, faenas: [{slug}] }"
         "401":
           description: Sin token
+  /api/auth/ops-board:
+    get:
+      tags: [auth]
+      summary: M10 board operativo multi-faena (nivel ops + observado)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: refresh
+          in: query
+          schema: { type: string, enum: ["0", "1"] }
+          description: Si 1, regenera paquete live (máx. N faenas)
+      responses:
+        "200":
+          description: "{ fase, filas[], hub, generado_en }"
+        "401":
+          description: Sin token
+        "403":
+          description: Requiere admin / multi_faena / ≥2 faenas
   /api/auth/me:
     get:
       tags: [auth]

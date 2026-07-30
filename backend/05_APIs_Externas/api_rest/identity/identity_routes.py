@@ -140,6 +140,59 @@ def register_identity_routes(app: Flask) -> None:
         )
         return jsonify(hub)
 
+    @app.get("/api/auth/ops-board")
+    @auth_required
+    def auth_ops_board():
+        """M10: resumen operativo multi-faena (solo hub del usuario / admin)."""
+        from api_rest import ops_board_service
+        from api_rest.faena_catalogo import listar_faenas
+
+        plan_code = getattr(g, "plan_code", None) or "trial"
+        org_id = getattr(g, "org_id", None)
+        if org_id:
+            sub = identity_store.suscripcion_de_org(org_id)
+            if sub:
+                plan_code = sub.get("plan_code") or plan_code
+        hub = identity_store.resolver_hub_faenas(
+            email=g.current_user,
+            role=getattr(g, "user_role", None),
+            sitio=getattr(g, "sitio_id", None) or "spati",
+            faena_jwt=getattr(g, "faena_id", None),
+            plan_code=plan_code,
+        )
+        catalogo = bool(hub.get("catalogo_completo"))
+        multi = bool(hub.get("multi_faena"))
+        faenas_hub = hub.get("faenas") or []
+        if not catalogo and not multi and len(faenas_hub) < 2:
+            return (
+                jsonify(
+                    {
+                        "error": "ops_board_requiere_multi_faena",
+                        "detalle": "Disponible para admin, plan multi_faena o ≥2 faenas.",
+                        "hub": hub,
+                    }
+                ),
+                403,
+            )
+        if catalogo:
+            ids = [f["id"] for f in listar_faenas(incluir_izaje=True)]
+        else:
+            ids = [str(f.get("slug") or f).lower() for f in faenas_hub]
+        refresh = (request.args.get("refresh") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        board = ops_board_service.construir_ops_board(
+            ids, refresh=refresh, incluir_observado=True
+        )
+        board["hub"] = {
+            "catalogo_completo": catalogo,
+            "multi_faena": multi,
+            "n_hub": len(ids),
+        }
+        return jsonify(board)
+
     @app.get("/api/public/planes")
     def public_planes():
         sitio = (request.args.get("sitio") or "spati").strip().lower()

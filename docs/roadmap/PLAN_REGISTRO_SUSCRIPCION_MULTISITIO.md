@@ -1,7 +1,7 @@
 # Plan: Registro, identidad confidencial y suscripción multi-producto
 
-**Fase:** DT-auth-sub / producto 2.x · **S4 entitlements UI**  
-**Estado:** S1–S4 en código; S3 ops manual pendiente; S5/M10 siguiente  
+**Fase:** DT-auth-sub / producto 2.x · **S5 + M10**  
+**Estado:** S1–S4.1 + M10 MVP en código; S5 ops manual pendiente  
 **Relacionado:** [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md) · [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) · E9 `sitios_auth.py`
 
 ---
@@ -128,6 +128,8 @@ Pago: Stripe Checkout (mock si no hay `STRIPE_SECRET_KEY`). Webhooks en S2.
 | POST | `/api/auth/register-v2` | Alta org+user+consentimientos (cifrado) |
 | GET | `/api/auth/verify-email` | Token email |
 | GET | `/api/auth/access` | **¿Puede abrir pestañas?** JWT + plan + faena_reglas |
+| GET | `/api/auth/mis-faenas` | Hub: faenas de la membresía |
+| GET | `/api/auth/ops-board` | **M10** board ops multi-faena |
 | GET | `/api/auth/me` | Ampliar: org_id, faena, sub_status, plan_code |
 | GET | `/api/public/planes` | Catálogo precios escalonados |
 | GET | `/api/public/faenas/{faena}/reglas` | Reglas/sistemas de esa mina |
@@ -209,11 +211,12 @@ Hub opcional `/` lista faenas (público) sin datos operativos.
 - [x] Router bloquea salto URL a faena ajena (salvo admin / plan `multi_faena`)
 - [x] Tras login con 1 faena → entra directo a `/f/{faena}/`
 
-### S5 — Ops prod + M10 (siguiente)
+### S5 — Ops prod + M10
 
-- Credenciales SMTP/Stripe en Render; cutover demos
-- **M10:** dashboard ops unificado multi-faena (Vue admin)
+- [ ] Credenciales SMTP/Stripe en Render; cutover demos
+- [ ] KMS / rotación formal `METGO_PII_KEK`
+- [x] **M10:** dashboard ops unificado multi-faena (`GET /api/auth/ops-board`, SPA `/ops`)
 
 ## 10. Fase roadmap
 
-**DT-auth-sub / S4** · minería: M10 pendiente.
+**DT-auth-sub / S5** · minería: **M10 MVP** ✅ · ops prod pendiente.

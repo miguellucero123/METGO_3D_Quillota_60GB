@@ -19,7 +19,7 @@
 <script setup>
 import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid } from 'lucide-vue-next'
+import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid, Gauge } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
 import { fetchMe, getToken } from '@/services/authApi'
 
@@ -57,6 +57,7 @@ const items = computed(() => {
     { to: `/f/${f}/cuenta`, label: 'Cuenta', icon: CreditCard },
   ]
   if (showHubLink.value) {
+    all.push({ to: '/ops', label: 'Ops multi-faena', icon: Gauge })
     all.push({ to: '/', label: 'Mis faenas', icon: LayoutGrid })
   }
   return all.filter((item) => !item.tab || access.canTab(f, item.tab))

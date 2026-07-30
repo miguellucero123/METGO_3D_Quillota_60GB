@@ -159,13 +159,21 @@ function irA(slug) {
         <section v-else-if="visible.length || isAdminCatalog" class="hub-panel hub-panel--list">
           <div class="list-head">
             <h2>{{ isAdminCatalog ? 'Administración · faenas' : 'Sus faenas' }}</h2>
-            <input
-              v-model="query"
-              type="search"
-              class="search"
-              placeholder="Buscar por nombre o región…"
-              aria-label="Buscar faena"
-            />
+            <div class="list-head-actions">
+              <router-link
+                v-if="isAdminCatalog || (hub?.faenas || []).length > 1 || hub?.multi_faena"
+                class="ops-link"
+                to="/ops"
+                >Board ops M10</router-link
+              >
+              <input
+                v-model="query"
+                type="search"
+                class="search"
+                placeholder="Buscar por nombre o región…"
+                aria-label="Buscar faena"
+              />
+            </div>
           </div>
 
           <div v-if="!visible.length" class="state">Sin resultados para “{{ query }}”.</div>
@@ -400,8 +408,29 @@ function irA(slug) {
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
+.list-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+.ops-link {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+}
+.ops-link:hover {
+  background: var(--color-primary-subtle, #1e293b44);
+}
 .search {
   width: 100%;
+  flex: 1;
+  min-width: 12rem;
 }
 
 .region {

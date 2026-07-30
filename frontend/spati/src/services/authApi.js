@@ -146,6 +146,12 @@ export async function fetchMisFaenas() {
   return request('/auth/mis-faenas', { auth: true })
 }
 
+/** M10 — board ops multi-faena (admin / multi_faena / ≥2 faenas). */
+export async function fetchOpsBoard({ refresh = false } = {}) {
+  const q = refresh ? '?refresh=1' : ''
+  return request(`/auth/ops-board${q}`, { auth: true })
+}
+
 export async function checkoutPlan(body) {
   return request('/billing/checkout', { method: 'POST', body, auth: true })
 }

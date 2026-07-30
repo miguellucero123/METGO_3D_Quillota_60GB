@@ -228,3 +228,36 @@ def test_hub_faenas_solo_membresia():
         plan_code="enterprise",
     )
     assert ent["multi_faena"] is True
+
+
+def test_ops_board_m10_forbidden_single_faena():
+    """Trial con 1 faena no abre el board; service unitario sí arma filas."""
+    from api_rest.app import create_app
+    from api_rest.ops_board_service import construir_ops_board
+
+    board = construir_ops_board(["escondida", "paipote"], refresh=False, incluir_observado=False)
+    assert board["fase"] == "M10"
+    assert board["n_faenas"] >= 1
+    assert board["filas"][0]["faena_id"] in ("escondida", "paipote")
+
+    app = create_app()
+    client = app.test_client()
+    body = _payload(email="board.single@example.com")
+    reg = client.post("/api/auth/register-v2", json=body)
+    assert reg.status_code == 201
+    tok = reg.get_json()["verify_token"]
+    assert client.get(f"/api/auth/verify-email?token={tok}").status_code == 200
+    login = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert login.status_code == 200
+    headers = {"Authorization": f"Bearer {login.get_json()['access_token']}"}
+    r = client.get("/api/auth/ops-board", headers=headers)
+    assert r.status_code == 403
+    assert r.get_json().get("error") == "ops_board_requiere_multi_faena"

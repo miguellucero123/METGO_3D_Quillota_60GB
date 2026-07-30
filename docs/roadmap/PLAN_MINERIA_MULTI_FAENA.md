@@ -16,7 +16,21 @@ Cada minera = una configuración: izaje + aire + meteo + nieve + **CSV/PDF** + e
 | **M7** | Demo observado + status + deploy | ✅ prod |
 | **M8** | Observado SINCA/CSV + `estaciones` SPATI (FK) | ✅ código |
 | **M9** | Umbrales izaje por faena + alertas push | ✅ código |
-| **M10** | Dashboard unificado ops multi-faena (Vue) | pendiente |
+| **M10** | Dashboard unificado ops multi-faena (Vue) | ✅ código (MVP) |
+
+## M10 (resumen)
+
+Board operativo para admin / `multi_faena` / ≥2 faenas:
+
+```http
+GET /api/auth/ops-board
+GET /api/auth/ops-board?refresh=1
+```
+
+SPA: `/ops` · enlace desde hub y sidebar.
+
+- Filas: nivel global, izaje/caminos/botaderos, ráfaga, MVO lite.
+- Preferencia **lastgood**; `refresh=1` regenera live (tope `METGO_OPS_BOARD_LIVE`).
 
 ## M9 (resumen)
 

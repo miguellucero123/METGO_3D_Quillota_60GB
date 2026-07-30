@@ -63,6 +63,12 @@ const routes = [
     meta: { title: 'Faenas', public: true },
   },
   {
+    path: '/ops',
+    name: 'ops-board',
+    component: () => import('@/views/OpsBoardView.vue'),
+    meta: { title: 'Ops multi-faena', requiresAuth: true },
+  },
+  {
     path: '/f/:faena',
     component: () => import('@/views/FaenaShellView.vue'),
     children: faenaChildren,
