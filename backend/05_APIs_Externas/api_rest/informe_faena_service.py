@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Informe ambiental genérico por faena (M1–M2). HTML imprimible + PDF texto."""
+"""Informe ambiental genérico por faena (M1–M3).
+
+HTML ejecutivo imprimible + PDF (xhtml2pdf). Fallback texto si falta el motor.
+"""
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
-from html import escape
+from io import BytesIO
 from typing import Any
 from zoneinfo import ZoneInfo
 
 TZ_CHILE = ZoneInfo("America/Santiago")
-
-
-def _esc(v: Any) -> str:
-    if v is None:
-        return "—"
-    return escape(str(v))
+logger = logging.getLogger(__name__)
 
 
 def _nums(serie: list[dict[str, Any]], key: str) -> list[float]:
@@ -103,295 +102,95 @@ def _tramos_3h(meteo: list[dict[str, Any]], aire: list[dict[str, Any]], n: int =
     return out
 
 
-def construir_informe_html(faena_id: str) -> str | None:
+def _cargar_paquete_y_mvo(faena_id: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     from api_rest.paquete_ambiental_service import construir_paquete_ambiental
 
     pkg = construir_paquete_ambiental(faena_id, horas=72)
     if not pkg or pkg.get("error"):
-        return None
-    a = pkg.get("actual") or {}
-    nieve = pkg.get("nieve") or {}
-    flags = pkg.get("flags") or {}
-    ops = pkg.get("operaciones") or {}
-    res = resumen_horizonte(pkg)
-    tramos = _tramos_3h(pkg.get("serie_meteo") or [], pkg.get("serie_aire") or [])
-    gen = pkg.get("generado_en") or datetime.now(TZ_CHILE).isoformat(timespec="seconds")
-    caps = ", ".join(pkg.get("capacidades") or []) or "—"
-
-    filas = [
-        ("Temperatura", f"{_esc(a.get('temperatura_c'))} °C"),
-        ("Humedad relativa", f"{_esc(a.get('humedad_relativa_pct'))} %"),
-        ("Precipitación", f"{_esc(a.get('precipitacion_mm'))} mm"),
-        ("Nieve (snowfall)", f"{_esc(a.get('snowfall_mm'))} mm"),
-        ("Acum. nieve 72 h (proxy)", f"{_esc(nieve.get('acumulacion_proxy_cm'))} cm"),
-        ("Acum. nieve 24 h", f"{_esc(nieve.get('acumulacion_24h_cm'))} cm"),
-        ("Presión MSL", f"{_esc(a.get('presion_msl_hpa'))} hPa"),
-        ("Visibilidad", f"{_esc(a.get('visibilidad_m'))} m"),
-        ("Nubosidad", f"{_esc(a.get('nubosidad_pct'))} %"),
-        ("Viento 10 m", f"{_esc(a.get('viento_10m_ms'))} m/s · {_esc(a.get('viento_10m_dir_deg'))}°"),
-        ("Ráfaga 10 m", f"{_esc(a.get('rafaga_10m_ms'))} m/s"),
-        ("Viento 100 m", f"{_esc(a.get('viento_100m_ms'))} m/s · {_esc(a.get('viento_100m_dir_deg'))}°"),
-        ("PM2.5", f"{_esc(a.get('pm2_5'))} µg/m³"),
-        ("PM10", f"{_esc(a.get('pm10'))} µg/m³"),
-        ("SO₂", f"{_esc(a.get('so2'))} µg/m³"),
-        ("NO₂ / NOx proxy", f"{_esc(a.get('no2'))} µg/m³"),
-        ("O₃", f"{_esc(a.get('o3'))} µg/m³"),
-        ("Dust", f"{_esc(a.get('dust'))} µg/m³"),
-        ("ICAP", f"{_esc(a.get('icap'))} · {_esc(a.get('nivel_icap'))}"),
-    ]
-    rows = "".join(f"<tr><th>{escape(k)}</th><td>{v}</td></tr>" for k, v in filas)
-
-    def _rango(st: dict[str, Any], unidad: str) -> str:
-        if st.get("max") is None:
-            return "—"
-        return f"min {_esc(st['min'])} · max {_esc(st['max'])} · media {_esc(st['avg'])} {unidad}"
-
-    resumen_rows = "".join(
-        [
-            f"<tr><th>Temperatura 72 h</th><td>{_rango(res['temperatura_c'], '°C')}</td></tr>",
-            f"<tr><th>Viento 10 m 72 h</th><td>{_rango(res['viento_10m_ms'], 'm/s')}</td></tr>",
-            f"<tr><th>Ráfaga 10 m 72 h</th><td>{_rango(res['rafaga_10m_ms'], 'm/s')}</td></tr>",
-            f"<tr><th>Visibilidad 72 h</th><td>{_rango(res['visibilidad_m'], 'm')}</td></tr>",
-            f"<tr><th>Snowfall suma 72 h</th><td>{_esc(res['snowfall_mm_suma'])} mm</td></tr>",
-            f"<tr><th>PM2.5 72 h</th><td>{_rango(res['pm2_5'], 'µg/m³')}</td></tr>",
-            f"<tr><th>PM10 72 h</th><td>{_rango(res['pm10'], 'µg/m³')}</td></tr>",
-            f"<tr><th>SO₂ 72 h</th><td>{_rango(res['so2'], 'µg/m³')}</td></tr>",
-            f"<tr><th>NO₂ 72 h</th><td>{_rango(res['no2'], 'µg/m³')}</td></tr>",
-        ]
-    )
-
-    tramos_rows = "".join(
-        f"<tr><td>{_esc(t.get('inicio'))}</td>"
-        f"<td>{_esc(t.get('viento_ms'))}</td>"
-        f"<td>{_esc(t.get('rafaga_max_ms'))}</td>"
-        f"<td>{_esc(t.get('snowfall_mm'))}</td>"
-        f"<td>{_esc(t.get('pm2_5'))}</td></tr>"
-        for t in tramos
-    ) or "<tr><td colspan='5'>Sin serie horaria</td></tr>"
-
-    estaciones = pkg.get("estaciones_area") or []
-    est_rows = "".join(
-        f"<tr><td>{_esc(e.get('nombre'))}</td><td>{_esc(e.get('rol'))}</td>"
-        f"<td>{_esc(e.get('lat'))}</td><td>{_esc(e.get('lon'))}</td>"
-        f"<td>{_esc(e.get('fuente'))}</td></tr>"
-        for e in estaciones
-    ) or "<tr><td colspan='5'>Sin puntos de área</td></tr>"
-
-    alt = pkg.get("altitud_m")
-    alt_txt = f"{_esc(alt)} m s.n.m." if alt is not None else "—"
-
-    return f"""<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8"/>
-<title>Informe ambiental — {_esc(pkg.get('nombre'))}</title>
-<style>
-  body {{ font-family: Georgia, "Times New Roman", serif; margin: 1.5rem 2rem; color: #1a1a1a;
-         background: #f7f4ef; }}
-  h1 {{ font-size: 1.55rem; margin: 0 0 0.25rem; }}
-  h2 {{ font-size: 1.1rem; margin: 1.4rem 0 0.5rem; border-bottom: 1px solid #ccc; padding-bottom: 0.25rem; }}
-  .meta {{ color: #555; margin-bottom: 1rem; font-size: 0.95rem; }}
-  table {{ border-collapse: collapse; width: 100%; max-width: 52rem; background: #fff; margin-bottom: 0.5rem; }}
-  th, td {{ border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; font-size: 0.92rem; }}
-  th {{ background: #f0ebe3; }}
-  .badge {{ display: inline-block; padding: 0.15rem 0.5rem; background: #e8e2d6; border-radius: 3px; font-size: 0.85rem; }}
-  @media print {{ body {{ background: #fff; margin: 0.8rem; }} h2 {{ page-break-after: avoid; }} }}
-</style>
-</head>
-<body>
-  <h1>METGO — Informe ambiental de faena</h1>
-  <p class="meta">
-    <strong>{_esc(pkg.get('nombre'))}</strong>
-    <span class="badge">{_esc(pkg.get('faena_id'))}</span>
-    · altitud {alt_txt}
-    · lat {_esc(pkg.get('lat'))}, lon {_esc(pkg.get('lon'))}<br/>
-    Capacidades: {_esc(caps)} · Generado {escape(str(gen))} · tipo_dato modelo
-  </p>
-
-  <h2>1. Condición actual</h2>
-  <table>{rows}</table>
-
-  <h2>2. Flags operativos (M3)</h2>
-  <p class="meta">Nivel global: <strong>{_esc((flags or {}).get('nivel_global'))}</strong>
-     · nieve activa: {_esc((flags or {}).get('flag_nieve_activa'))}
-     · izaje restringido: {_esc((flags or {}).get('flag_izaje_restringido'))}
-     · caminos: {_esc((flags or {}).get('flag_caminos_restringido'))}
-     · botaderos: {_esc((flags or {}).get('flag_botaderos_restringido'))}</p>
-  <table>
-    <thead><tr><th>Actividad</th><th>Nivel</th><th>Razones</th></tr></thead>
-    <tbody>
-      {"".join(
-          f"<tr><td>{_esc(aid)}</td><td><b>{_esc((av or {}).get('nivel'))}</b></td>"
-          f"<td>{_esc(', '.join((av or {}).get('razones') or []) or '—')}</td></tr>"
-          for aid, av in ((ops or {}).get('actividades') or {}).items()
-      ) or "<tr><td colspan='3'>Sin evaluación</td></tr>"}
-    </tbody>
-  </table>
-
-  <h2>3. Resumen horizonte 72 h</h2>
-  <table>{resumen_rows}</table>
-
-  <h2>4. Tramos 3 h (próximas 24 h)</h2>
-  <table>
-    <thead><tr><th>Inicio</th><th>Viento medio (m/s)</th><th>Ráfaga máx</th><th>Snowfall (mm)</th><th>PM2.5</th></tr></thead>
-    <tbody>{tramos_rows}</tbody>
-  </table>
-
-  <h2>5. Estaciones por área (modelo)</h2>
-  <table>
-    <thead><tr><th>Nombre</th><th>Rol</th><th>Lat</th><th>Lon</th><th>Fuente</th></tr></thead>
-    <tbody>{est_rows}</tbody>
-  </table>
-
-  <p class="meta">Fuente: Open-Meteo Forecast + CAMS (M3). Imprimir (Ctrl+P) o ?formato=pdf.
-     Nieve: proxy SWE→cm; umbrales izaje/caminos/botaderos en paquete.</p>
-</body>
-</html>
-"""
-
-
-def _fmt_num(v: Any, *, unit: str = "", nd: int | None = None) -> str:
-    """Valor legible para PDF (None → —)."""
-    if v is None or v == "":
-        return "—" if not unit else f"— {unit}".strip()
-    try:
-        if nd is not None and isinstance(v, (int, float)):
-            v = round(float(v), nd)
-    except (TypeError, ValueError):
-        pass
-    return f"{v} {unit}".strip() if unit else str(v)
-
-
-def _fmt_rango(st: dict[str, Any] | None, unit: str = "") -> str:
-    """min / max / media sin volcar el dict Python."""
-    st = st or {}
-    if st.get("min") is None and st.get("max") is None and st.get("avg") is None:
-        return "sin dato"
-    u = f" {unit}" if unit else ""
-    return (
-        f"min {_fmt_num(st.get('min'))} / max {_fmt_num(st.get('max'))} / "
-        f"media {_fmt_num(st.get('avg'))}{u}"
-    )
-
-
-def _fmt_bool(v: Any) -> str:
-    if v is True:
-        return "si"
-    if v is False:
-        return "no"
-    return "—"
-
-
-def construir_informe_pdf_bytes(faena_id: str) -> bytes | None:
-    """PDF texto enriquecido (M2/M3) — legible, sin dicts ni None crudos."""
-    from api_rest.informe_paipote_service import _texto_a_pdf
-    from api_rest.paquete_ambiental_service import construir_paquete_ambiental
-
-    pkg = construir_paquete_ambiental(faena_id, horas=72)
-    if not pkg or pkg.get("error"):
-        return None
-    a = pkg.get("actual") or {}
-    nieve = pkg.get("nieve") or {}
-    flags = pkg.get("flags") or {}
-    ops = pkg.get("operaciones") or {}
-    res = resumen_horizonte(pkg)
-    fuente = pkg.get("fuente") or {}
-    aviso = pkg.get("aviso")
-    lines = [
-        "METGO - Informe ambiental de faena (M3)",
-        f"{pkg.get('nombre')} ({pkg.get('faena_id')})",
-        f"Lat/Lon: {pkg.get('lat')}, {pkg.get('lon')}  alt: {_fmt_num(pkg.get('altitud_m'), unit='m')}",
-        f"Generado: {pkg.get('generado_en')}",
-    ]
-    if aviso:
-        lines += ["", f"AVISO: {aviso}"]
-    if fuente.get("meteo") == "synthetic_degraded" or pkg.get("degradado"):
-        lines.append("Nota: paquete estimado / degradado (Open-Meteo no disponible).")
-    lines += [
-        "",
-        "=== 1. Condicion actual ===",
-        f"Temperatura: {_fmt_num(a.get('temperatura_c'), unit='C', nd=1)}",
-        f"Humedad relativa: {_fmt_num(a.get('humedad_relativa_pct'), unit='%', nd=1)}",
-        f"Precipitacion: {_fmt_num(a.get('precipitacion_mm'), unit='mm', nd=2)}",
-        f"Snowfall: {_fmt_num(a.get('snowfall_mm'), unit='mm', nd=2)}",
-        f"Visibilidad: {_fmt_num(a.get('visibilidad_m'), unit='m', nd=0)}",
-        f"Presion MSL: {_fmt_num(a.get('presion_msl_hpa'), unit='hPa', nd=1)}",
-        f"Viento 10 m: {_fmt_num(a.get('viento_10m_ms'), unit='m/s', nd=2)}  "
-        f"dir {_fmt_num(a.get('viento_10m_dir_deg'), unit='deg', nd=0)}",
-        f"Rafaga 10 m: {_fmt_num(a.get('rafaga_10m_ms'), unit='m/s', nd=2)}",
-        f"Viento 100 m: {_fmt_num(a.get('viento_100m_ms'), unit='m/s', nd=2)}  "
-        f"dir {_fmt_num(a.get('viento_100m_dir_deg'), unit='deg', nd=0)}",
-        f"PM2.5: {_fmt_num(a.get('pm2_5'), unit='ug/m3', nd=1)}  "
-        f"PM10: {_fmt_num(a.get('pm10'), unit='ug/m3', nd=1)}",
-        f"SO2: {_fmt_num(a.get('so2'), unit='ug/m3', nd=1)}  "
-        f"NO2: {_fmt_num(a.get('no2'), unit='ug/m3', nd=1)}",
-        f"O3: {_fmt_num(a.get('o3'), unit='ug/m3', nd=1)}  "
-        f"Dust: {_fmt_num(a.get('dust'), unit='ug/m3', nd=1)}",
-        f"ICAP: {_fmt_num(a.get('icap'))} ({_fmt_num(a.get('nivel_icap'))})",
-        f"Acum. nieve 72 h: {_fmt_num(nieve.get('acumulacion_proxy_cm'), unit='cm', nd=1)}  "
-        f"24 h: {_fmt_num(nieve.get('acumulacion_24h_cm'), unit='cm', nd=1)}",
-        "",
-        f"=== 2. Flags operativos M3 (global: {_fmt_num(flags.get('nivel_global'))}) ===",
-        f"Nieve activa: {_fmt_bool(flags.get('flag_nieve_activa'))}  "
-        f"Acum. relevante: {_fmt_bool(flags.get('flag_acum_relevante'))}",
-        f"Izaje restringido: {_fmt_bool(flags.get('flag_izaje_restringido'))}  "
-        f"Caminos: {_fmt_bool(flags.get('flag_caminos_restringido'))}  "
-        f"Botaderos: {_fmt_bool(flags.get('flag_botaderos_restringido'))}",
-    ]
-    for aid, av in (ops.get("actividades") or {}).items():
-        razones = (av or {}).get("razones") or []
-        # flecha Unicode → ASCII en capa PDF
-        raz = ", ".join(str(r).replace("→", "->") for r in razones) or "ok"
-        lines.append(f"  {aid}: {_fmt_num((av or {}).get('nivel'))} ({raz})")
-    lines += [
-        "",
-        "=== 3. Resumen horizonte 72 h ===",
-        f"Temperatura: {_fmt_rango(res['temperatura_c'], 'C')}",
-        f"Viento 10 m: {_fmt_rango(res['viento_10m_ms'], 'm/s')}",
-        f"Rafaga: {_fmt_rango(res['rafaga_10m_ms'], 'm/s')}",
-        f"Visibilidad: {_fmt_rango(res['visibilidad_m'], 'm')}",
-        f"Snowfall suma: {_fmt_num(res['snowfall_mm_suma'], unit='mm', nd=2)}",
-        f"PM2.5: {_fmt_rango(res['pm2_5'], 'ug/m3')}",
-        f"PM10: {_fmt_rango(res['pm10'], 'ug/m3')}",
-        f"SO2: {_fmt_rango(res['so2'], 'ug/m3')}",
-        f"NO2: {_fmt_rango(res['no2'], 'ug/m3')}",
-        "",
-        "=== 4. Estaciones de area (modelo) ===",
-    ]
-    estaciones = pkg.get("estaciones_area") or []
-    if not estaciones:
-        lines.append("  (sin puntos de area)")
-    for e in estaciones:
-        lines.append(
-            f"  - {e.get('nombre')} ({e.get('rol')}): {e.get('lat')}, {e.get('lon')}"
-        )
-    lines += ["", "Fuente: Open-Meteo Forecast + CAMS (modelo M3)"]
+        return None, None
+    if not pkg.get("generado_en"):
+        pkg = {**pkg, "generado_en": datetime.now(TZ_CHILE).isoformat(timespec="seconds")}
+    mvo = None
     try:
         from api_rest.modelo_vs_observado_service import reporte_modelo_vs_observado
 
-        mvo = reporte_modelo_vs_observado(faena_id, dias=14) or {}
-        aire = mvo.get("aire") or {}
-        meteo = mvo.get("meteo") or {}
-        iot = mvo.get("iot") or {}
-        lines += [
-            "",
-            f"=== 5. Modelo vs observado (M5 · estado={_fmt_num(mvo.get('estado'))}) ===",
-            f"Estacion: {_fmt_num(mvo.get('estacion_id'))}",
-            f"Aire pares: {_fmt_num(aire.get('n_pares'))}  "
-            f"PM2.5 sesgo: {_fmt_num((aire.get('pm25') or {}).get('sesgo_medio'), nd=1)}  "
-            f"PM10 sesgo: {_fmt_num((aire.get('pm10') or {}).get('sesgo_medio'), nd=1)}",
-            f"Meteo pares: {_fmt_num(meteo.get('n_pares'))}  "
-            f"T sesgo: {_fmt_num((meteo.get('temperatura') or {}).get('sesgo_medio'), nd=1)}",
-            f"IoT lecturas: {_fmt_num(iot.get('n_lecturas'))}",
-        ]
-    except Exception:
-        pass
-    lines += [
+        mvo = reporte_modelo_vs_observado(faena_id, dias=14) or None
+    except Exception as exc:
+        logger.debug("informe mvo omitido: %s", exc)
+    return pkg, mvo
+
+
+def construir_informe_html(faena_id: str) -> str | None:
+    """Vista previa HTML ejecutiva (mismo diseño que el PDF)."""
+    from api_rest.informe_faena_html import render_informe_ejecutivo_html
+
+    pkg, mvo = _cargar_paquete_y_mvo(faena_id)
+    if not pkg:
+        return None
+    return render_informe_ejecutivo_html(
+        pkg,
+        resumen=resumen_horizonte(pkg),
+        tramos=_tramos_3h(pkg.get("serie_meteo") or [], pkg.get("serie_aire") or []),
+        mvo=mvo,
+    )
+
+
+def _html_a_pdf_bytes(html: str) -> bytes | None:
+    """HTML → PDF con xhtml2pdf (pip puro; apto Render)."""
+    try:
+        from xhtml2pdf import pisa
+    except ImportError:
+        logger.warning("xhtml2pdf no instalado; PDF cae a texto plano")
+        return None
+    buf = BytesIO()
+    try:
+        result = pisa.CreatePDF(
+            src=html,
+            dest=buf,
+            encoding="utf-8",
+        )
+    except Exception as exc:
+        logger.warning("xhtml2pdf fallo: %s", exc)
+        return None
+    if result.err:
+        logger.warning("xhtml2pdf err=%s", result.err)
+        return None
+    raw = buf.getvalue()
+    return raw if raw.startswith(b"%PDF") else None
+
+
+def _pdf_fallback_texto(pkg: dict[str, Any], mvo: dict[str, Any] | None) -> bytes:
+    """Fallback mínimo si xhtml2pdf no está disponible."""
+    from api_rest.informe_paipote_service import _texto_a_pdf
+
+    a = pkg.get("actual") or {}
+    flags = pkg.get("flags") or {}
+    lines = [
+        "METGO - Informe ambiental de faena (M3)",
+        f"{pkg.get('nombre')} ({pkg.get('faena_id')})",
+        f"Generado: {pkg.get('generado_en')}",
+        f"Nivel global: {flags.get('nivel_global')}",
+        f"T: {a.get('temperatura_c')} C  Rafaga: {a.get('rafaga_10m_ms')} m/s",
         "",
-        "Documentos: ?formato=pdf | ?formato=csv | HTML (sin query).",
-        "Producto METGO proxy operativo. No sustituye dictamen DMC ni modelacion regulatoria.",
+        "Instale xhtml2pdf para el informe ejecutivo con diseno.",
     ]
+    if mvo:
+        lines.append(f"MVO estado: {mvo.get('estado')}")
     return _texto_a_pdf(lines)
+
+
+def construir_informe_pdf_bytes(faena_id: str) -> bytes | None:
+    """PDF ejecutivo A4 (HTML→xhtml2pdf). Fallback texto si falta motor."""
+    html = construir_informe_html(faena_id)
+    if not html:
+        return None
+    pdf = _html_a_pdf_bytes(html)
+    if pdf:
+        return pdf
+    pkg, mvo = _cargar_paquete_y_mvo(faena_id)
+    if not pkg:
+        return None
+    return _pdf_fallback_texto(pkg, mvo)
 
 
 def _csv_escape(v: Any) -> str:
