@@ -279,6 +279,36 @@ paths:
           description: Sin token
         "403":
           description: Requiere admin / multi_faena / ≥2 faenas
+  /api/auth/preview-hora:
+    post:
+      tags: [auth]
+      summary: Crear usuario temporal 1 h (solo Ahora + Panel)
+      description: |
+        Plan preview. Auth CRON_SECRET, Bearer admin o METGO_ALLOW_PREVIEW=1.
+        Tras TTL el login falla; purge-preview elimina la org.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                faena: { type: string, example: quebrada_blanca }
+                horas: { type: number, example: 1 }
+                label: { type: string, example: demo_cliente }
+      responses:
+        "201":
+          description: "{ email, password, faena, expires_at, login_url, tabs }"
+        "401":
+          description: No autorizado
+  /api/cron/identity/purge-preview:
+    post:
+      tags: [auth]
+      summary: Eliminar orgs preview vencidas
+      responses:
+        "200":
+          description: "{ ok, purged, org_ids }"
+        "401":
+          description: No autorizado
   /api/auth/me:
     get:
       tags: [auth]

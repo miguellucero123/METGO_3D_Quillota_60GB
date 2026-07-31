@@ -139,6 +139,23 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
             {"codigo": "informe_pericial", "nombre": "Informe pericial / caso legal"},
         ],
     },
+    # Acceso temporal interno / demo (no listado comercial)
+    "preview": {
+        "plan_code": "preview",
+        "nombre": "Vista previa 1 h",
+        "nombre_corto": "Preview",
+        "precio_mensual_clp": 0,
+        "seats": 1,
+        "faenas_max": 1,
+        "gruas_max": 1,
+        "features": ["panel", "ahora"],
+        "trial_days": 0,
+        "hidden": True,
+        "ttl_hours": 1,
+        "canales_alerta": [],
+        "descripcion": "Solo Ahora + Panel técnico. Expira en 1 hora y se elimina.",
+        "entregables": ["panel_web"],
+    },
 }
 
 # Multiplicador comercial por faena (escalado; 1.0 = base)
@@ -150,7 +167,7 @@ _FAENA_MULTIPLIER: dict[str, float] = {
     "el_teniente": 1.15,
 }
 
-_PLAN_RANK = {"trial": 0, "starter": 1, "pro": 2, "enterprise": 3}
+_PLAN_RANK = {"preview": 0, "trial": 0, "starter": 1, "pro": 2, "enterprise": 3}
 
 # Mapeo tab SPA → feature / sistema
 TAB_FEATURE = {
@@ -178,6 +195,8 @@ def listar_planes(sitio: str, faena: str | None = None) -> dict[str, Any]:
     mult = _FAENA_MULTIPLIER.get((faena or "").lower(), 1.0) if sitio == "spati" else 1.0
     planes = []
     for code, p in _BASE_PLANS.items():
+        if p.get("hidden"):
+            continue
         item = dict(p)
         base = p.get("precio_mensual_clp")
         if base is not None:

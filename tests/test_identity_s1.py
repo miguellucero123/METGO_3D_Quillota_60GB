@@ -367,6 +367,71 @@ def test_sesion_unica_invalida_token_anterior():
     assert ok.status_code == 200
 
 
+def test_preview_hora_solo_ahora_y_panel_y_purge(monkeypatch):
+    """Usuario preview: tabs limitados, expira y se elimina."""
+    monkeypatch.setenv("METGO_ALLOW_PREVIEW", "1")
+    monkeypatch.setenv("METGO_IDENTITY_STORE", "memory")
+    from api_rest.app import create_app
+    from api_rest.identity import identity_store
+    from datetime import timedelta
+
+    identity_store.reset_memory()
+    app = create_app()
+    client = app.test_client()
+
+    r = client.post(
+        "/api/auth/preview-hora",
+        json={"faena": "escondida", "horas": 1, "label": "demo"},
+    )
+    assert r.status_code == 201, r.get_json()
+    cred = r.get_json()
+    assert cred["plan_code"] == "preview"
+    assert set(cred["tabs"]) == {"ahora", "panel"}
+    email = cred["email"]
+    password = cred["password"]
+
+    login = client.post(
+        "/api/auth/login",
+        json={"username": email, "password": password, "sitio": "spati", "faena": "escondida"},
+    )
+    assert login.status_code == 200
+    token = login.get_json()["access_token"]
+    assert login.get_json()["expires_in"] <= 3600
+    headers = {"Authorization": f"Bearer {token}"}
+
+    access = client.get(
+        "/api/auth/access?sitio=spati&faena=escondida",
+        headers=headers,
+    )
+    assert access.status_code == 200
+    tabs = access.get_json()["tabs"]
+    assert tabs.get("ahora") is True
+    assert tabs.get("panel") is True
+    assert tabs.get("ambiente") is False
+    assert tabs.get("dron") is False
+    assert tabs.get("umbrales") is False
+    assert access.get_json().get("preview") is True
+
+    # Expirar y bloquear login
+    with identity_store._lock:
+        for s in identity_store._MEM["suscripciones"]:
+            if s.get("plan_code") == "preview":
+                s["current_period_end"] = (
+                    identity_store._utcnow() - timedelta(minutes=1)
+                ).isoformat()
+
+    denied = client.post(
+        "/api/auth/login",
+        json={"username": email, "password": password, "sitio": "spati", "faena": "escondida"},
+    )
+    assert denied.status_code == 403
+    assert denied.get_json().get("code") == "subscription_expired"
+
+    purged = client.post("/api/cron/identity/purge-preview")
+    assert purged.status_code == 200
+    assert purged.get_json()["purged"] >= 1
+
+
 def test_reporte_mensual_html_publico():
     from api_rest.app import create_app
 

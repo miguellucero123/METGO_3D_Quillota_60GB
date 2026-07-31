@@ -58,6 +58,7 @@ export function useAccess() {
         tabs: data.tabs || {},
         plan_code: data.plan_code,
         sub_status: data.sub_status,
+        preview: Boolean(data.preview || data.plan_code === 'preview'),
         sistemas: data.sistemas || {},
         at: Date.now(),
       }

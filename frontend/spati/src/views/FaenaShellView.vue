@@ -23,6 +23,10 @@ watch(
 )
 
 const show = (tab) => access.canTab(faena.value, tab)
+const isPreview = computed(() => {
+  const snap = access.snapshot(faena.value)
+  return Boolean(snap?.preview || snap?.plan_code === 'preview')
+})
 </script>
 
 <template>
@@ -39,7 +43,7 @@ const show = (tab) => access.canTab(faena.value, tab)
         :class="{ 'router-link-active': $route.name === 'faena-panel' }"
       >Panel técnico</router-link>
       <router-link
-        v-if="show('panel')"
+        v-if="show('panel') && !isPreview"
         :to="{ name: 'faena-informes', params: { faena } }"
         :class="{ 'router-link-active': $route.name === 'faena-informes' }"
       >Informes</router-link>

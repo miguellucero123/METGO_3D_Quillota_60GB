@@ -103,7 +103,13 @@ const items = computed(() => {
     all.push({ to: '/ops', label: 'Ops multi-faena', icon: Gauge, name: 'ops-board' })
     all.push({ to: '/app', label: 'Mis faenas', icon: LayoutGrid, name: 'faenas-hub' })
   }
-  return all.filter((item) => !item.tab || access.canTab(f, item.tab))
+  return all.filter((item) => {
+    if (item.name === 'faena-informes') {
+      const snap = access.snapshot(f)
+      if (snap?.plan_code === 'preview' || snap?.preview) return false
+    }
+    return !item.tab || access.canTab(f, item.tab)
+  })
 })
 </script>
 

@@ -89,7 +89,9 @@ def register_identity_routes(app: Flask) -> None:
         org_id = getattr(g, "org_id", None)
 
         if org_id:
-            sub = identity_store.suscripcion_de_org(org_id)
+            sub = identity_store.suscripcion_efectiva(
+                identity_store.suscripcion_de_org(org_id)
+            )
             if sub:
                 plan_code = sub.get("plan_code") or plan_code
                 sub_status = sub.get("status") or sub_status
@@ -320,3 +322,51 @@ def register_identity_routes(app: Flask) -> None:
         if not ok:
             return jsonify({"error": msg}), 400
         return jsonify({"received": True, "message": msg, "suscripcion": sub})
+
+    def _auth_preview_admin_or_cron() -> bool:
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        cron = (os.getenv("CRON_SECRET") or "").strip()
+        if cron and secret == cron:
+            return True
+        auth = request.headers.get("Authorization") or ""
+        if auth.startswith("Bearer "):
+            try:
+                import metgo_auth
+
+                payload = metgo_auth.decodificar_token(auth.split(" ", 1)[1])
+                role = (payload or {}).get("role")
+                return role in ("admin", "administrador")
+            except Exception:
+                return False
+        return (os.getenv("METGO_ALLOW_PREVIEW") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+
+    @app.post("/api/auth/preview-hora")
+    def create_preview_hora():
+        """Crea usuario temporal 1 h: solo Ahora + Panel técnico.
+
+        Auth: CRON_SECRET (?token= / X-Cron-Token), Bearer admin, o METGO_ALLOW_PREVIEW=1.
+        """
+        if not _auth_preview_admin_or_cron():
+            return jsonify({"error": "No autorizado"}), 401
+
+        data = request.get_json(silent=True) or {}
+        faena = (data.get("faena") or request.args.get("faena") or "quebrada_blanca").strip()
+        horas = float(data.get("horas") or request.args.get("horas") or 1)
+        label = data.get("label") or request.args.get("label")
+        ok, msg, extra = identity_store.crear_usuario_preview(
+            faena=faena, horas=horas, label=label
+        )
+        if not ok:
+            return jsonify({"error": msg}), 400
+        return jsonify({"message": msg, **(extra or {})}), 201
+
+    @app.post("/api/cron/identity/purge-preview")
+    def cron_purge_preview():
+        if not _auth_preview_admin_or_cron():
+            return jsonify({"error": "No autorizado"}), 401
+        result = identity_store.purge_preview_expirados()
+        return jsonify({"ok": True, **result})

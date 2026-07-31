@@ -429,10 +429,13 @@ def aplicar_plan(
     stripe_subscription_id: str | None = None,
 ) -> tuple[bool, str, dict[str, Any] | None]:
     plan_code = (plan_code or "").strip().lower()
-    if plan_code not in ("trial", "starter", "pro", "enterprise"):
+    if plan_code not in ("trial", "starter", "pro", "enterprise", "preview"):
         return False, "Plan desconocido", None
     feats = features_for_plan(plan_code)
-    period_end = (_utcnow() + timedelta(days=30)).isoformat()
+    if plan_code == "preview":
+        period_end = (_utcnow() + timedelta(hours=1)).isoformat()
+    else:
+        period_end = (_utcnow() + timedelta(days=30)).isoformat()
 
     if use_memory():
         with _lock:
@@ -444,7 +447,10 @@ def aplicar_plan(
             if not sub:
                 return False, "Suscripción no encontrada", None
             sub["plan_code"] = plan_code
-            sub["status"] = status if plan_code != "trial" else "trialing"
+            if plan_code == "preview":
+                sub["status"] = "trialing"
+            else:
+                sub["status"] = status if plan_code != "trial" else "trialing"
             sub["current_period_end"] = period_end
             if stripe_customer_id:
                 sub["stripe_customer_id"] = stripe_customer_id
@@ -689,6 +695,254 @@ def reglas_faena(faena: str) -> list[dict[str, Any]]:
     )
 
 
+def _parse_iso(ts: str | None) -> datetime | None:
+    if not ts:
+        return None
+    try:
+        raw = str(ts).replace("Z", "+00:00")
+        dt = datetime.fromisoformat(raw)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def suscripcion_efectiva(sub: dict[str, Any] | None) -> dict[str, Any]:
+    """Ajusta status a canceled si current_period_end ya pasó."""
+    if not sub:
+        return {"plan_code": "trial", "status": "canceled"}
+    out = dict(sub)
+    end = _parse_iso(out.get("current_period_end"))
+    if end and _utcnow() >= end:
+        out["status"] = "canceled"
+        out["expired"] = True
+    return out
+
+
+def segundos_restantes_suscripcion(sub: dict[str, Any] | None) -> int | None:
+    if not sub:
+        return None
+    end = _parse_iso(sub.get("current_period_end"))
+    if not end:
+        return None
+    return max(0, int((end - _utcnow()).total_seconds()))
+
+
+def crear_usuario_preview(
+    *,
+    faena: str = "quebrada_blanca",
+    horas: float = 1.0,
+    label: str | None = None,
+) -> tuple[bool, str, dict[str, Any] | None]:
+    """Crea usuario temporal: solo Ahora + Panel, TTL horas, luego purge."""
+    import secrets
+    import string
+
+    faena = (faena or "quebrada_blanca").strip().lower()
+    horas = max(0.25, min(float(horas or 1.0), 24.0))
+    stamp = _utcnow().strftime("%Y%m%d%H%M%S")
+    suffix = "".join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(4))
+    email = f"preview.{faena}.{stamp}.{suffix}@ventora.demo"
+    alphabet = string.ascii_letters + string.digits
+    password = "Vp!" + "".join(secrets.choice(alphabet) for _ in range(10))
+    period_end = (_utcnow() + timedelta(hours=horas)).isoformat()
+    feats = features_for_plan("preview")
+    now = _utcnow().isoformat()
+    org_id = str(uuid.uuid4())
+    user_id = str(uuid.uuid4())
+    sub_id = str(uuid.uuid4())
+    meta = {"preview": True, "label": label or "demo_1h", "auto_delete": True}
+
+    if use_memory():
+        with _lock:
+            _ensure_mem_reglas()
+            _MEM["orgs"].append(
+                {
+                    "id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "razon_social_enc": pii_crypto.encrypt_pii("VENTORA Preview"),
+                    "rut_enc": pii_crypto.encrypt_pii("76.000.000-0"),
+                    "giro": "demo",
+                    "created_at": now,
+                    "metadata": meta,
+                }
+            )
+            _MEM["usuarios_app"].append(
+                {
+                    "id": user_id,
+                    "email_norm": email,
+                    "password_hash": pii_crypto.hash_password(password),
+                    "nombres_enc": pii_crypto.encrypt_pii("Preview"),
+                    "apellidos_enc": pii_crypto.encrypt_pii(label or "Demo"),
+                    "telefono_enc": None,
+                    "org_id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "role": "operador",
+                    "email_verified_at": now,
+                    "status": "active",
+                    "created_at": now,
+                }
+            )
+            _MEM["suscripciones"].append(
+                {
+                    "id": sub_id,
+                    "org_id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "plan_code": "preview",
+                    "status": "trialing",
+                    "current_period_end": period_end,
+                    "seats": 1,
+                    "metadata": meta,
+                }
+            )
+            for fk in feats:
+                _MEM["entitlements"].append(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "suscripcion_id": sub_id,
+                        "feature_key": fk,
+                        "enabled": True,
+                    }
+                )
+    else:
+        from api_rest.integracion import supabase_store as sb
+
+        org = sb.rest_insert(
+            "orgs",
+            {
+                "id": org_id,
+                "sitio": "spati",
+                "faena": faena,
+                "razon_social_enc": pii_crypto.encrypt_pii("VENTORA Preview"),
+                "rut_enc": pii_crypto.encrypt_pii("76.000.000-0"),
+                "giro": "demo",
+            },
+        )
+        if not org:
+            return False, "No se pudo crear org preview", None
+        user = sb.rest_insert(
+            "usuarios_app",
+            {
+                "id": user_id,
+                "email_norm": email,
+                "password_hash": pii_crypto.hash_password(password),
+                "nombres_enc": pii_crypto.encrypt_pii("Preview"),
+                "apellidos_enc": pii_crypto.encrypt_pii(label or "Demo"),
+                "org_id": org_id,
+                "sitio": "spati",
+                "faena": faena,
+                "role": "operador",
+                "email_verified_at": now,
+                "status": "active",
+            },
+        )
+        if not user:
+            return False, "No se pudo crear usuario preview", None
+        sub = sb.rest_insert(
+            "suscripciones",
+            {
+                "id": sub_id,
+                "org_id": org_id,
+                "sitio": "spati",
+                "faena": faena,
+                "plan_code": "preview",
+                "status": "trialing",
+                "current_period_end": period_end,
+                "seats": 1,
+            },
+        )
+        if not sub:
+            return False, "No se pudo crear suscripción preview", None
+        for fk in feats:
+            sb.rest_insert(
+                "entitlements",
+                {"suscripcion_id": sub_id, "feature_key": fk, "enabled": True},
+            )
+
+    spa = (os.getenv("METGO_SPATI_PUBLIC_URL") or "https://metgo-spati.pages.dev").rstrip("/")
+    return (
+        True,
+        "Usuario preview creado",
+        {
+            "email": email,
+            "password": password,
+            "faena": faena,
+            "plan_code": "preview",
+            "tabs": ["ahora", "panel"],
+            "expires_at": period_end,
+            "ttl_hours": horas,
+            "org_id": org_id,
+            "usuario_id": user_id,
+            "login_url": f"{spa}/login?faena={faena}",
+            "nota": "Solo Ahora y Panel técnico. Tras 1 h el acceso caduca; purge elimina la org.",
+        },
+    )
+
+
+def purge_preview_expirados() -> dict[str, Any]:
+    """Elimina orgs preview cuyo current_period_end ya pasó."""
+    purged: list[str] = []
+    now = _utcnow()
+    if use_memory():
+        with _lock:
+            expired_orgs: set[str] = set()
+            for s in _MEM["suscripciones"]:
+                if (s.get("plan_code") or "") != "preview":
+                    continue
+                end = _parse_iso(s.get("current_period_end"))
+                if end and now >= end:
+                    expired_orgs.add(str(s.get("org_id")))
+            if not expired_orgs:
+                return {"purged": 0, "org_ids": []}
+            _MEM["suscripciones"] = [
+                s for s in _MEM["suscripciones"] if str(s.get("org_id")) not in expired_orgs
+            ]
+            sub_ids = {e.get("suscripcion_id") for e in _MEM["entitlements"]}
+            # rebuild entitlements from remaining subs
+            keep_subs = {s["id"] for s in _MEM["suscripciones"]}
+            _MEM["entitlements"] = [
+                e for e in _MEM["entitlements"] if e.get("suscripcion_id") in keep_subs
+            ]
+            _MEM["usuarios_app"] = [
+                u for u in _MEM["usuarios_app"] if str(u.get("org_id")) not in expired_orgs
+            ]
+            _MEM["orgs"] = [o for o in _MEM["orgs"] if str(o.get("id")) not in expired_orgs]
+            purged = sorted(expired_orgs)
+        return {"purged": len(purged), "org_ids": purged}
+
+    from api_rest.integracion import supabase_store as sb
+
+    rows = sb.rest_select(
+        "suscripciones",
+        params={"plan_code": "eq.preview", "select": "id,org_id,current_period_end"},
+        limit=200,
+    )
+    for s in rows or []:
+        end = _parse_iso(s.get("current_period_end"))
+        oid = s.get("org_id")
+        if oid and end and now >= end:
+            # CASCADE esperado en FK; si no, al menos cancelar
+            try:
+                sb.rest_patch(
+                    "suscripciones",
+                    {"org_id": f"eq.{oid}"},
+                    {"status": "canceled"},
+                )
+                sb.rest_patch(
+                    "usuarios_app",
+                    {"org_id": f"eq.{oid}"},
+                    {"status": "suspended"},
+                )
+            except Exception:
+                pass
+            purged.append(str(oid))
+    return {"purged": len(purged), "org_ids": purged}
+
+
 def compute_access(*, sitio: str, faena: str | None, plan_code: str, sub_status: str) -> dict[str, Any]:
     from api_rest.identity.plans_catalog import TAB_FEATURE, TAB_SISTEMA, features_for_plan, plan_rank
 
@@ -735,4 +989,5 @@ def compute_access(*, sitio: str, faena: str | None, plan_code: str, sub_status:
         "tabs": tabs,
         "sistemas": sistemas,
         "reasons": reasons,
+        "preview": plan_code == "preview",
     }

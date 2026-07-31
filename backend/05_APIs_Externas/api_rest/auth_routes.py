@@ -187,18 +187,32 @@ def register_auth_routes(app: Flask) -> None:
                     continue
                 if user.get("status") == "suspended":
                     return jsonify({"error": "Usuario suspendido"}), 403
-                sub = identity_store.suscripcion_de_org(user.get("org_id") or "") or {}
-                return jsonify(
-                    metgo_auth.crear_token_identidad(
-                        sub=user.get("email_norm") or username,
-                        role=user.get("role") or "operador",
-                        sitio=user.get("sitio") or sitio_id,
-                        faena=user.get("faena"),
-                        org_id=user.get("org_id"),
-                        plan_code=sub.get("plan_code") or "trial",
-                        sub_status=sub.get("status") or "trialing",
+                sub_raw = identity_store.suscripcion_de_org(user.get("org_id") or "") or {}
+                sub = identity_store.suscripcion_efectiva(sub_raw)
+                if sub.get("status") not in ("trialing", "active"):
+                    return (
+                        jsonify(
+                            {
+                                "error": "Acceso expirado o cancelado",
+                                "code": "subscription_expired",
+                                "plan_code": sub.get("plan_code"),
+                            }
+                        ),
+                        403,
                     )
-                )
+                rem = identity_store.segundos_restantes_suscripcion(sub_raw)
+                token_kwargs = {
+                    "sub": user.get("email_norm") or username,
+                    "role": user.get("role") or "operador",
+                    "sitio": user.get("sitio") or sitio_id,
+                    "faena": user.get("faena"),
+                    "org_id": user.get("org_id"),
+                    "plan_code": sub.get("plan_code") or "trial",
+                    "sub_status": sub.get("status") or "trialing",
+                }
+                if rem is not None and (sub.get("plan_code") == "preview" or rem < 3600):
+                    token_kwargs["expires_in"] = max(60, rem)
+                return jsonify(metgo_auth.crear_token_identidad(**token_kwargs))
         except Exception:
             pass
 

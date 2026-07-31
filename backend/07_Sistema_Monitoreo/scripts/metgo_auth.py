@@ -312,13 +312,15 @@ def crear_token_identidad(
     org_id: str | None = None,
     plan_code: str | None = None,
     sub_status: str | None = None,
+    expires_in: int | None = None,
 ) -> dict[str, Any]:
     """JWT para usuarios comerciales (usuarios_app), sin USER_TO_ROLE."""
     if jwt is None:
         raise RuntimeError("Instale PyJWT: pip install PyJWT")
     import uuid
 
-    exp_secs = jwt_expiration_seconds()
+    exp_secs = int(expires_in) if expires_in is not None else jwt_expiration_seconds()
+    exp_secs = max(60, min(exp_secs, jwt_expiration_seconds()))
     now = datetime.now(timezone.utc)
     sub_n = (sub or "").lower().strip()
     jti = str(uuid.uuid4())
