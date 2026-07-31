@@ -78,7 +78,7 @@ paths:
         "200":
           description: Token emitido (user.sitio + claim jti en payload)
         "401":
-          description: Credenciales incorrectas, o sesión reemplazada (`code: session_replaced`)
+          description: "Credenciales incorrectas, o sesión reemplazada (code=session_replaced)"
         "403":
           description: Sitio no autorizado para el usuario
   /api/auth/register:
@@ -288,7 +288,7 @@ paths:
         "200":
           description: "{ username, role, sitio, faena, hub, multi_faena, faenas }"
         "401":
-          description: Sin token o sesión reemplazada (`code: session_replaced`)
+          description: "Sin token o sesión reemplazada (code=session_replaced)"
   /api/auth/refresh:
     post:
       tags: [auth]
