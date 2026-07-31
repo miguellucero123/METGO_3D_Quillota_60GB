@@ -4,7 +4,7 @@
       <div>
         <h1>{{ faenaMeta?.nombre || sitioId }} · Ahora</h1>
         <p class="sub">
-          Mapa simple · horas · viento 72 h
+          Ubicación de faena · viento 72 h
           <span v-if="horaSeleccionada"> · {{ fmtHora(horaSeleccionada.valid_time) }}</span>
         </p>
       </div>
@@ -387,31 +387,51 @@ function barHeight(v) {
   return Math.max(4, Math.round(((Number(v) || 0) / max) * 100))
 }
 
+function destroyMap() {
+  if (map) {
+    map.remove()
+    map = null
+    marker = null
+  }
+}
+
 function initMap() {
-  if (!mapEl.value || map) return
-  const lat = Number(faenaMeta.value?.lat ?? site.center?.lat ?? -24.25)
-  const lon = Number(faenaMeta.value?.lon ?? site.center?.lon ?? -69.05)
+  if (!mapEl.value) return
+  destroyMap()
+  const lat = Number(faenaMeta.value?.lat ?? site.center?.lat ?? -21)
+  const lon = Number(faenaMeta.value?.lon ?? site.center?.lon ?? -68.8)
   map = L.map(mapEl.value, {
     zoomControl: true,
     attributionControl: true,
-  }).setView([lat, lon], 11)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
+  }).setView([lat, lon], 12)
+  // OSM estándar (más confiable que Carto en algunos clientes)
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(map)
   marker = L.circleMarker([lat, lon], {
-    radius: 10,
+    radius: 12,
     color: '#fff',
     weight: 2,
     fillColor: colorNivel(nivelActual.value),
-    fillOpacity: 0.9,
+    fillOpacity: 0.95,
   }).addTo(map)
-  marker.bindPopup(`${faenaMeta.value?.nombre || sitioId.value}`)
+  marker.bindPopup(
+    `<strong>${faenaMeta.value?.nombre || sitioId.value}</strong><br/>${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+  )
+  // Contenedor acaba de montarse: forzar recálculo de tamaño
+  requestAnimationFrame(() => {
+    map?.invalidateSize()
+    setTimeout(() => map?.invalidateSize(), 200)
+  })
 }
 
 function refreshMarker() {
   if (!marker) return
   marker.setStyle({ fillColor: colorNivel(nivelActual.value) })
+  const lat = Number(faenaMeta.value?.lat ?? site.center?.lat)
+  const lon = Number(faenaMeta.value?.lon ?? site.center?.lon)
+  if (Number.isFinite(lat) && Number.isFinite(lon)) marker.setLatLng([lat, lon])
 }
 
 watch(nivelActual, refreshMarker)
@@ -420,40 +440,44 @@ watch(horaIdx, () => {
   if (horaIdx.value >= horas.value.length) horaIdx.value = Math.max(0, horas.value.length - 1)
 })
 
+async function ensureMap() {
+  await nextTick()
+  if (!mapEl.value) return
+  if (!map) initMap()
+  else {
+    const lat = Number(faenaMeta.value?.lat ?? site.center?.lat)
+    const lon = Number(faenaMeta.value?.lon ?? site.center?.lon)
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      map.setView([lat, lon], map.getZoom() || 12)
+      refreshMarker()
+    }
+    map.invalidateSize()
+  }
+}
+
 async function cargar() {
   loading.value = true
   error.value = null
+  destroyMap()
   try {
     await wakeApi().catch(() => {})
     data.value = await fetchSpatiPronostico(sitioId.value)
     horaIdx.value = 0
-    await nextTick()
-    if (!map) initMap()
-    else {
-      const lat = Number(faenaMeta.value?.lat ?? site.center?.lat)
-      const lon = Number(faenaMeta.value?.lon ?? site.center?.lon)
-      map.setView([lat, lon], map.getZoom())
-      if (marker) marker.setLatLng([lat, lon])
-      refreshMarker()
-    }
-    setTimeout(() => map?.invalidateSize(), 80)
   } catch (e) {
     error.value = e?.message || 'No se pudo cargar el pronóstico'
     data.value = null
   } finally {
     loading.value = false
   }
+  // Importante: el div del mapa solo existe cuando loading=false && data
+  if (data.value) await ensureMap()
 }
 
 watch(sitioId, () => cargar())
 
 onMounted(() => cargar())
 onBeforeUnmount(() => {
-  if (map) {
-    map.remove()
-    map = null
-    marker = null
-  }
+  destroyMap()
 })
 </script>
 
@@ -572,12 +596,29 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border);
   margin-bottom: 0.85rem;
   height: min(42vh, 340px);
-  min-height: 220px;
+  min-height: 240px;
+  background: #1e293b;
 }
 .map {
   width: 100%;
   height: 100%;
-  background: #0b1220;
+  min-height: 240px;
+  background: #1e293b;
+  z-index: 0;
+}
+.map :deep(.leaflet-container) {
+  width: 100%;
+  height: 100%;
+  font: inherit;
+  background: #1e293b;
+}
+.map :deep(.leaflet-control-attribution) {
+  font-size: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #94a3b8;
+}
+.map :deep(.leaflet-control-attribution a) {
+  color: #5eead4;
 }
 .map-overlay {
   position: absolute;
