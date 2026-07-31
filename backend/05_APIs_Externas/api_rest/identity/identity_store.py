@@ -26,7 +26,7 @@ _MEM: dict[str, list[dict[str, Any]]] = {
     "email_tokens": [],
 }
 
-# Seed reglas en memoria — 17 faenas SPATI (izaje/ambiente trial; dron starter; ops/pro)
+# Seed reglas en memoria — 17 faenas SPATI (izaje/ambiente trial; dron pro; ops/pro)
 _SPATI_FAENAS = (
     "quebrada_blanca",
     "collahuasi",
@@ -53,7 +53,7 @@ for _f in _SPATI_FAENAS:
         [
             (_f, "izaje", True, "trial"),
             (_f, "ambiente", True, "trial"),
-            (_f, "dron", True, "starter"),
+            (_f, "dron", True, "pro"),
             (_f, "ops", True, "pro"),
         ]
     )

@@ -150,12 +150,29 @@ def test_api_validate_and_register():
     )
     assert chk.status_code == 200
     assert chk.get_json().get("applied") is True
+    # Básico (starter): panel/ahora sí; dron es Pro+
     acc = client.get(
-        "/api/auth/access?sitio=spati&faena=escondida&tab=dron",
+        "/api/auth/access?sitio=spati&faena=escondida&tab=panel",
         headers=headers,
     )
     assert acc.status_code == 200
-    assert acc.get_json().get("tab_allowed") is True
+    body_acc = acc.get_json()
+    assert body_acc.get("tab_allowed") is True
+    assert body_acc["tabs"]["panel"] is True
+    assert body_acc["tabs"].get("ahora") is True
+    assert body_acc["tabs"]["dron"] is False
+    acc_ahora = client.get(
+        "/api/auth/access?sitio=spati&faena=escondida&tab=ahora",
+        headers=headers,
+    )
+    assert acc_ahora.status_code == 200
+    assert acc_ahora.get_json().get("tab_allowed") is True
+    acc_dron = client.get(
+        "/api/auth/access?sitio=spati&faena=escondida&tab=dron",
+        headers=headers,
+    )
+    assert acc_dron.status_code == 403
+    assert acc_dron.get_json().get("tab_allowed") is False
     cuenta = client.get("/api/auth/cuenta?faena=escondida", headers=headers)
     assert cuenta.status_code == 200
     assert cuenta.get_json()["suscripcion"]["plan_code"] == "starter"
