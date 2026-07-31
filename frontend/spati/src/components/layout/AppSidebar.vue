@@ -19,7 +19,7 @@
 <script setup>
 import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid, Gauge } from 'lucide-vue-next'
+import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid, Gauge, MapPinned } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
 import { fetchMe, getToken } from '@/services/authApi'
 
@@ -50,6 +50,7 @@ onMounted(async () => {
 const items = computed(() => {
   const f = faena.value
   const all = [
+    { to: `/f/${f}/ahora`, label: 'Ahora', icon: MapPinned, tab: 'ahora' },
     { to: `/f/${f}/`, label: 'Pronóstico 72 h', icon: Wind, tab: 'panel' },
     { to: `/f/${f}/ambiente`, label: 'Ambiente faena', icon: CloudSun, tab: 'ambiente' },
     { to: `/f/${f}/dron`, label: 'Calibración dron', icon: Plane, tab: 'dron' },

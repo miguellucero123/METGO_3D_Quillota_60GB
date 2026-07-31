@@ -36,12 +36,16 @@ async function onSubmit() {
       sitio: 'spati',
     })
     let redirect =
-      typeof route.query.redirect === 'string' ? route.query.redirect : `/f/${faena.value}/`
+      typeof route.query.redirect === 'string' ? route.query.redirect : `/f/${faena.value}/ahora`
     // Nunca dejar al operador en el hub público tras login
     if (redirect === '/' || redirect.startsWith('/?')) {
-      redirect = `/f/${faena.value}/`
+      redirect = `/f/${faena.value}/ahora`
     }
-    await router.replace(redirect.startsWith('/') ? redirect : `/f/${faena.value}/`)
+    // Entrada por defecto: vista Ahora (mapa + horas), no el panel denso
+    if (redirect === `/f/${faena.value}/` || redirect === `/f/${faena.value}`) {
+      redirect = `/f/${faena.value}/ahora`
+    }
+    await router.replace(redirect.startsWith('/') ? redirect : `/f/${faena.value}/ahora`)
   } catch (e) {
     error.value = e.message || 'Usuario o contraseña incorrectos'
   } finally {

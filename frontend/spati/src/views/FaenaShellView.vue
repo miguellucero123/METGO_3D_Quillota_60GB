@@ -28,7 +28,8 @@ const show = (tab) => access.canTab(faena.value, tab)
 <template>
   <div class="faena-shell">
     <nav v-if="!$route.meta.public" class="faena-nav" aria-label="Faena">
-      <router-link v-if="show('panel')" :to="`/f/${faena}/`">{{ faenaMeta.nombre || faena }}</router-link>
+      <router-link v-if="show('ahora') || show('panel')" :to="`/f/${faena}/ahora`">Ahora</router-link>
+      <router-link v-if="show('panel')" :to="`/f/${faena}/`">72 h</router-link>
       <router-link v-if="show('ambiente')" :to="`/f/${faena}/ambiente`">Ambiente</router-link>
       <router-link v-if="show('dron')" :to="`/f/${faena}/dron`">Dron</router-link>
       <router-link v-if="show('umbrales')" :to="`/f/${faena}/umbrales`">Umbrales</router-link>

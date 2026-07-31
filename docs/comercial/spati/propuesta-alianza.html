@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPATI · Propuesta de Alianza — METGO 3D SpA</title>
+<style>
+:root{--navy:#0f172a;--emer:#10b981;--blue:#3b82f6;--amber:#f59e0b;--gray1:#f8fafc;--gray2:#e2e8f0;--gray3:#94a3b8;--white:#fff;--font:-apple-system,'Segoe UI',Arial,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:#f1f5f9;color:var(--navy);}
+.print-bar{background:var(--navy);padding:12px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--emer);}
+.print-bar span{font-size:13px;font-weight:700;color:var(--emer);}
+.print-bar small{font-size:11px;color:var(--gray3);}
+.btn-pdf{background:var(--emer);color:var(--navy);font-weight:800;padding:9px 22px;border:none;border-radius:7px;font-size:13px;cursor:pointer;font-family:var(--font);}
+.doc{max-width:820px;margin:24px auto;background:var(--white);box-shadow:0 4px 24px rgba(0,0,0,.12);border-radius:4px;overflow:hidden;}
+.cover{background:var(--navy);padding:48px;position:relative;overflow:hidden;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;}
+.cover-bar{position:absolute;top:0;left:0;right:0;height:5px;background:var(--emer);}
+.cover-tag{display:inline-block;background:var(--emer);color:var(--navy);font-size:10px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:.5px;margin-bottom:16px;align-self:flex-start;}
+.cover .brand{font-size:11px;font-weight:800;color:var(--emer);margin-bottom:6px;}
+.cover h1{font-size:28px;font-weight:900;color:var(--white);line-height:1.1;letter-spacing:-.02em;margin-bottom:10px;max-width:480px;}
+.cover .sub{font-size:13px;color:var(--gray3);line-height:1.6;max-width:480px;}
+.content{padding:36px 48px;}
+.section-label{font-size:10px;font-weight:800;color:var(--emer);letter-spacing:.8px;text-transform:uppercase;margin:22px 0 8px;}
+.section-label:first-child{margin-top:0;}
+hr.divider{border:none;border-top:1px solid var(--gray2);margin-bottom:16px;}
+p.body{font-size:12.5px;line-height:1.7;margin-bottom:10px;text-align:justify;}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;}
+thead tr{background:var(--navy);color:var(--white);}
+thead th{padding:8px 12px;text-align:left;font-size:11px;}
+tbody tr:nth-child(even){background:var(--gray1);}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--gray2);vertical-align:top;}
+.com-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.com-card{border-radius:8px;padding:16px;text-align:center;}
+.com-card.blue{background:var(--blue);}
+.com-card.emer{background:var(--emer);}
+.com-card.dark{background:var(--navy);}
+.com-card .plan-n{font-size:10px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px;}
+.com-card .pct{font-size:26px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px;}
+.com-card .cond{font-size:10px;color:rgba(255,255,255,.65);line-height:1.4;}
+.com-card .ticket{font-size:11px;color:#fff;font-weight:700;margin:6px 0 4px;}
+.ventaja{display:grid;grid-template-columns:180px 1fr;gap:0;border-radius:7px;overflow:hidden;margin-bottom:10px;border:1px solid var(--gray2);}
+.ventaja-label{background:var(--gray1);padding:12px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;}
+.ventaja-body{padding:12px 14px;font-size:12px;color:#475569;line-height:1.6;}
+.paso{display:flex;gap:14px;margin-bottom:12px;align-items:flex-start;}
+.paso-num{min-width:28px;height:28px;border-radius:7px;background:var(--emer);color:var(--navy);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.paso-body{font-size:12.5px;line-height:1.6;}
+.cta-block{background:var(--navy);border-radius:8px;padding:22px 28px;text-align:center;margin-top:20px;}
+.cta-block h3{font-size:15px;font-weight:800;color:var(--white);margin-bottom:8px;}
+.cta-block p{font-size:12px;color:var(--emer);}
+.page-ftr{background:var(--gray1);border-top:1px solid var(--gray2);padding:8px 40px;font-size:10px;color:var(--gray3);display:flex;justify-content:space-between;}
+@media print{
+  body{background:#fff;}
+  .print-bar{display:none!important;}
+  .doc{box-shadow:none;margin:0;max-width:100%;border-radius:0;}
+  .cover,.com-card,.cta-block,thead tr,.paso-num{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:0;size:A4;}
+}
+</style>
+</head>
+<body>
+
+<div class="print-bar">
+  <div><span>SPATI · Propuesta de Alianza</span><br><small>METGO 3D SpA · Confidencial · Julio 2026</small></div>
+  <button class="btn-pdf" onclick="window.print()">Descargar PDF</button>
+</div>
+
+<div class="doc">
+  <div class="cover">
+    <div class="cover-bar"></div>
+    <span class="cover-tag">PROPUESTA DE ALIANZA</span>
+    <div class="brand">METGO 3D SpA · Servicio SPATI</div>
+    <h1>Propuesta de Alianza Comercial</h1>
+    <div class="sub">Canal de distribución SPATI para empresas de inspección y certificación de equipos de izaje. Comisión recurrente sin riesgo operacional.</div>
+  </div>
+
+  <div class="content">
+    <div class="section-label">El contexto</div>
+    <hr class="divider">
+    <p class="body">Ustedes ya tienen la confianza de las empresas de izaje: las conocen, inspeccionan sus equipos, validan sus procedimientos. Esa relación es el activo más difícil de construir en este sector.</p>
+    <p class="body">METGO 3D tiene el producto que esas mismas empresas necesitan: saber cuándo el viento permite operar con seguridad. Juntos ofrecemos <strong>certificación completa del izaje — equipo más condición meteorológica.</strong></p>
+
+    <div class="section-label">Cómo funciona la alianza</div>
+    <hr class="divider">
+    <table>
+      <thead><tr><th>Paso</th><th>Empresa aliada</th><th>METGO 3D</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. Identificación</strong></td><td>Detecta clientes que necesitan pronóstico de viento para izaje</td><td>Provee kit de ventas (datasheet, propuesta, precios)</td></tr>
+        <tr><td><strong>2. Presentación</strong></td><td>Menciona SPATI como servicio complementario</td><td>Soporte técnico y demo cuando el aliado lo solicite</td></tr>
+        <tr><td><strong>3. Cierre</strong></td><td>Facilita contacto con el jefe de operaciones</td><td>Firma el contrato directamente con el cliente final</td></tr>
+        <tr><td><strong>4. Comisión</strong></td><td>Recibe comisión mensual mientras el cliente esté activo</td><td>Entrega reporte mensual de referidos y montos</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label">Estructura de comisiones (sobre facturación neta mensual)</div>
+    <hr class="divider">
+    <div class="com-grid">
+      <div class="com-card blue">
+        <div class="plan-n">Básico</div>
+        <div class="ticket">$300.000/mes</div>
+        <div class="pct">15%</div>
+        <div class="cond">=$45.000/mes<br>mientras el cliente esté activo</div>
+      </div>
+      <div class="com-card emer">
+        <div class="plan-n">Pro</div>
+        <div class="ticket">$500.000/mes</div>
+        <div class="pct">20%</div>
+        <div class="cond">=$100.000/mes<br>recurrente sin límite de tiempo</div>
+      </div>
+      <div class="com-card dark">
+        <div class="plan-n">Enterprise</div>
+        <div class="ticket">desde $1.200.000</div>
+        <div class="pct">≥15%</div>
+        <div class="cond">≥$180.000/mes<br>negociación caso a caso</div>
+      </div>
+    </div>
+    <p class="body" style="font-size:11px;color:var(--gray3)">Pago dentro de los 10 primeros días hábiles del mes siguiente a la facturación. Precios de referencia sin IVA. El aliado recibe reporte mensual de clientes referidos.</p>
+
+    <div class="section-label">Qué gana el aliado</div>
+    <hr class="divider">
+    <div class="ventaja">
+      <div class="ventaja-label">Ingreso recurrente</div>
+      <div class="ventaja-body">Comisión todos los meses sin trabajo adicional una vez el cliente está activo. Ticket Enterprise multiplica el ingreso del canal.</div>
+    </div>
+    <div class="ventaja">
+      <div class="ventaja-label">Diferenciador</div>
+      <div class="ventaja-body">Ofrecer pronóstico meteorológico junto a la inspección los diferencia de cualquier otro certificador.</div>
+    </div>
+    <div class="ventaja">
+      <div class="ventaja-label">Argumento de seguridad</div>
+      <div class="ventaja-body">Refuerza el discurso frente a mandantes, SUSESO y mutualidades con documentación meteorológica respaldada.</div>
+    </div>
+    <div class="ventaja">
+      <div class="ventaja-label">Sin riesgo operacional</div>
+      <div class="ventaja-body">METGO 3D entrega el servicio. El aliado solo refiere y no asume responsabilidad sobre el pronóstico.</div>
+    </div>
+
+    <div class="section-label">Proceso de activación</div>
+    <hr class="divider">
+    <div class="paso"><div class="paso-num">1</div><div class="paso-body">Reunión de 30 min para revisar condiciones y resolver dudas.</div></div>
+    <div class="paso"><div class="paso-num">2</div><div class="paso-body">Firma del Acuerdo de Colaboración Comercial (2 páginas).</div></div>
+    <div class="paso"><div class="paso-num">3</div><div class="paso-body">Capacitación de 1 hora: cómo presentar SPATI, qué preguntar, cómo referir.</div></div>
+    <div class="paso"><div class="paso-num">4</div><div class="paso-body">Entrega del kit: datasheet, propuesta comercial (3 planes) y correo tipo.</div></div>
+    <div class="paso"><div class="paso-num">5</div><div class="paso-body">Primera referencia: 2–3 candidatos y demos coordinadas juntos.</div></div>
+
+    <div class="cta-block">
+      <h3>¿Le interesa explorar esta alianza?</h3>
+      <p>contacto@metgo3d.com · +56 9 XXXX XXXX · www.metgo3d.com</p>
+    </div>
+    <p style="font-size:10px;color:var(--gray3);text-align:center;margin-top:14px">Propuesta confidencial · METGO 3D SpA · Santiago, Chile · Julio 2026</p>
+  </div>
+
+  <div class="page-ftr">
+    <span>METGO 3D SpA · contacto@metgo3d.com</span>
+    <span>Propuesta de Alianza · Julio 2026</span>
+  </div>
+</div>
+</body>
+</html>

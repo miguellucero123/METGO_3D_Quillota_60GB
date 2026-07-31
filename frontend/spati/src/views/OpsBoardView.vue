@@ -88,7 +88,8 @@
               </p>
             </td>
             <td class="links">
-              <router-link :to="row.enlace || `/f/${row.faena_id}/`">Panel</router-link>
+              <router-link :to="row.enlace_ahora || `/f/${row.faena_id}/ahora`">Ahora</router-link>
+              <router-link :to="row.enlace || `/f/${row.faena_id}/`">72 h</router-link>
               <router-link :to="row.enlace_ambiente || `/f/${row.faena_id}/ambiente`"
                 >Ambiente</router-link
               >

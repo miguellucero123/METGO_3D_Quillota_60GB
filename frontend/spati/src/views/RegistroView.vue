@@ -145,8 +145,13 @@ async function onSubmit() {
           <li v-for="p in planes" :key="p.plan_code">
             <strong>{{ p.nombre }}</strong>
             —
-            {{ p.precio_mensual_clp == null ? 'A convenir' : `$${p.precio_mensual_clp.toLocaleString('es-CL')} CLP/mes` }}
-            <span class="feats">{{ (p.features || []).join(', ') }}</span>
+            {{
+              p.precio_mensual_clp == null
+                ? 'A convenir'
+                : `${p.precio_etiqueta === 'desde' ? 'Desde ' : ''}$${p.precio_mensual_clp.toLocaleString('es-CL')} CLP/mes`
+            }}
+            <span v-if="p.descripcion" class="feats">{{ p.descripcion }}</span>
+            <span v-else class="feats">{{ (p.features || []).join(', ') }}</span>
           </li>
         </ul>
       </section>

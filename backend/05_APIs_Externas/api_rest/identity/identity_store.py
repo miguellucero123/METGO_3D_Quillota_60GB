@@ -700,7 +700,8 @@ def compute_access(*, sitio: str, faena: str | None, plan_code: str, sub_status:
 
     for tab, feat in TAB_FEATURE.items():
         sist = TAB_SISTEMA.get(tab)
-        feat_ok = feat in feats
+        # ahora hereda de panel (planes legacy sin feature "ahora")
+        feat_ok = feat in feats or (feat == "ahora" and "panel" in feats)
         sist_ok = sistemas.get(sist, True) if sist else True
         tabs[tab] = bool(active and feat_ok and sist_ok)
         if not tabs[tab]:

@@ -18,10 +18,16 @@ const faenaChildren = [
     meta: { title: 'Registro', public: true },
   },
   {
+    path: 'ahora',
+    name: 'faena-ahora',
+    component: () => import('@/views/AhoraView.vue'),
+    meta: { title: 'Ahora', tab: 'ahora' },
+  },
+  {
     path: '',
     name: 'faena-panel',
     component: () => import('@/views/SpatiPanelView.vue'),
-    meta: { title: 'Pronóstico izaje', tab: 'panel' },
+    meta: { title: 'Pronóstico 72 h', tab: 'panel' },
   },
   {
     path: 'dron',
@@ -130,14 +136,16 @@ router.beforeEach(async (to) => {
   const tab = to.meta?.tab
   if (tab && targetFaena) {
     try {
+      // "ahora" comparte entitlement con panel (vista simplificada del mismo sistema)
+      const entitlementTab = tab === 'ahora' ? 'panel' : String(tab)
       const access = await fetchAccess({
         sitio: 'spati',
         faena: targetFaena,
-        tab: String(tab),
+        tab: entitlementTab,
       })
       const denied =
         access.tab_allowed === false ||
-        (access.tabs && access.tabs[tab] === false)
+        (access.tabs && access.tabs[entitlementTab] === false)
       if (denied) {
         return `/f/${targetFaena}/cuenta?blocked=${encodeURIComponent(String(tab))}`
       }

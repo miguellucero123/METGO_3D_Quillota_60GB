@@ -20,6 +20,7 @@ const data = ref(null)
 const applying = ref('')
 
 const TAB_LABEL = {
+  ahora: 'Ahora',
   panel: 'Pronóstico 72 h',
   ambiente: 'Ambiente faena',
   dron: 'Calibración dron',
@@ -120,10 +121,10 @@ const tabs = computed(() => data.value?.access?.tabs || {})
           <div>
             <strong>{{ p.nombre }}</strong>
             <span v-if="p.precio_mensual_clp != null">
-              ${{ p.precio_mensual_clp.toLocaleString('es-CL') }} CLP/mes
+              {{ p.precio_etiqueta === 'desde' ? 'Desde ' : '' }}${{ p.precio_mensual_clp.toLocaleString('es-CL') }} CLP/mes
             </span>
             <span v-else>A convenir</span>
-            <em>{{ (p.features || []).join(', ') }}</em>
+            <em>{{ p.descripcion || (p.features || []).join(', ') }}</em>
           </div>
           <button
             type="button"

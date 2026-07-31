@@ -17,7 +17,10 @@ Estructura para ejecutar el [prompt MVP](../PROMPT_MVP_METGO.md) y el rol en **`
 | [`fase-9/`](fase-9/) | **Notificaciones** webhook + outbox + SMTP opcional |
 | [`fase-10/`](fase-10/) | **Prometheus**, MQTT TLS, ML profundo |
 | [`PROMPT_ESCALAMIENTO_MVP.md`](../PROMPT_ESCALAMIENTO_MVP.md) | **Prompt maestro escalamiento** post-fases 1–10 |
-| [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) | **Minería multi-faena** (M1–M7): paquete, CSV/PDF, MVO |
+| [`CUADRO_FASES_METGO.md`](CUADRO_FASES_METGO.md) | **Cuadro vivo:** hecho vs pendiente (S/M/1–10 + P0–P2) |
+| [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md) | **Paso a paso:** Render, Supabase GRANT, CRON, M8/M9 |
+| [`PLAN_UX_SPATI_LANDING_AHORA.md`](PLAN_UX_SPATI_LANDING_AHORA.md) | **UX:** landing comercial + pestaña móvil Ahora + precios 300k/500k |
+| [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) | **Minería multi-faena** (M1–M10): paquete, CSV/PDF, MVO, board |
 | [`CHECKLIST_M7_DEPLOY.md`](CHECKLIST_M7_DEPLOY.md) | **Deploy M7** (Render + CF Pages + demo observado) |
 | [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md) | **Auth prod** (sin demos en UI; METGO_PASSWORD_*; self-register off) |
 | [`PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md`](PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md) | **Registro + PII cifrada + suscripción por producto** (propuesto) |

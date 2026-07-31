@@ -71,7 +71,7 @@ onMounted(async () => {
       }
     }
     if (!hub.value.catalogo_completo && (hub.value.faenas || []).length === 1) {
-      await router.replace(`/f/${hub.value.faenas[0].slug}/`)
+      await router.replace(`/f/${hub.value.faenas[0].slug}/ahora`)
       return
     }
   } catch (e) {
@@ -87,7 +87,7 @@ function irA(slug) {
     .toLowerCase()
     .replace(/\s+/g, '_')
   if (!s) return
-  router.push(isLoggedIn.value ? `/f/${s}/` : `/f/${s}/login`)
+  router.push(isLoggedIn.value ? `/f/${s}/ahora` : `/f/${s}/login`)
 }
 </script>
 

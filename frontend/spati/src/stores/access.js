@@ -25,6 +25,10 @@ export function useAccess() {
     const snap = snapshot(faena)
     if (!snap?.tabs) return true
     if (tab == null || tab === '') return true
+    // Vista Ahora hereda entitlement del panel (planes legacy sin key "ahora")
+    if (tab === 'ahora') {
+      return Boolean(snap.tabs.ahora || snap.tabs.panel)
+    }
     return Boolean(snap.tabs[tab])
   }
 
