@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, provide, ref, watch } from 'vue'
+import { computed, inject, onMounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -34,6 +34,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
+const site = inject('site', { spatiDefaultSitio: 'quebrada_blanca' })
 
 const navOpen = ref(false)
 provide('navOpen', navOpen)
@@ -52,11 +53,21 @@ const PUBLIC_NAMES = new Set([
   'faena-verificar',
 ])
 
-const isPublicShell = computed(
-  () => Boolean(route.meta?.public) || PUBLIC_NAMES.has(String(route.name || '')),
-)
+function isPublicRoute(r) {
+  if (!r) return true
+  if (r.meta?.public) return true
+  if (PUBLIC_NAMES.has(String(r.name || ''))) return true
+  // Landing siempre pública (evita carrera router.isReady → login Escondida)
+  const p = String(r.path || '')
+  if (p === '/' || p === '') return true
+  if (p.endsWith('/login') || p.endsWith('/registro') || p.endsWith('/verificar')) return true
+  return false
+}
 
-const currentFaena = computed(() => String(route.params.faena || 'escondida'))
+const isPublicShell = computed(() => isPublicRoute(route))
+
+const defaultFaena = computed(() => site.spatiDefaultSitio || 'quebrada_blanca')
+const currentFaena = computed(() => String(route.params.faena || defaultFaena.value))
 
 watch(
   () => route.fullPath,
@@ -66,7 +77,8 @@ watch(
 )
 
 onMounted(async () => {
-  if (isPublicShell.value) return
+  await router.isReady()
+  if (isPublicRoute(route)) return
   const ok = await auth.ensureValidSession()
   if (!ok) {
     router.replace({

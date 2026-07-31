@@ -122,7 +122,7 @@ async function loadHub() {
 }
 
 function loginRedirect(to) {
-  const faena = to.params.faena || 'escondida'
+  const faena = to.params.faena || 'quebrada_blanca'
   return `/f/${faena}/login?redirect=${encodeURIComponent(to.fullPath)}`
 }
 
