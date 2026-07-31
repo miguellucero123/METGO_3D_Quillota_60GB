@@ -79,12 +79,13 @@
               <span class="unit">m/s</span>
             </td>
             <td>
-              <span class="pill sm" :class="obsClass(row)">{{
-                row.observado?.estado_mvo || '—'
-              }}</span>
+              <span class="pill sm" :class="obsClass(row)">{{ obsLabel(row) }}</span>
               <p class="raz">
-                pares {{ row.observado?.aire_pares ?? '—' }} · IoT
-                {{ row.observado?.iot_lecturas ?? '—' }}
+                <template v-if="row.observado?.estado_mvo === 'ok'">
+                  pares {{ row.observado?.aire_pares ?? '—' }} · IoT
+                  {{ row.observado?.iot_lecturas ?? '—' }}
+                </template>
+                <template v-else>sin sensores (NWP / modelo)</template>
               </p>
             </td>
             <td class="links">
@@ -93,6 +94,7 @@
               <router-link :to="row.enlace_ambiente || `/f/${row.faena_id}/ambiente`"
                 >Ambiente</router-link
               >
+              <span v-if="row.fuente_paquete" class="src">{{ row.fuente_paquete }}</span>
             </td>
           </tr>
         </tbody>
@@ -137,6 +139,14 @@ function isCrit(v) {
   }
 }
 
+function obsLabel(row) {
+  const e = row?.observado?.estado_mvo
+  if (e === 'ok') return 'ok'
+  if (e === 'parcial') return 'parcial'
+  if (e === 'sin_observado' || !e) return 'modelo'
+  return e
+}
+
 function obsClass(row) {
   const e = row?.observado?.estado_mvo
   if (e === 'ok') return 'nv-verde'
@@ -158,12 +168,20 @@ async function cargar(refresh) {
       live_usados: data.live_usados,
     }
     nota.value = data.nota || ''
+    // Primera carga en frío: si casi todo está vacío, regenerar live una vez
+    if (!refresh && filas.value.length) {
+      const vacios = filas.value.filter((r) => (r.nivel_global || 'sin_dato') === 'sin_dato').length
+      if (vacios >= Math.ceil(filas.value.length * 0.6)) {
+        loading.value = false
+        await cargar(true)
+        return
+      }
+    }
   } catch (e) {
     if (e?.status === 403) {
       error.value =
         e.message || 'El board requiere admin, plan multi-faena o membresía en ≥2 faenas.'
-      // Volver al hub tras un momento si es 403
-      setTimeout(() => router.replace('/'), 2500)
+      setTimeout(() => router.replace('/app'), 2500)
     } else {
       error.value = e?.message || 'No se pudo cargar el board'
     }
@@ -340,6 +358,14 @@ onMounted(() => cargar(false))
   color: var(--color-primary);
   font-size: 0.82rem;
   margin-bottom: 0.2rem;
+}
+.src {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.65rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 .nota {
   margin: 0.75rem;

@@ -164,7 +164,8 @@ export async function fetchMisFaenas() {
 /** M10 — board ops multi-faena (admin / multi_faena / ≥2 faenas). */
 export async function fetchOpsBoard({ refresh = false } = {}) {
   const q = refresh ? '?refresh=1' : ''
-  return request(`/auth/ops-board${q}`, { auth: true })
+  // Board multi-faena puede regenerar Open-Meteo en paralelo (~1 min en frío)
+  return request(`/auth/ops-board${q}`, { auth: true, timeout: 120000 })
 }
 
 export async function checkoutPlan(body) {

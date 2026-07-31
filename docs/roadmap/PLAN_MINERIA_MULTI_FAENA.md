@@ -30,7 +30,9 @@ GET /api/auth/ops-board?refresh=1
 SPA: `/ops` · enlace desde hub y sidebar.
 
 - Filas: nivel global, izaje/caminos/botaderos, ráfaga, MVO lite.
-- Preferencia **lastgood**; `refresh=1` regenera live (tope `METGO_OPS_BOARD_LIVE`).
+- Preferencia **lastgood** (memoria + disco); si falta, regenera **live en paralelo** (tope `METGO_OPS_BOARD_LIVE`, default 24).
+- Fallback SPATI (izaje) si el paquete ambiental falla.
+- `sin_observado` / pares 0 = sin sensores IoT/SINCA (normal en minas SPATI); el nivel operativo viene del modelo.
 
 ## M9 (resumen)
 

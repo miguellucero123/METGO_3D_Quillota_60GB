@@ -280,6 +280,44 @@ def test_ops_board_m10_forbidden_single_faena():
     assert r.get_json().get("error") == "ops_board_requiere_multi_faena"
 
 
+def test_ops_board_usa_paquete_mock(monkeypatch):
+    """Cada faena recibe nivel desde paquete (no queda sin_dato por cupo live)."""
+    from api_rest import ops_board_service as obs
+    from api_rest import paquete_ambiental_service as pas
+
+    def fake_pkg(fid, horas=24):
+        return {
+            "faena_id": fid,
+            "generado_en": "2026-01-01T00:00:00",
+            "actual": {"rafaga_10m_ms": 5.5, "viento_10m_ms": 3.0},
+            "flags": {"nivel_global": "verde"},
+            "operaciones": {
+                "actividades": {
+                    "izaje": {"nivel": "verde", "razones": []},
+                    "caminos": {"nivel": "verde", "razones": []},
+                    "botaderos": {"nivel": "amarillo", "razones": ["polvo"]},
+                }
+            },
+            "fuente": {"meteo": "test"},
+        }
+
+    monkeypatch.setattr(pas, "_load_lastgood", lambda *a, **k: None)
+    monkeypatch.setattr(pas, "construir_paquete_ambiental", fake_pkg)
+
+    board = obs.construir_ops_board(
+        ["andina", "candelaria", "collahuasi"],
+        refresh=True,
+        incluir_observado=False,
+    )
+    assert board["n_faenas"] == 3
+    assert board["live_usados"] == 3
+    for row in board["filas"]:
+        assert row["nivel_global"] == "verde"
+        assert row["izaje"]["nivel"] == "verde"
+        assert row["rafaga_10m_ms"] == 5.5
+        assert row["fuente_paquete"] in ("live", "degraded")
+
+
 def test_sesion_unica_invalida_token_anterior():
     """Segundo login invalida el JWT anterior (401 session_replaced)."""
     from api_rest.app import create_app

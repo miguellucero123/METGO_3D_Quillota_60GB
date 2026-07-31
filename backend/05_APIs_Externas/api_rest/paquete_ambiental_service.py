@@ -60,9 +60,27 @@ _AIR_HOURLY = (
     "pm2_5,pm10,sulphur_dioxide,nitrogen_dioxide,ozone,carbon_monoxide,dust"
 )
 
-# Caché en memoria del último paquete OK por faena
+# Caché del último paquete OK por faena (memoria + disco para Render)
 _LASTGOOD: dict[str, tuple[float, dict[str, Any]]] = {}
 _LASTGOOD_TTL = int(os.getenv("METGO_PAQUETE_CACHE_TTL", str(45 * 60)))
+
+
+def _runtime_cache_dir():
+    from pathlib import Path
+
+    for p in Path(__file__).resolve().parents:
+        if (p / "metgo_paths.py").exists():
+            d = p / "backend" / "08_Gestion_Datos" / "datos_runtime" / "paquete_ambiental"
+            d.mkdir(parents=True, exist_ok=True)
+            return d
+    d = Path("paquete_ambiental_cache")
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _disk_path(faena_id: str):
+    safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in (faena_id or "x"))
+    return _runtime_cache_dir() / f"{safe}.json"
 
 
 def _openmeteo_cooldown() -> bool:
@@ -137,22 +155,56 @@ def _sum_snowfall_mm(serie: list[dict[str, Any]]) -> float:
 
 
 def _save_lastgood(faena_id: str, data: dict[str, Any]) -> None:
+    import json
+
     _LASTGOOD[faena_id] = (time.time(), data)
+    try:
+        slim = {
+            k: v
+            for k, v in data.items()
+            if k not in ("serie_meteo", "serie_aire", "serie_nival")
+        }
+        # Mantener series cortas para board/ops (24 h máx en disco)
+        for key in ("serie_meteo", "serie_aire", "serie_nival"):
+            serie = data.get(key)
+            if isinstance(serie, list):
+                slim[key] = serie[:24]
+        path = _disk_path(faena_id)
+        path.write_text(json.dumps(slim, ensure_ascii=False, default=str), encoding="utf-8")
+    except Exception as exc:
+        logger.debug("paquete lastgood disk write %s: %s", faena_id, exc)
 
 
-def _load_lastgood(faena_id: str) -> dict[str, Any] | None:
+def _load_lastgood(faena_id: str, *, as_fallback: bool = False) -> dict[str, Any] | None:
+    """Lee lastgood. as_fallback=True marca degradado (uso ante fallo Open-Meteo)."""
+    import json
+
+    now = time.time()
     hit = _LASTGOOD.get(faena_id)
-    if not hit:
-        return None
-    ts, data = hit
-    if time.time() - ts > _LASTGOOD_TTL:
+    data = None
+    if hit and now - hit[0] <= _LASTGOOD_TTL:
+        data = hit[1]
+    else:
+        try:
+            path = _disk_path(faena_id)
+            if path.exists():
+                age = now - path.stat().st_mtime
+                if age <= _LASTGOOD_TTL * 2:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                    if isinstance(data, dict) and data.get("faena_id"):
+                        _LASTGOOD[faena_id] = (now, data)
+        except Exception as exc:
+            logger.debug("paquete lastgood disk read %s: %s", faena_id, exc)
+            data = None
+    if not data:
         return None
     out = dict(data)
-    out["degradado"] = True
-    out["aviso"] = "Datos en caché (Open-Meteo no disponible). Reintente en unos minutos."
-    fuente = dict(out.get("fuente") or {})
-    fuente["tipo_dato"] = "lastgood"
-    out["fuente"] = fuente
+    if as_fallback:
+        out["degradado"] = True
+        out["aviso"] = "Datos en caché (Open-Meteo no disponible). Reintente en unos minutos."
+        fuente = dict(out.get("fuente") or {})
+        fuente["tipo_dato"] = "lastgood"
+        out["fuente"] = fuente
     return out
 
 
@@ -336,7 +388,7 @@ def construir_paquete_ambiental(
         )
 
     if not meteo:
-        cached = _load_lastgood(fid)
+        cached = _load_lastgood(fid, as_fallback=True)
         if cached:
             logger.warning("paquete_ambiental %s → lastgood", fid)
             return cached
