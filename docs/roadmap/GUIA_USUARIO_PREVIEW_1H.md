@@ -12,7 +12,9 @@ Acceso temporal solo a **Ahora** + **Panel técnico**.
 | Tabs | Ahora, Panel técnico |
 | Login | https://metgo-spati.pages.dev/login?faena=quebrada_blanca |
 
-Se crea/renueva al arrancar la API (`METGO_SEED_DEMO_PREVIEW=1`, default) o con:
+Si el login da 401, ver `docs/roadmap/FIX_LOGIN_DEMO_SUPABASE.md` (faltaban GRANTs en Supabase).
+
+Se crea en SQL (`20260731020000_preview_grants_demo_fijo.sql`) y/o al arrancar la API (`METGO_SEED_DEMO_PREVIEW=1`) o con:
 
 ```http
 POST /api/auth/preview-demo
