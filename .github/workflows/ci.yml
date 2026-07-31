@@ -58,6 +58,22 @@ jobs:
           npm install
           npm run build
 
+  lighthouse-spati-a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/spati/package-lock.json
+      - name: Build + Lighthouse a11y /login (≥90)
+        working-directory: frontend/spati
+        run: |
+          npm install
+          npm run build
+          npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.json
+
   smoke-e2e-api:
     runs-on: ubuntu-latest
     needs: test-python

@@ -9,9 +9,9 @@
 | Estado | Cantidad | Significado |
 |--------|----------|-------------|
 | **Hecho** | mayoría 1–10, S0–S4.1, M1–M7, M10, M8 estaciones | Código + usable |
-| **Parcial** | S5, M9, **E11 slice 1**, M8 CSV Render | Código listo; falta ops |
-| **Ops manual** | S3 resto, GRANT resto, OpenMeteo key, SINCA CSV | No se cierra solo con commits |
-| **Pendiente** | E11 resto (Lighthouse CI), E12 | Producto futuro |
+| **Parcial** | S5, M9, M8 CSV Render | Código listo; falta ops |
+| **Ops manual** | S3 resto, OpenMeteo key, SINCA CSV | No se cierra solo con commits |
+| **Pendiente** | E12 | Producto futuro |
 
 ---
 
@@ -64,7 +64,7 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 |------|--------|-------|
 | `GRANT` identity (`usuarios_app`, etc.) | ✅ Hecho | Seed demo + grants 2026-07-31 |
 | Open-Meteo API key | 🔶 Parcial | `METGO_OPENMETEO_API_KEY` (evitar 429) |
-| **E11** PWA / a11y / i18n | 🔶 Slice 1 | PWA activa, skip-link, i18n landing/login/Ahora; Lighthouse CI pendiente |
+| **E11** PWA / a11y / i18n | ✅ Slice 1–2 | PWA, i18n landing→informes, Lighthouse a11y CI ≥90 |
 | E12 | ⏳ Pendiente | Datos oficiales + ML por dominio |
 
 ---
@@ -84,7 +84,7 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 
 ### P2 — calidad
 6. `METGO_OPENMETEO_API_KEY`
-7. E11 resto (Lighthouse CI ≥90) / E12 según roadmap maestro
+7. E12 según roadmap maestro (E11.1–2 cerrado)
 
 ---
 
@@ -96,9 +96,9 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 - Edición `alertas_destino` por faena
 - Cron YAML de alertas izaje (falta solo el secret)
 - Estaciones SPATI en Supabase (M8 filas)
-- E11 slice 1: PWA + i18n ES/EN landing/login/Ahora
+- E11: PWA + i18n ES/EN (landing→informes) + Lighthouse a11y CI
 
-El siguiente valor mixto: **configurar producción (CSV/SMTP)** + pulir E11 Lighthouse.
+El siguiente valor: **ops producción (CSV/SMTP)** + **E12** cuando prioricen datos oficiales.
 
 ## Fase documento
 

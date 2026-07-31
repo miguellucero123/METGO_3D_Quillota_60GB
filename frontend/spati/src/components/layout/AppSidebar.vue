@@ -1,5 +1,5 @@
 <template>
-  <aside id="metgo-sidebar" class="metgo-sidebar" aria-label="Navegación VENTORA">
+  <aside id="metgo-sidebar" class="metgo-sidebar" :aria-label="t('nav.aria')">
     <nav>
       <router-link
         v-for="item in items"
@@ -8,7 +8,7 @@
         class="nav-item"
         :class="{ 'nav-item--active': isActive(item) }"
       >
-        <component :is="item.icon" :size="18" />
+        <component :is="item.icon" :size="18" aria-hidden="true" />
         <span>{{ item.label }}</span>
       </router-link>
     </nav>
@@ -19,10 +19,12 @@
 <script setup>
 import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Wind, Plane, SlidersHorizontal, CloudSun, LayoutGrid, Gauge, MapPinned, FileText } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
 import { fetchMe, getToken } from '@/services/authApi'
 
+const { t } = useI18n()
 const site = inject('site')
 const route = useRoute()
 const access = useAccess()
@@ -59,49 +61,49 @@ const items = computed(() => {
     {
       name: 'faena-ahora',
       to: { name: 'faena-ahora', params: { faena: f } },
-      label: 'Ahora',
+      label: t('nav.ahora'),
       icon: MapPinned,
       tab: 'ahora',
     },
     {
       name: 'faena-panel',
       to: { name: 'faena-panel', params: { faena: f } },
-      label: 'Panel técnico',
+      label: t('nav.panel'),
       icon: Wind,
       tab: 'panel',
     },
     {
       name: 'faena-informes',
       to: { name: 'faena-informes', params: { faena: f } },
-      label: 'Informes',
+      label: t('nav.informes'),
       icon: FileText,
       tab: 'panel',
     },
     {
       name: 'faena-ambiente',
       to: { name: 'faena-ambiente', params: { faena: f } },
-      label: 'Ambiente faena',
+      label: t('nav.ambiente'),
       icon: CloudSun,
       tab: 'ambiente',
     },
     {
       name: 'faena-dron',
       to: { name: 'faena-dron', params: { faena: f } },
-      label: 'Calibración dron',
+      label: t('nav.dron'),
       icon: Plane,
       tab: 'dron',
     },
     {
       name: 'faena-umbrales',
       to: { name: 'faena-umbrales', params: { faena: f } },
-      label: 'Umbrales',
+      label: t('nav.umbrales'),
       icon: SlidersHorizontal,
       tab: 'umbrales',
     },
   ]
   if (showHubLink.value) {
-    all.push({ to: '/ops', label: 'Ops multi-faena', icon: Gauge, name: 'ops-board' })
-    all.push({ to: '/app', label: 'Mis faenas', icon: LayoutGrid, name: 'faenas-hub' })
+    all.push({ to: '/ops', label: t('nav.ops'), icon: Gauge, name: 'ops-board' })
+    all.push({ to: '/app', label: t('nav.hub'), icon: LayoutGrid, name: 'faenas-hub' })
   }
   return all.filter((item) => {
     if (item.name === 'faena-informes') {

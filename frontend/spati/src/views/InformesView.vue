@@ -1,49 +1,43 @@
 <template>
   <div class="page">
     <header class="page-head">
-      <h1>Informes</h1>
-      <p>{{ faenaMeta?.nombre || sitioId }} · documentos de operación y reporting</p>
+      <h1>{{ t('informes.title') }}</h1>
+      <p>{{ t('informes.sub', { name: faenaMeta?.nombre || sitioId }) }}</p>
     </header>
 
     <section class="card">
-      <h2>Informe de faena (operación)</h2>
-      <p class="hint">
-        PDF / HTML / CSV con meteo, aire y contexto de izaje. Válido como respaldo documental.
-      </p>
+      <h2>{{ t('informes.opTitle') }}</h2>
+      <p class="hint">{{ t('informes.opHint') }}</p>
       <div class="actions">
-        <a class="btn solid" :href="urlPdf" target="_blank" rel="noopener">Descargar PDF</a>
-        <a class="btn ghost" :href="urlHtml" target="_blank" rel="noopener">Ver HTML</a>
-        <a class="btn ghost" :href="urlCsv" target="_blank" rel="noopener">CSV</a>
+        <a class="btn solid" :href="urlPdf" target="_blank" rel="noopener">{{ t('informes.pdf') }}</a>
+        <a class="btn ghost" :href="urlHtml" target="_blank" rel="noopener">{{ t('informes.html') }}</a>
+        <a class="btn ghost" :href="urlCsv" target="_blank" rel="noopener">{{ t('informes.csv') }}</a>
       </div>
     </section>
 
     <section class="card">
-      <h2>Reporte mensual ROI</h2>
-      <p v-if="!puedeMensual" class="hint">
-        Disponible desde plan <strong>Pro</strong>. Contacte a su administrador METGO para actualizar el plan.
-      </p>
+      <h2>{{ t('informes.monthlyTitle') }}</h2>
+      <p v-if="!puedeMensual" class="hint">{{ t('informes.monthlyLocked') }}</p>
       <template v-else>
-        <p class="hint">
-          Resumen de alertas, horas evitadas y ROI del período (plantilla ejecutiva).
-        </p>
+        <p class="hint">{{ t('informes.monthlyHint') }}</p>
         <div class="actions">
-          <a class="btn solid" :href="urlMensual" target="_blank" rel="noopener">Abrir reporte mensual</a>
+          <a class="btn solid" :href="urlMensual" target="_blank" rel="noopener">{{ t('informes.monthlyOpen') }}</a>
         </div>
       </template>
     </section>
 
     <section class="card muted">
-      <h2>Documentos comerciales (referencia)</h2>
-      <p class="hint">Plantillas de venta METGO (no sustituyen el informe operativo).</p>
+      <h2>{{ t('informes.commercialTitle') }}</h2>
+      <p class="hint">{{ t('informes.commercialHint') }}</p>
       <ul class="links">
-        <li><a href="/docs-comercial/propuesta-comercial.html" @click.prevent="avisoPlantilla">Propuesta comercial</a></li>
-        <li><a href="/docs-comercial/datasheet-tecnico.html" @click.prevent="avisoPlantilla">Datasheet técnico</a></li>
+        <li><a href="/docs-comercial/propuesta-comercial.html" @click.prevent="avisoPlantilla">{{ t('informes.proposal') }}</a></li>
+        <li><a href="/docs-comercial/datasheet-tecnico.html" @click.prevent="avisoPlantilla">{{ t('informes.datasheet') }}</a></li>
       </ul>
-      <p class="fine">Las plantillas viven en el repositorio (<code>docs/comercial/spati/</code>). El PDF operativo se genera desde la API.</p>
+      <p class="fine">{{ t('informes.fine') }}</p>
     </section>
 
     <p class="back">
-      <router-link :to="{ name: 'faena-ahora', params: { faena: sitioId } }">← Volver a Ahora</router-link>
+      <router-link :to="{ name: 'faena-ahora', params: { faena: sitioId } }">{{ t('informes.back') }}</router-link>
     </p>
   </div>
 </template>
@@ -51,9 +45,11 @@
 <script setup>
 import { computed, inject } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { urlInformeFaena, urlReporteMensual } from '@/services/spatiApi'
 import { useAccess } from '@/stores/access'
 
+const { t } = useI18n()
 const site = inject('site')
 const route = useRoute()
 const access = useAccess()
@@ -83,9 +79,7 @@ const puedeMensual = computed(() => {
 })
 
 function avisoPlantilla() {
-  window.alert(
-    'Las plantillas comerciales están en docs/comercial/spati/ del repositorio. Use el PDF operativo arriba para respaldo en faena.',
-  )
+  window.alert(t('informes.fine'))
 }
 </script>
 
