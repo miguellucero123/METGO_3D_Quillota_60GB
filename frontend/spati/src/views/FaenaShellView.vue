@@ -59,7 +59,8 @@ const show = (tab) => access.canTab(faena.value, tab)
   gap: 0.75rem;
   padding: 0.65rem 1rem;
   border-bottom: 1px solid var(--color-border);
-  background: rgba(17, 24, 39, 0.7);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
   font-size: 0.85rem;
 }
 .faena-nav a {

@@ -18,10 +18,10 @@ export default {
     localBase: 'http://127.0.0.1:8080/api',
   },
   theme: {
-    primary: '#3b82f6',
-    primaryHover: '#2563eb',
-    accent: '#14b8a6',
-    accentLight: '#5eead4',
+    primary: '#10b981',
+    primaryHover: '#059669',
+    accent: '#34d399',
+    accentLight: '#6ee7b7',
   },
   modules: {
     meteo: true,

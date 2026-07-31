@@ -1,36 +1,38 @@
-/* METGO Paine — Design system (cian / celeste neón · Torres del Paine) */
+/* METGO SPATI — Design system (navy / emerald · alineado a landing comercial) */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap');
 
 :root {
-  /* Diferenciado: ámbar desierto / alerta aire (E7 Copiapó) — applySiteTheme pisa en runtime */
-  --color-primary: #fb923c;
-  --color-primary-hover: #f97316;
-  --color-primary-muted: rgba(251, 146, 60, 0.12);
-  --color-primary-subtle: rgba(251, 146, 60, 0.06);
-  --color-accent: #fb923c;
-  --color-accent-light: #fcd34d;
+  /* Landing SPATI: navy #0f172a · emerald #10b981 · blue soft #3b82f6 */
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-muted: rgba(16, 185, 129, 0.14);
+  --color-primary-subtle: rgba(16, 185, 129, 0.08);
+  --color-accent: #34d399;
+  --color-accent-light: #6ee7b7;
+  --color-brand-blue: #3b82f6;
 
-  /* Fondos profundos */
-  --color-bg: #0b1120;
+  /* Fondos profundos (navy) */
+  --color-bg: #0f172a;
+  --color-bg-deep: #070b14;
   --color-surface: #111827;
-  --color-surface-elevated: #1f2937;
-  --color-border: #374151;
-  --color-border-strong: #4b5563;
+  --color-surface-elevated: #1e293b;
+  --color-border: #1e293b;
+  --color-border-strong: #334155;
 
   /* Texto */
-  --color-text: #f3f4f6;
-  --color-text-secondary: #9ca3af;
-  --color-muted: #6b7280;
+  --color-text: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-muted: #64748b;
 
   /* Estados */
   --color-success: #10b981;
   --color-success-bg: rgba(16, 185, 129, 0.15);
-  --color-warning: #f97316;
+  --color-warning: #f59e0b;
   --color-warning-bg: rgba(245, 158, 11, 0.15);
   --color-danger: #ef4444;
   --color-danger-bg: rgba(239, 68, 68, 0.15);
-  --color-info: #0ea5e9;
-  --color-info-bg: rgba(14, 165, 233, 0.15);
+  --color-info: #3b82f6;
+  --color-info-bg: rgba(59, 130, 246, 0.15);
 
   /* Legacy aliases (compat) */
   --metgo-primary: var(--color-primary);
@@ -48,17 +50,23 @@
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-  --glow-primary: 0 0 15px rgba(34, 211, 238, 0.35);
+  --glow-primary: 0 0 18px rgba(16, 185, 129, 0.28);
   
   --metgo-radius: var(--radius-lg);
   --metgo-shadow: var(--shadow-md);
 
   --font-sans: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Syne', 'DM Sans', system-ui, sans-serif;
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
+
+  /* Atmósfera compartida con landing */
+  --spati-bg-atmosphere:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(16, 185, 129, 0.16), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(59, 130, 246, 0.1), transparent);
 }
 
 * {
@@ -69,7 +77,8 @@
 
 body {
   font-family: var(--font-sans);
-  background: var(--color-bg);
+  background: var(--spati-bg-atmosphere), var(--color-bg);
+  background-attachment: fixed;
   color: var(--color-text);
   font-size: 0.9375rem;
   line-height: 1.5;
@@ -78,13 +87,14 @@ body {
 
 .app-login {
   min-height: 100vh;
-  background: var(--color-bg);
+  background: var(--spati-bg-atmosphere), var(--color-bg);
 }
 
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--spati-bg-atmosphere), var(--color-bg);
 }
 
 .app-body {
@@ -98,7 +108,7 @@ body {
   flex: 1;
   padding: var(--space-lg);
   overflow-y: auto;
-  background: var(--color-bg);
+  background: transparent;
 }
 
 .skip-link {
@@ -107,7 +117,7 @@ body {
   top: 0.5rem;
   z-index: 100;
   background: var(--color-primary);
-  color: #0b1120;
+  color: #0f172a;
   padding: 0.5rem 0.85rem;
   border-radius: var(--radius-sm);
   font-weight: 600;
@@ -210,7 +220,7 @@ body {
   font-weight: 500;
   font-family: inherit;
   background: var(--color-primary);
-  color: #0b1120;
+  color: #0f172a;
   transition: background 0.15s, box-shadow 0.15s;
 }
 
@@ -370,7 +380,7 @@ body {
   font-weight: 500;
   font-family: inherit;
   background: var(--color-primary);
-  color: #0b1120;
+  color: #0f172a;
   transition: background 0.15s, box-shadow 0.15s;
 }
 
@@ -400,22 +410,32 @@ body {
 
 [data-theme='light'] {
   color-scheme: light;
-  --color-bg: #f0f4f2;
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-muted: rgba(5, 150, 105, 0.12);
+  --color-primary-subtle: rgba(5, 150, 105, 0.06);
+  --color-accent: #10b981;
+  --color-accent-light: #34d399;
+  --color-bg: #f0fdf6;
+  --color-bg-deep: #ecfdf5;
   --color-surface: #ffffff;
-  --color-surface-elevated: #e8eef0;
-  --color-border: #d1d9e0;
-  --color-border-strong: #94a3b8;
+  --color-surface-elevated: #f0fdf4;
+  --color-border: #d1fae5;
+  --color-border-strong: #86efac;
   --color-text: #0f172a;
-  --color-text-secondary: #475569;
+  --color-text-secondary: #334155;
   --color-muted: #64748b;
   --color-success-bg: rgba(16, 185, 129, 0.12);
   --color-warning-bg: rgba(245, 158, 11, 0.12);
   --color-danger-bg: rgba(239, 68, 68, 0.12);
-  --color-info-bg: rgba(14, 165, 233, 0.12);
+  --color-info-bg: rgba(59, 130, 246, 0.12);
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.1);
   --glow-primary: none;
+  --spati-bg-atmosphere:
+    radial-gradient(ellipse 70% 45% at 12% 0%, rgba(16, 185, 129, 0.12), transparent),
+    radial-gradient(ellipse 50% 35% at 88% 8%, rgba(59, 130, 246, 0.08), transparent);
   --metgo-bg: var(--color-bg);
   --metgo-card: var(--color-surface);
   --metgo-text: var(--color-text);

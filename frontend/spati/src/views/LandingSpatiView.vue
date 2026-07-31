@@ -242,11 +242,10 @@ onMounted(async () => {
   --muted: #94a3b8;
   --line: #1e293b;
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(16, 185, 129, 0.18), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(59, 130, 246, 0.12), transparent),
-    var(--navy);
+  background: var(--spati-bg-atmosphere, radial-gradient(ellipse 80% 50% at 10% -10%, rgba(16, 185, 129, 0.18), transparent), radial-gradient(ellipse 60% 40% at 90% 10%, rgba(59, 130, 246, 0.12), transparent)), var(--navy);
   color: #e2e8f0;
+  font-family: var(--font-sans, 'DM Sans', system-ui, sans-serif);
+}
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 .top {

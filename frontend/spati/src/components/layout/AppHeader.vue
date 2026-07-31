@@ -70,8 +70,9 @@ function onLogout() {
   align-items: center;
   gap: 0.75rem 1.25rem;
   padding: 0.85rem 1.25rem;
-  background: var(--color-surface);
+  background: rgba(15, 23, 42, 0.88);
   border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
 }
 .header-left {
   display: flex;

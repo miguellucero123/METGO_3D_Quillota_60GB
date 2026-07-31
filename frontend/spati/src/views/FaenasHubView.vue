@@ -245,9 +245,9 @@ function irA(slug) {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 80% 50% at 15% 10%, rgba(59, 130, 246, 0.22), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(20, 184, 166, 0.12), transparent 50%),
-    linear-gradient(165deg, #070b14 0%, #0b1120 45%, #0f172a 100%);
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(16, 185, 129, 0.18), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(59, 130, 246, 0.12), transparent),
+    linear-gradient(165deg, #070b14 0%, #0f172a 55%, #111827 100%);
 }
 .hub-bg::after {
   content: '';
@@ -503,7 +503,7 @@ function irA(slug) {
 }
 .faena-row:hover {
   border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
-  background: rgba(59, 130, 246, 0.08);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 .faena-text {
   display: grid;

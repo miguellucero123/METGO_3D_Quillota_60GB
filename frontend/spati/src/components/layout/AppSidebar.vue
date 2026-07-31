@@ -118,12 +118,13 @@ const items = computed(() => {
   width: 220px;
   flex-shrink: 0;
   padding: 1rem 0.75rem;
-  background: var(--color-surface);
+  background: rgba(15, 23, 42, 0.82);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-height: calc(100vh - 64px);
+  backdrop-filter: blur(10px);
 }
 .nav-item {
   display: flex;

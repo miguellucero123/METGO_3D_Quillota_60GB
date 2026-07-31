@@ -351,7 +351,7 @@ onMounted(() => cargar())
 .controls { display: flex; gap: 0.75rem; align-items: center; margin: 1.25rem 0; flex-wrap: wrap; }
 .faena-fija { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
 .faena-fija strong { color: var(--color-text); }
-.btn { padding: 0.5rem 1rem; border-radius: var(--radius-md); border: none; background: var(--color-primary); color: #0b1120; font-weight: 600; cursor: pointer; }
+.btn { padding: 0.5rem 1rem; border-radius: var(--radius-md); border: none; background: var(--color-primary); color: #0f172a; font-weight: 700; cursor: pointer; }
 .btn:disabled { opacity: 0.6; }
 .state { padding: 1.5rem; color: var(--color-muted); }
 .state.error { color: #fca5a5; }

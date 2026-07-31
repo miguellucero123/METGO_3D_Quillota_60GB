@@ -173,7 +173,7 @@ dd { margin: 0; }
   font-weight: 600;
   cursor: pointer;
   background: var(--color-primary);
-  color: #0b1120;
+  color: #0f172a;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .err { color: var(--color-danger); }

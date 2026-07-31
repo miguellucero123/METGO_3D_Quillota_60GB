@@ -516,8 +516,8 @@ onBeforeUnmount(() => {
 }
 .btn {
   border: none;
-  background: var(--color-primary, #3b82f6);
-  color: #fff;
+  background: var(--color-primary, #10b981);
+  color: #0f172a;
   font-weight: 700;
   padding: 0.45rem 0.85rem;
   border-radius: 8px;

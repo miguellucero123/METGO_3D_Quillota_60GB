@@ -307,7 +307,7 @@ onMounted(() => cargar())
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-primary);
-  color: #fff;
+  color: #0f172a;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
