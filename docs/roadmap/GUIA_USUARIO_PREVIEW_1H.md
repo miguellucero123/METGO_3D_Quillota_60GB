@@ -1,50 +1,45 @@
 # Usuario preview 1 hora (VENTORA)
 
-Acceso temporal solo a **Ahora** + **Panel técnico**. Caduca a la hora y se puede purgar.
+Acceso temporal solo a **Ahora** + **Panel técnico**.
 
-## Crear
+## Demo fija (recomendada)
+
+| Campo | Valor |
+|-------|--------|
+| Usuario | `demo@ventora.demo` |
+| Clave | `DemoVentora1!` |
+| Faena | `quebrada_blanca` |
+| Tabs | Ahora, Panel técnico |
+| Login | https://metgo-spati.pages.dev/login?faena=quebrada_blanca |
+
+Se crea/renueva al arrancar la API (`METGO_SEED_DEMO_PREVIEW=1`, default) o con:
+
+```http
+POST /api/auth/preview-demo
+X-Cron-Token: <CRON_SECRET>
+{ "faena": "quebrada_blanca", "horas": 24 }
+```
+
+Override opcional: `METGO_DEMO_PASSWORD`, `METGO_DEMO_EMAIL`, `METGO_DEMO_FAENA`.
+No se elimina en `purge-preview`.
+
+## Crear temporal (clave aleatoria)
 
 ```http
 POST /api/auth/preview-hora
 Content-Type: application/json
 X-Cron-Token: <CRON_SECRET>
-# o Authorization: Bearer <jwt_admin>
-# o METGO_ALLOW_PREVIEW=1 en local
 
 { "faena": "quebrada_blanca", "horas": 1, "label": "demo_cliente" }
 ```
 
-Respuesta `201`:
+Respuesta `201` con `email` / `password` únicos.
 
-```json
-{
-  "email": "preview.quebrada_blanca....@ventora.demo",
-  "password": "Vp!……",
-  "faena": "quebrada_blanca",
-  "tabs": ["ahora", "panel"],
-  "expires_at": "…",
-  "login_url": "https://metgo-spati.pages.dev/login?faena=quebrada_blanca"
-}
-```
-
-## Login SPA
-
-1. Abrir `login_url` (o `/login`).
-2. Usuario = `email`, contraseña = `password`.
-3. Entra a `/f/{faena}/ahora`. No ve Ambiente, Dron, Umbrales ni Informes.
-
-## Expiración y borrado
+## Expiración y borrado (solo temporales)
 
 - Tras `expires_at`, el login responde **403** `subscription_expired`.
-- Purga orgs vencidas:
-
-```http
-POST /api/cron/identity/purge-preview
-X-Cron-Token: <CRON_SECRET>
-```
-
-Programar en Render Cron (p. ej. cada hora).
+- Purga: `POST /api/cron/identity/purge-preview`
 
 ## Fase
 
-**2.x / S1 identidad** · plan `preview` oculto del catálogo comercial.
+**2.x / S1 identidad** · plan `preview` + demo fija.

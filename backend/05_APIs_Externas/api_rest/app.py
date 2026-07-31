@@ -443,6 +443,23 @@ def create_app() -> Flask:
 app = create_app()
 
 
+def demo_preview_bootstrap() -> None:
+    """Asegura demo@ventora.demo (solo Ahora + Panel). Desactivar con METGO_SEED_DEMO_PREVIEW=0."""
+    if (os.getenv("METGO_SEED_DEMO_PREVIEW") or "1").strip().lower() in ("0", "false", "no"):
+        return
+    try:
+        from api_rest.identity import identity_store
+
+        faena = (os.getenv("METGO_DEMO_FAENA") or "quebrada_blanca").strip()
+        ok, msg, extra = identity_store.ensure_usuario_demo_fijo(faena=faena, horas=24)
+        if ok and extra:
+            print(f"Demo preview: {extra.get('email')} faena={extra.get('faena')} ({msg})")
+        elif not ok:
+            print(f"Demo preview omitido: {msg}")
+    except Exception as exc:
+        print(f"Demo preview omitido: {exc}")
+
+
 def ml_bootstrap() -> None:
     """Entrena/sincroniza modelos al arrancar (usado por main() y por gunicorn)."""
     if os.getenv("METGO_ML_AUTO_TRAIN", "1").lower() in ("0", "false", "no"):
@@ -468,6 +485,7 @@ def ml_bootstrap() -> None:
 
 def main() -> None:
     # Render/Railway inyectan PORT; en local use METGO_API_PORT (8080)
+    demo_preview_bootstrap()
     ml_bootstrap()
 
     port = int(os.getenv("PORT", os.getenv("METGO_API_PORT", "8080")))

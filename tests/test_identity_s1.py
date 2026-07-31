@@ -432,6 +432,71 @@ def test_preview_hora_solo_ahora_y_panel_y_purge(monkeypatch):
     assert purged.get_json()["purged"] >= 1
 
 
+def test_preview_demo_fijo_credenciales(monkeypatch):
+    """demo@ventora.demo / DemoVentora1! — tabs limitados, no se purga."""
+    monkeypatch.setenv("METGO_ALLOW_PREVIEW", "1")
+    monkeypatch.setenv("METGO_IDENTITY_STORE", "memory")
+    monkeypatch.delenv("METGO_DEMO_PASSWORD", raising=False)
+    from api_rest.app import create_app
+    from api_rest.identity import identity_store
+    from datetime import timedelta
+
+    identity_store.reset_memory()
+    app = create_app()
+    client = app.test_client()
+
+    r = client.post(
+        "/api/auth/preview-demo",
+        json={"faena": "quebrada_blanca", "horas": 24},
+    )
+    assert r.status_code == 200, r.get_json()
+    cred = r.get_json()
+    assert cred["email"] == "demo@ventora.demo"
+    assert cred["password"] == "DemoVentora1!"
+    assert cred["fixed"] is True
+
+    login = client.post(
+        "/api/auth/login",
+        json={
+            "username": "demo@ventora.demo",
+            "password": "DemoVentora1!",
+            "sitio": "spati",
+            "faena": "quebrada_blanca",
+        },
+    )
+    assert login.status_code == 200
+    token = login.get_json()["access_token"]
+    access = client.get(
+        "/api/auth/access?sitio=spati&faena=quebrada_blanca",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    tabs = access.get_json()["tabs"]
+    assert tabs.get("ahora") is True
+    assert tabs.get("panel") is True
+    assert tabs.get("ambiente") is False
+
+    # Renovar misma clave
+    r2 = client.post("/api/auth/preview-demo", json={"faena": "quebrada_blanca"})
+    assert r2.status_code == 200
+    assert r2.get_json()["renewed"] is True
+    assert r2.get_json()["password"] == "DemoVentora1!"
+
+    with identity_store._lock:
+        for s in identity_store._MEM["suscripciones"]:
+            if (s.get("metadata") or {}).get("fixed_demo"):
+                s["current_period_end"] = (
+                    identity_store._utcnow() - timedelta(minutes=1)
+                ).isoformat()
+
+    purged = client.post("/api/cron/identity/purge-preview")
+    assert purged.status_code == 200
+    assert purged.get_json()["purged"] == 0
+    assert any(
+        u.get("email_norm") == "demo@ventora.demo"
+        for u in identity_store._MEM["usuarios_app"]
+    )
+
+
 def test_reporte_mensual_html_publico():
     from api_rest.app import create_app
 

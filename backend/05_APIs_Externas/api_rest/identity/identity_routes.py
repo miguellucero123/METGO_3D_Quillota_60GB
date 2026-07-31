@@ -364,6 +364,23 @@ def register_identity_routes(app: Flask) -> None:
             return jsonify({"error": msg}), 400
         return jsonify({"message": msg, **(extra or {})}), 201
 
+    @app.post("/api/auth/preview-demo")
+    def ensure_preview_demo():
+        """Upsert usuario demo fijo: demo@ventora.demo / DemoVentora1!.
+
+        Auth: CRON_SECRET, Bearer admin, o METGO_ALLOW_PREVIEW=1.
+        """
+        if not _auth_preview_admin_or_cron():
+            return jsonify({"error": "No autorizado"}), 401
+
+        data = request.get_json(silent=True) or {}
+        faena = (data.get("faena") or request.args.get("faena") or "quebrada_blanca").strip()
+        horas = float(data.get("horas") or request.args.get("horas") or 24)
+        ok, msg, extra = identity_store.ensure_usuario_demo_fijo(faena=faena, horas=horas)
+        if not ok:
+            return jsonify({"error": msg}), 400
+        return jsonify({"message": msg, **(extra or {})}), 200
+
     @app.post("/api/cron/identity/purge-preview")
     def cron_purge_preview():
         if not _auth_preview_admin_or_cron():

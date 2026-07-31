@@ -300,6 +300,26 @@ paths:
           description: "{ email, password, faena, expires_at, login_url, tabs }"
         "401":
           description: No autorizado
+  /api/auth/preview-demo:
+    post:
+      tags: [auth]
+      summary: Upsert usuario demo fijo (demo@ventora.demo)
+      description: |
+        Credenciales fijas DemoVentora1! (o METGO_DEMO_PASSWORD).
+        Solo Ahora + Panel. No se elimina en purge-preview.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                faena: { type: string, example: quebrada_blanca }
+                horas: { type: number, example: 24 }
+      responses:
+        "200":
+          description: "{ email, password, faena, expires_at, fixed }"
+        "401":
+          description: No autorizado
   /api/cron/identity/purge-preview:
     post:
       tags: [auth]

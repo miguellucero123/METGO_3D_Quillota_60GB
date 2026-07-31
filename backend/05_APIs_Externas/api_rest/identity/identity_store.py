@@ -729,6 +729,15 @@ def segundos_restantes_suscripcion(sub: dict[str, Any] | None) -> int | None:
     return max(0, int((end - _utcnow()).total_seconds()))
 
 
+# Demo fija (login SPA): solo Ahora + Panel. Override clave con METGO_DEMO_PASSWORD.
+DEMO_PREVIEW_EMAIL = "demo@ventora.demo"
+DEMO_PREVIEW_PASSWORD_DEFAULT = "DemoVentora1!"
+
+
+def demo_preview_password() -> str:
+    return (os.getenv("METGO_DEMO_PASSWORD") or DEMO_PREVIEW_PASSWORD_DEFAULT).strip() or DEMO_PREVIEW_PASSWORD_DEFAULT
+
+
 def crear_usuario_preview(
     *,
     faena: str = "quebrada_blanca",
@@ -883,26 +892,316 @@ def crear_usuario_preview(
     )
 
 
+def _org_es_demo_fija(org: dict[str, Any] | None) -> bool:
+    if not org:
+        return False
+    meta = org.get("metadata") or {}
+    if isinstance(meta, str):
+        return False
+    return bool(meta.get("fixed_demo"))
+
+
+def ensure_usuario_demo_fijo(
+    *,
+    faena: str = "quebrada_blanca",
+    horas: float = 24.0,
+) -> tuple[bool, str, dict[str, Any] | None]:
+    """Upsert demo@ventora.demo / DemoVentora1! (solo Ahora + Panel). No se purga."""
+    faena = (faena or "quebrada_blanca").strip().lower()
+    horas = max(1.0, min(float(horas or 24.0), 720.0))
+    email = (os.getenv("METGO_DEMO_EMAIL") or DEMO_PREVIEW_EMAIL).strip().lower() or DEMO_PREVIEW_EMAIL
+    password = demo_preview_password()
+    period_end = (_utcnow() + timedelta(hours=horas)).isoformat()
+    feats = features_for_plan("preview")
+    now = _utcnow().isoformat()
+    meta = {
+        "preview": True,
+        "fixed_demo": True,
+        "label": "demo_fijo",
+        "auto_delete": False,
+    }
+    spa = (os.getenv("METGO_SPATI_PUBLIC_URL") or "https://metgo-spati.pages.dev").rstrip("/")
+    payload_out = {
+        "email": email,
+        "password": password,
+        "faena": faena,
+        "plan_code": "preview",
+        "tabs": ["ahora", "panel"],
+        "expires_at": period_end,
+        "ttl_hours": horas,
+        "fixed": True,
+        "login_url": f"{spa}/login?faena={faena}",
+        "nota": "Usuario demo fijo. Solo Ahora y Panel. No se elimina en purge-preview.",
+    }
+
+    if use_memory():
+        with _lock:
+            _ensure_mem_reglas()
+            user = next(
+                (u for u in _MEM["usuarios_app"] if u.get("email_norm") == email and u.get("sitio") == "spati"),
+                None,
+            )
+            if user:
+                org_id = str(user.get("org_id"))
+                user["password_hash"] = pii_crypto.hash_password(password)
+                user["faena"] = faena
+                user["status"] = "active"
+                user["email_verified_at"] = now
+                org = next((o for o in _MEM["orgs"] if str(o.get("id")) == org_id), None)
+                if org:
+                    org["faena"] = faena
+                    org["metadata"] = meta
+                sub = next(
+                    (s for s in _MEM["suscripciones"] if str(s.get("org_id")) == org_id),
+                    None,
+                )
+                if sub:
+                    sub["faena"] = faena
+                    sub["plan_code"] = "preview"
+                    sub["status"] = "trialing"
+                    sub["current_period_end"] = period_end
+                    sub["metadata"] = meta
+                    sub_id = str(sub["id"])
+                else:
+                    sub_id = str(uuid.uuid4())
+                    _MEM["suscripciones"].append(
+                        {
+                            "id": sub_id,
+                            "org_id": org_id,
+                            "sitio": "spati",
+                            "faena": faena,
+                            "plan_code": "preview",
+                            "status": "trialing",
+                            "current_period_end": period_end,
+                            "seats": 1,
+                            "metadata": meta,
+                        }
+                    )
+                keep_feats = {e.get("feature_key") for e in _MEM["entitlements"] if e.get("suscripcion_id") == sub_id}
+                for fk in feats:
+                    if fk not in keep_feats:
+                        _MEM["entitlements"].append(
+                            {
+                                "id": str(uuid.uuid4()),
+                                "suscripcion_id": sub_id,
+                                "feature_key": fk,
+                                "enabled": True,
+                            }
+                        )
+                payload_out["org_id"] = org_id
+                payload_out["usuario_id"] = str(user.get("id"))
+                payload_out["renewed"] = True
+                return True, "Usuario demo renovado", payload_out
+
+            org_id = str(uuid.uuid4())
+            user_id = str(uuid.uuid4())
+            sub_id = str(uuid.uuid4())
+            _MEM["orgs"].append(
+                {
+                    "id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "razon_social_enc": pii_crypto.encrypt_pii("VENTORA Demo"),
+                    "rut_enc": pii_crypto.encrypt_pii("76.000.000-0"),
+                    "giro": "demo",
+                    "created_at": now,
+                    "metadata": meta,
+                }
+            )
+            _MEM["usuarios_app"].append(
+                {
+                    "id": user_id,
+                    "email_norm": email,
+                    "password_hash": pii_crypto.hash_password(password),
+                    "nombres_enc": pii_crypto.encrypt_pii("Demo"),
+                    "apellidos_enc": pii_crypto.encrypt_pii("VENTORA"),
+                    "telefono_enc": None,
+                    "org_id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "role": "operador",
+                    "email_verified_at": now,
+                    "status": "active",
+                    "created_at": now,
+                }
+            )
+            _MEM["suscripciones"].append(
+                {
+                    "id": sub_id,
+                    "org_id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "plan_code": "preview",
+                    "status": "trialing",
+                    "current_period_end": period_end,
+                    "seats": 1,
+                    "metadata": meta,
+                }
+            )
+            for fk in feats:
+                _MEM["entitlements"].append(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "suscripcion_id": sub_id,
+                        "feature_key": fk,
+                        "enabled": True,
+                    }
+                )
+            payload_out["org_id"] = org_id
+            payload_out["usuario_id"] = user_id
+            payload_out["renewed"] = False
+            return True, "Usuario demo creado", payload_out
+
+    from api_rest.integracion import supabase_store as sb
+
+    rows = sb.rest_select(
+        "usuarios_app",
+        params={"email_norm": f"eq.{email}", "sitio": "eq.spati", "select": "*"},
+        limit=1,
+    )
+    if rows:
+        user = rows[0]
+        org_id = str(user.get("org_id"))
+        sb.rest_patch(
+            "usuarios_app",
+            {"id": f"eq.{user['id']}"},
+            {
+                "password_hash": pii_crypto.hash_password(password),
+                "faena": faena,
+                "status": "active",
+                "email_verified_at": now,
+            },
+        )
+        sb.rest_patch(
+            "orgs",
+            {"id": f"eq.{org_id}"},
+            {"faena": faena},
+        )
+        subs = sb.rest_select(
+            "suscripciones",
+            params={"org_id": f"eq.{org_id}", "select": "*"},
+            limit=5,
+        )
+        if subs:
+            sub_id = str(subs[0]["id"])
+            sb.rest_patch(
+                "suscripciones",
+                {"id": f"eq.{sub_id}"},
+                {
+                    "faena": faena,
+                    "plan_code": "preview",
+                    "status": "trialing",
+                    "current_period_end": period_end,
+                },
+            )
+        else:
+            sub_id = str(uuid.uuid4())
+            sb.rest_insert(
+                "suscripciones",
+                {
+                    "id": sub_id,
+                    "org_id": org_id,
+                    "sitio": "spati",
+                    "faena": faena,
+                    "plan_code": "preview",
+                    "status": "trialing",
+                    "current_period_end": period_end,
+                    "seats": 1,
+                },
+            )
+            for fk in feats:
+                sb.rest_insert(
+                    "entitlements",
+                    {"suscripcion_id": sub_id, "feature_key": fk, "enabled": True},
+                )
+        payload_out["org_id"] = org_id
+        payload_out["usuario_id"] = str(user.get("id"))
+        payload_out["renewed"] = True
+        return True, "Usuario demo renovado", payload_out
+
+    org_id = str(uuid.uuid4())
+    user_id = str(uuid.uuid4())
+    sub_id = str(uuid.uuid4())
+    if not sb.rest_insert(
+        "orgs",
+        {
+            "id": org_id,
+            "sitio": "spati",
+            "faena": faena,
+            "razon_social_enc": pii_crypto.encrypt_pii("VENTORA Demo"),
+            "rut_enc": pii_crypto.encrypt_pii("76.000.000-0"),
+            "giro": "demo",
+        },
+    ):
+        return False, "No se pudo crear org demo", None
+    if not sb.rest_insert(
+        "usuarios_app",
+        {
+            "id": user_id,
+            "email_norm": email,
+            "password_hash": pii_crypto.hash_password(password),
+            "nombres_enc": pii_crypto.encrypt_pii("Demo"),
+            "apellidos_enc": pii_crypto.encrypt_pii("VENTORA"),
+            "org_id": org_id,
+            "sitio": "spati",
+            "faena": faena,
+            "role": "operador",
+            "email_verified_at": now,
+            "status": "active",
+        },
+    ):
+        return False, "No se pudo crear usuario demo", None
+    if not sb.rest_insert(
+        "suscripciones",
+        {
+            "id": sub_id,
+            "org_id": org_id,
+            "sitio": "spati",
+            "faena": faena,
+            "plan_code": "preview",
+            "status": "trialing",
+            "current_period_end": period_end,
+            "seats": 1,
+        },
+    ):
+        return False, "No se pudo crear suscripción demo", None
+    for fk in feats:
+        sb.rest_insert(
+            "entitlements",
+            {"suscripcion_id": sub_id, "feature_key": fk, "enabled": True},
+        )
+    payload_out["org_id"] = org_id
+    payload_out["usuario_id"] = user_id
+    payload_out["renewed"] = False
+    return True, "Usuario demo creado", payload_out
+
+
 def purge_preview_expirados() -> dict[str, Any]:
-    """Elimina orgs preview cuyo current_period_end ya pasó."""
+    """Elimina orgs preview cuyo current_period_end ya pasó (salvo demo fija)."""
     purged: list[str] = []
     now = _utcnow()
     if use_memory():
         with _lock:
             expired_orgs: set[str] = set()
+            fixed_orgs = {
+                str(o.get("id"))
+                for o in _MEM["orgs"]
+                if _org_es_demo_fija(o)
+            }
             for s in _MEM["suscripciones"]:
                 if (s.get("plan_code") or "") != "preview":
                     continue
+                oid = str(s.get("org_id"))
+                if oid in fixed_orgs or (s.get("metadata") or {}).get("fixed_demo"):
+                    continue
                 end = _parse_iso(s.get("current_period_end"))
                 if end and now >= end:
-                    expired_orgs.add(str(s.get("org_id")))
+                    expired_orgs.add(oid)
             if not expired_orgs:
                 return {"purged": 0, "org_ids": []}
             _MEM["suscripciones"] = [
                 s for s in _MEM["suscripciones"] if str(s.get("org_id")) not in expired_orgs
             ]
-            sub_ids = {e.get("suscripcion_id") for e in _MEM["entitlements"]}
-            # rebuild entitlements from remaining subs
             keep_subs = {s["id"] for s in _MEM["suscripciones"]}
             _MEM["entitlements"] = [
                 e for e in _MEM["entitlements"] if e.get("suscripcion_id") in keep_subs
@@ -921,11 +1220,19 @@ def purge_preview_expirados() -> dict[str, Any]:
         params={"plan_code": "eq.preview", "select": "id,org_id,current_period_end"},
         limit=200,
     )
+    demo_email = (os.getenv("METGO_DEMO_EMAIL") or DEMO_PREVIEW_EMAIL).strip().lower()
+    demo_users = sb.rest_select(
+        "usuarios_app",
+        params={"email_norm": f"eq.{demo_email}", "sitio": "eq.spati", "select": "org_id"},
+        limit=5,
+    )
+    skip_orgs = {str(u.get("org_id")) for u in (demo_users or []) if u.get("org_id")}
     for s in rows or []:
         end = _parse_iso(s.get("current_period_end"))
         oid = s.get("org_id")
+        if oid and str(oid) in skip_orgs:
+            continue
         if oid and end and now >= end:
-            # CASCADE esperado en FK; si no, al menos cancelar
             try:
                 sb.rest_patch(
                     "suscripciones",

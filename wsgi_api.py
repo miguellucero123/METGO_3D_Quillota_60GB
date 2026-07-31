@@ -17,6 +17,7 @@ import metgo_paths
 sys.path.insert(0, str(metgo_paths.MODULE_PATHS["05_api_rest"]))
 metgo_paths.setup_paths("01_meteo", "05_apis")
 
-from api_rest.app import app, ml_bootstrap
+from api_rest.app import app, ml_bootstrap, demo_preview_bootstrap
 
+demo_preview_bootstrap()
 ml_bootstrap()
