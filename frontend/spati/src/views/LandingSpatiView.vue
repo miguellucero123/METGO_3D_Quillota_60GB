@@ -8,7 +8,7 @@
       <nav class="nav" aria-label="Secciones">
         <a href="#como">Cómo funciona</a>
         <a href="#alertas">Alertas</a>
-        <a href="#precios">Precios</a>
+        <a href="#precios">Planes</a>
         <a href="#faq">FAQ</a>
       </nav>
       <div class="top-cta">
@@ -75,15 +75,10 @@
 
     <section id="precios" class="section">
       <h2>Planes</h2>
-      <p class="section-sub">Sin tarifa por informe. Precios mensuales sin IVA.</p>
+      <p class="section-sub">Sin tarifa por informe. Cotización según faena y flota.</p>
       <div class="plans">
         <article v-for="p in planesUi" :key="p.code" class="plan" :class="{ featured: p.featured }">
           <p class="plan-name">{{ p.nombre }}</p>
-          <p class="plan-price">
-            <template v-if="p.desde">Desde </template>
-            <strong>{{ p.precioLabel }}</strong>
-            <span v-if="p.precioLabel !== 'A convenir'">/mes</span>
-          </p>
           <p class="plan-desc">{{ p.descripcion }}</p>
           <ul>
             <li v-for="(f, i) in p.bullets" :key="i">{{ f }}</li>
@@ -137,14 +132,12 @@ const FALLBACK = [
   {
     code: 'starter',
     nombre: 'Básico',
-    precio_mensual_clp: 300_000,
     descripcion: '1 faena · hasta 2 grúas · Ahora + PDF · email',
     features: ['panel', 'ambiente', 'ahora', 'alertas'],
   },
   {
     code: 'pro',
     nombre: 'Pro',
-    precio_mensual_clp: 500_000,
     recomendado: true,
     descripcion: 'Hasta 3 faenas · WhatsApp · umbrales · reporte mensual',
     features: ['dron', 'umbrales', 'reporte_mensual'],
@@ -152,8 +145,6 @@ const FALLBACK = [
   {
     code: 'enterprise',
     nombre: 'Enterprise',
-    precio_mensual_clp: 1_200_000,
-    precio_etiqueta: 'desde',
     contacto: true,
     descripcion: 'Multi-faena · API · SLA 99.5% · AM 24/7 · ERP',
     features: ['multi_faena', 'api', 'sla'],
@@ -166,11 +157,6 @@ const BULLETS = {
   enterprise: ['Faenas ilimitadas + /ops', 'API + webhooks', 'SLA 99.5% + soporte 24/7', 'Integración ERP'],
 }
 
-function fmtClp(n) {
-  if (n == null) return 'A convenir'
-  return `$${Number(n).toLocaleString('es-CL')}`
-}
-
 const planesUi = computed(() => {
   const src = (planesApi.value || []).filter((p) =>
     ['starter', 'pro', 'enterprise'].includes(p.plan_code),
@@ -178,12 +164,9 @@ const planesUi = computed(() => {
   const list = src.length ? src : FALLBACK
   return list.map((p) => {
     const code = p.plan_code || p.code
-    const desde = p.precio_etiqueta === 'desde' || code === 'enterprise'
     return {
       code,
       nombre: p.nombre || p.nombre_corto || code,
-      precioLabel: fmtClp(p.precio_mensual_clp),
-      desde,
       descripcion: p.descripcion || '',
       bullets: BULLETS[code] || (p.features || []).slice(0, 4),
       featured: Boolean(p.recomendado || code === 'pro'),
@@ -541,15 +524,6 @@ onMounted(async () => {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-}
-.plan-price {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-.plan-price strong {
-  font-size: 1.55rem;
-  color: #fff;
 }
 .plan-desc {
   margin: 0;

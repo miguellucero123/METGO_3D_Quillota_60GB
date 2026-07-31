@@ -120,10 +120,6 @@ const tabs = computed(() => data.value?.access?.tabs || {})
         <li v-for="p in planes" :key="p.plan_code">
           <div>
             <strong>{{ p.nombre }}</strong>
-            <span v-if="p.precio_mensual_clp != null">
-              {{ p.precio_etiqueta === 'desde' ? 'Desde ' : '' }}${{ p.precio_mensual_clp.toLocaleString('es-CL') }} CLP/mes
-            </span>
-            <span v-else>A convenir</span>
             <em>{{ p.descripcion || (p.features || []).join(', ') }}</em>
           </div>
           <button
