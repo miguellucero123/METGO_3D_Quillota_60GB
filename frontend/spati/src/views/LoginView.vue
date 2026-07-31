@@ -1,59 +1,3 @@
-<script setup>
-import { ref, onMounted, inject, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { HardHat, LogIn } from 'lucide-vue-next'
-import { useAuth } from '@/stores/auth'
-import { wakeApi } from '@/services/authApi'
-import { setLocale } from '@/i18n'
-import ThemeToggle from '@/components/layout/ThemeToggle.vue'
-
-const site = inject('site')
-const router = useRouter()
-const route = useRoute()
-const auth = useAuth()
-const { t, locale } = useI18n()
-
-const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
-const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faena.value))
-
-const username = ref('')
-const password = ref('')
-const error = ref('')
-const cargando = ref(false)
-
-onMounted(() => {
-  wakeApi().catch(() => {})
-})
-
-async function onSubmit() {
-  error.value = ''
-  cargando.value = true
-  try {
-    await wakeApi()
-    await auth.login(username.value.trim(), password.value, {
-      faena: faena.value,
-      sitio: 'spati',
-    })
-    let redirect =
-      typeof route.query.redirect === 'string' ? route.query.redirect : `/f/${faena.value}/ahora`
-    // Nunca dejar al operador en el hub público tras login
-    if (redirect === '/' || redirect.startsWith('/?')) {
-      redirect = `/f/${faena.value}/ahora`
-    }
-    // Entrada por defecto: vista Ahora (mapa + horas), no el panel denso
-    if (redirect === `/f/${faena.value}/` || redirect === `/f/${faena.value}`) {
-      redirect = `/f/${faena.value}/ahora`
-    }
-    await router.replace(redirect.startsWith('/') ? redirect : `/f/${faena.value}/ahora`)
-  } catch (e) {
-    error.value = e.message || 'Usuario o contraseña incorrectos'
-  } finally {
-    cargando.value = false
-  }
-}
-</script>
-
 <template>
   <div class="auth-page">
     <div class="auth-panel">
@@ -70,13 +14,27 @@ async function onSubmit() {
         <div class="auth-logo">
           <HardHat aria-hidden="true" />
         </div>
-        <h1>{{ site.productName }}</h1>
-        <p class="auth-tagline">{{ t('login.subtitle') }}</p>
-        <p class="auth-region">{{ faenaMeta?.nombre || faena }} · {{ faenaMeta?.region || site.region }}</p>
-        <p class="login-hint">{{ t('login.hint') }}</p>
+        <h1>{{ site.productName }} SPATI</h1>
+        <p class="auth-tagline">Acceso privado a su faena</p>
+        <p v-if="faenaFija" class="auth-region">
+          {{ faenaMeta?.nombre || faenaFija }} · {{ faenaMeta?.region || '' }}
+        </p>
+        <p v-else class="login-hint">
+          Ingrese con su correo. Si tiene varias faenas, elija después; si tiene una, entra directo.
+        </p>
       </div>
 
       <form class="auth-form" @submit.prevent="onSubmit">
+        <label v-if="!faenaFija" class="field">
+          <span>Código de faena (opcional)</span>
+          <input
+            v-model="faenaCodigo"
+            type="text"
+            placeholder="ej. quebrada_blanca"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
         <label class="field">
           <span>{{ t('login.user') }}</span>
           <input v-model="username" type="text" autocomplete="username" required />
@@ -97,12 +55,118 @@ async function onSubmit() {
         </button>
       </form>
       <p class="auth-footer">
-        Faena <code>{{ faena }}</code> ·
-        <router-link :to="`/f/${faena}/registro`">Registrarse</router-link>
+        <router-link to="/">Inicio</router-link>
+        ·
+        <router-link :to="registroLink">Registrarse</router-link>
       </p>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, inject, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { HardHat, LogIn } from 'lucide-vue-next'
+import { useAuth } from '@/stores/auth'
+import { wakeApi, fetchMisFaenas, fetchMe } from '@/services/authApi'
+import { setLocale } from '@/i18n'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
+
+const site = inject('site')
+const router = useRouter()
+const route = useRoute()
+const auth = useAuth()
+const { t, locale } = useI18n()
+
+const faenaFija = computed(() => {
+  const p = route.params.faena
+  return p ? String(p).toLowerCase() : ''
+})
+const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faenaFija.value))
+const registroLink = computed(() =>
+  faenaFija.value ? `/f/${faenaFija.value}/registro` : '/registro',
+)
+
+const username = ref('')
+const password = ref('')
+const faenaCodigo = ref('')
+const error = ref('')
+const cargando = ref(false)
+
+onMounted(() => {
+  wakeApi().catch(() => {})
+  if (typeof route.query.faena === 'string') {
+    faenaCodigo.value = route.query.faena
+  }
+  try {
+    const msg = sessionStorage.getItem('metgo_session_msg')
+    if (msg) {
+      error.value = msg
+      sessionStorage.removeItem('metgo_session_msg')
+    }
+  } catch {
+    /* ignore */
+  }
+})
+
+async function resolvePostLogin(preferredFaena) {
+  let faenas = []
+  let catalogo = false
+  try {
+    const hub = await fetchMisFaenas()
+    faenas = hub.faenas || []
+    catalogo = Boolean(hub.catalogo_completo)
+  } catch {
+    try {
+      const me = await fetchMe()
+      faenas = me.hub?.faenas || (me.faena ? [{ slug: me.faena }] : me.faenas || [])
+      catalogo = Boolean(me.catalogo_completo || me.hub?.catalogo_completo)
+    } catch {
+      /* ignore */
+    }
+  }
+  const slugs = faenas.map((f) => String(f.slug || f).toLowerCase()).filter(Boolean)
+  if (preferredFaena && (catalogo || slugs.includes(preferredFaena) || !slugs.length)) {
+    return `/f/${preferredFaena}/ahora`
+  }
+  if (!catalogo && slugs.length === 1) return `/f/${slugs[0]}/ahora`
+  if (slugs.length > 1 || catalogo) return '/app'
+  if (preferredFaena) return `/f/${preferredFaena}/ahora`
+  return '/app'
+}
+
+async function onSubmit() {
+  error.value = ''
+  cargando.value = true
+  try {
+    await wakeApi()
+    const faena =
+      faenaFija.value ||
+      String(faenaCodigo.value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '_') ||
+      undefined
+    await auth.login(username.value.trim(), password.value, {
+      faena,
+      sitio: 'spati',
+    })
+    let redirect =
+      typeof route.query.redirect === 'string' ? route.query.redirect : ''
+    if (!redirect || redirect === '/' || redirect.startsWith('/?') || redirect === '/login') {
+      redirect = await resolvePostLogin(faena)
+    } else if (faena && (redirect === `/f/${faena}/` || redirect === `/f/${faena}`)) {
+      redirect = `/f/${faena}/ahora`
+    }
+    await router.replace(redirect.startsWith('/') ? redirect : await resolvePostLogin(faena))
+  } catch (e) {
+    error.value = e.message || 'Usuario o contraseña incorrectos'
+  } finally {
+    cargando.value = false
+  }
+}
+</script>
 
 <style scoped>
 .auth-page {
@@ -111,20 +175,20 @@ async function onSubmit() {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: var(--color-bg);
+  background: #0f172a;
   background-image:
-    radial-gradient(circle at 20% 40%, rgba(249, 115, 22, 0.16), transparent 28%),
-    radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.1), transparent 26%);
+    radial-gradient(ellipse 70% 50% at 15% 0%, rgba(16, 185, 129, 0.2), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 20%, rgba(59, 130, 246, 0.12), transparent 50%);
 }
 .auth-panel {
   width: 100%;
   max-width: 420px;
-  background: rgba(17, 24, 39, 0.75);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(14px);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid #1e293b;
+  border-radius: 14px;
   padding: 2.25rem 1.75rem;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 .auth-lang {
   display: flex;
@@ -133,9 +197,9 @@ async function onSubmit() {
   margin-bottom: 0.75rem;
 }
 .auth-lang button {
-  border: 1px solid var(--color-border);
+  border: 1px solid #334155;
   background: transparent;
-  color: var(--color-muted);
+  color: #94a3b8;
   font-size: 0.72rem;
   font-weight: 700;
   padding: 0.25rem 0.5rem;
@@ -144,9 +208,9 @@ async function onSubmit() {
   font-family: inherit;
 }
 .auth-lang button.active {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  background: rgba(249, 115, 22, 0.12);
+  color: #10b981;
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
 }
 .auth-brand {
   text-align: center;
@@ -158,26 +222,26 @@ async function onSubmit() {
   margin: 0 auto 0.85rem;
   display: grid;
   place-items: center;
-  background: var(--color-primary);
-  color: #0b1120;
-  border-radius: var(--radius-md);
+  background: #10b981;
+  color: #0f172a;
+  border-radius: 10px;
 }
 .auth-brand h1 {
   margin: 0;
   font-size: 1.35rem;
-  color: var(--color-text);
+  color: #f8fafc;
 }
 .auth-tagline,
 .auth-region,
 .login-hint,
 .auth-footer {
   margin: 0.35rem 0 0;
-  color: var(--color-text-secondary);
+  color: #94a3b8;
   font-size: 0.85rem;
 }
 .login-hint {
   margin-top: 0.75rem;
-  color: var(--color-muted);
+  line-height: 1.45;
 }
 .field {
   display: block;
@@ -189,19 +253,19 @@ async function onSubmit() {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-muted);
+  color: #64748b;
   margin-bottom: 0.3rem;
 }
 .field input {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0b1220;
+  color: #e2e8f0;
 }
 .auth-msg {
-  color: var(--color-danger);
+  color: #f87171;
   font-size: 0.85rem;
   margin: 0 0 0.75rem;
 }
@@ -213,16 +277,23 @@ async function onSubmit() {
   gap: 0.45rem;
   padding: 0.7rem 1rem;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  background: #10b981;
+  color: #0f172a;
+}
+.auth-btn:disabled {
+  opacity: 0.65;
 }
 .auth-footer {
   text-align: center;
   margin-top: 1rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
-.auth-footer code {
-  color: var(--color-primary);
+.auth-footer a {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 600;
 }
 </style>

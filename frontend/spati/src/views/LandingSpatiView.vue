@@ -127,9 +127,8 @@ import { useAuth } from '@/stores/auth'
 
 const site = inject('site')
 const auth = useAuth()
-const defaultFaena = computed(() => site.spatiDefaultSitio || 'quebrada_blanca')
-const loginPath = computed(() => `/f/${defaultFaena.value}/login`)
-const registroPath = computed(() => `/f/${defaultFaena.value}/registro`)
+const loginPath = computed(() => '/login')
+const registroPath = computed(() => '/registro')
 const isLoggedIn = computed(() => Boolean(auth.state.token || getToken()))
 
 const planesApi = ref([])

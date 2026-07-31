@@ -48,6 +48,12 @@ const faenaChildren = [
     meta: { title: 'Ambiente faena', tab: 'ambiente' },
   },
   {
+    path: 'informes',
+    name: 'faena-informes',
+    component: () => import('@/views/InformesView.vue'),
+    meta: { title: 'Informes', tab: 'panel' },
+  },
+  {
     path: 'cuenta',
     name: 'faena-cuenta',
     component: () => import('@/views/CuentaView.vue'),
@@ -69,6 +75,18 @@ const routes = [
     meta: { title: 'SPATI', public: true },
   },
   {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: 'Ingresar', public: true },
+  },
+  {
+    path: '/registro',
+    name: 'registro',
+    component: () => import('@/views/RegistroView.vue'),
+    meta: { title: 'Registro', public: true },
+  },
+  {
     path: '/app',
     name: 'faenas-hub',
     component: () => import('@/views/FaenasHubView.vue'),
@@ -85,12 +103,9 @@ const routes = [
     component: () => import('@/views/FaenaShellView.vue'),
     children: faenaChildren,
   },
-  // Login/registro genéricos: sin forzar Escondida
-  { path: '/login', redirect: '/f/quebrada_blanca/login' },
-  { path: '/registro', redirect: '/f/quebrada_blanca/registro' },
-  { path: '/dron', redirect: '/login?redirect=/f/quebrada_blanca/dron' },
-  { path: '/umbrales', redirect: '/login?redirect=/f/quebrada_blanca/umbrales' },
-  { path: '/ambiente', redirect: '/login?redirect=/f/quebrada_blanca/ambiente' },
+  { path: '/dron', redirect: '/login' },
+  { path: '/umbrales', redirect: '/login' },
+  { path: '/ambiente', redirect: '/login' },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
@@ -122,8 +137,8 @@ async function loadHub() {
 }
 
 function loginRedirect(to) {
-  const faena = to.params.faena || 'quebrada_blanca'
-  return `/f/${faena}/login?redirect=${encodeURIComponent(to.fullPath)}`
+  const q = to.fullPath && to.fullPath !== '/' ? `?redirect=${encodeURIComponent(to.fullPath)}` : ''
+  return `/login${q}`
 }
 
 router.beforeEach(async (to) => {

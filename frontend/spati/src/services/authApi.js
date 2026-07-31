@@ -64,9 +64,20 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
       const err = new Error(data.error || `HTTP ${res.status}`)
       err.status = res.status
       err.data = data
-      // JWT inválido/expirado: limpiar para no encadenar más 401
+      err.code = data.code
+      // JWT inválido/expirado o sesión reemplazada
       if (res.status === 401 && auth) {
         clearSession()
+        if (typeof window !== 'undefined' && data.code === 'session_replaced') {
+          try {
+            sessionStorage.setItem(
+              'metgo_session_msg',
+              'Su sesión se cerró porque inició sesión en otro dispositivo.',
+            )
+          } catch {
+            /* ignore */
+          }
+        }
       }
       throw err
     }

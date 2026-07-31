@@ -47,6 +47,8 @@ provide('closeNav', () => {
 
 const PUBLIC_NAMES = new Set([
   'landing',
+  'login',
+  'registro',
   'faenas-hub',
   'faena-login',
   'faena-registro',
@@ -82,7 +84,7 @@ onMounted(async () => {
   const ok = await auth.ensureValidSession()
   if (!ok) {
     router.replace({
-      path: `/f/${currentFaena.value}/login`,
+      path: '/login',
       query: { redirect: route.fullPath },
     })
   }

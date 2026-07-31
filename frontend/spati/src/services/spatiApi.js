@@ -160,6 +160,11 @@ export function urlInformeFaena(faenaId, formato = 'pdf') {
   return `${resolveBaseURL()}/public/operaciones/faena/${id}/informe?formato=${fmt}`
 }
 
+export function urlReporteMensual(faenaId) {
+  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  return `${resolveBaseURL()}/public/spati/${id}/reporte-mensual`
+}
+
 export function urlModeloVsObservadoCsv(faenaId, dias = 14) {
   const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
   return `${resolveBaseURL()}/public/operaciones/faena/${id}/modelo-vs-observado?formato=csv&dias=${dias}`

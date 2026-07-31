@@ -180,7 +180,12 @@ function irA(slug) {
 
         <section v-else-if="visible.length || isAdminCatalog" class="hub-panel hub-panel--list">
           <div class="list-head">
-            <h2>{{ isAdminCatalog ? 'Administración · faenas' : 'Sus faenas' }}</h2>
+            <h2>
+              {{ isAdminCatalog ? 'Admin · catálogo completo' : 'Mis faenas' }}
+            </h2>
+            <p v-if="isAdminCatalog" class="admin-badge">
+              Vista administración: ve todas las faenas. Un cliente solo ve las suyas.
+            </p>
             <div class="list-head-actions">
               <router-link
                 v-if="isAdminCatalog || (hub?.faenas || []).length > 1 || hub?.multi_faena"
@@ -429,6 +434,13 @@ function irA(slug) {
   display: grid;
   gap: 0.75rem;
   margin-bottom: 1rem;
+}
+.admin-badge {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #10b981;
+  max-width: 36rem;
+  line-height: 1.4;
 }
 .list-head-actions {
   display: flex;

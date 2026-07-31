@@ -52,6 +52,24 @@ def auth_required(f: Callable) -> Callable:
         g.org_id = payload.get("org_id")
         g.plan_code = payload.get("plan_code")
         g.sub_status = payload.get("sub_status")
+        g.jti = payload.get("jti")
+
+        # Sesión única: solo el jti más reciente es válido
+        try:
+            from api_rest.identity.session_store import is_session_active
+
+            if g.current_user and not is_session_active(str(g.current_user), g.jti):
+                return (
+                    jsonify(
+                        {
+                            "error": "Sesión iniciada en otro dispositivo",
+                            "code": "session_replaced",
+                        }
+                    ),
+                    401,
+                )
+        except Exception:
+            pass
         return f(*args, **kwargs)
 
     return wrapper

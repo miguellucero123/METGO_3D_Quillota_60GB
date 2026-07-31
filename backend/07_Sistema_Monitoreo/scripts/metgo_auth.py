@@ -256,6 +256,8 @@ def crear_token_acceso(usuario: str, sitio: str | None = None) -> dict[str, Any]
     if jwt is None:
         raise RuntimeError("Instale PyJWT: pip install PyJWT")
 
+    import uuid
+
     usuario = usuario.lower().strip()
     if not usuario_existe(usuario):
         raise ValueError("Usuario no permitido")
@@ -267,17 +269,26 @@ def crear_token_acceso(usuario: str, sitio: str | None = None) -> dict[str, Any]
     sitio_efectivo = sitio if sitio is not None else sitio_de_usuario(usuario)
     exp_secs = jwt_expiration_seconds()
     now = datetime.now(timezone.utc)
+    jti = str(uuid.uuid4())
     payload = {
         "sub": usuario,
         "role": role,
         "tenant": tenant,  # legacy Fase 3.3 (mapa geográfico)
         "sitio": sitio_efectivo,  # E9 producto/sitio
+        "jti": jti,
         "iat": now,
         "exp": now + timedelta(seconds=exp_secs),
     }
     token = jwt.encode(payload, jwt_secret(), algorithm=jwt_algorithm())
     if isinstance(token, bytes):
         token = token.decode("utf-8")
+
+    try:
+        from api_rest.identity.session_store import register_session
+
+        register_session(usuario, jti)
+    except Exception:
+        pass
 
     return {
         "access_token": token,
@@ -305,10 +316,14 @@ def crear_token_identidad(
     """JWT para usuarios comerciales (usuarios_app), sin USER_TO_ROLE."""
     if jwt is None:
         raise RuntimeError("Instale PyJWT: pip install PyJWT")
+    import uuid
+
     exp_secs = jwt_expiration_seconds()
     now = datetime.now(timezone.utc)
+    sub_n = (sub or "").lower().strip()
+    jti = str(uuid.uuid4())
     payload: dict[str, Any] = {
-        "sub": (sub or "").lower().strip(),
+        "sub": sub_n,
         "role": role or "operador",
         "tenant": None,
         "sitio": sitio,
@@ -316,26 +331,32 @@ def crear_token_identidad(
         "org_id": org_id,
         "plan_code": plan_code or "trial",
         "sub_status": sub_status or "trialing",
+        "jti": jti,
         "iat": now,
         "exp": now + timedelta(seconds=exp_secs),
     }
     token = jwt.encode(payload, jwt_secret(), algorithm=jwt_algorithm())
     if isinstance(token, bytes):
         token = token.decode("utf-8")
+    try:
+        from api_rest.identity.session_store import register_session
+
+        register_session(sub_n, jti)
+    except Exception:
+        pass
     return {
         "access_token": token,
         "token_type": "bearer",
         "expires_in": exp_secs,
         "user": {
-            "username": payload["sub"],
-            "email": payload["sub"],
-            "role": payload["role"],
-            "tenant": None,
+            "username": sub_n,
+            "email": sub_n,
+            "role": role or "operador",
             "sitio": sitio,
             "faena": faena,
             "org_id": org_id,
-            "plan_code": payload["plan_code"],
-            "sub_status": payload["sub_status"],
+            "plan_code": plan_code or "trial",
+            "sub_status": sub_status or "trialing",
         },
     }
 

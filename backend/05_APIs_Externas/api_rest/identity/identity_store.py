@@ -546,20 +546,39 @@ def buscar_usuario_login(email: str, sitio: str, faena: str | None) -> dict[str,
     faena = (faena or "").strip().lower() or None
     if use_memory():
         with _lock:
-            for u in _MEM["usuarios_app"]:
-                if u["email_norm"] == email and u["sitio"] == sitio and u.get("faena") == faena:
+            candidates = [
+                u
+                for u in _MEM["usuarios_app"]
+                if u["email_norm"] == email and u["sitio"] == sitio
+            ]
+            if faena:
+                for u in candidates:
+                    if u.get("faena") == faena:
+                        return dict(u)
+                return None
+            # Sin faena: preferir coincidencia exacta null, si no la primera membresía
+            for u in candidates:
+                if u.get("faena") in (None, ""):
                     return dict(u)
-        return None
+            return dict(candidates[0]) if candidates else None
     from api_rest.integracion import supabase_store as sb
 
     params = {"email_norm": f"eq.{email}", "sitio": f"eq.{sitio}", "select": "*"}
     if faena:
         params["faena"] = f"eq.{faena}"
-    else:
-        params["faena"] = "is.null"
-    rows = sb.rest_select("usuarios_app", params=params, limit=1)
-    return rows[0] if rows else None
-
+        rows = sb.rest_select("usuarios_app", params=params, limit=1)
+        return rows[0] if rows else None
+    rows = sb.rest_select(
+        "usuarios_app",
+        params={"email_norm": f"eq.{email}", "sitio": f"eq.{sitio}", "select": "*"},
+        limit=20,
+    )
+    if not rows:
+        return None
+    for r in rows:
+        if r.get("faena") in (None, ""):
+            return r
+    return rows[0]
 
 def listar_membresias_email(email: str, sitio: str = "spati") -> list[dict[str, Any]]:
     """Membresías del mismo email en un producto (puede haber varias faenas)."""

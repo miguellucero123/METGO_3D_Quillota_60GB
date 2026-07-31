@@ -13,6 +13,9 @@
         <router-link class="btn btn-ghost" :to="{ name: 'faena-panel', params: { faena: sitioId } }">
           Panel técnico
         </router-link>
+        <router-link class="btn btn-ghost" :to="{ name: 'faena-informes', params: { faena: sitioId } }">
+          Informes
+        </router-link>
       </div>
     </header>
 

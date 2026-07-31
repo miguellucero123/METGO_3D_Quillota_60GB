@@ -19,7 +19,7 @@
 <script setup>
 import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid, Gauge, MapPinned } from 'lucide-vue-next'
+import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid, Gauge, MapPinned, FileText } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
 import { fetchMe, getToken } from '@/services/authApi'
 
@@ -68,6 +68,13 @@ const items = computed(() => {
       to: { name: 'faena-panel', params: { faena: f } },
       label: 'Panel técnico',
       icon: Wind,
+      tab: 'panel',
+    },
+    {
+      name: 'faena-informes',
+      to: { name: 'faena-informes', params: { faena: f } },
+      label: 'Informes',
+      icon: FileText,
       tab: 'panel',
     },
     {

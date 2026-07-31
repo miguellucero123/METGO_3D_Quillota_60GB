@@ -9,7 +9,9 @@ const site = inject('site')
 const route = useRoute()
 const router = useRouter()
 
-const faena = computed(() => String(route.params.faena || '').toLowerCase())
+const faenaParam = computed(() => String(route.params.faena || '').toLowerCase())
+const faenaCodigo = ref('')
+const faena = computed(() => faenaParam.value || String(faenaCodigo.value || '').trim().toLowerCase().replace(/\s+/g, '_'))
 const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faena.value))
 
 const form = reactive({
@@ -74,7 +76,7 @@ async function onSubmit() {
     }
     await registerV2(body)
     msg.value = 'Registro OK. Revise verificación de email y luego elija plan en Cuenta.'
-    router.replace(`/f/${faena.value}/login`)
+    router.replace(faena.value ? `/f/${faena.value}/login` : '/login')
   } catch (e) {
     if (e.data?.validation?.errors) errors.value = e.data.validation.errors
     else msg.value = e.message || 'Error de registro'
@@ -93,11 +95,15 @@ async function onSubmit() {
       </div>
       <div class="brand">
         <div class="logo"><HardHat aria-hidden="true" /></div>
-        <h1>Registro · {{ faenaMeta?.nombre || faena }}</h1>
-        <p>Cuenta exclusiva de esta faena. PII cifrada · consentimiento obligatorio.</p>
+        <h1>Registro · {{ faenaMeta?.nombre || faena || 'SPATI' }}</h1>
+        <p>Cuenta por faena contratada. PII cifrada · consentimiento obligatorio.</p>
       </div>
 
       <form class="grid" @submit.prevent="onSubmit">
+        <label v-if="!faenaParam" class="full">
+          Código de faena *
+          <input v-model="faenaCodigo" required placeholder="quebrada_blanca" />
+        </label>
         <label><span>Nombres</span><input v-model="form.nombres" required /></label>
         <label><span>Apellidos</span><input v-model="form.apellidos" required /></label>
         <label><span>Email</span><input v-model="form.email" type="email" required /></label>
@@ -158,7 +164,7 @@ async function onSubmit() {
 
       <p class="foot">
         ¿Ya tiene cuenta?
-        <router-link :to="`/f/${faena}/login`">Ingresar</router-link>
+        <router-link :to="faena ? `/f/${faena}/login` : '/login'">Ingresar</router-link>
       </p>
     </div>
   </div>

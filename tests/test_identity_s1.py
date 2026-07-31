@@ -278,3 +278,63 @@ def test_ops_board_m10_forbidden_single_faena():
     r = client.get("/api/auth/ops-board", headers=headers)
     assert r.status_code == 403
     assert r.get_json().get("error") == "ops_board_requiere_multi_faena"
+
+
+def test_sesion_unica_invalida_token_anterior():
+    """Segundo login invalida el JWT anterior (401 session_replaced)."""
+    from api_rest.app import create_app
+    from api_rest.identity.session_store import reset_for_tests
+
+    reset_for_tests()
+    app = create_app()
+    client = app.test_client()
+    body = _payload(email="session.kick@example.com")
+    reg = client.post("/api/auth/register-v2", json=body)
+    assert reg.status_code == 201
+    tok = reg.get_json()["verify_token"]
+    assert client.get(f"/api/auth/verify-email?token={tok}").status_code == 200
+
+    login1 = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert login1.status_code == 200
+    token1 = login1.get_json()["access_token"]
+    h1 = {"Authorization": f"Bearer {token1}"}
+    assert client.get("/api/auth/me", headers=h1).status_code == 200
+
+    login2 = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert login2.status_code == 200
+    token2 = login2.get_json()["access_token"]
+    assert token1 != token2
+
+    kicked = client.get("/api/auth/me", headers=h1)
+    assert kicked.status_code == 401
+    assert kicked.get_json().get("code") == "session_replaced"
+
+    ok = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token2}"})
+    assert ok.status_code == 200
+
+
+def test_reporte_mensual_html_publico():
+    from api_rest.app import create_app
+
+    app = create_app()
+    client = app.test_client()
+    r = client.get("/api/public/spati/escondida/reporte-mensual")
+    assert r.status_code == 200
+    assert "text/html" in (r.content_type or "")
+    assert b"Reporte mensual" in r.data

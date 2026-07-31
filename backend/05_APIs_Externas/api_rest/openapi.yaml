@@ -57,7 +57,9 @@ paths:
       tags: [auth]
       summary: Login JWT (E9 — claim sitio)
       description: |
-        Emite JWT con `sub`, `role`, `tenant` (legacy) y **`sitio`** (producto).
+        Emite JWT con `sub`, `role`, `tenant` (legacy), **`sitio`**, y **`jti`** (sesión única).
+        Cada login nuevo invalida el JWT anterior del mismo usuario: llamadas con el
+        token viejo reciben **401** con `code: session_replaced`.
         El body puede incluir `sitio` para scoped login; un usuario de Quillota
         no puede pedir `mantos_blancos` (403). Admin global (`sitio=null` en membresía)
         puede omitir sitio (acceso a todos) o pedirlo para limitar el token.
@@ -74,9 +76,9 @@ paths:
                 sitio: { type: string, example: quillota, description: "Producto METGO (opcional)" }
       responses:
         "200":
-          description: Token emitido (user.sitio en payload)
+          description: Token emitido (user.sitio + claim jti en payload)
         "401":
-          description: Credenciales incorrectas
+          description: Credenciales incorrectas, o sesión reemplazada (`code: session_replaced`)
         "403":
           description: Sitio no autorizado para el usuario
   /api/auth/register:
@@ -286,7 +288,7 @@ paths:
         "200":
           description: "{ username, role, sitio, faena, hub, multi_faena, faenas }"
         "401":
-          description: Sin token
+          description: Sin token o sesión reemplazada (`code: session_replaced`)
   /api/auth/refresh:
     post:
       tags: [auth]
@@ -693,6 +695,22 @@ paths:
       responses:
         "200":
           description: sitios[]
+  /api/public/spati/{sitio_id}/reporte-mensual:
+    get:
+      tags: [spati]
+      summary: Reporte mensual ejecutivo (HTML v1)
+      description: |
+        Plantilla HTML con datos de faena. En la SPA se muestra a planes Pro/Enterprise.
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema: { type: string, example: escondida }
+      responses:
+        "200":
+          description: text/html
+        "404":
+          description: Sitio desconocido
   /api/public/spati/{sitio_id}/pronostico:
     get:
       tags: [spati]

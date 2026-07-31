@@ -115,6 +115,45 @@ def register_spati_routes(app: Flask) -> None:
         except Exception as exc:
             return jsonify({"error": str(exc)}), 400
 
+    @app.get("/api/public/spati/<sitio_id>/reporte-mensual")
+    def public_spati_reporte_mensual(sitio_id: str):
+        """HTML ejecutivo mensual (v1: plantilla con datos de faena)."""
+        from datetime import datetime, timezone
+
+        from api_rest.spati import get_sitio
+        from flask import Response
+
+        s = get_sitio(sitio_id)
+        if not s:
+            return jsonify({"error": "Sitio no encontrado", "sitio_id": sitio_id}), 404
+        nombre = s.get("nombre") or sitio_id
+        now = datetime.now(timezone.utc)
+        periodo = now.strftime("%B %Y").capitalize()
+        html = f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>SPATI · Reporte {nombre}</title>
+<style>
+body{{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:32px}}
+.card{{max-width:720px;margin:0 auto;background:#111827;border:1px solid #1e293b;border-radius:12px;padding:28px}}
+h1{{margin:0 0 8px;color:#10b981}} .muted{{color:#94a3b8;font-size:14px}}
+table{{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}}
+th,td{{padding:10px;border-bottom:1px solid #1e293b;text-align:left}}
+th{{color:#94a3b8;font-size:12px}}
+.note{{margin-top:24px;font-size:12px;color:#64748b}}
+</style></head><body><div class="card">
+<h1>Reporte mensual SPATI</h1>
+<p class="muted">{nombre} · {periodo} · generado automáticamente</p>
+<table><thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+<tbody>
+<tr><td>Faena</td><td>{nombre}</td></tr>
+<tr><td>Sitio ID</td><td>{s.get("sitio_id") or sitio_id}</td></tr>
+<tr><td>Altitud</td><td>{s.get("altitud_msnm") or "—"} m s.n.m.</td></tr>
+<tr><td>Horizonte operativo</td><td>72 h · alertas 26 / 31 / 36 km/h</td></tr>
+<tr><td>Estado</td><td>Reporte v1 — complete KPIs de alertas en siguiente iteración</td></tr>
+</tbody></table>
+<p class="note">METGO 3D SpA · Plan Pro/Enterprise · contacto@metgo3d.com</p>
+</div></body></html>"""
+        return Response(html, mimetype="text/html; charset=utf-8")
+
     @app.get("/api/public/spati/<sitio_id>/umbrales")
     def public_spati_umbrales(sitio_id: str):
         """M9: umbrales efectivos de izaje (default + override por faena/cliente)."""
