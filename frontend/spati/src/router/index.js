@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { fetchAccess, fetchMe, getToken } from '@/services/authApi'
+import { fetchAccess, fetchMe, getToken, clearSession } from '@/services/authApi'
 import { getHubCache, setHubCache, invalidateHubCache } from '@/stores/hubCache'
 
 export { invalidateHubCache }
@@ -113,11 +113,15 @@ async function loadHub() {
   return next
 }
 
+function loginRedirect(to) {
+  const faena = to.params.faena || 'escondida'
+  return `/f/${faena}/login?redirect=${encodeURIComponent(to.fullPath)}`
+}
+
 router.beforeEach(async (to) => {
   if (to.meta?.public) return true
   if (!getToken()) {
-    const faena = to.params.faena || 'escondida'
-    return `/f/${faena}/login?redirect=${encodeURIComponent(to.fullPath)}`
+    return loginRedirect(to)
   }
 
   const targetFaena = to.params.faena ? String(to.params.faena).toLowerCase() : ''
@@ -128,7 +132,12 @@ router.beforeEach(async (to) => {
         const first = [...hub.slugs][0]
         return `/f/${first}/cuenta?blocked_faena=${encodeURIComponent(targetFaena)}`
       }
-    } catch {
+    } catch (e) {
+      if (e?.status === 401) {
+        clearSession()
+        invalidateHubCache()
+        return loginRedirect(to)
+      }
       /* API fría: no bloquear */
     }
   }
@@ -149,7 +158,12 @@ router.beforeEach(async (to) => {
       if (denied) {
         return `/f/${targetFaena}/cuenta?blocked=${encodeURIComponent(String(tab))}`
       }
-    } catch {
+    } catch (e) {
+      if (e?.status === 401) {
+        clearSession()
+        invalidateHubCache()
+        return loginRedirect(to)
+      }
       /* allow */
     }
   }

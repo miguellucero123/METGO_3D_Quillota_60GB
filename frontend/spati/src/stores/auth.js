@@ -43,7 +43,12 @@ export function useAuth() {
   }
 
   async function ensureValidSession() {
-    if (!state.token) return false
+    // Releer storage por si otro módulo limpió el token (p. ej. 401 en authApi)
+    state.token = getToken()
+    if (!state.token) {
+      state.user = null
+      return false
+    }
     try {
       const me = await fetchMe()
       const sitioUser = me?.sitio
@@ -53,9 +58,10 @@ export function useAuth() {
         logout()
         return false
       }
+      state.token = getToken()
       state.user = me
-      setSession(state.token, me)
-      return true
+      if (state.token) setSession(state.token, me)
+      return Boolean(state.token)
     } catch {
       logout()
       return false

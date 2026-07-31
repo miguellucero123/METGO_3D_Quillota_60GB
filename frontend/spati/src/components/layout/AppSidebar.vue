@@ -42,8 +42,11 @@ onMounted(async () => {
   try {
     const me = await fetchMe()
     showHubLink.value = Boolean(me.catalogo_completo || me.multi_faena || (me.faenas || []).length > 1)
-  } catch {
+  } catch (e) {
     showHubLink.value = false
+    if (e?.status === 401) {
+      // sesión ya limpiada en authApi
+    }
   }
 })
 

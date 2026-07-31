@@ -64,6 +64,10 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
       const err = new Error(data.error || `HTTP ${res.status}`)
       err.status = res.status
       err.data = data
+      // JWT inválido/expirado: limpiar para no encadenar más 401
+      if (res.status === 401 && auth) {
+        clearSession()
+      }
       throw err
     }
     return data

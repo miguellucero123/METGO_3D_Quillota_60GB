@@ -48,7 +48,7 @@ const byRegion = computed(() => {
   return [...map.entries()]
 })
 
-const isLoggedIn = computed(() => Boolean(getToken()))
+const isLoggedIn = computed(() => Boolean(auth.state.token || getToken()))
 const isAdminCatalog = computed(() => Boolean(hub.value?.catalogo_completo))
 
 onMounted(async () => {
@@ -58,24 +58,39 @@ onMounted(async () => {
     return
   }
   try {
-    await auth.ensureValidSession()
+    const ok = await auth.ensureValidSession()
+    if (!ok) {
+      // Token inválido/expirado: sesión limpiada; hub público sin llamadas auth
+      loading.value = false
+      return
+    }
     try {
       hub.value = await fetchMisFaenas()
-    } catch {
-      const me = await fetchMe()
-      hub.value = me.hub || {
-        catalogo_completo: ['admin', 'administrador'].includes(
-          String(me.role || '').toLowerCase(),
-        ),
-        faenas: me.faena ? [{ slug: me.faena }] : me.faenas || [],
+    } catch (e) {
+      if (e?.status === 401) {
+        auth.logout()
+        return
+      }
+      try {
+        const me = await fetchMe()
+        hub.value = me.hub || {
+          catalogo_completo: ['admin', 'administrador'].includes(
+            String(me.role || '').toLowerCase(),
+          ),
+          faenas: me.faena ? [{ slug: me.faena }] : me.faenas || [],
+        }
+      } catch (e2) {
+        if (e2?.status === 401) auth.logout()
+        else throw e2
       }
     }
-    if (!hub.value.catalogo_completo && (hub.value.faenas || []).length === 1) {
+    if (!hub.value?.catalogo_completo && (hub.value?.faenas || []).length === 1) {
       await router.replace(`/f/${hub.value.faenas[0].slug}/ahora`)
       return
     }
   } catch (e) {
-    error.value = e.message || 'No se pudo cargar acceso'
+    if (e?.status === 401) auth.logout()
+    else error.value = e.message || 'No se pudo cargar acceso'
   } finally {
     loading.value = false
   }
