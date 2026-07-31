@@ -15,22 +15,23 @@
           <HardHat aria-hidden="true" />
         </div>
         <h1>{{ site.productName }} {{ site.brandName || 'VENTORA' }}</h1>
-        <p class="auth-tagline">Acceso privado a su faena</p>
+        <p class="auth-tagline">{{ t('login.tagline') }}</p>
         <p v-if="faenaFija" class="auth-region">
           {{ faenaMeta?.nombre || faenaFija }} · {{ faenaMeta?.region || '' }}
         </p>
         <p v-else class="login-hint">
-          Ingrese con su correo. Si tiene varias faenas, elija después; si tiene una, entra directo.
+          {{ t('login.hint') }}
         </p>
       </div>
 
-      <form class="auth-form" @submit.prevent="onSubmit">
+      <form class="auth-form" @submit.prevent="onSubmit" aria-labelledby="login-heading">
+        <h2 id="login-heading" class="sr-only">{{ t('login.submit') }}</h2>
         <label v-if="!faenaFija" class="field">
-          <span>Código de faena (opcional)</span>
+          <span>{{ t('login.faenaCode') }}</span>
           <input
             v-model="faenaCodigo"
             type="text"
-            placeholder="ej. quebrada_blanca"
+            :placeholder="t('login.faenaPlaceholder')"
             autocomplete="off"
             spellcheck="false"
           />
@@ -55,9 +56,9 @@
         </button>
       </form>
       <p class="auth-footer">
-        <router-link to="/">Inicio</router-link>
+        <router-link to="/">{{ t('app.home') }}</router-link>
         ·
-        <router-link :to="registroLink">Registrarse</router-link>
+        <router-link :to="registroLink">{{ t('app.register') }}</router-link>
       </p>
     </div>
   </div>

@@ -7,10 +7,8 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      // Desactiva la PWA en este deploy para desalojar SW viejos (D_L8c-qw).
-      // Los clientes que actualicen sw.js se auto-desregistran y cargan red limpia.
-      selfDestroying: true,
       registerType: 'autoUpdate',
+      includeAssets: ['icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
         name: 'METGO VENTORA Izaje',
         short_name: 'VENTORA',
@@ -29,6 +27,18 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
+        navigateFallback: 'index.html',
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'metgo-api',
+              networkTimeoutSeconds: 8,
+              expiration: { maxEntries: 64, maxAgeSeconds: 60 * 30 },
+            },
+          },
+        ],
       },
     }),
   ],

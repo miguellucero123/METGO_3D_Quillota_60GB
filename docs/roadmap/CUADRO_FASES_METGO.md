@@ -1,6 +1,6 @@
 # Cuadro de fases METGO — estado y pendientes
 
-> **Corte:** 2026-07-29 · Documento vivo. Canvas interactivo: abrir en Cursor  
+> **Corte:** 2026-07-31 · Documento vivo. Canvas interactivo: abrir en Cursor  
 > `canvases/metgo-fases-estado.canvas.tsx`  
 > Relacionado: [`README.md`](README.md) · [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) · [`PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md`](PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md)
 
@@ -8,10 +8,10 @@
 
 | Estado | Cantidad | Significado |
 |--------|----------|-------------|
-| **Hecho** | mayoría 1–10, S0–S4.1, M1–M7, M10 | Código + usable |
-| **Parcial** | S5, M9 | Código listo; falta ops |
-| **Ops manual** | S3 resto, M8, GRANT, OpenMeteo key | No se cierra solo con commits |
-| **Pendiente** | E11 resto, E12 | Producto futuro |
+| **Hecho** | mayoría 1–10, S0–S4.1, M1–M7, M10, M8 estaciones | Código + usable |
+| **Parcial** | S5, M9, **E11 slice 1**, M8 CSV Render | Código listo; falta ops |
+| **Ops manual** | S3 resto, GRANT resto, OpenMeteo key, SINCA CSV | No se cierra solo con commits |
+| **Pendiente** | E11 resto (Lighthouse CI), E12 | Producto futuro |
 
 ---
 
@@ -52,7 +52,7 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 | M1–M5 | Catálogo → paquete → MVO | ✅ | — |
 | M6 | CSV + PDF ejecutivo A4 | ✅ | — |
 | M7 | Demo observado + deploy | ✅ prod | — |
-| M8 | SINCA/CSV + estaciones FK | 🔶 Ops | `db push`, CSV en Render, sync real |
+| M8 | SINCA/CSV + estaciones FK | 🔶 Parcial | Estaciones en Supabase OK; falta `METGO_SINCA_CSV_DIR` + sync en Render |
 | M9 | Umbrales + alertas + destinos UI | 🔶 Parcial | `CRON_SECRET` en GitHub; destinos en Supabase prod |
 | M10 | Board `/ops` multi-faena | ✅ MVP | Pulido opcional |
 
@@ -62,9 +62,9 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 
 | Ítem | Estado | Falta |
 |------|--------|-------|
-| `GRANT faena_reglas` → `service_role` | 🔶 Ops | Migración `20260729190000_…sql` en Supabase |
+| `GRANT` identity (`usuarios_app`, etc.) | ✅ Hecho | Seed demo + grants 2026-07-31 |
 | Open-Meteo API key | 🔶 Parcial | `METGO_OPENMETEO_API_KEY` (evitar 429) |
-| E11 resto | ⏳ Pendiente | i18n/a11y/Lighthouse ≥90 |
+| **E11** PWA / a11y / i18n | 🔶 Slice 1 | PWA activa, skip-link, i18n landing/login/Ahora; Lighthouse CI pendiente |
 | E12 | ⏳ Pendiente | Datos oficiales + ML por dominio |
 
 ---
@@ -78,13 +78,13 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 **Guía detallada (paso a paso):** [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)
 
 ### P1 — cierre M8/M9 ops
-3. `npx supabase db push` + CSV en `METGO_SINCA_CSV_DIR` + `POST …/sync-estaciones`
+3. CSV en `METGO_SINCA_CSV_DIR` (ejemplos en `docs/ejemplos/sinca_csv/`) + `POST …/sync` SINCA
 4. Secret **`CRON_SECRET`** en GitHub Actions (= Render) para workflow `spati-alertas-cron.yml`
 5. Guardar destinos de alerta desde UI `/umbrales` (persiste en Supabase si hay fila)
 
 ### P2 — calidad
 6. `METGO_OPENMETEO_API_KEY`
-7. E11 / E12 según roadmap maestro
+7. E11 resto (Lighthouse CI ≥90) / E12 según roadmap maestro
 
 ---
 
@@ -95,8 +95,10 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 - PDF informe ejecutivo
 - Edición `alertas_destino` por faena
 - Cron YAML de alertas izaje (falta solo el secret)
+- Estaciones SPATI en Supabase (M8 filas)
+- E11 slice 1: PWA + i18n ES/EN landing/login/Ahora
 
-El siguiente valor es **configurar producción**, no una fase M11 inventada.
+El siguiente valor mixto: **configurar producción (CSV/SMTP)** + pulir E11 Lighthouse.
 
 ## Fase documento
 

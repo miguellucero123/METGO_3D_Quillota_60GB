@@ -1,40 +1,48 @@
 <template>
   <div class="landing">
+    <a href="#inicio" class="skip-link">{{ t('app.skipContent') }}</a>
     <header class="top">
       <a class="brand" href="#inicio">
         <span class="brand-mark">{{ site.brandName || 'VENTORA' }}</span>
         <span class="brand-sub">METGO 3D</span>
       </a>
-      <nav class="nav" aria-label="Secciones">
-        <a href="#como">Cómo funciona</a>
-        <a href="#alertas">Alertas</a>
-        <a href="#precios">Planes</a>
-        <a href="#faq">FAQ</a>
+      <nav class="nav" :aria-label="t('landing.navHow')">
+        <a href="#como">{{ t('landing.navHow') }}</a>
+        <a href="#alertas">{{ t('landing.navAlerts') }}</a>
+        <a href="#precios">{{ t('landing.navPlans') }}</a>
+        <a href="#faq">{{ t('landing.navFaq') }}</a>
       </nav>
       <div class="top-cta">
-        <router-link class="btn ghost" :to="loginPath">Ingresar</router-link>
-        <router-link class="btn solid" :to="registroPath">Piloto 15 días</router-link>
+        <div class="lang-switch" role="group" :aria-label="t('lang.label')">
+          <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
+            {{ t('lang.es') }}
+          </button>
+          <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">
+            {{ t('lang.en') }}
+          </button>
+        </div>
+        <router-link class="btn ghost" :to="loginPath">{{ t('landing.login') }}</router-link>
+        <router-link class="btn solid" :to="registroPath">{{ t('landing.pilotCta') }}</router-link>
       </div>
     </header>
 
     <section id="inicio" class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">Inteligencia climática · Izaje</p>
-        <h1>El viento no avisa.<br /><em>{{ site.brandName || 'VENTORA' }} sí.</em></h1>
-        <p class="lede">
-          Pronóstico hiperlocalizado 72 h para el punto GPS de su faena. Alertas
-          con 18+ h de anticipación y respaldo documental para operar con
-          certeza.
-        </p>
+        <p class="eyebrow">{{ t('landing.eyebrow') }}</p>
+        <h1>
+          {{ t('landing.heroTitle') }}<br />
+          <em>{{ t('landing.heroTitleEm', { brand: site.brandName || 'VENTORA' }) }}</em>
+        </h1>
+        <p class="lede">{{ t('landing.lede') }}</p>
         <div class="hero-actions">
-          <router-link class="btn solid lg" :to="registroPath">Empezar piloto gratis</router-link>
-          <a class="btn ghost lg" href="#precios">Ver planes</a>
+          <router-link class="btn solid lg" :to="registroPath">{{ t('landing.startPilot') }}</router-link>
+          <a class="btn ghost lg" href="#precios">{{ t('landing.seePlans') }}</a>
         </div>
         <ul class="stats">
-          <li><strong>72 h</strong><span>horizonte</span></li>
-          <li><strong>18+ h</strong><span>anticipación</span></li>
-          <li><strong>88–94%</strong><span>exactitud</span></li>
-          <li><strong>&lt;5 min</strong><span>latencia alerta</span></li>
+          <li><strong>72 h</strong><span>{{ t('landing.statHorizon') }}</span></li>
+          <li><strong>18+ h</strong><span>{{ t('landing.statLead') }}</span></li>
+          <li><strong>88–94%</strong><span>{{ t('landing.statAccuracy') }}</span></li>
+          <li><strong>&lt;5 min</strong><span>{{ t('landing.statLatency') }}</span></li>
         </ul>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -52,8 +60,8 @@
     </section>
 
     <section id="como" class="section">
-      <h2>Cómo funciona</h2>
-      <p class="section-sub">De la faena a la decisión en cinco pasos.</p>
+      <h2>{{ t('landing.howTitle') }}</h2>
+      <p class="section-sub">{{ t('landing.howSub') }}</p>
       <ol class="steps">
         <li><strong>Registro</strong> Coordenadas GPS y grúa en el panel.</li>
         <li><strong>Pronóstico</strong> Modelo hiperlocal 72 h, actualización ~3 h.</li>
@@ -64,18 +72,18 @@
     </section>
 
     <section id="alertas" class="section alt">
-      <h2>Umbrales de izaje</h2>
-      <p class="section-sub">Tres niveles claros. Editables desde plan Pro.</p>
+      <h2>{{ t('landing.alertsTitle') }}</h2>
+      <p class="section-sub">{{ t('landing.alertsSub') }}</p>
       <div class="umbral-grid">
-        <article class="umbral verde"><h3>≥26 km/h</h3><p>Precaución</p></article>
-        <article class="umbral amarillo"><h3>≥31 km/h</h3><p>Suspensión recomendada</p></article>
-        <article class="umbral rojo"><h3>≥36 km/h</h3><p>Suspensión obligatoria</p></article>
+        <article class="umbral verde"><h3>≥26 km/h</h3><p>{{ t('landing.caution') }}</p></article>
+        <article class="umbral amarillo"><h3>≥31 km/h</h3><p>{{ t('landing.suspendRec') }}</p></article>
+        <article class="umbral rojo"><h3>≥36 km/h</h3><p>{{ t('landing.suspendReq') }}</p></article>
       </div>
     </section>
 
     <section id="precios" class="section">
-      <h2>Planes</h2>
-      <p class="section-sub">Sin tarifa por informe. Cotización según faena y flota.</p>
+      <h2>{{ t('landing.plansTitle') }}</h2>
+      <p class="section-sub">{{ t('landing.plansSub') }}</p>
       <div class="plans">
         <article v-for="p in planesUi" :key="p.code" class="plan" :class="{ featured: p.featured }">
           <p class="plan-name">{{ p.nombre }}</p>
@@ -91,7 +99,7 @@
     </section>
 
     <section id="faq" class="section alt">
-      <h2>Preguntas frecuentes</h2>
+      <h2>{{ t('landing.faqTitle') }}</h2>
       <details v-for="(item, i) in faq" :key="i" class="faq-item">
         <summary>{{ item.q }}</summary>
         <p>{{ item.a }}</p>
@@ -99,27 +107,30 @@
     </section>
 
     <section class="cta-final">
-      <h2>¿Listo para operar con certeza climática?</h2>
-      <p>Piloto 15 días · sin tarjeta · soporte METGO 3D SpA</p>
+      <h2>{{ t('landing.ctaTitle') }}</h2>
+      <p>{{ t('landing.ctaSub') }}</p>
       <div class="hero-actions">
-        <router-link class="btn solid lg" :to="registroPath">Crear cuenta</router-link>
-        <router-link class="btn ghost lg" :to="loginPath">Ya tengo acceso</router-link>
+        <router-link class="btn solid lg" :to="registroPath">{{ t('landing.createAccount') }}</router-link>
+        <router-link class="btn ghost lg" :to="loginPath">{{ t('landing.haveAccess') }}</router-link>
       </div>
     </section>
 
     <footer class="foot">
       <span>METGO 3D SpA · Santiago, Chile</span>
       <a href="mailto:contacto@metgo3d.com">contacto@metgo3d.com</a>
-      <router-link v-if="isLoggedIn" to="/app">Ir a mis faenas</router-link>
+      <router-link v-if="isLoggedIn" to="/app">{{ t('landing.goHub') }}</router-link>
     </footer>
   </div>
 </template>
 
 <script setup>
 import { computed, inject, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { fetchPlanes, getToken } from '@/services/authApi'
 import { useAuth } from '@/stores/auth'
+import { setLocale } from '@/i18n'
 
+const { t, locale } = useI18n()
 const site = inject('site')
 const auth = useAuth()
 const loginPath = computed(() => '/login')
@@ -276,6 +287,30 @@ onMounted(async () => {
   display: flex;
   gap: 0.5rem;
   margin-left: auto;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.lang-switch {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-right: 0.25rem;
+}
+.lang-switch button {
+  border: 1px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.lang-switch button.active {
+  color: var(--emer);
+  border-color: var(--emer);
+  background: rgba(16, 185, 129, 0.12);
 }
 .btn {
   display: inline-flex;

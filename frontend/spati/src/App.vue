@@ -1,6 +1,9 @@
 <template>
   <div v-if="isPublicShell" class="app-login">
-    <router-view />
+    <a href="#contenido-principal" class="skip-link">{{ t('app.skipContent') }}</a>
+    <main id="contenido-principal" class="public-main" tabindex="-1">
+      <router-view />
+    </main>
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--nav-open': navOpen }">
     <a href="#contenido-principal" class="skip-link">{{ t('app.skipContent') }}</a>

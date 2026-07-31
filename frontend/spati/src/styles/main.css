@@ -111,6 +111,10 @@ body {
   background: transparent;
 }
 
+.public-main {
+  min-height: 100vh;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;

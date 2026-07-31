@@ -2,56 +2,61 @@
   <div class="ahora">
     <header class="ahora-head">
       <div>
-        <h1>{{ faenaMeta?.nombre || sitioId }} · Ahora</h1>
+        <h1>{{ faenaMeta?.nombre || sitioId }} · {{ t('ahora.title') }}</h1>
         <p class="sub">
-          Ubicación de faena · viento 72 h
+          {{ t('ahora.sub') }}
           <span v-if="horaSeleccionada"> · {{ fmtHora(horaSeleccionada.valid_time) }}</span>
         </p>
       </div>
       <div class="head-actions">
-        <button type="button" class="btn" :disabled="loading" @click="cargar">Actualizar</button>
+        <button type="button" class="btn" :disabled="loading" @click="cargar">{{ t('ahora.refresh') }}</button>
         <router-link class="btn btn-ghost" :to="{ name: 'faena-panel', params: { faena: sitioId } }">
-          Panel técnico
+          {{ t('ahora.panel') }}
         </router-link>
         <router-link class="btn btn-ghost" :to="{ name: 'faena-informes', params: { faena: sitioId } }">
-          Informes
+          {{ t('ahora.reports') }}
         </router-link>
       </div>
     </header>
 
-    <div v-if="loading" class="state">Cargando pronóstico…</div>
-    <div v-else-if="error" class="state error">
+    <div v-if="loading" class="state" role="status">{{ t('ahora.loading') }}</div>
+    <div v-else-if="error" class="state error" role="alert">
       <p>{{ error }}</p>
-      <button type="button" class="btn" @click="cargar">Reintentar</button>
+      <button type="button" class="btn" @click="cargar">{{ t('ahora.retry') }}</button>
     </div>
 
     <template v-else-if="data">
       <p v-if="data.nwp_aviso" class="aviso" role="status">{{ data.nwp_aviso }}</p>
 
       <!-- Estado operativo actual -->
-      <section class="badge-row" :class="'nivel-' + nivelActual">
+      <section class="badge-row" :class="'nivel-' + nivelActual" :aria-label="nivelNombre">
         <div class="badge-main">
-          <span class="dot" />
+          <span class="dot" aria-hidden="true" />
           <strong>{{ nivelNombre }}</strong>
           <span class="vel">{{ velActual }} km/h</span>
         </div>
         <div class="badge-meta">
-          <span>Ráfaga {{ rafagaActual }} km/h</span>
-          <span>Viento máximo 72 h {{ pico72 }} km/h</span>
-          <span v-if="dirLabel">Dir {{ dirLabel }}</span>
+          <span>{{ t('ahora.gust') }} {{ rafagaActual }} km/h</span>
+          <span>{{ t('ahora.peak72') }} {{ pico72 }} km/h</span>
+          <span v-if="dirLabel">{{ t('ahora.dir') }} {{ dirLabel }}</span>
         </div>
         <p class="reco">{{ recomendacion }}</p>
       </section>
 
       <!-- Mapa estilo Windy (simple) -->
       <section class="map-wrap">
-        <div ref="mapEl" class="map" role="img" :aria-label="`Mapa viento ${faenaMeta?.nombre || sitioId}`" />
+        <div
+          ref="mapEl"
+          class="map"
+          role="img"
+          :aria-label="t('ahora.mapAria', { name: faenaMeta?.nombre || sitioId })"
+        />
         <div class="map-overlay">
           <div class="wind-pill" :style="{ background: colorNivel(nivelActual) }">
             <span class="arrow" :style="{ transform: `rotate(${dirDeg}deg)` }">↑</span>
             <span>{{ velActual }} km/h</span>
           </div>
-          <p class="map-hint">Desplace la línea de tiempo para ver el viento por hora</p>
+          <p class="map-hint">{{ t('ahora.mapHint') }}</p>
         </div>
       </section>
 
@@ -70,6 +75,7 @@
           step="1"
           v-model.number="horaIdx"
           :aria-valuetext="fmtHora(horaSeleccionada?.valid_time)"
+          :aria-label="t('ahora.mapHint')"
         />
         <div class="ticks" aria-hidden="true">
           <button
@@ -88,14 +94,14 @@
 
       <!-- Gráfico horas críticas (barras coloreadas) -->
       <section class="chart-sec">
-        <h2>Horas críticas · 72 h</h2>
+        <h2>{{ t('ahora.critHours') }}</h2>
         <p class="legend">
-          <span class="lg verde">Verde &lt;26</span>
-          <span class="lg amarillo">Amarillo 26–29</span>
-          <span class="lg naranja">Naranja 30–34</span>
-          <span class="lg rojo">Rojo ≥35</span>
+          <span class="lg verde">{{ t('ahora.legendGreen') }}</span>
+          <span class="lg amarillo">{{ t('ahora.legendYellow') }}</span>
+          <span class="lg naranja">{{ t('ahora.legendOrange') }}</span>
+          <span class="lg rojo">{{ t('ahora.legendRed') }}</span>
         </p>
-        <div class="bars" role="img" aria-label="Velocidad de viento por hora">
+        <div class="bars" role="img" :aria-label="t('ahora.barsAria')">
           <div
             v-for="(h, i) in horas"
             :key="h.valid_time"
@@ -195,11 +201,13 @@
 <script setup>
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { fetchSpatiPronostico } from '@/services/spatiApi'
 import { wakeApi } from '@/services/authApi'
 
+const { t } = useI18n()
 const site = inject('site')
 const route = useRoute()
 const injectedFaena = inject('faena', null)
@@ -355,13 +363,16 @@ const gruposDia = computed(() => {
 })
 
 const nivelActual = computed(() => horaSeleccionada.value?.nivel ?? data.value?.nivel_maximo ?? 0)
-const nivelNombre = computed(
-  () =>
+const LEVEL_KEYS = ['verde', 'amarillo', 'naranja', 'rojo']
+const nivelNombre = computed(() => {
+  const raw =
     horaSeleccionada.value?.nivel_nombre ||
     data.value?.nivel_maximo_nombre ||
-    ['VERDE', 'AMARILLO', 'NARANJA', 'ROJO'][nivelActual.value] ||
-    '—',
-)
+    ''
+  const key = LEVEL_KEYS[nivelActual.value]
+  if (key) return t(`levels.${key}`)
+  return raw || '—'
+})
 const velActual = computed(() => horaSeleccionada.value?.v ?? Math.round(data.value?.variables_zona_izaje?.v_pluma_kmh || 0))
 const rafagaActual = computed(
   () => horaSeleccionada.value?.rafaga ?? Math.round(data.value?.variables_zona_izaje?.rafaga_10m_kmh || velActual.value),
@@ -379,10 +390,10 @@ const dirLabel = computed(() => {
 
 const recomendacion = computed(() => {
   const n = nivelActual.value
-  if (n >= 3) return 'Suspender izaje — ráfaga en rango crítico.'
-  if (n === 2) return 'Suspensión recomendada — programar ventana más segura.'
-  if (n === 1) return 'Precaución — operar con protocolo reforzado.'
-  return 'Condición favorable para izaje en esta hora.'
+  if (n >= 3) return t('ahora.recoStop')
+  if (n === 2) return t('ahora.recoSuspend')
+  if (n === 1) return t('ahora.recoCaution')
+  return t('ahora.recoOk')
 })
 
 function barHeight(v) {
