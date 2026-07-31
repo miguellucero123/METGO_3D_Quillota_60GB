@@ -2,7 +2,7 @@
   <div class="landing">
     <header class="top">
       <a class="brand" href="#inicio">
-        <span class="brand-mark">SPATI</span>
+        <span class="brand-mark">{{ site.brandName || 'VENTORA' }}</span>
         <span class="brand-sub">METGO 3D</span>
       </a>
       <nav class="nav" aria-label="Secciones">
@@ -20,7 +20,7 @@
     <section id="inicio" class="hero">
       <div class="hero-copy">
         <p class="eyebrow">Inteligencia climática · Izaje</p>
-        <h1>El viento no avisa.<br /><em>SPATI sí.</em></h1>
+        <h1>El viento no avisa.<br /><em>{{ site.brandName || 'VENTORA' }} sí.</em></h1>
         <p class="lede">
           Pronóstico hiperlocalizado 72 h para el punto GPS de su faena. Alertas
           con 18+ h de anticipación y respaldo documental para operar con
@@ -195,7 +195,7 @@ const planesUi = computed(() => {
 const faq = [
   {
     q: '¿En qué se diferencia de Windy u Open-Meteo?',
-    a: 'SPATI está calibrado para el punto GPS de su faena de izaje, con umbrales operativos, alertas a operadores e informe PDF de respaldo. No es meteorología genérica.',
+    a: 'VENTORA está calibrado para el punto GPS de su faena de izaje, con umbrales operativos, alertas a operadores e informe PDF de respaldo. No es meteorología genérica.',
   },
   {
     q: '¿Funciona en alta montaña?',

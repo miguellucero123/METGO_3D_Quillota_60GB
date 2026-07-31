@@ -37,7 +37,7 @@
         </div>
         <div class="badge-meta">
           <span>Ráfaga {{ rafagaActual }} km/h</span>
-          <span>Pico 72 h {{ pico72 }} km/h</span>
+          <span>Viento máximo 72 h {{ pico72 }} km/h</span>
           <span v-if="dirLabel">Dir {{ dirLabel }}</span>
         </div>
         <p class="reco">{{ recomendacion }}</p>

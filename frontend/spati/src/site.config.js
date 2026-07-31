@@ -1,16 +1,19 @@
 /**
- * METGO SPATI — Pronóstico de izaje en mineras de alta montaña (Chile).
+ * METGO VENTORA — Pronóstico de izaje en mineras de alta montaña (Chile).
+ * Código interno / API: sitio=spati (sin cambiar contratos).
  */
 export default {
   sitio: 'spati',
   productName: 'METGO',
-  siteLabel: 'SPATI Izaje',
+  /** Marca comercial visible (antes SPATI) */
+  brandName: 'VENTORA',
+  siteLabel: 'VENTORA · Izaje',
   tagline: 'Pronóstico 72 h · mineras alta montaña · alertas 0–3',
   region: 'Chile · 17 faenas de alta montaña',
-  versionLabel: 'v0.4.2 · SPATI Alta Montaña',
-  documentTitle: 'METGO SPATI — Izaje alta montaña',
+  versionLabel: 'v0.5.0 · VENTORA Alta Montaña',
+  documentTitle: 'METGO VENTORA — Izaje alta montaña',
   documentDescription:
-    'Sistema de Pronóstico y Alerta Temprana para Izaje en mineras de altura: acceso por faena contratada.',
+    'VENTORA: inteligencia de viento para izaje en mineras de altura. Acceso por faena contratada.',
   center: { lat: -24.25, lon: -69.05 },
   spatiDefaultSitio: 'quebrada_blanca',
   api: {
@@ -33,7 +36,7 @@ export default {
   },
   storagePrefix: 'metgo_spati',
   copy: {
-    headerTitle: 'SPATI · Alta montaña',
+    headerTitle: 'VENTORA · Alta montaña',
   },
   /** Seed UI; la lista canónica viene de GET /public/spati/sitios?alta_montana=1 */
   stations: [

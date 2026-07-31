@@ -72,7 +72,7 @@ const routes = [
     path: '/',
     name: 'landing',
     component: () => import('@/views/LandingSpatiView.vue'),
-    meta: { title: 'SPATI', public: true },
+    meta: { title: 'VENTORA', public: true },
   },
   {
     path: '/login',
@@ -153,7 +153,7 @@ router.beforeEach(async (to) => {
       const hub = await loadHub()
       if (!hub.catalogo_completo && hub.slugs.size > 0 && !hub.slugs.has(targetFaena)) {
         const first = [...hub.slugs][0]
-        return `/f/${first}/cuenta?blocked_faena=${encodeURIComponent(targetFaena)}`
+        return `/app?blocked_faena=${encodeURIComponent(targetFaena)}`
       }
     } catch (e) {
       if (e?.status === 401) {
@@ -179,7 +179,7 @@ router.beforeEach(async (to) => {
         access.tab_allowed === false ||
         (access.tabs && access.tabs[entitlementTab] === false)
       if (denied) {
-        return `/f/${targetFaena}/cuenta?blocked=${encodeURIComponent(String(tab))}`
+        return `/f/${targetFaena}/ahora?blocked=${encodeURIComponent(String(tab))}`
       }
     } catch (e) {
       if (e?.status === 401) {
@@ -194,7 +194,7 @@ router.beforeEach(async (to) => {
 })
 
 router.afterEach((to) => {
-  const base = 'METGO SPATI'
+  const base = 'METGO VENTORA'
   document.title = to.meta?.title ? `${to.meta.title} · ${base}` : base
 })
 

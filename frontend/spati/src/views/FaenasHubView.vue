@@ -134,7 +134,7 @@ function irA(slug) {
         <p class="eyebrow"><Mountain :size="14" aria-hidden="true" /> Alta montaña · Chile</p>
         <h1>
           <span class="h-brand">{{ site.productName }}</span>
-          <span class="h-product">SPATI</span>
+          <span class="h-product">{{ site.brandName || 'VENTORA' }}</span>
         </h1>
         <p class="lede">
           Acceso por faena contratada. Cada minera tiene su enlace, reglas y

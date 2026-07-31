@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <header class="page-head">
-      <h1>Umbrales SPATI</h1>
+      <h1>Umbrales {{ site.brandName || 'VENTORA' }}</h1>
       <p>
         Escalafón operacional de izaje · {{ faenaMeta?.nombre || sitioId }}
         <span v-if="fuente" class="muted"> ({{ fuente }})</span>

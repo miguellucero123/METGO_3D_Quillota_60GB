@@ -119,12 +119,12 @@
         </p>
         <div class="perfil-charts">
           <v-chart class="chart-perfil" :option="perfilAhoraOption" autoresize role="img" aria-label="Perfil ahora" />
-          <v-chart class="chart-perfil" :option="perfilPicoOption" autoresize role="img" aria-label="Perfil pico" />
+          <v-chart class="chart-perfil" :option="perfilPicoOption" autoresize role="img" aria-label="Perfil viento máximo" />
         </div>
         <div class="perfil-tables" v-if="nivelesAhora.length">
           <table>
             <thead>
-              <tr><th>Altura (m)</th><th>Ahora (km/h)</th><th>F (N)</th><th>Pico (km/h)</th><th>Fuente</th></tr>
+              <tr><th>Altura (m)</th><th>Ahora (km/h)</th><th>F (N)</th><th>Viento máx. (km/h)</th><th>Fuente</th></tr>
             </thead>
             <tbody>
               <tr v-for="row in tablaPerfil" :key="row.h" :class="{ pluma: row.esPluma }">
@@ -140,7 +140,7 @@
       </section>
 
       <h2 class="serie-title">Serie 72 h</h2>
-      <v-chart class="chart" :option="chartOption" autoresize role="img" aria-label="Serie SPATI" />
+      <v-chart class="chart" :option="chartOption" autoresize role="img" aria-label="Serie VENTORA" />
 
       <div class="legend">
         <span class="chip n0">0 Verde &lt;26</span>
@@ -265,7 +265,7 @@ const perfilAhoraOption = computed(() =>
 const perfilPicoOption = computed(() =>
   perfilChart(
     nivelesPico.value,
-    `Pico 72 h · ${fmt(data.value?.perfil_vertical_pico?.valid_time)} · ${n(data.value?.perfil_vertical_pico?.v_final_kmh)} km/h`
+    `Viento máximo 72 h · ${fmt(data.value?.perfil_vertical_pico?.valid_time)} · ${n(data.value?.perfil_vertical_pico?.v_final_kmh)} km/h`
   )
 )
 

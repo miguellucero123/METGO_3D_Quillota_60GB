@@ -1,7 +1,7 @@
 {
   "name": "metgo-spati",
   "version": "0.1.0",
-  "description": "METGO SPATI — Pronóstico y alerta temprana de izaje | Vue 3 + Vite",
+  "description": "METGO VENTORA — Pronóstico y alerta temprana de izaje | Vue 3 + Vite",
   "type": "module",
   "dependencies": {
     "echarts": "^6.1.0",

@@ -20,7 +20,7 @@
     <section class="card">
       <h2>Reporte mensual ROI</h2>
       <p v-if="!puedeMensual" class="hint">
-        Disponible desde plan <strong>Pro</strong>. Actualice su plan en Cuenta.
+        Disponible desde plan <strong>Pro</strong>. Contacte a su administrador METGO para actualizar el plan.
       </p>
       <template v-else>
         <p class="hint">

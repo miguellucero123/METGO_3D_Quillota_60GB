@@ -14,7 +14,7 @@
         <div class="auth-logo">
           <HardHat aria-hidden="true" />
         </div>
-        <h1>{{ site.productName }} SPATI</h1>
+        <h1>{{ site.productName }} {{ site.brandName || 'VENTORA' }}</h1>
         <p class="auth-tagline">Acceso privado a su faena</p>
         <p v-if="faenaFija" class="auth-region">
           {{ faenaMeta?.nombre || faenaFija }} · {{ faenaMeta?.region || '' }}

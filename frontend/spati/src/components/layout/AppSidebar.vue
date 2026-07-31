@@ -1,5 +1,5 @@
 <template>
-  <aside id="metgo-sidebar" class="metgo-sidebar" aria-label="Navegación SPATI">
+  <aside id="metgo-sidebar" class="metgo-sidebar" aria-label="Navegación VENTORA">
     <nav>
       <router-link
         v-for="item in items"
@@ -19,7 +19,7 @@
 <script setup>
 import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Wind, Plane, SlidersHorizontal, CloudSun, CreditCard, LayoutGrid, Gauge, MapPinned, FileText } from 'lucide-vue-next'
+import { Wind, Plane, SlidersHorizontal, CloudSun, LayoutGrid, Gauge, MapPinned, FileText } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
 import { fetchMe, getToken } from '@/services/authApi'
 
@@ -97,12 +97,6 @@ const items = computed(() => {
       label: 'Umbrales',
       icon: SlidersHorizontal,
       tab: 'umbrales',
-    },
-    {
-      name: 'faena-cuenta',
-      to: { name: 'faena-cuenta', params: { faena: f } },
-      label: 'Cuenta',
-      icon: CreditCard,
     },
   ]
   if (showHubLink.value) {

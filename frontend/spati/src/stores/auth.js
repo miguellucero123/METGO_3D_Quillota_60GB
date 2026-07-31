@@ -24,7 +24,7 @@ export function useAuth() {
     const sitioUser = data.user?.sitio
     const allowed = new Set([SITIO, 'spati', 'mantos_blancos'])
     if (sitioUser != null && !allowed.has(sitioUser)) {
-      throw new Error(`Este acceso es para el sitio ${sitioUser}, no SPATI`)
+      throw new Error(`Este acceso es para el sitio ${sitioUser}, no VENTORA`)
     }
     state.token = data.access_token
     state.user = data.user

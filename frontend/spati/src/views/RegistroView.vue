@@ -75,7 +75,7 @@ async function onSubmit() {
       return
     }
     await registerV2(body)
-    msg.value = 'Registro OK. Revise verificación de email y luego elija plan en Cuenta.'
+    msg.value = 'Registro OK. Revise el email de verificación e inicie sesión.'
     router.replace(faena.value ? `/f/${faena.value}/login` : '/login')
   } catch (e) {
     if (e.data?.validation?.errors) errors.value = e.data.validation.errors
@@ -95,7 +95,7 @@ async function onSubmit() {
       </div>
       <div class="brand">
         <div class="logo"><HardHat aria-hidden="true" /></div>
-        <h1>Registro · {{ faenaMeta?.nombre || faena || 'SPATI' }}</h1>
+        <h1>Registro · {{ faenaMeta?.nombre || faena || (site.brandName || 'VENTORA') }}</h1>
         <p>Cuenta por faena contratada. PII cifrada · consentimiento obligatorio.</p>
       </div>
 
