@@ -23,12 +23,17 @@ export function useAccess() {
 
   function canTab(faena, tab) {
     const snap = snapshot(faena)
-    if (!snap?.tabs) return true
+    // Sin snapshot o tabs vacíos → no ocultar menú (fail-open)
+    if (!snap?.tabs || Object.keys(snap.tabs).length === 0) return true
     if (tab == null || tab === '') return true
     // Vista Ahora hereda entitlement del panel (planes legacy sin key "ahora")
     if (tab === 'ahora') {
-      return Boolean(snap.tabs.ahora || snap.tabs.panel)
+      if (snap.tabs.ahora != null) return Boolean(snap.tabs.ahora)
+      if (snap.tabs.panel != null) return Boolean(snap.tabs.panel)
+      return true
     }
+    // Si la API aún no envía la key, no bloquear la pestaña técnica
+    if (snap.tabs[tab] == null) return true
     return Boolean(snap.tabs[tab])
   }
 

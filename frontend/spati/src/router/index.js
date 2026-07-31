@@ -27,7 +27,7 @@ const faenaChildren = [
     path: '',
     name: 'faena-panel',
     component: () => import('@/views/SpatiPanelView.vue'),
-    meta: { title: 'Pronóstico 72 h', tab: 'panel' },
+    meta: { title: 'Panel técnico', tab: 'panel' },
   },
   {
     path: 'dron',

@@ -10,7 +10,9 @@
       </div>
       <div class="head-actions">
         <button type="button" class="btn" :disabled="loading" @click="cargar">Actualizar</button>
-        <router-link class="btn btn-ghost" :to="`/f/${sitioId}/`">Detalle 72 h</router-link>
+        <router-link class="btn btn-ghost" :to="{ name: 'faena-panel', params: { faena: sitioId } }">
+          Panel técnico
+        </router-link>
       </div>
     </header>
 

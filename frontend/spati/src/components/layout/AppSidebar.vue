@@ -3,10 +3,10 @@
     <nav>
       <router-link
         v-for="item in items"
-        :key="item.to"
+        :key="item.name || item.to"
         :to="item.to"
         class="nav-item"
-        active-class="nav-item--active"
+        :class="{ 'nav-item--active': isActive(item) }"
       >
         <component :is="item.icon" :size="18" />
         <span>{{ item.label }}</span>
@@ -42,27 +42,65 @@ onMounted(async () => {
   try {
     const me = await fetchMe()
     showHubLink.value = Boolean(me.catalogo_completo || me.multi_faena || (me.faenas || []).length > 1)
-  } catch (e) {
+  } catch {
     showHubLink.value = false
-    if (e?.status === 401) {
-      // sesión ya limpiada en authApi
-    }
   }
 })
+
+function isActive(item) {
+  if (item.name) return route.name === item.name
+  const path = String(item.to || '')
+  return route.path === path || route.path === path.replace(/\/$/, '')
+}
 
 const items = computed(() => {
   const f = faena.value
   const all = [
-    { to: `/f/${f}/ahora`, label: 'Ahora', icon: MapPinned, tab: 'ahora' },
-    { to: `/f/${f}/`, label: 'Pronóstico 72 h', icon: Wind, tab: 'panel' },
-    { to: `/f/${f}/ambiente`, label: 'Ambiente faena', icon: CloudSun, tab: 'ambiente' },
-    { to: `/f/${f}/dron`, label: 'Calibración dron', icon: Plane, tab: 'dron' },
-    { to: `/f/${f}/umbrales`, label: 'Umbrales', icon: SlidersHorizontal, tab: 'umbrales' },
-    { to: `/f/${f}/cuenta`, label: 'Cuenta', icon: CreditCard },
+    {
+      name: 'faena-ahora',
+      to: { name: 'faena-ahora', params: { faena: f } },
+      label: 'Ahora',
+      icon: MapPinned,
+      tab: 'ahora',
+    },
+    {
+      name: 'faena-panel',
+      to: { name: 'faena-panel', params: { faena: f } },
+      label: 'Panel técnico',
+      icon: Wind,
+      tab: 'panel',
+    },
+    {
+      name: 'faena-ambiente',
+      to: { name: 'faena-ambiente', params: { faena: f } },
+      label: 'Ambiente faena',
+      icon: CloudSun,
+      tab: 'ambiente',
+    },
+    {
+      name: 'faena-dron',
+      to: { name: 'faena-dron', params: { faena: f } },
+      label: 'Calibración dron',
+      icon: Plane,
+      tab: 'dron',
+    },
+    {
+      name: 'faena-umbrales',
+      to: { name: 'faena-umbrales', params: { faena: f } },
+      label: 'Umbrales',
+      icon: SlidersHorizontal,
+      tab: 'umbrales',
+    },
+    {
+      name: 'faena-cuenta',
+      to: { name: 'faena-cuenta', params: { faena: f } },
+      label: 'Cuenta',
+      icon: CreditCard,
+    },
   ]
   if (showHubLink.value) {
-    all.push({ to: '/ops', label: 'Ops multi-faena', icon: Gauge })
-    all.push({ to: '/', label: 'Mis faenas', icon: LayoutGrid })
+    all.push({ to: '/ops', label: 'Ops multi-faena', icon: Gauge, name: 'ops-board' })
+    all.push({ to: '/', label: 'Mis faenas', icon: LayoutGrid, name: 'faenas-hub' })
   }
   return all.filter((item) => !item.tab || access.canTab(f, item.tab))
 })

@@ -21,7 +21,7 @@ const applying = ref('')
 
 const TAB_LABEL = {
   ahora: 'Ahora',
-  panel: 'Pronóstico 72 h',
+  panel: 'Panel técnico',
   ambiente: 'Ambiente faena',
   dron: 'Calibración dron',
   umbrales: 'Umbrales',

@@ -1,8 +1,8 @@
 <template>
   <div class="page">
     <header class="page-head">
-      <h1>Pronóstico de izaje</h1>
-      <p>72 h · Δt 15 min · física de pluma + alertas 0–3</p>
+      <h1>Panel técnico · Pronóstico de izaje</h1>
+      <p>72 h · Δt 15 min · física de pluma + alertas 0–3 · vista experta</p>
     </header>
 
     <div class="controls">

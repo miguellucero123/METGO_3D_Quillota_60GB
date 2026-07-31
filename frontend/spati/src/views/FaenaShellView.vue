@@ -28,12 +28,20 @@ const show = (tab) => access.canTab(faena.value, tab)
 <template>
   <div class="faena-shell">
     <nav v-if="!$route.meta.public" class="faena-nav" aria-label="Faena">
-      <router-link v-if="show('ahora') || show('panel')" :to="`/f/${faena}/ahora`">Ahora</router-link>
-      <router-link v-if="show('panel')" :to="`/f/${faena}/`">72 h</router-link>
-      <router-link v-if="show('ambiente')" :to="`/f/${faena}/ambiente`">Ambiente</router-link>
-      <router-link v-if="show('dron')" :to="`/f/${faena}/dron`">Dron</router-link>
-      <router-link v-if="show('umbrales')" :to="`/f/${faena}/umbrales`">Umbrales</router-link>
-      <router-link :to="`/f/${faena}/cuenta`">Cuenta</router-link>
+      <router-link
+        v-if="show('ahora') || show('panel')"
+        :to="{ name: 'faena-ahora', params: { faena } }"
+        :class="{ 'router-link-active': $route.name === 'faena-ahora' }"
+      >Ahora</router-link>
+      <router-link
+        v-if="show('panel')"
+        :to="{ name: 'faena-panel', params: { faena } }"
+        :class="{ 'router-link-active': $route.name === 'faena-panel' }"
+      >Panel técnico</router-link>
+      <router-link v-if="show('ambiente')" :to="{ name: 'faena-ambiente', params: { faena } }">Ambiente</router-link>
+      <router-link v-if="show('dron')" :to="{ name: 'faena-dron', params: { faena } }">Dron</router-link>
+      <router-link v-if="show('umbrales')" :to="{ name: 'faena-umbrales', params: { faena } }">Umbrales</router-link>
+      <router-link :to="{ name: 'faena-cuenta', params: { faena } }">Cuenta</router-link>
     </nav>
     <router-view />
   </div>
