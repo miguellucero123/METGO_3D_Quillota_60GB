@@ -246,8 +246,6 @@ onMounted(async () => {
   color: #e2e8f0;
   font-family: var(--font-sans, 'DM Sans', system-ui, sans-serif);
 }
-  font-family: 'Segoe UI', system-ui, sans-serif;
-}
 .top {
   position: sticky;
   top: 0;
