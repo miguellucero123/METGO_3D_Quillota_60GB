@@ -45,6 +45,7 @@ provide('closeNav', () => {
 })
 
 const PUBLIC_NAMES = new Set([
+  'landing',
   'faenas-hub',
   'faena-login',
   'faena-registro',

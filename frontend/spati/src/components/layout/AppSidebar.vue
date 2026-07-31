@@ -100,7 +100,7 @@ const items = computed(() => {
   ]
   if (showHubLink.value) {
     all.push({ to: '/ops', label: 'Ops multi-faena', icon: Gauge, name: 'ops-board' })
-    all.push({ to: '/', label: 'Mis faenas', icon: LayoutGrid, name: 'faenas-hub' })
+    all.push({ to: '/app', label: 'Mis faenas', icon: LayoutGrid, name: 'faenas-hub' })
   }
   return all.filter((item) => !item.tab || access.canTab(f, item.tab))
 })

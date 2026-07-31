@@ -64,9 +64,15 @@ const faenaChildren = [
 const routes = [
   {
     path: '/',
+    name: 'landing',
+    component: () => import('@/views/LandingSpatiView.vue'),
+    meta: { title: 'SPATI', public: true },
+  },
+  {
+    path: '/app',
     name: 'faenas-hub',
     component: () => import('@/views/FaenasHubView.vue'),
-    meta: { title: 'Faenas', public: true },
+    meta: { title: 'Mis faenas', public: true },
   },
   {
     path: '/ops',
@@ -79,10 +85,12 @@ const routes = [
     component: () => import('@/views/FaenaShellView.vue'),
     children: faenaChildren,
   },
-  { path: '/login', redirect: '/f/escondida/login' },
-  { path: '/dron', redirect: '/f/escondida/dron' },
-  { path: '/umbrales', redirect: '/f/escondida/umbrales' },
-  { path: '/ambiente', redirect: '/f/escondida/ambiente' },
+  // Login/registro genéricos: sin forzar Escondida
+  { path: '/login', redirect: '/f/quebrada_blanca/login' },
+  { path: '/registro', redirect: '/f/quebrada_blanca/registro' },
+  { path: '/dron', redirect: '/login?redirect=/f/quebrada_blanca/dron' },
+  { path: '/umbrales', redirect: '/login?redirect=/f/quebrada_blanca/umbrales' },
+  { path: '/ambiente', redirect: '/login?redirect=/f/quebrada_blanca/ambiente' },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

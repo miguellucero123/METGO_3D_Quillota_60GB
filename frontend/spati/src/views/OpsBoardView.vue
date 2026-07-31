@@ -15,7 +15,7 @@
         <button type="button" class="btn" :disabled="loading" @click="cargar(true)">
           Refrescar modelo
         </button>
-        <router-link class="btn btn-ghost" to="/">Hub</router-link>
+        <router-link class="btn btn-ghost" to="/app">Hub</router-link>
       </div>
     </header>
 

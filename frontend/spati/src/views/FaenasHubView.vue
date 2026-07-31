@@ -54,14 +54,14 @@ const isAdminCatalog = computed(() => Boolean(hub.value?.catalogo_completo))
 onMounted(async () => {
   wakeApi().catch(() => {})
   if (!getToken()) {
-    loading.value = false
+    // /app sin sesión → landing comercial (no listar minas)
+    await router.replace('/')
     return
   }
   try {
     const ok = await auth.ensureValidSession()
     if (!ok) {
-      // Token inválido/expirado: sesión limpiada; hub público sin llamadas auth
-      loading.value = false
+      await router.replace('/')
       return
     }
     try {
@@ -69,6 +69,7 @@ onMounted(async () => {
     } catch (e) {
       if (e?.status === 401) {
         auth.logout()
+        await router.replace('/')
         return
       }
       try {
@@ -80,8 +81,12 @@ onMounted(async () => {
           faenas: me.faena ? [{ slug: me.faena }] : me.faenas || [],
         }
       } catch (e2) {
-        if (e2?.status === 401) auth.logout()
-        else throw e2
+        if (e2?.status === 401) {
+          auth.logout()
+          await router.replace('/')
+          return
+        }
+        throw e2
       }
     }
     if (!hub.value?.catalogo_completo && (hub.value?.faenas || []).length === 1) {
@@ -89,8 +94,10 @@ onMounted(async () => {
       return
     }
   } catch (e) {
-    if (e?.status === 401) auth.logout()
-    else error.value = e.message || 'No se pudo cargar acceso'
+    if (e?.status === 401) {
+      auth.logout()
+      await router.replace('/')
+    } else error.value = e.message || 'No se pudo cargar acceso'
   } finally {
     loading.value = false
   }

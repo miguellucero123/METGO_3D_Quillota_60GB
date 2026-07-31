@@ -2,7 +2,7 @@
 
 > **Objetivo:** que un prospecto/cliente vea primero **características y valor** (landing), entre sin ser empujado a Escondida ni a un catálogo de 17 minas, y dentro de la app tenga una **pestaña simple tipo Windy** (móvil primero) con lo crítico del izaje.  
 > **Precios:** sin tarifa mínima por informe · **Básico $300.000**/mes · **Pro $500.000**/mes · **Enterprise desde $1.200.000**/mes (a medida).  
-> **Estado:** catálogo API actualizado · landing/Ahora pendientes · 2026-07-30
+> **Estado:** catálogo API + pestaña Ahora + **landing `/`** · hub en `/app` · 2026-07-30
 
 Relacionado: [`PLAN_COMERCIAL_SPATI_3_PLANES.md`](PLAN_COMERCIAL_SPATI_3_PLANES.md) · `docs/comercial/spati/` · `FaenasHubView` · `SpatiPanelView` · `plans_catalog.py`
 
