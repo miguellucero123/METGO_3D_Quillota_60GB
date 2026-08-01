@@ -150,22 +150,29 @@ def test_api_public_aire_alertas():
         assert "umbral" in body
 
 
-def test_sinca_stub_estado():
+def test_sinca_stub_estado(monkeypatch):
+    """E12.1: con ejemplos → listo_csv; sin ejemplos ni env → pendiente_fuente."""
     _setup_api()
     from api_rest import sinca_service
-
-    est = sinca_service.estado_sinca()
-    assert est["fuente"] == "sinca_mma"
-    assert est["estado"] == "pendiente_fuente"
-    sync = sinca_service.sincronizar_sinca()
-    assert sync.get("omitido") is True
-
     from api_rest.app import create_app
 
-    c = create_app().test_client()
-    r = c.get("/api/public/aire/sinca/estado")
+    monkeypatch.delenv("METGO_SINCA_CSV_DIR", raising=False)
+    monkeypatch.setenv("METGO_SINCA_USE_EJEMPLOS", "1")
+    est = sinca_service.estado_sinca()
+    assert est["fuente"] == "sinca_mma"
+    assert est["estado"] == "listo_csv"
+    assert est["csv_dir_origen"] == "ejemplos"
+    assert est["estaciones_con_codigo"] == 0
+
+    r = create_app().test_client().get("/api/public/aire/sinca/estado")
     assert r.status_code == 200
-    assert r.get_json()["estado"] == "pendiente_fuente"
+    assert r.get_json()["estado"] == "listo_csv"
+
+    monkeypatch.setenv("METGO_SINCA_USE_EJEMPLOS", "0")
+    est2 = sinca_service.estado_sinca()
+    assert est2["estado"] == "pendiente_fuente"
+    sync = sinca_service.sincronizar_sinca()
+    assert sync.get("omitido") is True
 
 
 def test_sinca_calcular_sesgo():
