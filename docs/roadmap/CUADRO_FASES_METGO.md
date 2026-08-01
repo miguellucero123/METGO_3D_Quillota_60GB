@@ -1,17 +1,17 @@
 # Cuadro de fases METGO — estado y pendientes
 
-> **Corte:** 2026-07-31 · Documento vivo. Canvas interactivo: abrir en Cursor  
+> **Corte:** 2026-08-01 · Documento vivo. Canvas interactivo: abrir en Cursor  
 > `canvases/metgo-fases-estado.canvas.tsx`  
-> Relacionado: [`README.md`](README.md) · [`PLAN_MINERIA_MULTI_FAENA.md`](PLAN_MINERIA_MULTI_FAENA.md) · [`PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md`](PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md)
+> Relacionado: [`README.md`](README.md) · [`CHECKLIST_E12.md`](CHECKLIST_E12.md) · [`PLAN_MAESTRO_METGO_MULTISITIO.md`](PLAN_MAESTRO_METGO_MULTISITIO.md)
 
 ## Resumen
 
 | Estado | Cantidad | Significado |
 |--------|----------|-------------|
-| **Hecho** | mayoría 1–10, S0–S4.1, M1–M7, M10, M8 estaciones | Código + usable |
-| **Parcial** | S5, M9, M8 CSV Render | Código listo; falta ops |
-| **Ops manual** | S3 resto, OpenMeteo key, SINCA CSV | No se cierra solo con commits |
-| **Pendiente** | E12 | Producto futuro |
+| **Hecho** | mayoría 1–10, S0–S4.1, M1–M7, M10, M8 estaciones, E11 | Código + usable |
+| **Parcial** | S5, M9, M8 CSV Render, **E12.1** | Código listo; falta keys prod |
+| **Ops manual** | S3 resto, OpenMeteo key, SINCA/Agromet IDs | No se cierra solo con commits |
+| **Pendiente** | E12 resto (retrain prod) | Continuo |
 
 ---
 
@@ -64,8 +64,8 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 |------|--------|-------|
 | `GRANT` identity (`usuarios_app`, etc.) | ✅ Hecho | Seed demo + grants 2026-07-31 |
 | Open-Meteo API key | 🔶 Parcial | `METGO_OPENMETEO_API_KEY` (evitar 429) |
-| **E11** PWA / a11y / i18n | ✅ Slice 1–2 | PWA, i18n landing→informes, Lighthouse a11y CI ≥90 |
-| E12 | ⏳ Pendiente | Datos oficiales + ML por dominio |
+| **E11** PWA / a11y / i18n | ✅ Slice 1–2 | PWA, i18n, Lighthouse a11y CI ≥90 |
+| **E12** datos oficiales + ML | 🔶 E12.1 | Fallback CSV ejemplos + `e12_ops` en health; keys prod pendientes |
 
 ---
 
@@ -84,7 +84,7 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 
 ### P2 — calidad
 6. `METGO_OPENMETEO_API_KEY`
-7. E12 según roadmap maestro (E11.1–2 cerrado)
+7. E12 resto: IDs SINCA/Agromet/DMC en Render + retrain (ver [`CHECKLIST_E12.md`](CHECKLIST_E12.md))
 
 ---
 
@@ -96,9 +96,10 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 - Edición `alertas_destino` por faena
 - Cron YAML de alertas izaje (falta solo el secret)
 - Estaciones SPATI en Supabase (M8 filas)
-- E11: PWA + i18n ES/EN (landing→informes) + Lighthouse a11y CI
+- E11: PWA + i18n ES/EN + Lighthouse a11y CI
+- E12.1: sync SINCA/DMC/Agromet desde CSV de ejemplo del repo
 
-El siguiente valor: **ops producción (CSV/SMTP)** + **E12** cuando prioricen datos oficiales.
+El siguiente valor: **ops producción** (SMTP, CSV diario real, IDs oficiales) + retrain ML con observado.
 
 ## Fase documento
 

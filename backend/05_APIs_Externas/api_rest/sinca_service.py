@@ -96,6 +96,32 @@ def _slugs_rajo_faenas() -> dict[str, dict[str, Any]]:
     return out
 
 
+def _repo_root() -> Path:
+    # api_rest → 05_APIs_Externas → backend → ROOT
+    return Path(__file__).resolve().parents[3]
+
+
+def resolve_csv_dir() -> tuple[Path | None, str]:
+    """Dir CSV SINCA: env, o fallback a docs/ejemplos/sinca_csv (E12.1)."""
+    env = (os.getenv("METGO_SINCA_CSV_DIR") or "").strip()
+    if env:
+        p = Path(env)
+        if p.is_dir():
+            return p, "env"
+        return p, "env_missing"
+    allow = (os.getenv("METGO_SINCA_USE_EJEMPLOS") or "1").strip().lower() not in (
+        "0",
+        "false",
+        "no",
+    )
+    if not allow:
+        return None, "disabled"
+    ejemplos = _repo_root() / "docs" / "ejemplos" / "sinca_csv"
+    if ejemplos.is_dir():
+        return ejemplos, "ejemplos"
+    return None, "none"
+
+
 def catalogo_efectivo() -> dict[str, dict[str, Any]]:
     """Catálogo con sinca_id resuelto (env pisa placeholders) + rajos M8."""
     overrides = _ids_desde_env()
@@ -114,14 +140,24 @@ def estado_sinca() -> dict[str, Any]:
     """Estado de la integración SINCA (para /api/datos/etl/status y docs)."""
     cat = catalogo_efectivo()
     configuradas = sum(1 for e in cat.values() if e.get("sinca_id"))
-    csv_dir = (os.getenv("METGO_SINCA_CSV_DIR") or "").strip()
+    csv_path, csv_origen = resolve_csv_dir()
+    csv_files = 0
+    if csv_path and csv_path.is_dir():
+        csv_files = sum(1 for _ in csv_path.glob("*.csv"))
     return {
         "fuente": "sinca_mma",
         "portal": "https://sinca.mma.gob.cl",
-        "estado": "pendiente_fuente" if configuradas == 0 else "parcial",
+        "estado": (
+            "listo_csv"
+            if csv_files > 0
+            else ("pendiente_fuente" if configuradas == 0 else "parcial")
+        ),
         "estaciones_catalogo": len(cat),
         "estaciones_con_codigo": configuradas,
-        "csv_dir_configurado": bool(csv_dir),
+        "csv_dir_configurado": csv_origen in ("env", "ejemplos"),
+        "csv_dir_origen": csv_origen,
+        "csv_dir": str(csv_path) if csv_path else None,
+        "csv_archivos": csv_files,
         "csv_url_configurado": bool((os.getenv("METGO_SINCA_CSV_URL") or "").strip()),
         "circuit_breaker_abierto": _cb_abierto(),
         "circuit_breaker_fallas": _CB_FALLA,
@@ -137,6 +173,7 @@ def estado_sinca() -> dict[str, Any]:
         "nota": (
             "SINCA sin API oficial. Definir METGO_SINCA_IDS y "
             "METGO_SINCA_CSV_DIR o METGO_SINCA_CSV_URL='…/{slug}.csv' (E12). "
+            "Sin env, se usan docs/ejemplos/sinca_csv (METGO_SINCA_USE_EJEMPLOS=0 para desactivar). "
             "Ver docs/roadmap/fase-3/sinca_activacion.md"
         ),
     }
@@ -220,11 +257,11 @@ def sincronizar_sinca(estaciones: list[str] | None = None) -> dict[str, Any]:
     estado = estado_sinca()
     cat = catalogo_efectivo()
     slugs = estaciones or list(cat.keys())
-    csv_dir = (os.getenv("METGO_SINCA_CSV_DIR") or "").strip()
+    csv_path, csv_origen = resolve_csv_dir()
     url_tpl = (os.getenv("METGO_SINCA_CSV_URL") or "").strip()
     # Ej.: https://ejemplo/sinca/{slug}.csv  o  .../{id}.csv
 
-    if not csv_dir and not url_tpl:
+    if csv_path is None and not url_tpl:
         motivo = "sin_codigos_sinca" if estado["estaciones_con_codigo"] == 0 else "sin_csv_dir"
         return {
             "sinca_sync": {},
@@ -238,7 +275,7 @@ def sincronizar_sinca(estaciones: list[str] | None = None) -> dict[str, Any]:
     except Exception as exc:
         return {"sinca_sync": {}, "omitido": True, "motivo": f"aire_store: {exc}", "estado": estado}
 
-    base = Path(csv_dir) if csv_dir else None
+    base = csv_path if csv_path and csv_path.is_dir() else None
     detalle: dict[str, int] = {}
     for slug in slugs:
         if slug not in cat:
@@ -271,6 +308,7 @@ def sincronizar_sinca(estaciones: list[str] | None = None) -> dict[str, Any]:
         "sinca_sync": detalle,
         "omitido": escritos == 0,
         "motivo": None if escritos else "csv_sin_filas",
+        "csv_dir_origen": csv_origen,
         "estado": estado_sinca(),
         "fuente_observado_marcados": marcados,
     }

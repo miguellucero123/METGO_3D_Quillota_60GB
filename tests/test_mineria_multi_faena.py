@@ -446,3 +446,39 @@ def test_m8_api_sync_estaciones():
         r = c.post("/api/cron/faena/sync-estaciones")
         assert r.status_code == 200
         assert r.get_json()["fase"] == "M8"
+
+
+def test_e12_sinca_fallback_ejemplos(monkeypatch):
+    """Sin METGO_SINCA_CSV_DIR usa docs/ejemplos/sinca_csv."""
+    _setup_api()
+    from api_rest import sinca_service
+
+    monkeypatch.delenv("METGO_SINCA_CSV_DIR", raising=False)
+    monkeypatch.setenv("METGO_SINCA_USE_EJEMPLOS", "1")
+    path, origen = sinca_service.resolve_csv_dir()
+    assert origen == "ejemplos"
+    assert path is not None and path.is_dir()
+    st = sinca_service.estado_sinca()
+    assert st["csv_dir_configurado"] is True
+    assert st["csv_archivos"] >= 2
+    with patch("api_rest.integracion.aire_store.guardar_aire", return_value=3) as mock_g, patch(
+        "api_rest.integracion.estaciones_catalog_store.marcar_fuente_observado",
+        return_value=1,
+    ):
+        res = sinca_service.sincronizar_sinca(estaciones=["escondida_rajo"])
+    assert res.get("omitido") is False
+    assert res.get("csv_dir_origen") == "ejemplos"
+    mock_g.assert_called()
+
+
+def test_e12_ops_en_health(monkeypatch):
+    _setup_api()
+    monkeypatch.delenv("METGO_SINCA_CSV_DIR", raising=False)
+    monkeypatch.setenv("METGO_SINCA_USE_EJEMPLOS", "1")
+    from api_rest.app import create_app
+
+    r = create_app().test_client().get("/api/health")
+    assert r.status_code == 200
+    e12 = r.get_json().get("e12_ops") or {}
+    assert e12.get("fase") == "E12.1"
+    assert e12.get("sinca_csv_origen") == "ejemplos"

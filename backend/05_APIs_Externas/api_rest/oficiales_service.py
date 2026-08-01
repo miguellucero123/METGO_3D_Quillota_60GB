@@ -89,6 +89,28 @@ def _ids_env(var: str) -> dict[str, str]:
         return {}
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def resolve_csv_dir(kind: str) -> tuple[Path | None, str]:
+    """kind: agromet | dmc. Env o docs/ejemplos/{kind}_csv."""
+    env_key = "METGO_AGROMET_CSV_DIR" if kind == "agromet" else "METGO_DMC_CSV_DIR"
+    env = (os.getenv(env_key) or "").strip()
+    if env:
+        p = Path(env)
+        return p, "env" if p.is_dir() else "env_missing"
+    allow_key = (
+        "METGO_AGROMET_USE_EJEMPLOS" if kind == "agromet" else "METGO_DMC_USE_EJEMPLOS"
+    )
+    if (os.getenv(allow_key) or "1").strip().lower() in ("0", "false", "no"):
+        return None, "disabled"
+    ejemplos = _repo_root() / "docs" / "ejemplos" / f"{kind}_csv"
+    if ejemplos.is_dir():
+        return ejemplos, "ejemplos"
+    return None, "none"
+
+
 def catalogo_agromet() -> dict[str, dict[str, Any]]:
     overrides = _ids_env("METGO_AGROMET_IDS")
     out: dict[str, dict[str, Any]] = {}
@@ -127,13 +149,17 @@ def estado_fuentes() -> dict[str, Any]:
     dmc = catalogo_dmc()
     agro_ok = sum(1 for e in agro.values() if e.get("codigo"))
     dmc_ok = sum(1 for e in dmc.values() if e.get("codigo"))
-    csv_agro = bool((os.getenv("METGO_AGROMET_CSV_DIR") or "").strip())
-    csv_dmc = bool((os.getenv("METGO_DMC_CSV_DIR") or "").strip())
+    agro_path, agro_origen = resolve_csv_dir("agromet")
+    dmc_path, dmc_origen = resolve_csv_dir("dmc")
+    csv_agro = agro_origen in ("env", "ejemplos")
+    csv_dmc = dmc_origen in ("env", "ejemplos")
     return {
         "agromet": {
             "disponible": agro_ok > 0 or csv_agro,
             "estaciones_con_codigo": agro_ok,
             "csv_dir_configurado": csv_agro,
+            "csv_dir_origen": agro_origen,
+            "csv_dir": str(agro_path) if agro_path else None,
             "motivo": (
                 None
                 if agro_ok or csv_agro
@@ -145,6 +171,8 @@ def estado_fuentes() -> dict[str, Any]:
             "disponible": dmc_ok > 0 or csv_dmc,
             "estaciones_con_codigo": dmc_ok,
             "csv_dir_configurado": csv_dmc,
+            "csv_dir_origen": dmc_origen,
+            "csv_dir": str(dmc_path) if dmc_path else None,
             "motivo": (
                 None
                 if dmc_ok or csv_dmc
@@ -155,6 +183,7 @@ def estado_fuentes() -> dict[str, Any]:
         "fuente_activa": "openmeteo_archive",
         "nota_e12": (
             "Activar observación oficial con env IDs + CSV diario. "
+            "Sin env se usan docs/ejemplos/{agromet,dmc}_csv (E12.1). "
             "DMC Quillota: candidato 330007 vía METGO_DMC_USAR_CANDIDATOS=1 tras confirmar portal."
         ),
     }
@@ -200,9 +229,9 @@ def fetch_agromet_historico(estacion_id: str, dias: int = 30) -> list[dict[str, 
     meta = catalogo_agromet().get(slug)
     if not meta:
         return []
-    csv_dir = (os.getenv("METGO_AGROMET_CSV_DIR") or "").strip()
-    if csv_dir:
-        filas = _leer_csv_meteo(Path(csv_dir) / f"{slug}.csv")
+    csv_path, _ = resolve_csv_dir("agromet")
+    if csv_path and csv_path.is_dir():
+        filas = _leer_csv_meteo(csv_path / f"{slug}.csv")
         if dias > 0 and filas:
             return filas[-dias:]
         return filas
@@ -217,9 +246,9 @@ def fetch_dmc_historico(estacion_id: str, dias: int = 30) -> list[dict[str, Any]
     meta = catalogo_dmc().get(slug)
     if not meta:
         return []
-    csv_dir = (os.getenv("METGO_DMC_CSV_DIR") or "").strip()
-    if csv_dir:
-        filas = _leer_csv_meteo(Path(csv_dir) / f"{slug}.csv")
+    csv_path, _ = resolve_csv_dir("dmc")
+    if csv_path and csv_path.is_dir():
+        filas = _leer_csv_meteo(csv_path / f"{slug}.csv")
         if dias > 0 and filas:
             return filas[-dias:]
         return filas

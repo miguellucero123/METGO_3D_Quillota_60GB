@@ -28,6 +28,11 @@ METGO_SINCA_CSV_URL='https://tu-bucket/sinca/{slug}.csv'
 5. Cron (`/api/cron/sync`) llama `sincronizar_sinca()` → `aire_registros` (`fuente=sinca`, `tipo_dato=observado`).
 6. Validar sesgo: `GET /api/public/aire/sinca/sesgo?estacion_id=copiapo_centro`
 
+### Fallback sin env (E12.1)
+
+Si `METGO_SINCA_CSV_DIR` no está definido, se usa `docs/ejemplos/sinca_csv/`
+(`METGO_SINCA_USE_EJEMPLOS=0` lo desactiva). Útil en local y smoke; en prod preferir dir propio.
+
 ## Estado API
 
-`GET /api/public/aire/sinca/estado`
+`GET /api/public/aire/sinca/estado` · health `.e12_ops`

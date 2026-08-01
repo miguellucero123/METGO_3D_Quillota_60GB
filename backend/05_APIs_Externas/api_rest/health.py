@@ -107,4 +107,42 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
     }
     if "ops_board" not in base["features"]:
         base["features"] = list(base["features"]) + ["ops_board", "spati_m10"]
+
+    # E12 readiness: CSV ejemplos o env (sin secretos)
+    try:
+        from api_rest import oficiales_service, sinca_service
+
+        st_s = sinca_service.estado_sinca()
+        st_o = oficiales_service.estado_fuentes()
+        base["e12_ops"] = {
+            "fase": "E12.1",
+            "sinca_estado": st_s.get("estado"),
+            "sinca_csv_origen": st_s.get("csv_dir_origen"),
+            "sinca_csv_archivos": st_s.get("csv_archivos"),
+            "sinca_codigos": st_s.get("estaciones_con_codigo"),
+            "agromet_disponible": bool((st_o.get("agromet") or {}).get("disponible")),
+            "dmc_disponible": bool((st_o.get("dmc") or {}).get("disponible")),
+            "pendiente": [
+                k
+                for k, ok in (
+                    ("METGO_SINCA_IDS", int(st_s.get("estaciones_con_codigo") or 0) > 0),
+                    (
+                        "METGO_SINCA_CSV_DIR_prod",
+                        st_s.get("csv_dir_origen") == "env",
+                    ),
+                    (
+                        "METGO_AGROMET_IDS",
+                        int((st_o.get("agromet") or {}).get("estaciones_con_codigo") or 0) > 0,
+                    ),
+                    (
+                        "METGO_DMC_IDS",
+                        int((st_o.get("dmc") or {}).get("estaciones_con_codigo") or 0) > 0,
+                    ),
+                )
+                if not ok
+            ],
+        }
+    except Exception as exc:
+        base["e12_ops"] = {"fase": "E12.1", "error": str(exc)[:160]}
+
     return base

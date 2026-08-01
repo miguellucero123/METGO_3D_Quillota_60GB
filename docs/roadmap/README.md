@@ -26,7 +26,8 @@ Estructura para ejecutar el [prompt MVP](../PROMPT_MVP_METGO.md) y el rol en **`
 | [`PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md`](PLAN_REGISTRO_SUSCRIPCION_MULTISITIO.md) | **Registro + PII cifrada + suscripción por producto** (propuesto) |
 | [`CHECKLIST_M8_OBSERVADO.md`](CHECKLIST_M8_OBSERVADO.md) | **M8** SINCA/CSV + estaciones SPATI en `estaciones` |
 | [`CHECKLIST_M9_IZAJE_PUSH.md`](CHECKLIST_M9_IZAJE_PUSH.md) | **M9** umbrales izaje por faena + alertas push |
-| [`CHECKLIST_E11_SPATI.md`](CHECKLIST_E11_SPATI.md) | **E11.1** PWA + a11y + i18n SPA VENTORA |
+| [`CHECKLIST_E11_SPATI.md`](CHECKLIST_E11_SPATI.md) | **E11.1–2** PWA + a11y + i18n + Lighthouse SPA VENTORA |
+| [`CHECKLIST_E12.md`](CHECKLIST_E12.md) | **E12.1** CSV ejemplos + health `e12_ops` |
 | [`BACKEND_MODULOS_01-12_AUDITORIA.md`](BACKEND_MODULOS_01-12_AUDITORIA.md) | **Auditoría exhaustiva** por carpeta |
 | [`deuda-tecnica/`](deuda-tecnica/) | Tareas transversales (DT-1 … DT-3) |
 
