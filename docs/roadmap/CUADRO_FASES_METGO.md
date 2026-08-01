@@ -73,9 +73,9 @@ Checklist: [`CHECKLIST_AUTH_PROD.md`](CHECKLIST_AUTH_PROD.md)
 
 ### P0 — esta semana
 1. **Render:** `METGO_SMTP_*`, `STRIPE_*` (o aceptar mock), `METGO_PII_KEK`, `METGO_EMAIL_DEV=0`
-2. **Supabase:** ejecutar GRANT `faena_reglas` (health deja de marcar 403 PostgREST)
+2. ~~Supabase GRANT~~ — OK si `health.supabase_error` vacío (ya verificado)
 
-**Guía detallada (paso a paso):** [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)
+**Lista única de pasos:** [`PASOS_PENDIENTES_OPS.md`](PASOS_PENDIENTES_OPS.md) · detalle: [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)
 
 ### P1 — cierre M8/M9 ops
 3. CSV en `METGO_SINCA_CSV_DIR` (ejemplos en `docs/ejemplos/sinca_csv/`) + `POST …/sync` SINCA
