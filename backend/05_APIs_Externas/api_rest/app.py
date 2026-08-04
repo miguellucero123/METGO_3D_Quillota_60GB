@@ -444,8 +444,11 @@ app = create_app()
 
 
 def demo_preview_bootstrap() -> None:
-    """Asegura demo@ventora.demo (solo Ahora + Panel). Desactivar con METGO_SEED_DEMO_PREVIEW=0."""
-    if (os.getenv("METGO_SEED_DEMO_PREVIEW") or "1").strip().lower() in ("0", "false", "no"):
+    """Seed demo fija solo si METGO_SEED_DEMO_PREVIEW=1 (apagado por defecto).
+
+    La cuenta demo@ventora.demo se retiró de prod; no recrear al arrancar.
+    """
+    if (os.getenv("METGO_SEED_DEMO_PREVIEW") or "0").strip().lower() not in ("1", "true", "yes"):
         return
     try:
         from api_rest.identity import identity_store

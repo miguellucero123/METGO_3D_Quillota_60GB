@@ -17,6 +17,7 @@ venv.bak/
 .env.local
 **/.env
 !**/.env.example
+scripts/sii/.env.sii
 **/.env.production
 !**/.env.production.example
 .streamlit/secrets.toml

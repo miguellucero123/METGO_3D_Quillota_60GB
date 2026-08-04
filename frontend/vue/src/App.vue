@@ -24,7 +24,13 @@ provide('closeNav', () => {
   navOpen.value = false
 })
 
-const isAuthPage = computed(() => route.name === 'login' || route.name === 'registro')
+const isPublicShell = computed(
+  () =>
+    route.name === 'login' ||
+    route.name === 'registro' ||
+    route.name === 'verificar' ||
+    route.name === 'landing',
+)
 
 const isEmbedded = computed(
   () => route.query.embed === '1' || (typeof window !== 'undefined' && window.self !== window.top),
@@ -49,7 +55,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="isAuthPage" class="app-login">
+  <div v-if="isPublicShell" class="app-login" :class="{ 'app-login--landing': route.name === 'landing' }">
     <RouterView />
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--embed': isEmbedded, 'app-shell--nav-open': navOpen }">
@@ -70,3 +76,11 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.app-login--landing {
+  min-height: 100vh;
+  padding: 0;
+  background: transparent;
+}
+</style>

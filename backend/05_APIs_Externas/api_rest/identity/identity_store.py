@@ -12,7 +12,7 @@ from typing import Any
 
 from api_rest.identity import pii_crypto
 from api_rest.identity import plans_catalog
-from api_rest.identity.plans_catalog import features_for_plan
+from api_rest.identity.plans_catalog import features_for_plan, trial_days
 
 _lock = threading.Lock()
 _MEM: dict[str, list[dict[str, Any]]] = {
@@ -130,6 +130,20 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
             if u["email_norm"] == email and u["sitio"] == sitio and u.get("faena") == faena:
                 return False, "Email ya registrado en este sitio/faena", None
 
+        rut_h = pii_crypto.rut_lookup_hash(str(payload.get("rut") or ""))
+        for o in _MEM["orgs"]:
+            if (
+                o.get("sitio") == sitio
+                and o.get("faena") == faena
+                and o.get("rut_hash") == rut_h
+            ):
+                return (
+                    False,
+                    "Este RUT ya tiene cuenta en este producto. "
+                    "Inicie sesión o solicite invitación a su administrador (no cree otra cuenta con otro correo).",
+                    {"code": "rut_already_registered"},
+                )
+
         org_id = str(uuid.uuid4())
         user_id = str(uuid.uuid4())
         sub_id = str(uuid.uuid4())
@@ -141,6 +155,7 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
             "faena": faena,
             "razon_social_enc": pii_crypto.encrypt_pii(str(payload.get("razon_social") or "")),
             "rut_enc": pii_crypto.encrypt_pii(str(payload.get("rut") or "")),
+            "rut_hash": rut_h,
             "giro": payload.get("giro"),
             "created_at": now,
         }
@@ -179,7 +194,7 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
                     }
                 )
 
-        trial_end = (_utcnow() + timedelta(days=14)).isoformat()
+        trial_end = (_utcnow() + timedelta(days=trial_days())).isoformat()
         feats = features_for_plan("trial")
         _MEM["suscripciones"].append(
             {
@@ -229,7 +244,7 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
 def _register_supabase(payload, email, sitio, faena, password, cons, ip):
     from api_rest.integracion import supabase_store as sb
 
-    # unicidad aproximada
+    # unicidad email
     params = {"email_norm": f"eq.{email}", "sitio": f"eq.{sitio}", "select": "id"}
     if faena:
         params["faena"] = f"eq.{faena}"
@@ -239,16 +254,39 @@ def _register_supabase(payload, email, sitio, faena, password, cons, ip):
     if existing:
         return False, "Email ya registrado en este sitio/faena", None
 
-    org_rows = sb.rest_insert(
-        "orgs",
-        {
-            "sitio": sitio,
-            "faena": faena,
-            "razon_social_enc": pii_crypto.encrypt_pii(str(payload.get("razon_social") or "")),
-            "rut_enc": pii_crypto.encrypt_pii(str(payload.get("rut") or "")),
-            "giro": payload.get("giro"),
-        },
-    )
+    # unicidad RUT (hash determinístico; rut_enc AES no sirve para UNIQUE)
+    rut_h = pii_crypto.rut_lookup_hash(str(payload.get("rut") or ""))
+    org_params = {"sitio": f"eq.{sitio}", "rut_hash": f"eq.{rut_h}", "select": "id"}
+    if faena:
+        org_params["faena"] = f"eq.{faena}"
+    else:
+        org_params["faena"] = "is.null"
+    try:
+        org_dup = sb.rest_select("orgs", params=org_params, limit=1)
+    except Exception:
+        org_dup = []
+    # PostgREST sin columna rut_hash → lista vacía / error; no bloquear registro
+    if org_dup:
+        return (
+            False,
+            "Este RUT ya tiene cuenta en este producto. "
+            "Inicie sesión o solicite invitación a su administrador (no cree otra cuenta con otro correo).",
+            {"code": "rut_already_registered"},
+        )
+
+    org_payload = {
+        "sitio": sitio,
+        "faena": faena,
+        "razon_social_enc": pii_crypto.encrypt_pii(str(payload.get("razon_social") or "")),
+        "rut_enc": pii_crypto.encrypt_pii(str(payload.get("rut") or "")),
+        "rut_hash": rut_h,
+        "giro": payload.get("giro"),
+    }
+    org_rows = sb.rest_insert("orgs", org_payload)
+    if not org_rows:
+        # Migración rut_hash pendiente en Supabase: reintentar sin la columna
+        org_payload.pop("rut_hash", None)
+        org_rows = sb.rest_insert("orgs", org_payload)
     if not org_rows:
         return False, "No se pudo crear organización (Supabase)", None
     org_id = org_rows[0]["id"]
@@ -288,7 +326,7 @@ def _register_supabase(payload, email, sitio, faena, password, cons, ip):
                 },
             )
 
-    trial_end = (_utcnow() + timedelta(days=14)).isoformat()
+    trial_end = (_utcnow() + timedelta(days=trial_days())).isoformat()
     sub_rows = sb.rest_insert(
         "suscripciones",
         {
@@ -729,7 +767,7 @@ def segundos_restantes_suscripcion(sub: dict[str, Any] | None) -> int | None:
     return max(0, int((end - _utcnow()).total_seconds()))
 
 
-# Demo fija (login SPA): solo Ahora + Panel. Override clave con METGO_DEMO_PASSWORD.
+# Demo fija (login SPA) — retirada de prod; seed solo con METGO_SEED_DEMO_PREVIEW=1.
 DEMO_PREVIEW_EMAIL = "demo@ventora.demo"
 DEMO_PREVIEW_PASSWORD_DEFAULT = "DemoVentora1!"
 
@@ -901,12 +939,74 @@ def _org_es_demo_fija(org: dict[str, Any] | None) -> bool:
     return bool(meta.get("fixed_demo"))
 
 
+def eliminar_usuario_demo_fijo() -> tuple[bool, str, dict[str, Any] | None]:
+    """Elimina la cuenta demo fija (demo@ventora.demo) y su org/suscripción asociadas."""
+    email = (os.getenv("METGO_DEMO_EMAIL") or DEMO_PREVIEW_EMAIL).strip().lower() or DEMO_PREVIEW_EMAIL
+    known_org = "a0000000-0000-4000-8000-000000000001"
+
+    if use_memory():
+        with _lock:
+            users = [u for u in _MEM["usuarios_app"] if u.get("email_norm") == email and u.get("sitio") == "spati"]
+            org_ids = {str(u.get("org_id")) for u in users if u.get("org_id")}
+            org_ids |= {
+                str(o.get("id"))
+                for o in _MEM["orgs"]
+                if _org_es_demo_fija(o) or str(o.get("id")) == known_org
+            }
+            if not org_ids and not users:
+                return True, "Demo ya inexistente", {"email": email, "removed": 0}
+            sub_ids = {
+                str(s.get("id"))
+                for s in _MEM["suscripciones"]
+                if str(s.get("org_id")) in org_ids
+            }
+            _MEM["entitlements"] = [
+                e for e in _MEM["entitlements"] if str(e.get("suscripcion_id")) not in sub_ids
+            ]
+            _MEM["suscripciones"] = [
+                s for s in _MEM["suscripciones"] if str(s.get("org_id")) not in org_ids
+            ]
+            _MEM["usuarios_app"] = [
+                u for u in _MEM["usuarios_app"] if str(u.get("org_id")) not in org_ids
+            ]
+            _MEM["orgs"] = [o for o in _MEM["orgs"] if str(o.get("id")) not in org_ids]
+        return True, "Usuario demo eliminado", {"email": email, "removed": len(org_ids), "org_ids": sorted(org_ids)}
+
+    from api_rest.integracion import supabase_store as sb
+
+    users = sb.rest_select(
+        "usuarios_app",
+        params={"email_norm": f"eq.{email}", "sitio": "eq.spati", "select": "id,org_id"},
+        limit=20,
+    )
+    org_ids = {str(u.get("org_id")) for u in (users or []) if u.get("org_id")}
+    org_ids.add(known_org)
+    removed = 0
+    for oid in sorted(org_ids):
+        subs = sb.rest_select(
+            "suscripciones",
+            params={"org_id": f"eq.{oid}", "select": "id"},
+            limit=50,
+        )
+        for s in subs or []:
+            sid = s.get("id")
+            if sid:
+                sb.rest_delete("entitlements", {"suscripcion_id": f"eq.{sid}"})
+        sb.rest_delete("suscripciones", {"org_id": f"eq.{oid}"})
+        sb.rest_delete("usuarios_app", {"org_id": f"eq.{oid}"})
+        n = sb.rest_delete("orgs", {"id": f"eq.{oid}"})
+        removed += int(n or 0)
+    # Por si el usuario quedó huérfano sin org conocida
+    sb.rest_delete("usuarios_app", {"email_norm": f"eq.{email}", "sitio": "eq.spati"})
+    return True, "Usuario demo eliminado", {"email": email, "removed": removed, "org_ids": sorted(org_ids)}
+
+
 def ensure_usuario_demo_fijo(
     *,
     faena: str = "quebrada_blanca",
     horas: float = 24.0,
 ) -> tuple[bool, str, dict[str, Any] | None]:
-    """Upsert demo@ventora.demo / DemoVentora1! (solo Ahora + Panel). No se purga."""
+    """Upsert demo fija (solo si ops lo pide explícitamente). Tabs: Ahora + Panel."""
     faena = (faena or "quebrada_blanca").strip().lower()
     horas = max(1.0, min(float(horas or 24.0), 720.0))
     email = (os.getenv("METGO_DEMO_EMAIL") or DEMO_PREVIEW_EMAIL).strip().lower() or DEMO_PREVIEW_EMAIL

@@ -15,6 +15,12 @@ const routes = [
     meta: { public: true, title: 'Registro' },
   },
   {
+    path: '/verificar',
+    name: 'verificar',
+    component: () => import('@/views/VerificarEmailView.vue'),
+    meta: { public: true, title: 'Verificar email' },
+  },
+  {
     path: '/estado',
     name: 'estado',
     component: () => import('@/views/EstadoView.vue'),
@@ -34,9 +40,19 @@ const routes = [
   },
   {
     path: '/',
+    name: 'landing',
+    component: () => import('@/views/LandingQuillotaView.vue'),
+    meta: { public: true, title: 'METGO Quillota' },
+  },
+  {
+    path: '/app',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
     meta: { title: 'Dashboard' },
+  },
+  {
+    path: '/dashboard',
+    redirect: { name: 'dashboard' },
   },
   {
     path: '/meteo',
@@ -172,9 +188,6 @@ router.beforeEach(async (to) => {
     }
   }
   if (to.name === 'registro') {
-    if (import.meta.env.VITE_ALLOW_SELF_REGISTER !== '1') {
-      return { name: 'login' }
-    }
     if (auth.isAuthenticated) {
       const ok = await auth.ensureValidSession()
       if (ok) return { name: 'dashboard' }

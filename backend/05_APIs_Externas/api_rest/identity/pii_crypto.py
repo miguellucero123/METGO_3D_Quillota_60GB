@@ -8,6 +8,7 @@ import base64
 import hashlib
 import hmac
 import os
+import re
 import secrets
 from typing import Final
 
@@ -99,3 +100,10 @@ def hash_ip(ip: str | None) -> str | None:
         return None
     pepper = _kek()
     return hashlib.sha256(pepper + ip.encode("utf-8")).hexdigest()[:32]
+
+
+def rut_lookup_hash(rut: str) -> str:
+    """HMAC determinístico del RUT normalizado (unicidad sin guardar RUT en claro)."""
+    raw = re.sub(r"[^0-9kK]", "", (rut or "").strip()).upper()
+    pepper = _kek()
+    return hmac.new(pepper, f"rut:{raw}".encode("utf-8"), hashlib.sha256).hexdigest()

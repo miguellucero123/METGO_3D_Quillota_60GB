@@ -16,7 +16,8 @@ Respondes en **español** salvo que el código o commits requieran inglés técn
 
 | Componente | URL |
 |------------|-----|
-| SPA Vue 3 | https://metgo3d.netlify.app |
+| SPA Vue 3 (Quillota) | https://metgo-quillota.pages.dev |
+| SPA Vue (legado Netlify) | https://metgo3d.netlify.app |
 | API Flask + JWT | https://metgo-api.onrender.com/api |
 | Streamlit Cloud | https://metgo-3d-quillota-60gb.streamlit.app |
 

@@ -139,6 +139,37 @@ def rest_patch(table: str, match: dict[str, str], patch: dict[str, Any]) -> list
         return []
 
 
+def rest_delete(table: str, match: dict[str, str]) -> int:
+    """DELETE /rest/v1/{table}?col=eq.val — retorna filas afectadas (si Prefer return=representation)."""
+    url, key = _resolve_supabase_creds()
+    if not url or not key or not match:
+        return 0
+    endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
+    headers = _rest_headers(key)
+    headers["Prefer"] = "return=representation"
+    try:
+        res = requests.delete(
+            endpoint,
+            headers=headers,
+            params=dict(match),
+            timeout=30,
+        )
+        if res.status_code >= 400:
+            print(f"rest_delete {table}: {res.status_code} {res.text[:200]}")
+            return 0
+        if not res.content:
+            return 1
+        data = res.json()
+        if isinstance(data, list):
+            return len(data)
+        if isinstance(data, dict):
+            return 1
+        return 1
+    except Exception as exc:
+        print(f"rest_delete {table}: {exc}")
+        return 0
+
+
 def rest_upsert(table: str, rows: list[dict[str, Any]], on_conflict: str) -> int:
     url, key = _resolve_supabase_creds()
     if not url or not key or not rows:

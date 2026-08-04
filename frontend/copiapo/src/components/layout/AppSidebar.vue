@@ -22,7 +22,7 @@ import { Wind, CalendarRange, History, Waves, Map, Layers, HardHat, Activity, Sa
 
 const site = inject('site')
 const items = [
-  { to: '/', label: 'Panel ICAP', icon: Wind },
+  { to: '/app', label: 'Panel ICAP', icon: Wind },
   { to: '/mapa', label: 'Mapa', icon: Map },
   { to: '/dispersion', label: 'Dispersión', icon: Waves },
   { to: '/operaciones', label: 'Paipote N/R/M', icon: HardHat },

@@ -52,8 +52,8 @@ services:
     startCommand: python -m streamlit run streamlit_app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
     envVars:
       - key: METGO_VUE_URL
-        value: https://metgo3d.netlify.app
+        value: https://metgo-quillota.pages.dev
       - key: METGO_CORS_ORIGINS
-        value: https://metgo3d.netlify.app,https://metgo-streamlit.onrender.com
+        value: https://metgo-quillota.pages.dev,https://metgo3d.netlify.app,https://metgo-streamlit.onrender.com
       - key: PYTHON_VERSION
         value: "3.11.9"

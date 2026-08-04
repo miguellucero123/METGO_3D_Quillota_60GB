@@ -25,13 +25,8 @@ export function estacionSlug(raw) {
 function resolveBaseURL() {
   const fromEnv = import.meta.env.VITE_METGO_API || import.meta.env.VITE_API_BASE
   if (fromEnv) return String(fromEnv).replace(/\/$/, '')
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname
-    if (host.includes('netlify.app') || host.includes('pages.dev')) {
-      return RENDER_API
-    }
-  }
-  return site.api?.localBase || RENDER_API
+  // Local: Render (sin API en 8080). Override: VITE_METGO_API=http://127.0.0.1:8080/api
+  return RENDER_API
 }
 
 async function fetchJson(path, { timeout = TIMEOUT_MS } = {}) {

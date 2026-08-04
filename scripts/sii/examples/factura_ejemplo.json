@@ -1,0 +1,20 @@
+{
+  "tipo_dte": 33,
+  "emisor": {
+    "rut": "76123456-0",
+    "razon_social": "METGO 3D SpA"
+  },
+  "receptor": {
+    "rut": "11111111-1",
+    "razon_social": "Cliente Minera SpA"
+  },
+  "items": [
+    {
+      "nombre": "Plan Pro METGO — 1 mes",
+      "cantidad": 1,
+      "precio_unitario": 500000
+    }
+  ],
+  "monto_total": 500000,
+  "referencia": "org_cliente_pro"
+}

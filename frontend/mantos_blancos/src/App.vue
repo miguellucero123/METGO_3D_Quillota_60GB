@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isLogin" class="app-login">
+  <div v-if="isPublicShell" class="app-login" :class="{ 'app-login--landing': route.name === 'landing' }">
     <router-view />
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--nav-open': navOpen }">
@@ -44,7 +44,9 @@ provide('closeNav', () => {
   navOpen.value = false
 })
 
-const isLogin = computed(() => route.name === 'login')
+const isPublicShell = computed(
+  () => route.name === 'login' || route.name === 'landing' || route.name === 'registro' || route.name === 'verificar',
+)
 
 watch(
   () => route.fullPath,
@@ -54,8 +56,16 @@ watch(
 )
 
 onMounted(async () => {
-  if (isLogin.value) return
+  if (isPublicShell.value) return
   const ok = await auth.ensureValidSession()
   if (!ok) router.replace({ name: 'login', query: { redirect: route.fullPath } })
 })
 </script>
+
+<style scoped>
+.app-login--landing {
+  min-height: 100vh;
+  padding: 0;
+  background: transparent;
+}
+</style>

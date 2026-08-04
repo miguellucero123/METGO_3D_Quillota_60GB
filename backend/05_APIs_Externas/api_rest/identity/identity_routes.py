@@ -12,6 +12,34 @@ from api_rest.auth_routes import auth_required
 from api_rest.identity import identity_store, plans_catalog, validators
 
 
+def _public_spa_base(sitio: str) -> str:
+    """URL pública del SPA por producto (verify-email / deep links)."""
+    s = (sitio or "").strip().lower() or "quillota"
+    defaults = {
+        "spati": ("METGO_SPATI_PUBLIC_URL", "https://metgo-spati.pages.dev"),
+        "quillota": ("METGO_QUILLOTA_PUBLIC_URL", "https://metgo-quillota.pages.dev"),
+        "copiapo": ("METGO_COPIAPO_PUBLIC_URL", "https://metgo-copiapo.pages.dev"),
+        "mantos_blancos": ("METGO_MANTOS_PUBLIC_URL", "https://metgo-mantos.pages.dev"),
+        "paine": ("METGO_PAINE_PUBLIC_URL", "https://metgo-paine.pages.dev"),
+    }
+    env_key, fallback = defaults.get(s, ("METGO_PUBLIC_APP_URL", ""))
+    raw = (os.getenv(env_key) or "").strip()
+    if not raw and env_key != "METGO_PUBLIC_APP_URL":
+        raw = (os.getenv("METGO_PUBLIC_APP_URL") or "").strip()
+    if not raw and s == "quillota":
+        raw = (os.getenv("METGO_VUE_URL") or "").strip()
+    return (raw or fallback).rstrip("/")
+
+
+def _verify_email_url(sitio: str, faena: str | None, token: str) -> str:
+    base = _public_spa_base(sitio)
+    if not base or not token:
+        return ""
+    if sitio == "spati" and faena:
+        return f"{base}/f/{faena}/verificar?token={token}"
+    return f"{base}/verificar?token={token}"
+
+
 def register_identity_routes(app: Flask) -> None:
     @app.post("/api/auth/validate-registro")
     def validate_registro():
@@ -31,30 +59,27 @@ def register_identity_routes(app: Flask) -> None:
                 body.update(extra)
             return jsonify(body), 400
 
-        # Enlace de verificación (SPA o API)
+        # Enlace de verificación (SPA por sitio)
         token = (extra or {}).get("verify_token")
         faena = (extra or {}).get("faena")
-        sitio = (extra or {}).get("sitio") or "spati"
-        spa_base = (
-            (os.getenv("METGO_SPATI_PUBLIC_URL") or "https://metgo-spati.pages.dev").rstrip("/")
-            if sitio == "spati"
-            else (os.getenv("METGO_PUBLIC_APP_URL") or "").rstrip("/")
-        )
-        if token and spa_base and faena:
-            verify_url = f"{spa_base}/f/{faena}/verificar?token={token}"
-            extra["verify_url"] = verify_url
-            try:
-                from api_rest.identity import email_notify
+        sitio = (extra or {}).get("sitio") or data.get("sitio") or "quillota"
+        spa_base = _public_spa_base(str(sitio))
+        if token and spa_base:
+            verify_url = _verify_email_url(str(sitio), faena, token)
+            if verify_url:
+                extra["verify_url"] = verify_url
+                try:
+                    from api_rest.identity import email_notify
 
-                mail = email_notify.enviar_verificacion(
-                    to_email=str(data.get("email") or ""),
-                    verify_url=verify_url,
-                    sitio=str(sitio),
-                    faena=faena,
-                )
-                extra["email"] = mail
-            except Exception as exc:
-                extra["email"] = {"mode": "error", "error": str(exc)}
+                    mail = email_notify.enviar_verificacion(
+                        to_email=str(data.get("email") or ""),
+                        verify_url=verify_url,
+                        sitio=str(sitio),
+                        faena=faena,
+                    )
+                    extra["email"] = mail
+                except Exception as exc:
+                    extra["email"] = {"mode": "error", "error": str(exc)}
 
         # En prod no devolver verify_token salvo METGO_EMAIL_DEV=1 (memoria → 1 por defecto)
         email_dev = os.getenv("METGO_EMAIL_DEV")
@@ -366,12 +391,28 @@ def register_identity_routes(app: Flask) -> None:
 
     @app.post("/api/auth/preview-demo")
     def ensure_preview_demo():
-        """Upsert usuario demo fijo: demo@ventora.demo / DemoVentora1!.
+        """Upsert usuario demo fijo (requiere METGO_SEED_DEMO_PREVIEW=1).
 
         Auth: CRON_SECRET, Bearer admin, o METGO_ALLOW_PREVIEW=1.
+        Por defecto la demo está desactivada; preferir DELETE para retirarla.
         """
         if not _auth_preview_admin_or_cron():
             return jsonify({"error": "No autorizado"}), 401
+        if (os.getenv("METGO_SEED_DEMO_PREVIEW") or "0").strip().lower() not in (
+            "1",
+            "true",
+            "yes",
+        ):
+            return (
+                jsonify(
+                    {
+                        "error": "Demo fija desactivada",
+                        "hint": "Usar DELETE /api/auth/preview-demo para eliminar; "
+                        "o METGO_SEED_DEMO_PREVIEW=1 solo en entorno controlado.",
+                    }
+                ),
+                410,
+            )
 
         data = request.get_json(silent=True) or {}
         faena = (data.get("faena") or request.args.get("faena") or "quebrada_blanca").strip()
@@ -379,7 +420,19 @@ def register_identity_routes(app: Flask) -> None:
         ok, msg, extra = identity_store.ensure_usuario_demo_fijo(faena=faena, horas=horas)
         if not ok:
             return jsonify({"error": msg}), 400
-        return jsonify({"message": msg, **(extra or {})}), 200
+        # No devolver la clave en claro en la respuesta HTTP.
+        safe = {k: v for k, v in (extra or {}).items() if k != "password"}
+        return jsonify({"message": msg, **safe}), 200
+
+    @app.delete("/api/auth/preview-demo")
+    def delete_preview_demo():
+        """Elimina la cuenta demo fija (demo@ventora.demo) y su org."""
+        if not _auth_preview_admin_or_cron():
+            return jsonify({"error": "No autorizado"}), 401
+        ok, msg, extra = identity_store.eliminar_usuario_demo_fijo()
+        if not ok:
+            return jsonify({"error": msg}), 400
+        return jsonify({"ok": True, "message": msg, **(extra or {})}), 200
 
     @app.post("/api/cron/identity/purge-preview")
     def cron_purge_preview():

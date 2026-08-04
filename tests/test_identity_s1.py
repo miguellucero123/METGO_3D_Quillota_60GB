@@ -433,8 +433,9 @@ def test_preview_hora_solo_ahora_y_panel_y_purge(monkeypatch):
 
 
 def test_preview_demo_fijo_credenciales(monkeypatch):
-    """demo@ventora.demo / DemoVentora1! — tabs limitados, no se purga."""
+    """Demo fija solo con METGO_SEED_DEMO_PREVIEW=1; DELETE la elimina."""
     monkeypatch.setenv("METGO_ALLOW_PREVIEW", "1")
+    monkeypatch.setenv("METGO_SEED_DEMO_PREVIEW", "1")
     monkeypatch.setenv("METGO_IDENTITY_STORE", "memory")
     monkeypatch.delenv("METGO_DEMO_PASSWORD", raising=False)
     from api_rest.app import create_app
@@ -452,7 +453,7 @@ def test_preview_demo_fijo_credenciales(monkeypatch):
     assert r.status_code == 200, r.get_json()
     cred = r.get_json()
     assert cred["email"] == "demo@ventora.demo"
-    assert cred["password"] == "DemoVentora1!"
+    assert "password" not in cred
     assert cred["fixed"] is True
 
     login = client.post(
@@ -475,11 +476,11 @@ def test_preview_demo_fijo_credenciales(monkeypatch):
     assert tabs.get("panel") is True
     assert tabs.get("ambiente") is False
 
-    # Renovar misma clave
+    # Renovar (sin devolver clave)
     r2 = client.post("/api/auth/preview-demo", json={"faena": "quebrada_blanca"})
     assert r2.status_code == 200
     assert r2.get_json()["renewed"] is True
-    assert r2.get_json()["password"] == "DemoVentora1!"
+    assert "password" not in r2.get_json()
 
     with identity_store._lock:
         for s in identity_store._MEM["suscripciones"]:
@@ -495,6 +496,38 @@ def test_preview_demo_fijo_credenciales(monkeypatch):
         u.get("email_norm") == "demo@ventora.demo"
         for u in identity_store._MEM["usuarios_app"]
     )
+
+    deleted = client.delete("/api/auth/preview-demo")
+    assert deleted.status_code == 200
+    assert deleted.get_json()["ok"] is True
+    assert not any(
+        u.get("email_norm") == "demo@ventora.demo"
+        for u in identity_store._MEM["usuarios_app"]
+    )
+    login_gone = client.post(
+        "/api/auth/login",
+        json={
+            "username": "demo@ventora.demo",
+            "password": "DemoVentora1!",
+            "sitio": "spati",
+            "faena": "quebrada_blanca",
+        },
+    )
+    assert login_gone.status_code in (401, 403)
+
+
+def test_preview_demo_desactivada_por_defecto(monkeypatch):
+    monkeypatch.setenv("METGO_ALLOW_PREVIEW", "1")
+    monkeypatch.setenv("METGO_IDENTITY_STORE", "memory")
+    monkeypatch.delenv("METGO_SEED_DEMO_PREVIEW", raising=False)
+    from api_rest.app import create_app
+    from api_rest.identity import identity_store
+
+    identity_store.reset_memory()
+    client = create_app().test_client()
+    r = client.post("/api/auth/preview-demo", json={"faena": "quebrada_blanca"})
+    assert r.status_code == 410
+    assert "desactivada" in (r.get_json().get("error") or "").lower()
 
 
 def test_reporte_mensual_html_publico():

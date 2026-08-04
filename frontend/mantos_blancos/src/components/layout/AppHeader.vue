@@ -54,7 +54,7 @@ const { t, locale } = useI18n()
 
 function onLogout() {
   auth.logout()
-  router.push({ name: 'login' })
+  router.push({ name: 'landing' })
 }
 </script>
 

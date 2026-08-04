@@ -21,6 +21,7 @@ export default {
   bounds: { west: -70.35, south: -23.55, east: -69.95, north: -23.30 },
   api: {
     defaultPublicBase: 'https://metgo-api.onrender.com/api',
+    /** Solo si corre Flask local; el SPA usa Render salvo VITE_METGO_API. */
     localBase: 'http://127.0.0.1:8080/api',
   },
   theme: {

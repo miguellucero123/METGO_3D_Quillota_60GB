@@ -46,7 +46,7 @@ const gruposDef = [
       path.startsWith('/metricas') ||
       path.startsWith('/favoritos'),
     items: [
-      { to: '/', label: 'Panel general', icon: LayoutDashboard, exact: true },
+      { to: '/app', label: 'Panel general', icon: LayoutDashboard, exact: true },
       { to: '/estado', label: 'Estado sistema', icon: Activity },
       { to: '/metricas', label: 'Métricas globales', icon: Gauge },
       { to: '/favoritos', label: 'Favoritos', icon: Star, requiresAuth: true },

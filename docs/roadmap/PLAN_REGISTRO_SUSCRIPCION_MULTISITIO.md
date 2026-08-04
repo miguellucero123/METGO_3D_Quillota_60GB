@@ -109,7 +109,7 @@ Por **producto** (y en SPATI también por faena vía multiplicador / plan mínim
 
 | Plan | CLP/mes (ref.) | Seats | Features típicas |
 |------|----------------|-------|------------------|
-| `trial` | 0 (14 días) | 1 | panel + ambiente lectura |
+| `trial` | 0 (**15 días**) | 1 | panel + ambiente lectura |
 | `starter` | 149 000 | 3 | + dron calibración |
 | `pro` | 399 000 | 10 | + umbrales editables + alertas push |
 | `enterprise` | a convenir | ilimitado | + multi-faena org + SLA |

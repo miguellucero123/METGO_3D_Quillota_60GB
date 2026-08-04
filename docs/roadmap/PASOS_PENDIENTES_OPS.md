@@ -2,7 +2,10 @@
 
 > **Corte:** 2026-08-01 · El desarrollo de fases **1–10, E11 y E12.1** está en código.  
 > Lo que sigue es **configuración humana** (Render / GitHub / datos oficiales).  
-> Guía detallada: [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)
+> Guía detallada: [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)  
+> **Inventario de claves por plataforma:** [`INVENTARIO_CLAVES_PLATAFORMAS.md`](INVENTARIO_CLAVES_PLATAFORMAS.md)  
+> **Registro identity + SII:** [`REGISTRO_IDENTITY_Y_SII.md`](REGISTRO_IDENTITY_Y_SII.md)  
+> **Plan condiciones/tareas pendientes:** [`PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md`](PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md)
 
 API: `https://metgo-api.onrender.com` · SPA: `https://metgo-spati.pages.dev`
 
@@ -49,12 +52,11 @@ Referencia típica actual:
 
 ### P0 — Seguridad y correo (esta semana)
 
-- [ ] **1.** En Render → `metgo-api` → Environment, crear `METGO_PII_KEK`  
-      (`openssl rand -hex 32`, distinto de `METGO_JWT_SECRET`)
-- [ ] **2.** Poner `METGO_EMAIL_DEV=0`
+- [x] **1.** `METGO_PII_KEK` en Render (**ya OK** en health 2026-08-03)
+- [x] **2.** `METGO_EMAIL_DEV=0` (**ya OK**)
 - [ ] **3.** Configurar SMTP: `METGO_SMTP_HOST`, `PORT`, `USER`, `PASSWORD`, `FROM`, `TLS=1`
 - [ ] **4.** (Opcional) Stripe: `STRIPE_SECRET_KEY` + Price IDs; si no, el checkout mock sigue válido
-- [ ] **5.** Manual Deploy (clear cache) y verificar `$h.s5_ops.pendiente` sin PII/SMTP
+- [ ] **5.** Manual Deploy (clear cache) tras SMTP/Stripe y verificar `$h.s5_ops.pendiente` sin SMTP (Stripe opcional)
 
 ### P1 — Alertas y observado
 
@@ -78,7 +80,8 @@ Referencia típica actual:
 
 - [x] Fases 1–10 API/Vue/ETL/MQTT/ML/notificaciones/métricas  
 - [x] Landing VENTORA, Ahora, Informes, sesión única, demo 1 h  
-- [x] Grants + seed `demo@ventora.demo`  
+- [x] Grants identity (service_role)
+- [x] Retiro demo fija `demo@ventora.demo` (seed off + SQL remove)  
 - [x] PWA + i18n + Lighthouse CI  
 - [x] Fallback CSV ejemplos E12.1  
 
@@ -92,11 +95,8 @@ Referencia típica actual:
 4. P1 paso 7 (umbrales en UI)  
 5. Dejar P1–8/9 y P2 para cuando tengáis CSV/IDs reales  
 
-Demo usable mientras tanto:
-
-- Usuario: `demo@ventora.demo`  
-- Clave: `DemoVentora1!`  
-- https://metgo-spati.pages.dev/login?faena=quebrada_blanca  
+Demo fija SPATI/VENTORA: **retirada** (`demo@ventora.demo` eliminada; seed off).  
+Acceso temporal: `POST /api/auth/preview-hora` · SQL remove: `20260804160000_remove_demo_ventora.sql`.
 
 ## Fase documento
 

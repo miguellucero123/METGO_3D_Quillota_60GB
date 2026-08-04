@@ -20,7 +20,6 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const cargando = ref(false)
-const allowSelfRegister = import.meta.env.VITE_ALLOW_SELF_REGISTER === '1'
 
 onMounted(() => {
   wakeApi().catch(() => {})
@@ -44,7 +43,7 @@ async function onSubmit() {
       useFavoritesStore().syncFromServer(),
     ])
     await metgo.inicializar()
-    const redirect = sanitizeRedirectPath(router.currentRoute.value.query.redirect, '/')
+    const redirect = sanitizeRedirectPath(router.currentRoute.value.query.redirect, '/app')
     router.push(redirect)
   } catch (e) {
     error.value = e.message ?? AUTH_ERROR_INVALID
@@ -101,9 +100,9 @@ async function onSubmit() {
         </button>
       </form>
 
-      <p v-if="allowSelfRegister" class="auth-footer">
-        ¿No tiene cuenta?
-        <router-link to="/registro">Registrarse</router-link>
+      <p class="auth-footer">
+        {{ t('login.noAccount') }}
+        <router-link to="/registro">{{ t('app.register') }}</router-link>
       </p>
       <p class="hint">Acceso restringido · JWT en servidor METGO</p>
     </div>

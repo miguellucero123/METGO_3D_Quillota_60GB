@@ -1,6 +1,7 @@
--- Grants identity + plan preview + seed demo fija VENTORA
+-- Grants identity + plan preview (seed demo fija OBSOLETO — retirado 2026-08)
 -- Aplicar en Supabase → SQL Editor → Run (proyecto ylivhjigvxqzpzchllte)
 -- Corrige: PostgREST 403 permission denied on usuarios_app
+-- Demo: ver 20260804160000_remove_demo_ventora.sql
 
 -- ---------------------------------------------------------------------------
 -- 1) Permisos service_role (API Flask)
@@ -29,72 +30,8 @@ ALTER TABLE public.suscripciones
   CHECK (plan_code IN ('trial', 'starter', 'pro', 'enterprise', 'preview'));
 
 -- ---------------------------------------------------------------------------
--- 3) Seed demo fijo: demo@ventora.demo / DemoVentora1!
---    (hash scrypt N=16384; solo Ahora + Panel)
+-- 3) Seed demo fijo — retirado (no recrear demo@ventora.demo)
 -- ---------------------------------------------------------------------------
-INSERT INTO public.orgs (id, sitio, faena, razon_social_enc, rut_enc, giro)
-VALUES (
-  'a0000000-0000-4000-8000-000000000001',
-  'spati',
-  'quebrada_blanca',
-  'v1.rY_iUCAKpZ_s2sNKB5DLPrz8YuBaHbu40RfEMh4BM-qkEBe5ogG5BQ==',
-  'v1.AAH8Lo_4vwAC1nvbKbZiTPwgUQNW59f7_i0ndaMHqx9QrSL1V7Hc-Q==',
-  'demo'
-)
-ON CONFLICT (id) DO UPDATE SET
-  faena = EXCLUDED.faena,
-  giro = EXCLUDED.giro;
-
-INSERT INTO public.usuarios_app (
-  id, email_norm, password_hash, nombres_enc, apellidos_enc,
-  org_id, sitio, faena, role, email_verified_at, status
-)
-VALUES (
-  'a0000000-0000-4000-8000-000000000002',
-  'demo@ventora.demo',
-  'scrypt$16384$rdCuYh2OHhIMNzZfH-HW-PuPvYJM0v_R0lhOozTl_41XDWfL62Livc66qYft9IZV',
-  'v1.0EruYly0kcdU9Y1gZy-I2ATCaFiY1YAS5MTiJYdMdyk=',
-  'v1.mejpBrkKr5gUjgkQcrJF03ypFi3wvtfVRq_sIVSwZ2H0asU=',
-  'a0000000-0000-4000-8000-000000000001',
-  'spati',
-  'quebrada_blanca',
-  'operador',
-  now(),
-  'active'
-)
-ON CONFLICT (email_norm, sitio, faena) DO UPDATE SET
-  password_hash = EXCLUDED.password_hash,
-  org_id = EXCLUDED.org_id,
-  status = 'active',
-  email_verified_at = now(),
-  role = 'operador';
-
-INSERT INTO public.suscripciones (
-  id, org_id, sitio, faena, plan_code, status, current_period_end, seats, metadata
-)
-VALUES (
-  'a0000000-0000-4000-8000-000000000003',
-  'a0000000-0000-4000-8000-000000000001',
-  'spati',
-  'quebrada_blanca',
-  'preview',
-  'trialing',
-  now() + interval '30 days',
-  1,
-  '{"preview": true, "fixed_demo": true, "auto_delete": false}'::jsonb
-)
-ON CONFLICT (org_id) DO UPDATE SET
-  plan_code = 'preview',
-  status = 'trialing',
-  current_period_end = now() + interval '30 days',
-  faena = EXCLUDED.faena,
-  metadata = EXCLUDED.metadata;
-
-INSERT INTO public.entitlements (suscripcion_id, feature_key, enabled)
-VALUES
-  ('a0000000-0000-4000-8000-000000000003', 'panel', true),
-  ('a0000000-0000-4000-8000-000000000003', 'ahora', true)
-ON CONFLICT (suscripcion_id, feature_key) DO UPDATE SET enabled = true;
 
 -- Regla mínima izaje para quebrada_blanca (si aún no existe)
 INSERT INTO public.faena_reglas (faena, sistema, enabled, plan_minimo, config)

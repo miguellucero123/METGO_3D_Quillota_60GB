@@ -29,8 +29,8 @@ async function onSubmit() {
   try {
     await wakeApi()
     await auth.login(username.value.trim(), password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-    router.replace(redirect.startsWith('/') ? redirect : '/')
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/app'
+    router.replace(redirect.startsWith('/') && redirect !== '/login' ? redirect : '/app')
   } catch (e) {
     error.value = e.message || 'Usuario o contraseña incorrectos'
   } finally {
@@ -81,7 +81,11 @@ async function onSubmit() {
           {{ cargando ? t('login.loading') : t('login.submit') }}
         </button>
       </form>
-      <p class="auth-footer">JWT · sitio <code>{{ site.sitio }}</code> · E9</p>
+      <p class="auth-footer">
+        {{ t('login.noAccount') }}
+        <router-link to="/registro">{{ t('app.register') }}</router-link>
+      </p>
+      <p class="auth-footer muted">JWT · sitio <code>{{ site.sitio }}</code> · identity</p>
     </div>
   </div>
 </template>
@@ -202,7 +206,15 @@ async function onSubmit() {
 .auth-footer {
   text-align: center;
   margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+.auth-footer.muted {
   font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+.auth-footer a {
+  color: var(--color-primary);
 }
 .auth-footer code {
   color: var(--color-primary);

@@ -23,14 +23,19 @@ onMounted(() => {
   wakeApi().catch(() => {})
 })
 
+function resolvePostLoginPath() {
+  const raw = typeof route.query.redirect === 'string' ? route.query.redirect : '/app'
+  if (!raw.startsWith('/') || raw === '/login' || raw === '/') return '/app'
+  return raw
+}
+
 async function onSubmit() {
   error.value = ''
   cargando.value = true
   try {
     await wakeApi()
     await auth.login(username.value.trim(), password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-    router.replace(redirect.startsWith('/') ? redirect : '/')
+    router.replace(resolvePostLoginPath())
   } catch (e) {
     error.value = e.message || 'Usuario o contraseña incorrectos'
   } finally {
@@ -59,6 +64,7 @@ async function onSubmit() {
         <p class="auth-tagline">{{ t('login.subtitle') }}</p>
         <p class="auth-region">{{ site.region }}</p>
         <p class="login-hint">{{ t('login.hint') }}</p>
+        <p class="login-users">{{ t('login.usersHint') }}</p>
       </div>
 
       <form class="auth-form" @submit.prevent="onSubmit">
@@ -81,7 +87,11 @@ async function onSubmit() {
           {{ cargando ? t('login.loading') : t('login.submit') }}
         </button>
       </form>
-      <p class="auth-footer">JWT · sitio <code>{{ site.sitio }}</code> · E9</p>
+      <p class="auth-footer">
+        {{ t('login.noAccount') }}
+        <router-link to="/registro">{{ t('app.register') }}</router-link>
+      </p>
+      <p class="auth-footer muted">JWT · sitio <code>{{ site.sitio }}</code> · identity</p>
     </div>
   </div>
 </template>
@@ -160,6 +170,12 @@ async function onSubmit() {
 .login-hint {
   margin-top: 0.75rem;
   color: var(--color-muted);
+}
+.login-users {
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  line-height: 1.45;
 }
 .field {
   display: block;

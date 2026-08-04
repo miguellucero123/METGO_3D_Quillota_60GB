@@ -1,0 +1,7 @@
+# Opcional — no instalar en Render hasta certificación SII.
+# pip install -r scripts/sii/requirements-sii.txt
+#
+# signxml>=3.2.0
+# lxml>=5.0.0
+# cryptography>=42.0.0
+# python-dotenv>=1.0.0

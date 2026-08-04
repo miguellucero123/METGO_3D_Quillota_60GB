@@ -123,6 +123,48 @@ export async function register({ username, password, email, sitio = 'quillota' }
   return data
 }
 
+/** Validación previa register-v2 (sin interceptor que pierde el body). */
+export async function validateRegistro(body) {
+  const res = await axios.post(`${resolveApiBaseURL()}/auth/validate-registro`, body, {
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    timeout: 90000,
+    validateStatus: () => true,
+  })
+  if (typeof res.data?.ok === 'boolean') return res.data
+  if (res.status >= 400) throw new Error(res.data?.error || `HTTP ${res.status}`)
+  return res.data
+}
+
+export async function registerV2(body) {
+  const res = await axios.post(`${resolveApiBaseURL()}/auth/register-v2`, body, {
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    timeout: 90000,
+    validateStatus: () => true,
+  })
+  if (res.status >= 400) {
+    const err = new Error(res.data?.error || `HTTP ${res.status}`)
+    err.status = res.status
+    err.data = res.data
+    throw err
+  }
+  return res.data
+}
+
+export async function verifyEmail(token) {
+  const res = await axios.get(`${resolveApiBaseURL()}/auth/verify-email`, {
+    params: { token },
+    timeout: 90000,
+  })
+  return res.data
+}
+
+export async function fetchPlanes(sitio = 'quillota', faena) {
+  const params = { sitio }
+  if (faena) params.faena = faena
+  const { data } = await api.get('/public/planes', { params })
+  return data
+}
+
 export async function fetchMe() {
   const { data } = await api.get('/auth/me')
   return data
@@ -153,6 +195,12 @@ export async function fetchEstaciones() {
 
 export async function fetchResumenMeteo(estacionId, tipo = 'pronostico') {
   const { data } = await api.get(`/meteo/${estacionId}`, { params: { tipo } })
+  return data
+}
+
+/** Resumen meteo sin JWT (landing / marketing). */
+export async function fetchPublicMeteo(estacionId) {
+  const { data } = await api.get(`/public/meteo/${estacionId}`)
   return data
 }
 

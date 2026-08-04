@@ -20,9 +20,8 @@ const navOpen = inject('navOpen', null)
 const toggleNav = inject('toggleNav', () => {})
 
 function logout() {
-  const needsLogin = !route.meta.public
   auth.logout()
-  router.push(needsLogin ? { name: 'login' } : { name: 'dashboard' })
+  router.push({ name: 'landing' })
 }
 
 function setTempUnit(unit) {

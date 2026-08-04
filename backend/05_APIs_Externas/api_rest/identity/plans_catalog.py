@@ -221,3 +221,12 @@ def listar_planes(sitio: str, faena: str | None = None) -> dict[str, Any]:
 def features_for_plan(plan_code: str) -> set[str]:
     p = _BASE_PLANS.get((plan_code or "trial").lower()) or _BASE_PLANS["trial"]
     return set(p.get("features") or [])
+
+
+def trial_days() -> int:
+    """Días del piloto (fuente: catálogo trial.trial_days)."""
+    p = _BASE_PLANS.get("trial") or {}
+    try:
+        return max(1, int(p.get("trial_days") or 15))
+    except (TypeError, ValueError):
+        return 15

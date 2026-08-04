@@ -303,10 +303,11 @@ paths:
   /api/auth/preview-demo:
     post:
       tags: [auth]
-      summary: Upsert usuario demo fijo (demo@ventora.demo)
+      summary: Upsert usuario demo fija (desactivado por defecto)
       description: |
-        Credenciales fijas DemoVentora1! (o METGO_DEMO_PASSWORD).
-        Solo Ahora + Panel. No se elimina en purge-preview.
+        Requiere METGO_SEED_DEMO_PREVIEW=1 además de auth cron/admin.
+        Por defecto responde 410 — la demo pública fue retirada.
+        La respuesta no incluye la clave en claro.
       requestBody:
         content:
           application/json:
@@ -317,7 +318,20 @@ paths:
                 horas: { type: number, example: 24 }
       responses:
         "200":
-          description: "{ email, password, faena, expires_at, fixed }"
+          description: "{ email, faena, expires_at, fixed } (sin password)"
+        "401":
+          description: No autorizado
+        "410":
+          description: Demo desactivada
+    delete:
+      tags: [auth]
+      summary: Eliminar cuenta demo fija (demo@ventora.demo)
+      description: |
+        Borra usuario, org, suscripción y entitlements de la demo.
+        Auth: CRON_SECRET, Bearer admin, o METGO_ALLOW_PREVIEW=1.
+      responses:
+        "200":
+          description: "{ ok, message, email, removed, org_ids }"
         "401":
           description: No autorizado
   /api/cron/identity/purge-preview:

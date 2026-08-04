@@ -9,10 +9,32 @@ const routes = [
     meta: { title: 'Login', public: true },
   },
   {
+    path: '/registro',
+    name: 'registro',
+    component: () => import('@/views/RegistroView.vue'),
+    meta: { title: 'Registro', public: true },
+  },
+  {
+    path: '/verificar',
+    name: 'verificar',
+    component: () => import('@/views/VerificarEmailView.vue'),
+    meta: { title: 'Verificar email', public: true },
+  },
+  {
     path: '/',
+    name: 'landing',
+    component: () => import('@/views/LandingCopiapoView.vue'),
+    meta: { title: 'Inicio', public: true },
+  },
+  {
+    path: '/app',
     name: 'panel',
     component: () => import('@/views/AirePanelView.vue'),
     meta: { title: 'Panel aire' },
+  },
+  {
+    path: '/panel',
+    redirect: { name: 'panel' },
   },
   {
     path: '/mapa',
@@ -83,6 +105,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  if (to.name === 'login' && getToken()) {
+    return { name: 'panel' }
+  }
   if (to.meta?.public) return true
   if (!getToken()) {
     return { name: 'login', query: { redirect: to.fullPath } }

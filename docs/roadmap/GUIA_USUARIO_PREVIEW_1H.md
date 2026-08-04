@@ -2,28 +2,15 @@
 
 Acceso temporal solo a **Ahora** + **Panel técnico**.
 
-## Demo fija (recomendada)
+## Demo fija — retirada
 
-| Campo | Valor |
-|-------|--------|
-| Usuario | `demo@ventora.demo` |
-| Clave | `DemoVentora1!` |
-| Faena | `quebrada_blanca` |
-| Tabs | Ahora, Panel técnico |
-| Login | https://metgo-spati.pages.dev/login?faena=quebrada_blanca |
+La cuenta fija `demo@ventora.demo` **ya no se usa** en producción (clave de demostración eliminada).
 
-Si el login da 401, ver `docs/roadmap/FIX_LOGIN_DEMO_SUPABASE.md` (faltaban GRANTs en Supabase).
+- Seed al arrancar: **apagado** salvo `METGO_SEED_DEMO_PREVIEW=1` (solo entornos controlados).
+- Eliminar en API: `DELETE /api/auth/preview-demo` (auth cron/admin).
+- SQL: `supabase/migrations/20260804160000_remove_demo_ventora.sql`
 
-Se crea en SQL (`20260731020000_preview_grants_demo_fijo.sql`) y/o al arrancar la API (`METGO_SEED_DEMO_PREVIEW=1`) o con:
-
-```http
-POST /api/auth/preview-demo
-X-Cron-Token: <CRON_SECRET>
-{ "faena": "quebrada_blanca", "horas": 24 }
-```
-
-Override opcional: `METGO_DEMO_PASSWORD`, `METGO_DEMO_EMAIL`, `METGO_DEMO_FAENA`.
-No se elimina en `purge-preview`.
+Para demos a clientes, crear un **preview temporal** (clave aleatoria):
 
 ## Crear temporal (clave aleatoria)
 
@@ -39,9 +26,6 @@ Respuesta `201` con `email` / `password` únicos.
 
 ## Expiración y borrado (solo temporales)
 
-- Tras `expires_at`, el login responde **403** `subscription_expired`.
-- Purga: `POST /api/cron/identity/purge-preview`
+`POST /api/cron/identity/purge-preview` elimina orgs preview vencidas.
 
-## Fase
-
-**2.x / S1 identidad** · plan `preview` + demo fija.
+Override ops (no publicar): `METGO_DEMO_EMAIL`, `METGO_DEMO_PASSWORD`, `METGO_DEMO_FAENA` solo si se re-habilita el seed.
