@@ -298,7 +298,7 @@ def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
     if not registros:
         return None
     reciente = sorted(registros, key=lambda r: str(r.get("fecha") or ""))[-1]
-    return {
+    out = {
         "estacion_id": estacion_id,
         "estacion": slug_a_nombre(estacion_id),
         "fecha": str(reciente.get("fecha") or "")[:10],
@@ -315,6 +315,20 @@ def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
         "desde_cache": True,
         "origen_fallback": "meteo_store",
     }
+    pop = reciente.get("probabilidad_lluvia")
+    if pop is None:
+        pop = reciente.get("pop")
+    try:
+        if pop is not None:
+            out["probabilidad_lluvia"] = round(float(pop), 0)
+            out["pop"] = out["probabilidad_lluvia"]
+    except (TypeError, ValueError):
+        pass
+    if "helada" in reciente:
+        out["helada"] = bool(reciente.get("helada"))
+    else:
+        out["helada"] = out["temperatura_min"] <= 0.0
+    return out
 
 
 def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:

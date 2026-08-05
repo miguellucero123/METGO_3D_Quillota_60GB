@@ -5,7 +5,8 @@
 > Guía detallada: [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)  
 > **Inventario de claves por plataforma:** [`INVENTARIO_CLAVES_PLATAFORMAS.md`](INVENTARIO_CLAVES_PLATAFORMAS.md)  
 > **Registro identity + SII:** [`REGISTRO_IDENTITY_Y_SII.md`](REGISTRO_IDENTITY_Y_SII.md)  
-> **Plan condiciones/tareas pendientes:** [`PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md`](PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md)
+> **Plan condiciones/tareas pendientes:** [`PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md`](PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md)  
+> **Paso a paso operativo (esta sesión):** [`PASO_A_PASO_OPS_PENDIENTES.md`](PASO_A_PASO_OPS_PENDIENTES.md)
 
 API: `https://metgo-api.onrender.com` · SPA: `https://metgo-spati.pages.dev`
 

@@ -20,7 +20,7 @@
 | Scaffold SII | `scripts/sii/` dry-run boleta/factura | ✅ scaffold (no emisión real) |
 | Verify URL por SPA | Env `METGO_*_PUBLIC_URL` | ✅ código |
 
-**Paine:** SPA en repo `metgo-paine` — landing + auth + registro-v2 alineados (2026-08). Deploy Pages pendiente si aún no se empujó.
+**Paine:** SPA en repo `metgo-paine` — landing + auth + registro-v2 + push `c78e4eb` (2026-08). Confirmar Pages en prod con Ctrl+F5.
 
 ---
 
@@ -62,7 +62,7 @@
 | B2 | Banner “quedan X días de piloto” en panel | Visible si `trialing` | Dev |
 | B3 | Flujo **invitar usuario** a org existente (mismo RUT) | Segundo correo entra sin re-registrar RUT | Dev |
 | B4 | Smoke E2E: registro → verify → login → trial → checkout mock | Checklist pasado en Pages + Render | Dev + Ops |
-| B5 | Port registro/landing a **Paine** (repo `metgo-paine`) | `/` landing, `/app` JWT, `/registro` `sitio=paine` | ✅ código; 🔶 push + Pages deploy |
+| B5 | Port registro/landing a **Paine** (repo `metgo-paine`) | `/` landing, `/app` JWT, `/registro` `sitio=paine` | ✅ push `c78e4eb`; verificar Pages |
 | B6 | Decidir KYC: ClaveÚnica vs proveedor vs revisión manual | ADR escrito en roadmap | Producto |
 | B7 | Implementar nivel B o C de identidad (según B6) | Representante verificado antes de plan pago / DTE | Dev |
 
