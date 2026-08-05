@@ -1,7 +1,7 @@
 <script setup>
 import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { fetchCuenta, checkoutPlan, wakeApi } from '@/services/authApi'
+import { fetchCuenta, checkoutPlan, wakeApi, invitarUsuario } from '@/services/authApi'
 import { useAuth } from '@/stores/auth'
 import { useAccess } from '@/stores/access'
 
@@ -18,6 +18,16 @@ const error = ref('')
 const msg = ref('')
 const data = ref(null)
 const applying = ref('')
+const invite = ref({
+  email: '',
+  password: '',
+  nombres: '',
+  apellidos: '',
+  role: 'operador',
+})
+const inviting = ref(false)
+const inviteMsg = ref('')
+const inviteErr = ref('')
 
 const TAB_LABEL = {
   ahora: 'Ahora',
@@ -68,6 +78,30 @@ async function elegirPlan(planCode) {
     error.value = e.message || 'Error al cambiar plan'
   } finally {
     applying.value = ''
+  }
+}
+
+async function enviarInvitacion() {
+  inviteMsg.value = ''
+  inviteErr.value = ''
+  inviting.value = true
+  try {
+    const res = await invitarUsuario({
+      email: invite.value.email,
+      password: invite.value.password,
+      nombres: invite.value.nombres || 'Invitado',
+      apellidos: invite.value.apellidos || 'METGO',
+      role: invite.value.role,
+      org_id: auth.state.user?.org_id || data.value?.usuario?.org_id,
+    })
+    inviteMsg.value =
+      res.message ||
+      'Invitación creada. El usuario debe verificar el email e iniciar sesión.'
+    invite.value = { email: '', password: '', nombres: '', apellidos: '', role: 'operador' }
+  } catch (e) {
+    inviteErr.value = e.message || 'No se pudo invitar'
+  } finally {
+    inviting.value = false
   }
 }
 
@@ -139,6 +173,45 @@ const tabs = computed(() => data.value?.access?.tabs || {})
         </li>
       </ul>
     </section>
+
+    <section v-if="data" class="card">
+      <h2>Invitar usuario a esta org</h2>
+      <p class="hint">
+        Mismo RUT/organización · otro email. No crea una cuenta nueva con otro RUT.
+        El invitado recibirá verify-email y usará la contraseña que indiques aquí.
+      </p>
+      <form class="invite-form" @submit.prevent="enviarInvitacion">
+        <label>
+          Email
+          <input v-model="invite.email" type="email" required autocomplete="off" />
+        </label>
+        <label>
+          Contraseña inicial
+          <input v-model="invite.password" type="password" required minlength="10" autocomplete="new-password" />
+        </label>
+        <label>
+          Nombres
+          <input v-model="invite.nombres" type="text" />
+        </label>
+        <label>
+          Apellidos
+          <input v-model="invite.apellidos" type="text" />
+        </label>
+        <label>
+          Rol
+          <select v-model="invite.role">
+            <option value="operador">Operador</option>
+            <option value="viewer">Viewer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+        <button type="submit" class="btn" :disabled="inviting">
+          {{ inviting ? 'Enviando…' : 'Invitar' }}
+        </button>
+      </form>
+      <p v-if="inviteMsg" class="ok">{{ inviteMsg }}</p>
+      <p v-if="inviteErr" class="err" role="alert">{{ inviteErr }}</p>
+    </section>
   </div>
 </template>
 
@@ -188,5 +261,30 @@ dd { margin: 0; }
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
   color: var(--color-text);
   font-size: 0.9rem;
+}
+.invite-form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+}
+.invite-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+.invite-form input,
+.invite-form select {
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+}
+.invite-form .btn { grid-column: 1 / -1; justify-self: start; }
+@media (max-width: 640px) {
+  .invite-form { grid-template-columns: 1fr; }
 }
 </style>

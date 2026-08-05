@@ -1,17 +1,17 @@
 # Cuadro de fases METGO — estado y pendientes
 
-> **Corte:** 2026-08-01 · Documento vivo. Canvas interactivo: abrir en Cursor  
-> `canvases/metgo-fases-estado.canvas.tsx`  
+> **Corte:** 2026-08-05 · Documento vivo.  
+> Plan de mejoras: [`PLAN_TRABAJO_MEJORAS.md`](PLAN_TRABAJO_MEJORAS.md)  
 > Relacionado: [`README.md`](README.md) · [`CHECKLIST_E12.md`](CHECKLIST_E12.md) · [`PLAN_MAESTRO_METGO_MULTISITIO.md`](PLAN_MAESTRO_METGO_MULTISITIO.md)
 
 ## Resumen
 
 | Estado | Cantidad | Significado |
 |--------|----------|-------------|
-| **Hecho** | mayoría 1–10, S0–S4.1, M1–M7, M10, M8 estaciones, E11 | Código + usable |
-| **Parcial** | S5, M9, M8 CSV Render, **E12.1** | Código listo; falta keys prod |
-| **Ops manual** | S3 resto, OpenMeteo key, SINCA/Agromet IDs | No se cierra solo con commits |
-| **Pendiente** | E12 resto (retrain prod) | Continuo |
+| **Hecho** | 1–10, S0–S4, M1–M7, M10, E11, landings, `/cuenta`, invite API/UI | Código + usable |
+| **Parcial** | S5, M9, M8 CSV, E12.1 | Código listo; falta smoke mail + destinos UI + keys prod |
+| **Ops manual** | Stripe, OpenMeteo key, SINCA/Agromet/DMC IDs | No se cierra solo con commits |
+| **Pendiente** | KYC ADR, SII DTE, retrain prod | Producto / contabilidad |
 
 ---
 

@@ -177,6 +177,11 @@ export async function checkoutPlan(body) {
   return data
 }
 
+export async function invitarUsuario(body) {
+  const { data } = await api.post('/auth/invitar', body)
+  return data
+}
+
 export async function fetchMe() {
   const { data } = await api.get('/auth/me')
   return data

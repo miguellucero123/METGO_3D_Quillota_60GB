@@ -104,6 +104,7 @@
   "registro": {
     "title": "Registro · {name}",
     "sub": "Cuenta por faena contratada. PII cifrada · consentimiento obligatorio.",
+    "faenaLocked": "Va a crear la cuenta para la faena {name} (código {slug}). Eso es correcto: cada minera tiene su propio enlace /f/{slug}/registro.",
     "faenaCode": "Código de faena *",
     "nombres": "Nombres",
     "apellidos": "Apellidos",

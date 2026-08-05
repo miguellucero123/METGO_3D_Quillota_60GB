@@ -109,6 +109,9 @@ async function onSubmit() {
         <div class="logo"><HardHat aria-hidden="true" /></div>
         <h1>{{ t('registro.title', { name: brandName }) }}</h1>
         <p>{{ t('registro.sub') }}</p>
+        <p v-if="faenaParam" class="faena-lock" role="status">
+          {{ t('registro.faenaLocked', { name: brandName, slug: faenaParam }) }}
+        </p>
       </div>
 
       <form class="grid" @submit.prevent="onSubmit">
@@ -226,6 +229,16 @@ async function onSubmit() {
 }
 .brand h1 { margin: 0; font-size: 1.25rem; }
 .brand p { margin: 0.4rem 0 0; color: #94a3b8; font-size: 0.88rem; }
+.faena-lock {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #38bdf8) 40%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #38bdf8) 12%, transparent);
+  color: var(--color-text, #e2e8f0);
+  font-size: 0.85rem;
+  text-align: left;
+}
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -104,6 +104,7 @@
   "registro": {
     "title": "Sign up · {name}",
     "sub": "Account per contracted site. Encrypted PII · required consent.",
+    "faenaLocked": "You are creating an account for site {name} (code {slug}). That is expected: each mine uses its own /f/{slug}/registro link.",
     "faenaCode": "Site code *",
     "nombres": "First name",
     "apellidos": "Last name",

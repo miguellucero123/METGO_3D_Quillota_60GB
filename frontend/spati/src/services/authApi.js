@@ -172,6 +172,10 @@ export async function checkoutPlan(body) {
   return request('/billing/checkout', { method: 'POST', body, auth: true })
 }
 
+export async function invitarUsuario(body) {
+  return request('/auth/invitar', { method: 'POST', body, auth: true })
+}
+
 export async function verifyEmail(token) {
   return request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
 }

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { fetchCuenta, checkoutPlan, wakeApi } from '@/api/metgoApi'
+import { fetchCuenta, checkoutPlan, wakeApi, invitarUsuario } from '@/api/metgoApi'
 import { useAuthStore } from '@/stores/auth'
 
 const SITIO = 'quillota'
@@ -11,6 +11,10 @@ const error = ref('')
 const msg = ref('')
 const data = ref(null)
 const applying = ref('')
+const invite = ref({ email: '', password: '', nombres: '', apellidos: '', role: 'operador' })
+const inviting = ref(false)
+const inviteMsg = ref('')
+const inviteErr = ref('')
 
 onMounted(async () => {
   wakeApi().catch(() => {})
@@ -50,6 +54,26 @@ async function elegirPlan(planCode) {
     error.value = e.message || 'Error al cambiar plan'
   } finally {
     applying.value = ''
+  }
+}
+
+async function enviarInvitacion() {
+  inviteMsg.value = ''
+  inviteErr.value = ''
+  inviting.value = true
+  try {
+    const res = await invitarUsuario({
+      ...invite.value,
+      nombres: invite.value.nombres || 'Invitado',
+      apellidos: invite.value.apellidos || 'METGO',
+      org_id: auth.user?.org_id || data.value?.usuario?.org_id,
+    })
+    inviteMsg.value = res.message || 'Invitación creada. El usuario debe verificar el email.'
+    invite.value = { email: '', password: '', nombres: '', apellidos: '', role: 'operador' }
+  } catch (e) {
+    inviteErr.value = e.message || 'No se pudo invitar'
+  } finally {
+    inviting.value = false
   }
 }
 
@@ -115,6 +139,28 @@ const tabs = computed(() => data.value?.access?.tabs || {})
         </li>
       </ul>
     </section>
+
+    <section v-if="data" class="card">
+      <h2>Invitar usuario a esta org</h2>
+      <p class="hint">Mismo RUT/org · otro email. El invitado verifica correo y entra con la clave indicada.</p>
+      <form class="invite-form" @submit.prevent="enviarInvitacion">
+        <label>Email <input v-model="invite.email" type="email" required /></label>
+        <label>Contraseña inicial <input v-model="invite.password" type="password" required minlength="10" /></label>
+        <label>Nombres <input v-model="invite.nombres" type="text" /></label>
+        <label>Apellidos <input v-model="invite.apellidos" type="text" /></label>
+        <label>
+          Rol
+          <select v-model="invite.role">
+            <option value="operador">Operador</option>
+            <option value="viewer">Viewer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+        <button type="submit" class="btn" :disabled="inviting">{{ inviting ? '…' : 'Invitar' }}</button>
+      </form>
+      <p v-if="inviteMsg" class="ok">{{ inviteMsg }}</p>
+      <p v-if="inviteErr" class="err">{{ inviteErr }}</p>
+    </section>
   </div>
 </template>
 
@@ -156,4 +202,29 @@ dd { margin: 0; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .err { color: var(--color-danger, #f87171); }
 .ok { color: var(--color-primary); }
+.invite-form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+}
+.invite-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--color-muted, var(--color-text-secondary));
+}
+.invite-form input,
+.invite-form select {
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+}
+.invite-form .btn { grid-column: 1 / -1; justify-self: start; }
+@media (max-width: 640px) {
+  .invite-form { grid-template-columns: 1fr; }
+}
 </style>
