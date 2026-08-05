@@ -16,6 +16,9 @@ Endurecimiento JWT Flask + registro comercial multi-faena — sin nuevo proyecto
 | `METGO_REQUIRE_EMAIL_VERIFY` | `1` |
 | `METGO_RATE_LIMIT_ENABLED` | `1` |
 | `METGO_TURNSTILE_SECRET` / `METGO_TURNSTILE_SITE_KEY` | Turnstile (recomendado prod) |
+| `METGO_KYC_GATE_PAID` | `0` hasta cobrar; `1` exige KYC verified en checkout |
+| `METGO_SESSION_IDLE_S` | opcional (ej. `28800` = 8 h idle) |
+| `METGO_PII_KEK_PREV` | solo durante rotación de KEK |
 | `METGO_SPATI_PUBLIC_URL` | `https://metgo-spati.pages.dev` |
 | `METGO_PASSWORD_ADMIN` | fuerte, rotada (break-glass) |
 | `METGO_PASSWORD_COPIAPO` / `_MANTOS` / `_PAINE` | opcionales hasta migrar 100% a `usuarios_app` |

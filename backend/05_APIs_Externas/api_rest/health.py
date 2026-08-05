@@ -126,6 +126,14 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
             base["s5_ops"]["pendiente"].append("METGO_TURNSTILE_SECRET")
     except Exception:
         pass
+    try:
+        from api_rest.identity import identity_store, pii_crypto
+
+        base["s5_ops"]["kyc_gate_paid"] = identity_store.kyc_gate_enabled()
+        base["s5_ops"]["pii_kek_fp"] = pii_crypto.kek_fingerprint()
+        base["s5_ops"]["session_idle_s"] = int(os.getenv("METGO_SESSION_IDLE_S") or "0")
+    except Exception:
+        pass
     if "ops_board" not in base["features"]:
         base["features"] = list(base["features"]) + ["ops_board", "spati_m10"]
 

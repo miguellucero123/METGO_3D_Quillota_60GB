@@ -54,20 +54,22 @@ def auth_required(f: Callable) -> Callable:
         g.sub_status = payload.get("sub_status")
         g.jti = payload.get("jti")
 
-        # Sesión única: solo el jti más reciente es válido
+        # Sesión única: solo el jti más reciente es válido (+ idle opcional)
         try:
-            from api_rest.identity.session_store import is_session_active
+            from api_rest.identity.session_store import is_session_active, touch_session
 
             if g.current_user and not is_session_active(str(g.current_user), g.jti):
                 return (
                     jsonify(
                         {
-                            "error": "Sesión iniciada en otro dispositivo",
+                            "error": "Sesión iniciada en otro dispositivo o inactiva",
                             "code": "session_replaced",
                         }
                     ),
                     401,
                 )
+            if g.current_user and g.jti:
+                touch_session(str(g.current_user), g.jti)
         except Exception:
             pass
         return f(*args, **kwargs)

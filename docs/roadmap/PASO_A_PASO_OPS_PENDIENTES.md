@@ -194,9 +194,9 @@ Invoke-RestMethod "https://metgo-api.onrender.com/api/cron/sync?token=TOKEN" -Me
 
 ---
 
-## Seguridad (DT-auth-sec)
+## Seguridad (DT-auth-sec + P2)
 
-Detalle: [`FASE_SEGURIDAD_DT_AUTH.md`](FASE_SEGURIDAD_DT_AUTH.md).
+Detalle: [`FASE_SEGURIDAD_DT_AUTH.md`](FASE_SEGURIDAD_DT_AUTH.md) · KYC: [`ADR_KYC_IDENTIDAD.md`](ADR_KYC_IDENTIDAD.md).
 
 | Control | Estado |
 |---------|--------|
@@ -205,7 +205,8 @@ Detalle: [`FASE_SEGURIDAD_DT_AUTH.md`](FASE_SEGURIDAD_DT_AUTH.md).
 | CSP + `_headers` Pages | ✅ código — redeploy SPAs |
 | RLS identity deny anon | ✅ migración — `supabase db push` |
 | ETL retry-queue + CRON | ✅ código |
-| KYC / KMS / sesión Redis | ⬜ P2 |
+| KYC manual + gate pago | ✅ código — `METGO_KYC_GATE_PAID` off hasta cobrar |
+| Sesión idle / KEK_PREV | ✅ código — Redis multi-worker ⬜ |
 
 ---
 
@@ -221,10 +222,11 @@ Detalle: [`FASE_SEGURIDAD_DT_AUTH.md`](FASE_SEGURIDAD_DT_AUTH.md).
 | Destinos umbrales guardados en prod | 🔶 |
 | Smoke registro en ≥2 SPAs + SPATI | 🔶 |
 | Rate limit + Turnstile en prod | 🔶 keys + deploy |
+| KYC ops checklist | ✅ ADR; 🔶 primer caso real |
 | Stripe | ⬜ opcional |
 
 ---
 
 ## Fase
 
-**Ops P0** ✅ (salvo verify E2E) → **DT-auth-sec** ✅ código / 🔶 ops → **Ops P1** 🔶 (umbrales) → **Producto 2.x** (KYC ADR, SII) → **P2 datos**.
+**Ops P0** ✅ (salvo verify E2E) → **DT-auth-sec + P2 KYC** ✅ código / 🔶 ops → **Ops P1** 🔶 (umbrales) → **Producto 2.x** (SII) → **Redis** cuando haya >1 worker.

@@ -387,6 +387,19 @@ def register_identity_routes(app: Flask) -> None:
         if not org_id:
             return jsonify({"error": "org_id requerido (inicie sesión con cuenta registrada)"}), 400
 
+        ok_kyc, kyc_msg = identity_store.assert_kyc_allows_paid_plan(str(org_id), plan)
+        if not ok_kyc:
+            return (
+                jsonify(
+                    {
+                        "error": kyc_msg,
+                        "code": "kyc_required",
+                        "kyc": identity_store.org_kyc(str(org_id)),
+                    }
+                ),
+                403,
+            )
+
         stripe_key = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
         if not stripe_key:
             # Mock: aplica plan de inmediato (MVP sin Stripe)
@@ -481,10 +494,42 @@ def register_identity_routes(app: Flask) -> None:
             plan = (obj.get("metadata") or {}).get("plan_code") or plan
         if not org_id:
             return jsonify({"error": "org_id no encontrado en evento"}), 400
+        ok_kyc, kyc_msg = identity_store.assert_kyc_allows_paid_plan(str(org_id), str(plan))
+        if not ok_kyc:
+            return jsonify({"error": kyc_msg, "code": "kyc_required"}), 403
         ok, msg, sub = identity_store.aplicar_plan(str(org_id), str(plan), status=str(status))
         if not ok:
             return jsonify({"error": msg}), 400
         return jsonify({"received": True, "message": msg, "suscripcion": sub})
+
+    @app.post("/api/auth/ops/kyc")
+    def ops_set_kyc():
+        """KYC manual (ADR A): admin JWT o CRON_SECRET."""
+        if not _auth_preview_admin_or_cron():
+            return jsonify({"error": "No autorizado", "code": "forbidden"}), 403
+        data = request.get_json(silent=True) or {}
+        org_id = (data.get("org_id") or "").strip()
+        status = (data.get("kyc_status") or data.get("status") or "").strip()
+        notes = data.get("notes") or data.get("kyc_notes")
+        reviewed_by = data.get("reviewed_by")
+        if not reviewed_by:
+            auth = request.headers.get("Authorization") or ""
+            if auth.startswith("Bearer "):
+                try:
+                    import metgo_auth
+
+                    pl = metgo_auth.decodificar_token(auth.split(" ", 1)[1])
+                    reviewed_by = (pl or {}).get("sub") or "admin"
+                except Exception:
+                    reviewed_by = "admin"
+            else:
+                reviewed_by = "ops"
+        ok, msg, info = identity_store.set_org_kyc(
+            org_id, status, notes=notes, reviewed_by=str(reviewed_by)
+        )
+        if not ok:
+            return jsonify({"error": msg}), 400
+        return jsonify({"message": msg, "kyc": info})
 
     def _auth_preview_admin_or_cron() -> bool:
         secret = request.args.get("token") or request.headers.get("X-Cron-Token")

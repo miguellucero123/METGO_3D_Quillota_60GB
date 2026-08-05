@@ -49,7 +49,26 @@ def decrypt_pii(token: str) -> str:
     if not token or not token.startswith(f"{_PREFIX}."):
         raise ValueError("ciphertext invalido")
     blob = base64.urlsafe_b64decode(token.split(".", 1)[1].encode("ascii"))
-    key = _kek()
+    keys = _kek_candidates()
+    last_err: Exception | None = None
+    for key in keys:
+        try:
+            return _decrypt_with_key(blob, key)
+        except Exception as exc:
+            last_err = exc
+    raise ValueError(str(last_err or "decrypt failed"))
+
+
+def _kek_candidates() -> list[bytes]:
+    """KEK actual + opcional METGO_PII_KEK_PREV para rotación sin downtime."""
+    out: list[bytes] = [_kek()]
+    prev = (os.getenv("METGO_PII_KEK_PREV") or "").strip()
+    if prev:
+        out.append(hashlib.sha256(prev.encode("utf-8")).digest())
+    return out
+
+
+def _decrypt_with_key(blob: bytes, key: bytes) -> str:
     nonce, rest = blob[:12], blob[12:]
     try:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -63,6 +82,11 @@ def decrypt_pii(token: str) -> str:
         stream = hashlib.sha256(key + nonce).digest()
         pt = bytes(b ^ stream[i % len(stream)] for i, b in enumerate(body))
     return pt.decode("utf-8")
+
+
+def kek_fingerprint() -> str:
+    """Huella corta del KEK activo (ops / health; no es secreto)."""
+    return hashlib.sha256(_kek()).hexdigest()[:12]
 
 
 def hash_password(password: str) -> str:

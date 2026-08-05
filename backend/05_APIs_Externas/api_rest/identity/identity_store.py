@@ -157,6 +157,10 @@ def _register_memory(payload, email, sitio, faena, password, cons, ip):
             "rut_enc": pii_crypto.encrypt_pii(str(payload.get("rut") or "")),
             "rut_hash": rut_h,
             "giro": payload.get("giro"),
+            "kyc_status": "pending",
+            "kyc_notes": None,
+            "kyc_reviewed_at": None,
+            "kyc_reviewed_by": None,
             "created_at": now,
         }
         user = {
@@ -284,11 +288,13 @@ def _register_supabase(payload, email, sitio, faena, password, cons, ip):
         "rut_enc": pii_crypto.encrypt_pii(str(payload.get("rut") or "")),
         "rut_hash": rut_h,
         "giro": payload.get("giro"),
+        "kyc_status": "pending",
     }
     org_rows = sb.rest_insert("orgs", org_payload)
     if not org_rows:
-        # Migración rut_hash pendiente en Supabase: reintentar sin la columna
+        # Migración rut_hash / kyc pendiente en Supabase: reintentar sin columnas nuevas
         org_payload.pop("rut_hash", None)
+        org_payload.pop("kyc_status", None)
         org_rows = sb.rest_insert("orgs", org_payload)
     if not org_rows:
         return False, "No se pudo crear organización (Supabase)", None
@@ -696,6 +702,7 @@ def cuenta_resumen(*, email: str | None, org_id: str | None, sitio: str | None, 
         plan_code=plan,
         sub_status=status,
     )
+    kyc = org_kyc(str(org_id)) if org_id else {"kyc_status": None}
     return {
         "usuario": {
             "email": (user or {}).get("email_norm") or email,
@@ -707,12 +714,141 @@ def cuenta_resumen(*, email: str | None, org_id: str | None, sitio: str | None, 
             "faena": (user or {}).get("faena") or faena,
         },
         "suscripcion": sub,
+        "kyc": kyc,
         "access": access,
         "planes": plans_catalog.listar_planes(
             (user or {}).get("sitio") or sitio or "spati",
             (user or {}).get("faena") or faena,
         ),
     }
+
+
+_PAID_PLANS = frozenset({"starter", "pro", "enterprise"})
+_KYC_OK = frozenset({"pending", "verified", "rejected"})
+
+
+def kyc_gate_enabled() -> bool:
+    return (os.getenv("METGO_KYC_GATE_PAID") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
+def org_kyc(org_id: str) -> dict[str, Any]:
+    """Estado KYC de la org (default pending si no hay columnas)."""
+    oid = str(org_id or "").strip()
+    empty = {
+        "org_id": oid or None,
+        "kyc_status": "pending",
+        "kyc_notes": None,
+        "kyc_reviewed_at": None,
+        "kyc_reviewed_by": None,
+    }
+    if not oid:
+        return empty
+    if use_memory():
+        with _lock:
+            org = next((o for o in _MEM["orgs"] if str(o.get("id")) == oid), None)
+            if not org:
+                return {**empty, "kyc_status": None}
+            return {
+                "org_id": oid,
+                "kyc_status": (org.get("kyc_status") or "pending").lower(),
+                "kyc_notes": org.get("kyc_notes"),
+                "kyc_reviewed_at": org.get("kyc_reviewed_at"),
+                "kyc_reviewed_by": org.get("kyc_reviewed_by"),
+            }
+    from api_rest.integracion import supabase_store as sb
+
+    try:
+        rows = sb.rest_select(
+            "orgs",
+            params={
+                "id": f"eq.{oid}",
+                "select": "id,kyc_status,kyc_notes,kyc_reviewed_at,kyc_reviewed_by",
+            },
+            limit=1,
+        )
+    except Exception:
+        return empty
+    if not rows:
+        return {**empty, "kyc_status": None}
+    row = rows[0]
+    return {
+        "org_id": oid,
+        "kyc_status": (row.get("kyc_status") or "pending").lower(),
+        "kyc_notes": row.get("kyc_notes"),
+        "kyc_reviewed_at": row.get("kyc_reviewed_at"),
+        "kyc_reviewed_by": row.get("kyc_reviewed_by"),
+    }
+
+
+def set_org_kyc(
+    org_id: str,
+    status: str,
+    *,
+    notes: str | None = None,
+    reviewed_by: str | None = None,
+) -> tuple[bool, str, dict[str, Any] | None]:
+    st = (status or "").strip().lower()
+    if st not in _KYC_OK:
+        return False, "kyc_status inválido (pending|verified|rejected)", None
+    oid = str(org_id or "").strip()
+    if not oid:
+        return False, "org_id requerido", None
+    now = _utcnow().isoformat()
+    if use_memory():
+        with _lock:
+            org = next((o for o in _MEM["orgs"] if str(o.get("id")) == oid), None)
+            if not org:
+                return False, "Organización no encontrada", None
+            org["kyc_status"] = st
+            org["kyc_notes"] = notes
+            org["kyc_reviewed_at"] = now
+            org["kyc_reviewed_by"] = reviewed_by
+            _MEM["audit_auth"].append(
+                {
+                    "usuario_id": None,
+                    "sitio": org.get("sitio"),
+                    "faena": org.get("faena"),
+                    "evento": "kyc_set",
+                    "meta": {"org_id": oid, "kyc_status": st, "by": reviewed_by},
+                    "at": now,
+                }
+            )
+        return True, "KYC actualizado", org_kyc(oid)
+
+    from api_rest.integracion import supabase_store as sb
+
+    patch = {
+        "kyc_status": st,
+        "kyc_notes": notes,
+        "kyc_reviewed_at": now,
+        "kyc_reviewed_by": reviewed_by,
+    }
+    try:
+        rows = sb.rest_patch("orgs", {"id": f"eq.{oid}"}, patch)
+    except Exception as exc:
+        return False, f"No se pudo actualizar KYC: {exc}", None
+    if not rows:
+        return False, "Organización no encontrada o columna kyc ausente (migración)", None
+    return True, "KYC actualizado", org_kyc(oid)
+
+
+def assert_kyc_allows_paid_plan(org_id: str, plan_code: str) -> tuple[bool, str | None]:
+    """Si METGO_KYC_GATE_PAID=1, planes de pago requieren kyc_status=verified."""
+    plan = (plan_code or "").strip().lower()
+    if not kyc_gate_enabled() or plan not in _PAID_PLANS:
+        return True, None
+    info = org_kyc(org_id)
+    if (info.get("kyc_status") or "").lower() == "verified":
+        return True, None
+    return (
+        False,
+        "KYC pendiente: la organización debe estar verified antes de un plan de pago",
+    )
 
 
 def buscar_usuario_por_org(org_id: str) -> dict[str, Any] | None:

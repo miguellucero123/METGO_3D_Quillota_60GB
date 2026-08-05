@@ -250,6 +250,8 @@ paths:
       responses:
         "200":
           description: mock aplicado o sesión
+        "403":
+          description: KYC requerido (METGO_KYC_GATE_PAID)
         "501":
           description: Stripe pendiente de Price IDs
   /api/billing/webhook:
@@ -259,6 +261,34 @@ paths:
       responses:
         "200":
           description: received
+        "403":
+          description: KYC requerido
+  /api/auth/ops/kyc:
+    post:
+      tags: [auth]
+      summary: Marcar KYC manual de org (admin JWT o CRON_SECRET)
+      description: |
+        Piloto ADR A. Body `{ org_id, kyc_status: pending|verified|rejected, notes? }`.
+        Auth igual que preview: Bearer admin o `X-Cron-Token` / `?token=`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [org_id, kyc_status]
+              properties:
+                org_id: { type: string }
+                kyc_status: { type: string, enum: [pending, verified, rejected] }
+                notes: { type: string }
+                reviewed_by: { type: string }
+      responses:
+        "200":
+          description: KYC actualizado
+        "400":
+          description: Datos inválidos
+        "403":
+          description: No autorizado
   /api/auth/verify-email:
     get:
       tags: [auth]
