@@ -12,10 +12,10 @@
           </span>
         </a>
         <div class="nav-links">
-          <a href="#actividades">{{ t('landing.navActivities') }}</a>
-          <a href="#funciona">{{ t('landing.navHow') }}</a>
-          <a href="#alertas">{{ t('landing.navModules') }}</a>
-          <a href="#faq">{{ t('landing.navFaq') }}</a>
+          <router-link :to="{ path: '/', hash: '#actividades' }">{{ t('landing.navActivities') }}</router-link>
+          <router-link :to="{ path: '/', hash: '#funciona' }">{{ t('landing.navHow') }}</router-link>
+          <router-link :to="{ path: '/', hash: '#alertas' }">{{ t('landing.navModules') }}</router-link>
+          <router-link :to="{ path: '/', hash: '#faq' }">{{ t('landing.navFaq') }}</router-link>
         </div>
         <div class="nav-cta">
           <div class="lang-switch" role="group" :aria-label="t('lang.label')">
@@ -49,7 +49,7 @@
               <router-link v-else class="btn btn-primary btn-lg" to="/registro">
                 {{ t('landing.requestAccess') }}
               </router-link>
-              <a href="#funciona" class="btn btn-ghost btn-lg">{{ t('landing.navHow') }}</a>
+              <a href="#funciona" class="btn btn-ghost btn-lg" @click.prevent="scrollTo('#funciona')">{{ t('landing.navHow') }}</a>
             </div>
             <div class="hero-meta">
               <div><strong>4</strong>{{ t('landing.metaVars') }}</div>
@@ -239,7 +239,7 @@
               <router-link v-else class="btn btn-primary btn-lg" to="/registro">
                 {{ t('landing.requestAccess') }}
               </router-link>
-              <a href="#actividades" class="btn btn-ghost btn-lg">{{ t('landing.seeThresholds') }}</a>
+              <a href="#actividades" class="btn btn-ghost btn-lg" @click.prevent="scrollTo('#actividades')">{{ t('landing.seeThresholds') }}</a>
             </div>
           </div>
         </div>
@@ -253,9 +253,9 @@
           {{ t('landing.footerBrand') }}
         </div>
         <div class="foot-links">
-          <a href="#actividades">{{ t('landing.navActivities') }}</a>
-          <a href="#funciona">{{ t('landing.navHow') }}</a>
-          <a href="#acceso">{{ t('landing.accessEyebrow') }}</a>
+          <a href="#actividades" @click.prevent="scrollTo('#actividades')">{{ t('landing.navActivities') }}</a>
+          <a href="#funciona" @click.prevent="scrollTo('#funciona')">{{ t('landing.navHow') }}</a>
+          <a href="#acceso" @click.prevent="scrollTo('#acceso')">{{ t('landing.accessEyebrow') }}</a>
           <router-link to="/login">{{ t('landing.login') }}</router-link>
         </div>
       </div>
@@ -285,6 +285,11 @@ const site = inject('site')
 const { t, locale } = useI18n()
 const isLoggedIn = computed(() => Boolean(getToken()))
 const heroTitleHtml = computed(() => t('landing.heroTitleHtml'))
+
+function scrollTo(hash) {
+  const el = document.querySelector(hash)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const opsLoading = ref(true)
 const opsError = ref(false)
@@ -552,13 +557,8 @@ button:focus-visible {
   border-radius: 4px;
 }
 
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(10, 7, 4, 0.85);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
+section[id] {
+  scroll-margin-top: 80px;
 }
 .nav {
   display: flex;

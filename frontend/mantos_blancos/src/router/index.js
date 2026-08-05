@@ -108,14 +108,28 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, saved) {
+    if (saved) return saved
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth', top: 72 }
+    }
+    if (to.path !== from.path) return { top: 0 }
+    return false
+  },
 })
 
-router.beforeEach((to) => {
-  if (to.name === 'login' && getToken()) {
-    return { name: 'panel' }
+router.beforeEach(async (to) => {
+  const token = getToken()
+  // Login con JWT: validar; si es basura, limpiar y mostrar formulario
+  if (to.name === 'login' && token) {
+    const { useAuth } = await import('@/stores/auth')
+    const auth = useAuth()
+    const ok = await auth.ensureValidSession()
+    if (ok) return { name: 'panel' }
+    return true
   }
   if (to.meta?.public) return true
-  if (!getToken()) {
+  if (!token) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   return true
