@@ -1,5 +1,8 @@
 # M9 — alertas izaje SPATI (webhook/email/outbox) cada 20 min
 # Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
+#
+# Nota: NO usar forzar=1 sobre todas las faenas en un solo POST (Render free
+# corta ~180s y OpenMeteo por sitio hace timeout → HTTP 000). Se itera por sitio.
 name: SPATI alertas izaje (M9)
 
 on:
@@ -8,11 +11,11 @@ on:
   workflow_dispatch:
     inputs:
       sitio:
-        description: "Faena/sitio (vacío = barrido forzar=1)"
+        description: "Una faena (vacío = lista default SPATI)"
         required: false
         default: ""
       forzar:
-        description: "forzar=1 recorre todos los sitios"
+        description: "forzar=1 también sin transición de nivel"
         required: false
         default: "0"
         type: choice
@@ -23,15 +26,14 @@ on:
 jobs:
   alertas:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Verificar CRON_SECRET
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           if [ -z "$CRON_SECRET" ]; then
-            echo "::error::Falta secret CRON_SECRET en GitHub Actions (mismo valor que Render → metgo-api)."
-            echo "Settings → Secrets and variables → Actions → New secret: CRON_SECRET"
+            echo "::error::Falta secret CRON_SECRET en GitHub Actions (= Render metgo-api)."
             exit 1
           fi
           echo "CRON_SECRET presente (len=${#CRON_SECRET})"
@@ -39,68 +41,102 @@ jobs:
       - name: Despertar API (Render cold start)
         run: |
           for i in $(seq 1 12); do
-            code=$(curl -sS -o /tmp/metgo_health.json -w "%{http_code}" --max-time 45 \
-              "https://metgo-api.onrender.com/api/health" || echo "000")
+            code=$(curl -sS -o /tmp/metgo_health.json -w "%{http_code}" --connect-timeout 20 --max-time 45 \
+              "https://metgo-api.onrender.com/api/health" || true)
+            # curl en fallo a veces imprime 000; no concatenar otro 000
+            if [ -z "$code" ]; then code="000"; fi
             echo "health $i -> HTTP $code"
             if [ "$code" = "200" ]; then
-              head -c 200 /tmp/metgo_health.json || true
+              head -c 180 /tmp/metgo_health.json || true
               echo
               exit 0
             fi
             sleep 15
           done
-          echo "::error::API no respondió /api/health (Render free puede tardar >2 min)."
+          echo "::error::API no respondió /api/health"
           exit 1
 
-      - name: POST cron spati/alertas
+      - name: POST cron spati/alertas (por sitio)
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          set -e
-          SITIO="${{ github.event.inputs.sitio }}"
+          SITIO_IN="${{ github.event.inputs.sitio }}"
           FORZAR="${{ github.event.inputs.forzar }}"
           if [ -z "$FORZAR" ]; then FORZAR="0"; fi
 
-          # Schedule o forzar=1 o sitio vacío → barrido completo
-          QS=""
-          if [ -n "$SITIO" ]; then
-            QS="sitio=${SITIO}"
-            echo "Modo: sitio=${SITIO}"
-          elif [ "$FORZAR" = "1" ] || [ "${{ github.event_name }}" = "schedule" ] || [ -z "$SITIO" ]; then
-            QS="forzar=1"
-            echo "Modo: forzar=1 (todas las faenas)"
+          if [ -n "$SITIO_IN" ]; then
+            SITIOS="$SITIO_IN"
+          else
+            # Faenas SPATI habituales (evitar un solo POST forzar=1 que cuelga Render)
+            SITIOS="escondida quebrada_blanca"
           fi
 
-          URL="https://metgo-api.onrender.com/api/cron/spati/alertas"
-          if [ -n "$QS" ]; then
-            URL="${URL}?${QS}"
-          fi
-          echo "URL=${URL}"
+          echo "Sitios: $SITIOS | forzar=$FORZAR | event=${{ github.event_name }}"
+          ok_count=0
+          fail_count=0
 
-          for i in $(seq 1 5); do
-            : > /tmp/spati_alertas.json
-            code=$(curl -sS -o /tmp/spati_alertas.json -w "%{http_code}" --max-time 180 \
-              -X POST \
-              -H "Accept: application/json" \
-              -H "X-Cron-Token: ${CRON_SECRET}" \
-              "$URL" || echo "000")
-            echo "intento $i -> HTTP $code"
-            echo "----- body -----"
-            cat /tmp/spati_alertas.json || true
-            echo
-            if [ "$code" = "200" ]; then
-              exit 0
+          for sitio in $SITIOS; do
+            echo "::group::sitio=$sitio"
+            QS="sitio=${sitio}"
+            if [ "$FORZAR" = "1" ]; then
+              QS="${QS}&forzar=1"
             fi
-            if [ "$code" = "401" ]; then
-              echo "::error::401 Unauthorized — CRON_SECRET de GitHub ≠ Render."
-              exit 1
+            URL="https://metgo-api.onrender.com/api/cron/spati/alertas?${QS}"
+            echo "URL=$URL"
+
+            sitio_ok=0
+            for i in $(seq 1 3); do
+              : > /tmp/spati_alertas.json
+              set +e
+              code=$(curl -sS -o /tmp/spati_alertas.json -w "%{http_code}" \
+                --connect-timeout 30 --max-time 120 \
+                -X POST \
+                -H "Accept: application/json" \
+                -H "X-Cron-Token: ${CRON_SECRET}" \
+                "$URL" 2>/tmp/spati_curl_err.txt)
+              curl_rc=$?
+              set -e
+              if [ -z "$code" ] || [ "$curl_rc" -ne 0 ]; then
+                if [ -z "$code" ] || [ "$code" = "000" ]; then code="000"; fi
+              fi
+              # Evitar "000000" si curl ya escribió 000 y además falló el exit code
+              code=$(echo "$code" | tr -d '\n' | tail -c 3)
+              if [ -z "$code" ]; then code="000"; fi
+
+              echo "intento $i -> HTTP $code (curl_rc=$curl_rc)"
+              if [ -s /tmp/spati_curl_err.txt ]; then
+                echo "curl stderr: $(head -c 300 /tmp/spati_curl_err.txt)"
+              fi
+              echo "----- body -----"
+              head -c 2000 /tmp/spati_alertas.json || true
+              echo
+
+              if [ "$code" = "200" ]; then
+                ok_count=$((ok_count + 1))
+                sitio_ok=1
+                break
+              fi
+              if [ "$code" = "401" ]; then
+                echo "::error::401 — CRON_SECRET GitHub ≠ Render"
+                exit 1
+              fi
+              if [ "$code" = "502" ] || [ "$code" = "503" ] || [ "$code" = "000" ]; then
+                sleep 20
+                continue
+              fi
+              break
+            done
+
+            if [ "$sitio_ok" -eq 0 ]; then
+              fail_count=$((fail_count + 1))
+              echo "::warning::Falló sitio=$sitio"
             fi
-            if [ "$code" = "502" ] || [ "$code" = "503" ] || [ "$code" = "000" ]; then
-              echo "Reintento (cold start / timeout)..."
-              sleep 20
-              continue
-            fi
-            exit 1
+            echo "::endgroup::"
           done
-          echo "::error::Falló tras reintentos (último HTTP distinto de 200)."
-          exit 1
+
+          echo "Resumen: ok=$ok_count fail=$fail_count"
+          if [ "$ok_count" -lt 1 ]; then
+            echo "::error::Ningún sitio respondió 200. Revisá Render (logs) y OpenMeteo cooldown."
+            exit 1
+          fi
+          exit 0
