@@ -1,12 +1,13 @@
 # Pasos pendientes METGO (ops producción)
 
-> **Corte:** 2026-08-01 · El desarrollo de fases **1–10, E11 y E12.1** está en código.  
-> Lo que sigue es **configuración humana** (Render / GitHub / datos oficiales).  
+> **Corte:** 2026-08-05 · El desarrollo de fases **1–10, E11 y E12.1** está en código.  
+> Lo que sigue es **configuración humana** residual + smoke mail.  
 > Guía detallada: [`GUIA_ARRANQUE_OPS_P0.md`](GUIA_ARRANQUE_OPS_P0.md)  
 > **Inventario de claves por plataforma:** [`INVENTARIO_CLAVES_PLATAFORMAS.md`](INVENTARIO_CLAVES_PLATAFORMAS.md)  
 > **Registro identity + SII:** [`REGISTRO_IDENTITY_Y_SII.md`](REGISTRO_IDENTITY_Y_SII.md)  
 > **Plan condiciones/tareas pendientes:** [`PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md`](PLAN_PENDIENTES_POST_LANDINGS_IDENTITY.md)  
-> **Paso a paso operativo (esta sesión):** [`PASO_A_PASO_OPS_PENDIENTES.md`](PASO_A_PASO_OPS_PENDIENTES.md)
+> **Paso a paso operativo (actualizado):** [`PASO_A_PASO_OPS_PENDIENTES.md`](PASO_A_PASO_OPS_PENDIENTES.md)  
+> **Plan de mejoras:** [`PLAN_TRABAJO_MEJORAS.md`](PLAN_TRABAJO_MEJORAS.md)
 
 API: `https://metgo-api.onrender.com` · SPA: `https://metgo-spati.pages.dev`
 
@@ -20,7 +21,7 @@ API: `https://metgo-api.onrender.com` · SPA: `https://metgo-spati.pages.dev`
 | Auth S0–S4.1 | ✅ Hecho |
 | Minería M1–M7, M10 | ✅ Hecho |
 | M8 estaciones Supabase | ✅ Hecho (CSV prod pendiente) |
-| M9 código + cron YAML | ✅ Hecho (secret GitHub pendiente) |
+| M9 código + cron YAML | ✅ Hecho (`CRON_SECRET` en GitHub OK; destinos UI 🔶) |
 | E11 PWA / a11y / i18n / Lighthouse | ✅ Hecho |
 | E12.1 CSV ejemplos + `e12_ops` | ✅ Hecho |
 | E12 resto (IDs oficiales + retrain) | 🔶 Ops / continuo |
@@ -43,7 +44,7 @@ Referencia típica actual:
 | Señal | Lectura |
 |-------|---------|
 | `supabase_error` vacío | Grants OK |
-| `s5_ops.pendiente` = SMTP, Stripe, PII_KEK | Falta Render P0 |
+| `s5_ops.pendiente` = SMTP, Stripe, PII_KEK | Histórico; **hoy** suele ser solo `STRIPE_SECRET_KEY` |
 | `email_dev` = true | Poner `METGO_EMAIL_DEV=0` |
 | `e12_ops.sinca_csv_origen` = ejemplos | Demo OK; falta CSV/IDs prod |
 
@@ -85,17 +86,16 @@ Referencia típica actual:
 
 ---
 
-## Orden sugerido en una sesión (~1–2 h)
+## Orden sugerido en una sesión (~30–45 min)
 
-1. P0 pasos 1–5 (Render)  
-2. Redeploy + smoke health  
-3. P1 paso 6 (GitHub secret)  
-4. P1 paso 7 (umbrales en UI)  
-5. Dejar P1–8/9 y P2 para cuando tengáis CSV/IDs reales  
+1. `python scripts/smoke_ops_p1.py --public-only` (sanity)  
+2. P1-7: umbrales (UI o smoke con `CRON_SECRET`) — ver `PASO_A_PASO_OPS_PENDIENTES.md`  
+3. Smoke registro + clic mail (Paine o Quillota)  
+4. Dejar Stripe / P2 IDs para cuando haya cobro o CSV reales  
 
 Demo fija SPATI/VENTORA: **retirada** (`demo@ventora.demo` eliminada; seed off).  
 Acceso temporal: `POST /api/auth/preview-hora` · SQL remove: `20260804160000_remove_demo_ventora.sql`.
 
 ## Fase documento
 
-**Ops P0–P2** · sin nueva fase de código MVP.
+**Ops P0** ✅ (verify E2E 🔶) · **P1** 🔶 umbrales · **P2** datos · sin nueva fase de código MVP.
