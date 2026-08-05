@@ -14,10 +14,30 @@
 | Webhook/email por faena en M9 | ✅ código (emails N + webhook_url) |
 | Outbox flush cron | ✅ `POST /api/cron/notificaciones/outbox-retry` |
 | Invite org (B3 API) | ✅ `POST /api/auth/invitar` |
-| Destinos umbrales en UI | 🔶 **humano:** login SPATI → `/f/{faena}/umbrales` → Guardar |
-| Smoke registro → mail | 🔶 **humano:** correo real en `/registro` |
+| Smoke automático endpoints | ✅ `python scripts/smoke_ops_p1.py` |
+| Destinos umbrales en UI | 🔶 o vía smoke con `CRON_SECRET` / JWT |
+| Smoke registro → mail | 🔶 humano solo el clic del mail (`--register`) |
 
-**Siguiente humano:** (1) umbrales email/webhook en faena, (2) smoke verify-email, (3) Stripe si cobro real.
+### Smoke automático (reemplaza revisión manual de GET/PUT)
+
+```powershell
+cd D:\METGO_3D_Quillota_60GB
+# Solo públicos (sin secretos):
+python scripts\smoke_ops_p1.py --public-only
+
+# Con CRON_SECRET de Render/GitHub → guarda umbrales + cron alertas:
+$env:CRON_SECRET = "<pegar valor Render>"
+python scripts\smoke_ops_p1.py --faena escondida
+
+# Con break-glass / usuario JWT:
+$env:METGO_SMOKE_USER = "admin"
+$env:METGO_SMOKE_PASS = "<METGO_PASSWORD_ADMIN>"
+$env:METGO_SMOKE_SITIO = "spati"
+$env:METGO_SMOKE_FAENA = "escondida"
+python scripts\smoke_ops_p1.py
+```
+
+**Siguiente humano:** (1) si el smoke PUT umbrales pasó, listo P1-7; (2) `--register` + clic en mail; (3) Stripe si cobro real.
 
 ---
 
