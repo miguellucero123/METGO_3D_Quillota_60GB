@@ -26,6 +26,10 @@ scripts/sii/.env.sii
 node_modules/
 frontend/vue/dist/
 frontend/vue/.vite/
+frontend/spati/dist/
+frontend/copiapo/dist/
+frontend/mantos_blancos/dist/
+frontend/**/.vite/
 04_Dashboards_Unificados/
 
 # Caché OpenMeteo (Fase 1.4)

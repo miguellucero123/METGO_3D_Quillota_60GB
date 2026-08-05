@@ -91,3 +91,18 @@ jobs:
           npm install
           npx playwright install --with-deps chromium
           npm run test:e2e:api
+
+  smoke-ops-public:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Smoke ops públicos (prod API)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python scripts/smoke_ops_p1.py --public-only
+          python scripts/smoke_ops_p1.py --validate-registro --sitio paine --public-only

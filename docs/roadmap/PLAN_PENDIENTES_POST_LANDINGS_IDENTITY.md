@@ -63,7 +63,7 @@
 | B3 | Flujo **invitar usuario** a org existente (mismo RUT) | Segundo correo entra sin re-registrar RUT | ✅ API + UI `/cuenta` |
 | B4 | Smoke E2E: registro → verify → login → trial → checkout mock | Checklist pasado en Pages + Render | Dev + Ops |
 | B5 | Port registro/landing a **Paine** (repo `metgo-paine`) | `/` landing, `/app` JWT, `/registro` `sitio=paine` | ✅ push `c78e4eb`; verificar Pages |
-| B6 | Decidir KYC: ClaveÚnica vs proveedor vs revisión manual | ADR escrito en roadmap | Producto |
+| B6 | Decidir KYC: ClaveÚnica vs proveedor vs revisión manual | ADR escrito en roadmap | ✅ [`ADR_KYC_IDENTIDAD.md`](ADR_KYC_IDENTIDAD.md) (piloto = manual) |
 | B7 | Implementar nivel B o C de identidad (según B6) | Representante verificado antes de plan pago / DTE | Dev |
 
 ### Bloque C — Facturación SII

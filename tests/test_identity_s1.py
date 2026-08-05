@@ -539,3 +539,35 @@ def test_reporte_mensual_html_publico():
     assert r.status_code == 200
     assert "text/html" in (r.content_type or "")
     assert b"Reporte mensual" in r.data
+
+
+def test_invitar_usuario_misma_org():
+    rut = _make_valid_rut()
+    ok, _, info = identity_store.registrar_v2(
+        _payload(rut=rut, email="owner@mine.cl", faena="escondida")
+    )
+    assert ok
+    org_id = info["org_id"]
+    ok2, msg, inv = identity_store.invitar_usuario(
+        {
+            "email": "coleaga@mine.cl",
+            "password": "Segura1234",
+            "nombres": "Pedro",
+            "apellidos": "Lopez",
+            "role": "operador",
+        },
+        org_id=org_id,
+        invitador_email="owner@mine.cl",
+        invitador_role="operador",
+    )
+    assert ok2, msg
+    assert inv["org_id"] == org_id
+    assert inv["sitio"] == "spati"
+    assert inv["faena"] == "escondida"
+    assert inv.get("verify_token")
+    # email duplicado
+    ok3, _, _ = identity_store.invitar_usuario(
+        {"email": "coleaga@mine.cl", "password": "Segura1234"},
+        org_id=org_id,
+    )
+    assert not ok3

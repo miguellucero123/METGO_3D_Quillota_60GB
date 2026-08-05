@@ -1,3 +1,0 @@
-# Cloudflare Pages / Netlify — proxy API + SPA fallback
-/api/*  https://metgo-api.onrender.com/api/:splat  200
-/*      /index.html  200

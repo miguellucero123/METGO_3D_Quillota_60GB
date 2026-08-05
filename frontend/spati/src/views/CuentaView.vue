@@ -28,6 +28,8 @@ const invite = ref({
 const inviting = ref(false)
 const inviteMsg = ref('')
 const inviteErr = ref('')
+const inviteVerifyUrl = ref('')
+const inviteCopied = ref(false)
 
 const TAB_LABEL = {
   ahora: 'Ahora',
@@ -84,6 +86,8 @@ async function elegirPlan(planCode) {
 async function enviarInvitacion() {
   inviteMsg.value = ''
   inviteErr.value = ''
+  inviteVerifyUrl.value = ''
+  inviteCopied.value = false
   inviting.value = true
   try {
     const res = await invitarUsuario({
@@ -97,11 +101,28 @@ async function enviarInvitacion() {
     inviteMsg.value =
       res.message ||
       'Invitación creada. El usuario debe verificar el email e iniciar sesión.'
+    inviteVerifyUrl.value = res.verify_url || ''
+    if (inviteVerifyUrl.value) {
+      inviteMsg.value += ' Podés copiar el link de verificación abajo (útil si el mail tarda).'
+    }
     invite.value = { email: '', password: '', nombres: '', apellidos: '', role: 'operador' }
   } catch (e) {
     inviteErr.value = e.message || 'No se pudo invitar'
   } finally {
     inviting.value = false
+  }
+}
+
+async function copiarVerifyUrl() {
+  if (!inviteVerifyUrl.value) return
+  try {
+    await navigator.clipboard.writeText(inviteVerifyUrl.value)
+    inviteCopied.value = true
+    setTimeout(() => {
+      inviteCopied.value = false
+    }, 2000)
+  } catch {
+    inviteErr.value = 'No se pudo copiar al portapapeles'
   }
 }
 
@@ -210,6 +231,12 @@ const tabs = computed(() => data.value?.access?.tabs || {})
         </button>
       </form>
       <p v-if="inviteMsg" class="ok">{{ inviteMsg }}</p>
+      <div v-if="inviteVerifyUrl" class="invite-link">
+        <code>{{ inviteVerifyUrl }}</code>
+        <button type="button" class="btn btn-ghost" @click="copiarVerifyUrl">
+          {{ inviteCopied ? 'Copiado' : 'Copiar link' }}
+        </button>
+      </div>
       <p v-if="inviteErr" class="err" role="alert">{{ inviteErr }}</p>
     </section>
   </div>
@@ -284,6 +311,27 @@ dd { margin: 0; }
   color: var(--color-text);
 }
 .invite-form .btn { grid-column: 1 / -1; justify-self: start; }
+.invite-link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.65rem;
+}
+.invite-link code {
+  flex: 1;
+  min-width: 12rem;
+  font-size: 0.75rem;
+  word-break: break-all;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+}
 @media (max-width: 640px) {
   .invite-form { grid-template-columns: 1fr; }
 }
