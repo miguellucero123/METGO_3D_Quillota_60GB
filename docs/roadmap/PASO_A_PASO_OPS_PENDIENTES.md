@@ -194,6 +194,21 @@ Invoke-RestMethod "https://metgo-api.onrender.com/api/cron/sync?token=TOKEN" -Me
 
 ---
 
+## Seguridad (DT-auth-sec)
+
+Detalle: [`FASE_SEGURIDAD_DT_AUTH.md`](FASE_SEGURIDAD_DT_AUTH.md).
+
+| Control | Estado |
+|---------|--------|
+| Rate limit login/register/reenviar | ✅ código — deploy API |
+| Turnstile registro (4 SPAs) | ✅ código — keys Render + Pages |
+| CSP + `_headers` Pages | ✅ código — redeploy SPAs |
+| RLS identity deny anon | ✅ migración — `supabase db push` |
+| ETL retry-queue + CRON | ✅ código |
+| KYC / KMS / sesión Redis | ⬜ P2 |
+
+---
+
 ## Criterio “listo para clientes”
 
 | Criterio | Estado |
@@ -205,10 +220,11 @@ Invoke-RestMethod "https://metgo-api.onrender.com/api/cron/sync?token=TOKEN" -Me
 | Paine `/` landing; `/app` con JWT | ✅ |
 | Destinos umbrales guardados en prod | 🔶 |
 | Smoke registro en ≥2 SPAs + SPATI | 🔶 |
+| Rate limit + Turnstile en prod | 🔶 keys + deploy |
 | Stripe | ⬜ opcional |
 
 ---
 
 ## Fase
 
-**Ops P0** ✅ (salvo verify E2E) → **Ops P1** 🔶 (umbrales) → **Producto 2.x** (KYC ADR, SII) → **P2 datos**.
+**Ops P0** ✅ (salvo verify E2E) → **DT-auth-sec** ✅ código / 🔶 ops → **Ops P1** 🔶 (umbrales) → **Producto 2.x** (KYC ADR, SII) → **P2 datos**.

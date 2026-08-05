@@ -162,6 +162,12 @@ def requiere_estacion(f: Callable) -> Callable:
 def register_auth_routes(app: Flask) -> None:
     @app.post("/api/auth/login")
     def login():
+        from api_rest import security_hardening as sec
+
+        ok_rl, meta = sec.check_rate_limit("auth_login", limit=20, window_s=60)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
+
         data = request.get_json(silent=True) or {}
         username = (data.get("username") or data.get("usuario") or data.get("email") or "").strip()
         password = data.get("password") or data.get("contraseña") or data.get("contrasena") or ""

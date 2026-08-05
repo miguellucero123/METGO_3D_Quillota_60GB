@@ -9,7 +9,7 @@ import os
 import pytest
 
 os.environ["METGO_IDENTITY_STORE"] = "memory"
-os.environ["METGO_JWT_SECRET"] = "test-secret-identity-s1"
+os.environ["METGO_JWT_SECRET"] = "test-secret-identity-s1-min-32-bytes!!"
 os.environ["METGO_API_AUTH_REQUIRED"] = "1"
 os.environ["METGO_SCRYPT_N"] = "1024"
 os.environ["METGO_EMAIL_DEV"] = "1"

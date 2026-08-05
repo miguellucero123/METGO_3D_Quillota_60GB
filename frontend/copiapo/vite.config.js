@@ -17,6 +17,7 @@ export default defineConfig({
         display: 'standalone',
         start_url: '/',
         lang: 'es',
+        id: '/?v=landing-2026-08',
         icons: [
           {
             src: '/icons/icon-192.png',

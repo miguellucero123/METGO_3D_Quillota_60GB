@@ -41,18 +41,51 @@ def _verify_email_url(sitio: str, faena: str | None, token: str) -> str:
 
 
 def register_identity_routes(app: Flask) -> None:
+    @app.get("/api/public/security-config")
+    def public_security_config():
+        """Config pública anti-abuso (site key Turnstile; sin secretos)."""
+        from api_rest import security_hardening as sec
+
+        return jsonify(sec.security_public_config())
+
     @app.post("/api/auth/validate-registro")
     def validate_registro():
+        from api_rest import security_hardening as sec
+
+        ok_rl, meta = sec.check_rate_limit("auth_validate", limit=30, window_s=60)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
         data = request.get_json(silent=True) or {}
         result = validators.validate_registro_payload(data)
         return jsonify(result), (200 if result["ok"] else 400)
 
     @app.post("/api/auth/register-v2")
     def register_v2():
+        from api_rest import security_hardening as sec
+
         data = request.get_json(silent=True) or {}
-        ok, msg, extra = identity_store.registrar_v2(
-            data, ip=request.headers.get("X-Forwarded-For", request.remote_addr)
+        ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+        ok_rl, meta = sec.check_rate_limit("auth_register", limit=5, window_s=60, key=ip)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
+        email_key = (data.get("email") or "").strip().lower()
+        if email_key:
+            ok_em, meta_em = sec.check_rate_limit(
+                "auth_register_email", limit=3, window_s=3600, key=email_key
+            )
+            if not ok_em:
+                return sec.rate_limit_response(meta_em)
+
+        captcha_tok = (
+            data.get("turnstile_token")
+            or data.get("cf_turnstile_response")
+            or data.get("captcha_token")
         )
+        ok_cap, cap_msg = sec.verify_turnstile(captcha_tok, remoteip=sec.client_ip())
+        if not ok_cap:
+            return jsonify({"error": cap_msg, "code": "captcha_failed"}), 400
+
+        ok, msg, extra = identity_store.registrar_v2(data, ip=ip)
         if not ok:
             body = {"error": msg}
             if extra:
@@ -103,6 +136,12 @@ def register_identity_routes(app: Flask) -> None:
     @app.post("/api/auth/reenviar-verificacion")
     def reenviar_verificacion():
         """Reenvía el mail de verificación (email + password + sitio[/faena])."""
+        from api_rest import security_hardening as sec
+
+        ok_rl, meta = sec.check_rate_limit("auth_resend", limit=5, window_s=60)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
+
         data = request.get_json(silent=True) or {}
         email = (data.get("email") or data.get("username") or "").strip().lower()
         password = data.get("password") or ""

@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { HardHat } from 'lucide-vue-next'
 import { fetchPlanes, registerV2, validateRegistro, wakeApi } from '@/services/authApi'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
+import TurnstileWidget from '@/components/TurnstileWidget.vue'
 import { setLocale } from '@/i18n'
 
 const { t, locale } = useI18n()
@@ -33,9 +34,26 @@ const done = ref(false)
 const registeredEmail = ref('')
 const planes = ref([])
 const brandName = computed(() => site.siteLabel || 'Mantos Blancos')
+const turnstileSiteKey = ref('')
+const turnstileRequired = ref(false)
+const turnstileToken = ref('')
 
 onMounted(async () => {
   wakeApi().catch(() => {})
+  try {
+    const apiBase = String(
+      import.meta.env.VITE_METGO_API || 'https://metgo-api.onrender.com/api',
+    ).replace(/\/$/, '')
+    const res = await fetch(`${apiBase}/public/security-config`)
+    if (res.ok) {
+      const cfg = await res.json()
+      turnstileSiteKey.value =
+        import.meta.env.VITE_TURNSTILE_SITE_KEY || cfg?.turnstile?.site_key || ''
+      turnstileRequired.value = Boolean(cfg?.turnstile?.required)
+    }
+  } catch {
+    turnstileSiteKey.value = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
+  }
   try {
     const data = await fetchPlanes(site.sitio)
     planes.value = (data.planes || []).filter((p) => p.plan_code !== 'preview')
@@ -47,6 +65,10 @@ onMounted(async () => {
 async function onSubmit() {
   msg.value = ''
   errors.value = {}
+  if (turnstileRequired.value && turnstileSiteKey.value && !turnstileToken.value) {
+    msg.value = 'Complete la verificación anti-bot antes de continuar.'
+    return
+  }
   cargando.value = true
   const body = {
     email: form.email.trim(),
@@ -59,6 +81,7 @@ async function onSubmit() {
     rut: form.rut.trim(),
     sitio: site.sitio,
     faena: site.faena?.id || undefined,
+    turnstile_token: turnstileToken.value || undefined,
     consentimientos: {
       almacenamiento_datos: form.almacenamiento_datos,
       tos: form.tos,
@@ -129,6 +152,13 @@ function irLogin() {
         <label><span>{{ t('registro.rut') }}</span><input v-model="form.rut" required placeholder="76.123.456-0" autocomplete="off" /></label>
         <label><span>{{ t('registro.password') }}</span><input v-model="form.password" type="password" required minlength="10" autocomplete="new-password" /></label>
         <label><span>{{ t('registro.confirm') }}</span><input v-model="form.password_confirm" type="password" required autocomplete="new-password" /></label>
+
+        <div v-if="turnstileSiteKey" class="full captcha">
+          <TurnstileWidget :site-key="turnstileSiteKey" @token="turnstileToken = $event" />
+          <p v-if="turnstileRequired && !turnstileToken" class="field-hint">
+            Complete la verificación anti-bot antes de crear la cuenta.
+          </p>
+        </div>
 
         <fieldset class="consents">
           <legend>{{ t('registro.consentsLegend') }}</legend>
@@ -312,6 +342,15 @@ function irLogin() {
   grid-column: 1 / -1;
   color: #f87171;
   font-size: 0.85rem;
+}
+.captcha {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0;
+}
+.field-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
 }
 .ok {
   grid-column: 1 / -1;

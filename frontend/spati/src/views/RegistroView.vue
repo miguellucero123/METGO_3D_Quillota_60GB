@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { HardHat, MailCheck } from 'lucide-vue-next'
 import { fetchPlanes, registerV2, validateRegistro, wakeApi } from '@/services/authApi'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
+import TurnstileWidget from '@/components/TurnstileWidget.vue'
 import { setLocale } from '@/i18n'
 
 const { t, locale } = useI18n()
@@ -43,9 +44,26 @@ const registeredEmail = ref('')
 const trialDays = ref(15)
 const mailSent = ref(null)
 const planes = ref([])
+const turnstileSiteKey = ref('')
+const turnstileRequired = ref(false)
+const turnstileToken = ref('')
 
 onMounted(async () => {
   wakeApi().catch(() => {})
+  try {
+    const apiBase = String(
+      import.meta.env.VITE_METGO_API || 'https://metgo-api.onrender.com/api',
+    ).replace(/\/$/, '')
+    const res = await fetch(`${apiBase}/public/security-config`)
+    if (res.ok) {
+      const cfg = await res.json()
+      turnstileSiteKey.value =
+        import.meta.env.VITE_TURNSTILE_SITE_KEY || cfg?.turnstile?.site_key || ''
+      turnstileRequired.value = Boolean(cfg?.turnstile?.required)
+    }
+  } catch {
+    turnstileSiteKey.value = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
+  }
   try {
     const data = await fetchPlanes('spati', faena.value)
     planes.value = data.planes || []
@@ -57,6 +75,10 @@ onMounted(async () => {
 async function onSubmit() {
   msg.value = ''
   errors.value = {}
+  if (turnstileRequired.value && turnstileSiteKey.value && !turnstileToken.value) {
+    msg.value = 'Complete la verificación anti-bot antes de continuar.'
+    return
+  }
   cargando.value = true
   const body = {
     email: form.email.trim(),
@@ -69,6 +91,7 @@ async function onSubmit() {
     rut: form.rut.trim(),
     sitio: 'spati',
     faena: faena.value,
+    turnstile_token: turnstileToken.value || undefined,
     consentimientos: {
       almacenamiento_datos: form.almacenamiento_datos,
       tos: form.tos,
@@ -201,6 +224,13 @@ function irLogin() {
             />
           </label>
 
+          <div v-if="turnstileSiteKey" class="full captcha">
+            <TurnstileWidget :site-key="turnstileSiteKey" @token="turnstileToken = $event" />
+            <p v-if="turnstileRequired && !turnstileToken" class="field-hint">
+              Complete la verificación anti-bot antes de crear la cuenta.
+            </p>
+          </div>
+
           <fieldset class="consents">
             <legend>{{ t('registro.consentsLegend') }}</legend>
             <label class="check">
@@ -324,6 +354,7 @@ function irLogin() {
 .success-panel .err { color: #f87171; font-size: 0.9rem; }
 .success-panel .btn-primary { margin-top: 1.25rem; width: 100%; }
 .field-hint { color: #64748b; font-size: 0.72rem; margin-top: 0.2rem; }
+.captcha { grid-column: 1 / -1; margin: 0.25rem 0; }
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

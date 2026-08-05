@@ -71,9 +71,10 @@ watch(
 
 onMounted(async () => {
   await router.isReady()
+  // Solo validar sesión en rutas privadas; nunca forzar login desde aquí
+  // (evita login?redirect=/ por carrera o SW viejo).
   if (isPublicRoute(route)) return
-  const ok = await auth.ensureValidSession()
-  if (!ok) router.replace({ name: 'login', query: { redirect: route.fullPath } })
+  await auth.ensureValidSession()
 })
 </script>
 

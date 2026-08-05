@@ -71,8 +71,7 @@ watch(
 onMounted(async () => {
   await router.isReady()
   if (isPublicRoute(route)) return
-  const ok = await auth.ensureValidSession()
-  if (!ok) router.replace({ name: 'login', query: { redirect: route.fullPath } })
+  await auth.ensureValidSession()
 })
 </script>
 

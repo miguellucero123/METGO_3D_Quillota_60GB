@@ -13,6 +13,9 @@ Endurecimiento JWT Flask + registro comercial multi-faena — sin nuevo proyecto
 | `METGO_ALLOW_SELF_REGISTER` | `0` (legacy JSON; usar `register-v2`) |
 | `METGO_EMAIL_DEV` | `0` en prod (no devolver `verify_token` en JSON) |
 | `METGO_API_AUTH_REQUIRED` | `1` |
+| `METGO_REQUIRE_EMAIL_VERIFY` | `1` |
+| `METGO_RATE_LIMIT_ENABLED` | `1` |
+| `METGO_TURNSTILE_SECRET` / `METGO_TURNSTILE_SITE_KEY` | Turnstile (recomendado prod) |
 | `METGO_SPATI_PUBLIC_URL` | `https://metgo-spati.pages.dev` |
 | `METGO_PASSWORD_ADMIN` | fuerte, rotada (break-glass) |
 | `METGO_PASSWORD_COPIAPO` / `_MANTOS` / `_PAINE` | opcionales hasta migrar 100% a `usuarios_app` |
@@ -47,6 +50,7 @@ Tras cambiar env: **Manual Deploy → Clear build cache & deploy**.
 - SPATI: hub `/` y faenas `/f/{faena}/registro|login|cuenta`.
 - Redeploy tras cambios de auth/UI.
 - Quillota: **no** `VITE_ALLOW_SELF_REGISTER=1` en prod.
+- Opcional: `VITE_TURNSTILE_SITE_KEY` (si no, las SPAs leen `GET /api/public/security-config`).
 
 ## Smoke
 

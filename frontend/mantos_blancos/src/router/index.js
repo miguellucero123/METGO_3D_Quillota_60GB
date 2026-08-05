@@ -125,8 +125,10 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  // Landing siempre pública (nunca mandar / → login)
+  if (to.path === '/' || to.path === '' || to.name === 'landing') return true
+
   const token = getToken()
-  // Login con JWT: validar; si es basura, limpiar y mostrar formulario
   if (to.name === 'login' && token) {
     const { useAuth } = await import('@/stores/auth')
     const auth = useAuth()

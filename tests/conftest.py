@@ -4,6 +4,15 @@ import os
 from pathlib import Path
 from types import SimpleNamespace
 
+# Garantiza import de api_rest aunque pytest <7 ignore pythonpath de pytest.ini
+_ROOT = Path(__file__).resolve().parents[1]
+_APIS = _ROOT / "backend" / "05_APIs_Externas"
+for _p in (_ROOT, _APIS):
+    _s = str(_p)
+    if _s not in sys.path:
+        sys.path.insert(0, _s)
+
+
 @pytest.fixture(autouse=True)
 def mock_env_passwords(monkeypatch):
     """Fuerza contraseñas por defecto para los tests independientemente del .env o CI."""

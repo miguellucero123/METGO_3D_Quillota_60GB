@@ -114,7 +114,15 @@ def register_fase4_routes(app: Flask) -> None:
 
     @app.get("/api/public/datos/etl/retry-queue")
     def public_etl_retry_queue():
-        """Estado de la cola de reintento ETL (E10, sin Redis)."""
+        """Estado cola ETL — requiere CRON_SECRET (antes era público)."""
+        secret = (
+            request.args.get("token")
+            or request.headers.get("X-Cron-Token")
+            or ""
+        ).strip()
+        expected = (os.getenv("CRON_SECRET") or "").strip()
+        if expected and secret != expected:
+            return jsonify({"error": "No autorizado", "code": "cron_forbidden"}), 403
         try:
             from api_rest.integracion import etl_retry_queue
 

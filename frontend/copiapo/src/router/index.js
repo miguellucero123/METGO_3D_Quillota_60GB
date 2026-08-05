@@ -119,6 +119,8 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  if (to.path === '/' || to.path === '' || to.name === 'landing') return true
+
   const token = getToken()
   if (to.name === 'login' && token) {
     const { useAuth } = await import('@/stores/auth')

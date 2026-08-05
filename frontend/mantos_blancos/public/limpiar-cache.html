@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Limpiar caché · METGO Mantos</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b1120; color: #e2e8f0; padding: 2rem; max-width: 32rem; margin: 0 auto; }
+    a { color: #fb923c; }
+    button { background: #fb923c; color: #0b1120; border: 0; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Limpiar caché PWA</h1>
+  <p>Si ve login en vez de la landing, pulse el botón y vuelva al inicio.</p>
+  <button id="go" type="button">Limpiar y abrir inicio</button>
+  <p id="msg"></p>
+  <script>
+    document.getElementById('go').onclick = async () => {
+      const msg = document.getElementById('msg')
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations()
+          await Promise.all(regs.map((r) => r.unregister()))
+        }
+        if (window.caches) {
+          const keys = await caches.keys()
+          await Promise.all(keys.map((k) => caches.delete(k)))
+        }
+        msg.textContent = 'Listo. Redirigiendo…'
+      } catch (e) {
+        msg.textContent = 'Hecho (con avisos). Redirigiendo…'
+      }
+      setTimeout(() => { location.replace('/?nocache=' + Date.now()) }, 400)
+    }
+  </script>
+</body>
+</html>

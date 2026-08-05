@@ -116,6 +116,16 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
             if not ok
         ],
     }
+    try:
+        from api_rest import security_hardening as sec
+
+        base["s5_ops"]["rate_limit_enabled"] = sec.rate_limit_enabled()
+        base["s5_ops"]["turnstile_configured"] = sec.turnstile_configured()
+        base["s5_ops"]["turnstile_required"] = sec.turnstile_required()
+        if not sec.turnstile_configured():
+            base["s5_ops"]["pendiente"].append("METGO_TURNSTILE_SECRET")
+    except Exception:
+        pass
     if "ops_board" not in base["features"]:
         base["features"] = list(base["features"]) + ["ops_board", "spati_m10"]
 

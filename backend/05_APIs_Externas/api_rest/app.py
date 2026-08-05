@@ -162,6 +162,17 @@ def create_app() -> Flask:
     register_mapas_routes(app)
     register_docs_routes(app)
 
+    @app.after_request
+    def _security_headers(resp):
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        resp.headers.setdefault(
+            "Permissions-Policy",
+            "camera=(), microphone=(), geolocation=()",
+        )
+        return resp
+
     @app.get("/")
     def index():
         """Evita 404 si se abre :8080 en el navegador por error."""
