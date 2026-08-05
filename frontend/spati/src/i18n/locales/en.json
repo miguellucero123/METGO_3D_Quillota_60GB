@@ -20,7 +20,12 @@
     "password": "Password",
     "submit": "Sign in",
     "loading": "Signing in…",
-    "errorGeneric": "Incorrect username or password"
+    "errorGeneric": "Incorrect username or password",
+    "registeredOk": "Account created. Check your email, open the verification link, then sign in here.",
+    "resend": "Resend verification",
+    "resendOk": "Verification email resent. Check inbox and spam.",
+    "resendNeedPass": "Enter email and password to resend verification.",
+    "emailNotVerified": "You must verify your email before signing in. Check mail or use Resend."
   },
   "lang": {
     "es": "ES",
@@ -121,8 +126,16 @@
     "consentTruth": "I declare the data provided is true and correct.",
     "submit": "Create account",
     "loading": "Validating…",
-    "ok": "Registration OK. Check the verification email and sign in.",
+    "ok": "Account created. Check your email: you must verify before signing in.",
+    "okTitle": "Registration successful — 15-day pilot",
+    "okHint": "We emailed a verification link and pilot details. Without verification you cannot sign in. After day 15 without a paid plan, access is blocked. If the mail is missing, check spam or use Resend on the login page.",
+    "okTrial": "Pilot active: {days} days from signup. Then access is blocked until you subscribe.",
+    "okMailSent": "Verification email sent to {email}.",
+    "okMailFail": "We could not confirm email delivery. Use Resend on login or check SMTP (ops).",
+    "okRutNote": "Company tax ID is checked for Chilean format/check digit only — not automatic SII/KYC.",
+    "goLogin": "Go to sign in",
     "error": "Registration error",
+    "rutHint": "Chilean format with check digit. Not automatic SII/KYC.",
     "plansTitle": "Tiered plans ({faena})",
     "haveAccount": "Already have an account?",
     "signIn": "Sign in"

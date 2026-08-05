@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Wind, LogIn } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
-import { wakeApi } from '@/services/authApi'
+import { wakeApi, reenviarVerificacion } from '@/services/authApi'
 import { setLocale } from '@/i18n'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 
@@ -18,13 +18,23 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const cargando = ref(false)
+const registeredBanner = ref('')
+const reenviando = ref(false)
+const resendMsg = ref('')
 
 onMounted(() => {
   wakeApi().catch(() => {})
+  if (route.query.registered === '1' || route.query.registered === 'true') {
+    registeredBanner.value = t('login.registeredOk')
+    if (typeof route.query.email === 'string' && route.query.email) {
+      username.value = route.query.email
+    }
+  }
 })
 
 async function onSubmit() {
   error.value = ''
+  resendMsg.value = ''
   cargando.value = true
   try {
     await wakeApi()
@@ -32,9 +42,39 @@ async function onSubmit() {
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/app'
     router.replace(redirect.startsWith('/') && redirect !== '/login' ? redirect : '/app')
   } catch (e) {
-    error.value = e.message || 'Usuario o contraseña incorrectos'
+    if (e.code === 'email_not_verified') error.value = t('login.emailNotVerified')
+    else if (e.code === 'subscription_expired') error.value = e.message || 'Piloto o suscripción vencida'
+    else error.value = e.message || t('login.errorGeneric')
   } finally {
     cargando.value = false
+  }
+}
+
+async function onResend() {
+  error.value = ''
+  resendMsg.value = ''
+  if (!username.value.trim() || !password.value) {
+    error.value = t('login.resendNeedPass')
+    return
+  }
+  reenviando.value = true
+  try {
+    const res = await reenviarVerificacion({
+      email: username.value.trim(),
+      password: password.value,
+      sitio: site.sitio || 'copiapo',
+    })
+    if (res.already_verified) resendMsg.value = 'Email ya verificado. Puede iniciar sesión.'
+    else {
+      resendMsg.value = t('login.resendOk')
+      if (res.email && res.email.sent === false) {
+        error.value = res.email.error || 'No se pudo confirmar el envío del correo'
+      }
+    }
+  } catch (e) {
+    error.value = e.message || t('login.errorGeneric')
+  } finally {
+    reenviando.value = false
   }
 }
 </script>
@@ -61,10 +101,12 @@ async function onSubmit() {
         <p class="login-hint">{{ t('login.hint') }}</p>
       </div>
 
+      <p v-if="registeredBanner" class="auth-ok" role="status">{{ registeredBanner }}</p>
+
       <form class="auth-form" @submit.prevent="onSubmit">
         <label class="field">
           <span>{{ t('login.user') }}</span>
-          <input v-model="username" type="text" autocomplete="username" required />
+          <input v-model="username" type="email" autocomplete="username" required />
         </label>
         <label class="field">
           <span>{{ t('login.password') }}</span>
@@ -82,10 +124,15 @@ async function onSubmit() {
         </button>
       </form>
       <p class="auth-footer">
-        {{ t('login.noAccount') }}
+        <button type="button" class="linkish" :disabled="reenviando" @click="onResend">
+          {{ reenviando ? '…' : t('login.resend') }}
+        </button>
+        ·
+        <router-link to="/">{{ t('app.home') }}</router-link>
+        ·
         <router-link to="/registro">{{ t('app.register') }}</router-link>
       </p>
-      <p class="auth-footer muted">JWT · sitio <code>{{ site.sitio }}</code> · identity</p>
+      <p v-if="resendMsg" class="auth-ok" role="status">{{ resendMsg }}</p>
     </div>
   </div>
 </template>
@@ -181,15 +228,25 @@ async function onSubmit() {
 .field input {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: rgba(0, 0, 0, 0.25);
   color: var(--color-text);
 }
 .auth-msg {
-  color: var(--color-danger);
+  color: #f87171;
   font-size: 0.85rem;
   margin: 0 0 0.75rem;
+}
+.auth-ok {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  line-height: 1.45;
 }
 .auth-btn {
   width: 100%;
@@ -197,26 +254,26 @@ async function onSubmit() {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.7rem 1rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-weight: 600;
 }
 .auth-footer {
   text-align: center;
   margin-top: 1rem;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  font-size: 0.8rem;
 }
-.auth-footer.muted {
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
-}
-.auth-footer a {
+.auth-footer a,
+.auth-footer .linkish {
   color: var(--color-primary);
+  font-weight: 600;
+  background: none;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
 }
-.auth-footer code {
-  color: var(--color-primary);
+.auth-footer .linkish:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 </style>

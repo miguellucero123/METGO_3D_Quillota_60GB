@@ -3,6 +3,12 @@ import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   {
+    path: '/',
+    name: 'landing',
+    component: () => import('@/views/LandingQuillotaView.vue'),
+    meta: { public: true, title: 'METGO Quillota' },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
@@ -37,12 +43,6 @@ const routes = [
     name: 'forbidden',
     component: () => import('@/views/ForbiddenView.vue'),
     meta: { title: 'Sin permiso' },
-  },
-  {
-    path: '/',
-    name: 'landing',
-    component: () => import('@/views/LandingQuillotaView.vue'),
-    meta: { public: true, title: 'METGO Quillota' },
   },
   {
     path: '/app',

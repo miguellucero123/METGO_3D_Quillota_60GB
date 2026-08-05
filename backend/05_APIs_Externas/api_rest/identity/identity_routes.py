@@ -76,10 +76,20 @@ def register_identity_routes(app: Flask) -> None:
                         verify_url=verify_url,
                         sitio=str(sitio),
                         faena=faena,
+                        trial_days=int((extra or {}).get("trial_days") or plans_catalog.trial_days()),
                     )
                     extra["email"] = mail
                 except Exception as exc:
-                    extra["email"] = {"mode": "error", "error": str(exc)}
+                    extra["email"] = {"mode": "error", "sent": False, "error": str(exc)}
+            else:
+                extra["email"] = {"mode": "skip", "sent": False, "reason": "verify_url_empty"}
+        else:
+            extra["email"] = {
+                "mode": "skip",
+                "sent": False,
+                "reason": "missing_token_or_spa_base",
+                "spa_base": spa_base or None,
+            }
 
         # En prod no devolver verify_token salvo METGO_EMAIL_DEV=1 (memoria → 1 por defecto)
         email_dev = os.getenv("METGO_EMAIL_DEV")
@@ -89,6 +99,49 @@ def register_identity_routes(app: Flask) -> None:
             extra.pop("verify_token", None)
             extra.pop("verify_path", None)
         return jsonify({"message": msg, **(extra or {})}), 201
+
+    @app.post("/api/auth/reenviar-verificacion")
+    def reenviar_verificacion():
+        """Reenvía el mail de verificación (email + password + sitio[/faena])."""
+        data = request.get_json(silent=True) or {}
+        email = (data.get("email") or data.get("username") or "").strip().lower()
+        password = data.get("password") or ""
+        sitio = (data.get("sitio") or data.get("site") or "").strip().lower() or "spati"
+        faena = (data.get("faena") or "").strip().lower() or None
+        if not email or not password:
+            return jsonify({"error": "email y password requeridos"}), 400
+
+        from api_rest.identity import email_notify, pii_crypto
+
+        user = identity_store.buscar_usuario_login(email, sitio, faena)
+        if not user or not pii_crypto.verify_password(password, user.get("password_hash") or ""):
+            return jsonify({"error": "Credenciales incorrectas"}), 401
+        if user.get("email_verified_at"):
+            return jsonify({"message": "Email ya verificado", "already_verified": True}), 200
+
+        token = identity_store._issue_email_token(str(user["id"]))
+        verify_url = _verify_email_url(str(user.get("sitio") or sitio), user.get("faena") or faena, token)
+        if not verify_url:
+            return jsonify({"error": "URL pública SPA no configurada"}), 500
+        mail = email_notify.enviar_verificacion(
+            to_email=email,
+            verify_url=verify_url,
+            sitio=str(user.get("sitio") or sitio),
+            faena=user.get("faena") or faena,
+            trial_days=plans_catalog.trial_days(),
+        )
+        body = {
+            "message": "Si el correo es válido, recibirá el enlace de verificación",
+            "email": mail,
+            "trial_days": plans_catalog.trial_days(),
+        }
+        email_dev = os.getenv("METGO_EMAIL_DEV")
+        if email_dev is None:
+            email_dev = "1" if identity_store.use_memory() else "0"
+        if email_dev == "1":
+            body["verify_token"] = token
+            body["verify_url"] = verify_url
+        return jsonify(body), 200
 
     @app.get("/api/auth/verify-email")
     def verify_email():
@@ -131,6 +184,7 @@ def register_identity_routes(app: Flask) -> None:
                         verify_url=verify_url,
                         sitio=str(sitio),
                         faena=faena,
+                        trial_days=plans_catalog.trial_days(),
                     )
                     extra["email"] = mail
                 except Exception as exc:

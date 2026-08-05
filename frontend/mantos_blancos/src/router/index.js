@@ -3,6 +3,12 @@ import { getToken } from '@/services/authApi'
 
 const routes = [
   {
+    path: '/',
+    name: 'landing',
+    component: () => import('@/views/LandingMantosView.vue'),
+    meta: { title: 'Inicio', public: true },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
@@ -19,12 +25,6 @@ const routes = [
     name: 'verificar',
     component: () => import('@/views/VerificarEmailView.vue'),
     meta: { title: 'Verificar email', public: true },
-  },
-  {
-    path: '/',
-    name: 'landing',
-    component: () => import('@/views/LandingMantosView.vue'),
-    meta: { title: 'Inicio', public: true },
   },
   {
     path: '/app',

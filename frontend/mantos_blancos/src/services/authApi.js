@@ -74,6 +74,7 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
       const err = new Error(data.error || `HTTP ${res.status}`)
       err.status = res.status
       err.data = data
+      err.code = data.code
       throw err
     }
     return data
@@ -124,6 +125,10 @@ export async function validateRegistro(body) {
 
 export async function registerV2(body) {
   return request('/auth/register-v2', { method: 'POST', body, timeout: 90000 })
+}
+
+export async function reenviarVerificacion(body) {
+  return request('/auth/reenviar-verificacion', { method: 'POST', body })
 }
 
 export async function verifyEmail(token) {

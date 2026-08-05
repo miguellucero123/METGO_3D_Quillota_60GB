@@ -125,6 +125,10 @@ export async function registerV2(body) {
   return request('/auth/register-v2', { method: 'POST', body })
 }
 
+export async function reenviarVerificacion(body) {
+  return request('/auth/reenviar-verificacion', { method: 'POST', body })
+}
+
 export async function fetchAccess({ sitio, faena, tab } = {}) {
   const q = new URLSearchParams()
   if (sitio) q.set('sitio', sitio)

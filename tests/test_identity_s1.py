@@ -115,6 +115,58 @@ def test_planes_escalados_faena():
     assert p_esc["precio_mensual_clp"] > p_base["precio_mensual_clp"]
 
 
+def test_login_requires_email_verify_and_trial_meta():
+    from api_rest.app import create_app
+
+    app = create_app()
+    client = app.test_client()
+    body = _payload(email="pending.verify@example.com")
+    reg = client.post("/api/auth/register-v2", json=body)
+    assert reg.status_code == 201
+    data = reg.get_json()
+    assert data.get("trial_days") == 15
+    assert data.get("email_verification_required") is True
+    assert data.get("current_period_end")
+    assert data.get("sub_status") == "trialing"
+
+    denied = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert denied.status_code == 403
+    assert denied.get_json().get("code") == "email_not_verified"
+
+    assert client.get(f"/api/auth/verify-email?token={data['verify_token']}").status_code == 200
+    ok = client.post(
+        "/api/auth/login",
+        json={
+            "username": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert ok.status_code == 200
+
+    # reenvío tras verificar → already_verified
+    resend = client.post(
+        "/api/auth/reenviar-verificacion",
+        json={
+            "email": body["email"],
+            "password": body["password"],
+            "sitio": "spati",
+            "faena": "escondida",
+        },
+    )
+    assert resend.status_code == 200
+    assert resend.get_json().get("already_verified") is True
+
+
 def test_api_validate_and_register():
     from api_rest.app import create_app
 

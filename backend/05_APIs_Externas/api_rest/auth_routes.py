@@ -187,13 +187,30 @@ def register_auth_routes(app: Flask) -> None:
                     continue
                 if user.get("status") == "suspended":
                     return jsonify({"error": "Usuario suspendido"}), 403
+                require_verify = (
+                    os.getenv("METGO_REQUIRE_EMAIL_VERIFY", "1").strip().lower()
+                    not in ("0", "false", "no", "off")
+                )
+                if require_verify and not user.get("email_verified_at"):
+                    return (
+                        jsonify(
+                            {
+                                "error": (
+                                    "Debe verificar su email antes de iniciar sesión. "
+                                    "Revise su correo (y spam) o solicite reenvío."
+                                ),
+                                "code": "email_not_verified",
+                            }
+                        ),
+                        403,
+                    )
                 sub_raw = identity_store.suscripcion_de_org(user.get("org_id") or "") or {}
                 sub = identity_store.suscripcion_efectiva(sub_raw)
                 if sub.get("status") not in ("trialing", "active"):
                     return (
                         jsonify(
                             {
-                                "error": "Acceso expirado o cancelado",
+                                "error": "Acceso expirado o cancelado. El piloto de 15 días terminó o la suscripción no está activa.",
                                 "code": "subscription_expired",
                                 "plan_code": sub.get("plan_code"),
                             }

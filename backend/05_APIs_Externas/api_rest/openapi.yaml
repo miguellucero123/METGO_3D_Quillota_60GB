@@ -151,9 +151,33 @@ paths:
                     veracidad: { type: boolean }
       responses:
         "201":
-          description: Usuario/org creados (status pending + trial)
+          description: |
+            Usuario/org creados (status pending + trial 15d).
+            Respuesta incluye trial_days, current_period_end, email_verification_required
+            y email.sent (SMTP). Login exige verify-email si METGO_REQUIRE_EMAIL_VERIFY=1.
         "400":
           description: Validación o consentimiento faltante
+  /api/auth/reenviar-verificacion:
+    post:
+      tags: [auth]
+      summary: Reenviar email de verificación (piloto)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                sitio: { type: string, example: spati }
+                faena: { type: string, example: escondida }
+      responses:
+        "200":
+          description: Reenvío intentado (o already_verified)
+        "401":
+          description: Credenciales incorrectas
   /api/auth/access:
     get:
       tags: [auth]

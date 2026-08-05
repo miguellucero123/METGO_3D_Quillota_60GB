@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isPublicShell" class="app-login" :class="{ 'app-login--landing': route.name === 'landing' }">
+  <div v-if="isPublicShell" class="app-login" :class="{ 'app-login--landing': isLanding }">
     <router-view />
   </div>
   <div v-else class="app-shell" :class="{ 'app-shell--nav-open': navOpen }">
@@ -46,9 +46,21 @@ provide('closeNav', () => {
   navOpen.value = false
 })
 
-const isPublicShell = computed(
-  () => route.name === 'login' || route.name === 'landing' || route.name === 'registro' || route.name === 'verificar',
-)
+const PUBLIC_NAMES = new Set(['landing', 'login', 'registro', 'verificar'])
+
+function isPublicRoute(r) {
+  if (!r) return true
+  if (r.meta?.public) return true
+  if (PUBLIC_NAMES.has(String(r.name || ''))) return true
+  const p = String(r.path || '')
+  // Landing siempre pública (evita carrera router.isReady → login/registro)
+  if (p === '/' || p === '') return true
+  if (p === '/login' || p === '/registro' || p === '/verificar') return true
+  return false
+}
+
+const isPublicShell = computed(() => isPublicRoute(route))
+const isLanding = computed(() => route.name === 'landing' || route.path === '/')
 
 watch(
   () => route.fullPath,
@@ -58,7 +70,8 @@ watch(
 )
 
 onMounted(async () => {
-  if (isPublicShell.value) return
+  await router.isReady()
+  if (isPublicRoute(route)) return
   const ok = await auth.ensureValidSession()
   if (!ok) router.replace({ name: 'login', query: { redirect: route.fullPath } })
 })

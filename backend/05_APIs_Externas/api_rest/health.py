@@ -84,21 +84,32 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
         base["observabilidad"]["sentry"] = True
 
     # S5 readiness (sin secretos): qué falta configurar en Render
-    smtp_host = (os.getenv("METGO_SMTP_HOST") or "").strip()
+    try:
+        from api_rest.identity.email_notify import smtp_configurado as _smtp_ok
+
+        smtp_ready = _smtp_ok()
+    except Exception:
+        smtp_ready = bool((os.getenv("METGO_SMTP_HOST") or "").strip()) and bool(
+            (os.getenv("METGO_SMTP_FROM") or "").strip()
+        )
     stripe_key = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
     pii_kek = (os.getenv("METGO_PII_KEK") or "").strip()
+    smtp_from = (os.getenv("METGO_SMTP_FROM") or "").strip()
     base["s5_ops"] = {
         "fase": "S5",
-        "smtp_configurado": bool(smtp_host),
+        "smtp_configurado": smtp_ready,
         "stripe_configurado": bool(stripe_key),
         "pii_kek_configurado": bool(pii_kek),
         "email_dev": (os.getenv("METGO_EMAIL_DEV") or "").strip() not in ("0", "false", "no"),
+        "require_email_verify": (os.getenv("METGO_REQUIRE_EMAIL_VERIFY") or "1").strip().lower()
+        not in ("0", "false", "no", "off"),
         "identity_store": (os.getenv("METGO_IDENTITY_STORE") or "supabase").strip().lower(),
         "m10_ops_board": True,
         "pendiente": [
             k
             for k, ok in (
-                ("METGO_SMTP_HOST", bool(smtp_host)),
+                ("METGO_SMTP_HOST", bool((os.getenv("METGO_SMTP_HOST") or "").strip())),
+                ("METGO_SMTP_FROM", bool(smtp_from)),
                 ("STRIPE_SECRET_KEY", bool(stripe_key)),
                 ("METGO_PII_KEK", bool(pii_kek)),
             )

@@ -46,9 +46,14 @@
               <router-link v-if="isLoggedIn" class="btn btn-primary btn-lg" to="/app">
                 {{ t('landing.goPanel') }}
               </router-link>
-              <router-link v-else class="btn btn-primary btn-lg" to="/registro">
-                {{ t('landing.requestAccess') }}
-              </router-link>
+              <template v-else>
+                <router-link class="btn btn-primary btn-lg" to="/registro">
+                  {{ t('landing.requestAccess') }}
+                </router-link>
+                <router-link class="btn btn-ghost btn-lg" to="/login">
+                  {{ t('landing.login') }}
+                </router-link>
+              </template>
               <a href="#funciona" class="btn btn-ghost btn-lg" @click.prevent="scrollTo('#funciona')">{{ t('landing.navHow') }}</a>
             </div>
             <div class="hero-meta">

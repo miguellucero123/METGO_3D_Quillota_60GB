@@ -2,7 +2,7 @@
 import { computed, inject, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { HardHat } from 'lucide-vue-next'
+import { HardHat, MailCheck } from 'lucide-vue-next'
 import { fetchPlanes, registerV2, validateRegistro, wakeApi } from '@/services/authApi'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 import { setLocale } from '@/i18n'
@@ -17,6 +17,7 @@ const faenaCodigo = ref('')
 const faena = computed(() => faenaParam.value || String(faenaCodigo.value || '').trim().toLowerCase().replace(/\s+/g, '_'))
 const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faena.value))
 const brandName = computed(() => faenaMeta.value?.nombre || faena.value || site.brandName || 'VENTORA')
+const loginPath = computed(() => (faena.value ? `/f/${faena.value}/login` : '/login'))
 
 const form = reactive({
   email: '',
@@ -37,6 +38,10 @@ const errors = ref({})
 const warnings = ref([])
 const msg = ref('')
 const cargando = ref(false)
+const done = ref(false)
+const registeredEmail = ref('')
+const trialDays = ref(15)
+const mailSent = ref(null)
 const planes = ref([])
 
 onMounted(async () => {
@@ -76,17 +81,29 @@ async function onSubmit() {
     warnings.value = v.warnings || []
     if (!v.ok) {
       errors.value = v.errors || {}
+      msg.value = ''
       return
     }
-    await registerV2(body)
-    msg.value = t('registro.ok')
-    router.replace(faena.value ? `/f/${faena.value}/login` : '/login')
+    const res = await registerV2(body)
+    registeredEmail.value = body.email
+    trialDays.value = Number(res?.trial_days) || 15
+    mailSent.value = res?.email?.sent === true
+    done.value = true
+    msg.value = res?.message || t('registro.ok')
   } catch (e) {
     if (e.data?.validation?.errors) errors.value = e.data.validation.errors
+    else if (e.data?.errors) errors.value = e.data.errors
     else msg.value = e.message || t('registro.error')
   } finally {
     cargando.value = false
   }
+}
+
+function irLogin() {
+  router.push({
+    path: loginPath.value,
+    query: { registered: '1', email: registeredEmail.value || undefined },
+  })
 }
 </script>
 
@@ -105,76 +122,133 @@ async function onSubmit() {
         </div>
         <router-link :to="`/`">{{ t('app.home') }}</router-link>
       </div>
-      <div class="brand">
-        <div class="logo"><HardHat aria-hidden="true" /></div>
-        <h1>{{ t('registro.title', { name: brandName }) }}</h1>
-        <p>{{ t('registro.sub') }}</p>
-        <p v-if="faenaParam" class="faena-lock" role="status">
-          {{ t('registro.faenaLocked', { name: brandName, slug: faenaParam }) }}
+
+      <div v-if="done" class="success-panel" role="status">
+        <div class="logo ok-logo"><MailCheck aria-hidden="true" /></div>
+        <h1>{{ t('registro.okTitle') }}</h1>
+        <p class="ok">{{ msg || t('registro.ok') }}</p>
+        <p class="hint">{{ t('registro.okTrial', { days: trialDays }) }}</p>
+        <p v-if="registeredEmail" class="hint">
+          Email: <strong>{{ registeredEmail }}</strong>
         </p>
+        <p v-if="mailSent === true" class="ok">{{ t('registro.okMailSent', { email: registeredEmail }) }}</p>
+        <p v-else-if="mailSent === false" class="err">{{ t('registro.okMailFail') }}</p>
+        <p class="hint">{{ t('registro.okHint') }}</p>
+        <p class="hint muted">{{ t('registro.okRutNote') }}</p>
+        <button type="button" class="btn-primary" @click="irLogin">
+          {{ t('registro.goLogin') }}
+        </button>
       </div>
 
-      <form class="grid" @submit.prevent="onSubmit">
-        <label v-if="!faenaParam" class="full">
-          {{ t('registro.faenaCode') }}
-          <input v-model="faenaCodigo" required placeholder="quebrada_blanca" />
-        </label>
-        <label><span>{{ t('registro.nombres') }}</span><input v-model="form.nombres" required /></label>
-        <label><span>{{ t('registro.apellidos') }}</span><input v-model="form.apellidos" required /></label>
-        <label><span>{{ t('registro.email') }}</span><input v-model="form.email" type="email" required /></label>
-        <label><span>{{ t('registro.telefono') }}</span><input v-model="form.telefono" placeholder="+56912345678" /></label>
-        <label><span>{{ t('registro.razon') }}</span><input v-model="form.razon_social" required /></label>
-        <label><span>{{ t('registro.rut') }}</span><input v-model="form.rut" required placeholder="76.123.456-0" /></label>
-        <label><span>{{ t('registro.password') }}</span><input v-model="form.password" type="password" required minlength="10" /></label>
-        <label><span>{{ t('registro.confirm') }}</span><input v-model="form.password_confirm" type="password" required /></label>
-
-        <fieldset class="consents">
-          <legend>{{ t('registro.consentsLegend') }}</legend>
-          <label class="check">
-            <input v-model="form.almacenamiento_datos" type="checkbox" />
-            {{ t('registro.consentStore') }}
-          </label>
-          <label class="check">
-            <input v-model="form.tos" type="checkbox" />
-            {{ t('registro.consentTos') }}
-          </label>
-          <label class="check">
-            <input v-model="form.privacy" type="checkbox" />
-            {{ t('registro.consentPrivacy') }}
-          </label>
-          <label class="check">
-            <input v-model="form.veracidad" type="checkbox" />
-            {{ t('registro.consentTruth') }}
-          </label>
-        </fieldset>
-
-        <div v-if="Object.keys(errors).length" class="err" role="alert">
-          <div v-for="(msgs, k) in errors" :key="k">
-            <strong>{{ k }}:</strong> {{ msgs.join('; ') }}
-          </div>
+      <template v-else>
+        <div class="brand">
+          <div class="logo"><HardHat aria-hidden="true" /></div>
+          <h1>{{ t('registro.title', { name: brandName }) }}</h1>
+          <p>{{ t('registro.sub') }}</p>
+          <p v-if="faenaParam" class="faena-lock" role="status">
+            {{ t('registro.faenaLocked', { name: brandName, slug: faenaParam }) }}
+          </p>
         </div>
-        <p v-if="msg" class="ok">{{ msg }}</p>
 
-        <button type="submit" class="btn-primary" :disabled="cargando">
-          {{ cargando ? t('registro.loading') : t('registro.submit') }}
-        </button>
-      </form>
+        <form class="grid" @submit.prevent="onSubmit">
+          <label v-if="!faenaParam" class="full">
+            {{ t('registro.faenaCode') }}
+            <input v-model="faenaCodigo" required placeholder="quebrada_blanca" autocomplete="organization" />
+          </label>
+          <label>
+            <span>{{ t('registro.nombres') }}</span>
+            <input v-model="form.nombres" required autocomplete="given-name" />
+          </label>
+          <label>
+            <span>{{ t('registro.apellidos') }}</span>
+            <input v-model="form.apellidos" required autocomplete="family-name" />
+          </label>
+          <label>
+            <span>{{ t('registro.email') }}</span>
+            <input v-model="form.email" type="email" required autocomplete="email" />
+          </label>
+          <label>
+            <span>{{ t('registro.telefono') }}</span>
+            <input v-model="form.telefono" placeholder="+56912345678" autocomplete="tel" />
+          </label>
+          <label>
+            <span>{{ t('registro.razon') }}</span>
+            <input v-model="form.razon_social" required autocomplete="organization" />
+          </label>
+          <label>
+            <span>{{ t('registro.rut') }}</span>
+            <input v-model="form.rut" required placeholder="76.123.456-0" autocomplete="off" />
+            <small class="field-hint">{{ t('registro.rutHint') }}</small>
+          </label>
+          <label>
+            <span>{{ t('registro.password') }}</span>
+            <input
+              v-model="form.password"
+              type="password"
+              required
+              minlength="10"
+              autocomplete="new-password"
+            />
+          </label>
+          <label>
+            <span>{{ t('registro.confirm') }}</span>
+            <input
+              v-model="form.password_confirm"
+              type="password"
+              required
+              minlength="10"
+              autocomplete="new-password"
+            />
+          </label>
 
-      <section v-if="planes.length" class="planes">
-        <h2>{{ t('registro.plansTitle', { faena }) }}</h2>
-        <ul>
-          <li v-for="p in planes" :key="p.plan_code">
-            <strong>{{ p.nombre }}</strong>
-            <span v-if="p.descripcion" class="feats"> — {{ p.descripcion }}</span>
-            <span v-else class="feats"> — {{ (p.features || []).join(', ') }}</span>
-          </li>
-        </ul>
-      </section>
+          <fieldset class="consents">
+            <legend>{{ t('registro.consentsLegend') }}</legend>
+            <label class="check">
+              <input v-model="form.almacenamiento_datos" type="checkbox" />
+              {{ t('registro.consentStore') }}
+            </label>
+            <label class="check">
+              <input v-model="form.tos" type="checkbox" />
+              {{ t('registro.consentTos') }}
+            </label>
+            <label class="check">
+              <input v-model="form.privacy" type="checkbox" />
+              {{ t('registro.consentPrivacy') }}
+            </label>
+            <label class="check">
+              <input v-model="form.veracidad" type="checkbox" />
+              {{ t('registro.consentTruth') }}
+            </label>
+          </fieldset>
 
-      <p class="foot">
-        {{ t('registro.haveAccount') }}
-        <router-link :to="faena ? `/f/${faena}/login` : '/login'">{{ t('registro.signIn') }}</router-link>
-      </p>
+          <div v-if="Object.keys(errors).length" class="err" role="alert">
+            <div v-for="(msgs, k) in errors" :key="k">
+              <strong>{{ k }}:</strong> {{ msgs.join('; ') }}
+            </div>
+          </div>
+          <p v-if="msg && !done" class="err" role="alert">{{ msg }}</p>
+
+          <button type="submit" class="btn-primary" :disabled="cargando">
+            {{ cargando ? t('registro.loading') : t('registro.submit') }}
+          </button>
+        </form>
+
+        <section v-if="planes.length" class="planes">
+          <h2>{{ t('registro.plansTitle', { faena }) }}</h2>
+          <ul>
+            <li v-for="p in planes" :key="p.plan_code">
+              <strong>{{ p.nombre }}</strong>
+              <span v-if="p.descripcion" class="feats"> — {{ p.descripcion }}</span>
+              <span v-else class="feats"> — {{ (p.features || []).join(', ') }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <p class="foot">
+          {{ t('registro.haveAccount') }}
+          <router-link :to="loginPath">{{ t('registro.signIn') }}</router-link>
+        </p>
+      </template>
     </div>
   </div>
 </template>
@@ -227,6 +301,7 @@ async function onSubmit() {
   display: grid; place-items: center;
   background: #10b981; color: #0f172a; border-radius: 10px;
 }
+.ok-logo { background: #34d399; }
 .brand h1 { margin: 0; font-size: 1.25rem; }
 .brand p { margin: 0.4rem 0 0; color: #94a3b8; font-size: 0.88rem; }
 .faena-lock {
@@ -239,6 +314,16 @@ async function onSubmit() {
   font-size: 0.85rem;
   text-align: left;
 }
+.success-panel {
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+}
+.success-panel h1 { margin: 0 0 0.75rem; font-size: 1.35rem; }
+.success-panel .hint { color: #94a3b8; font-size: 0.9rem; margin: 0.5rem 0; }
+.success-panel .hint.muted { font-size: 0.8rem; opacity: 0.9; }
+.success-panel .err { color: #f87171; font-size: 0.9rem; }
+.success-panel .btn-primary { margin-top: 1.25rem; width: 100%; }
+.field-hint { color: #64748b; font-size: 0.72rem; margin-top: 0.2rem; }
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

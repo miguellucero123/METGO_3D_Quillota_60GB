@@ -25,13 +25,13 @@ provide('closeNav', () => {
   navOpen.value = false
 })
 
-const isPublicShell = computed(
-  () =>
-    route.name === 'login' ||
-    route.name === 'registro' ||
-    route.name === 'verificar' ||
-    route.name === 'landing',
-)
+const isPublicShell = computed(() => {
+  if (route.meta?.public) return true
+  const name = String(route.name || '')
+  if (name === 'login' || name === 'registro' || name === 'verificar' || name === 'landing') return true
+  const p = String(route.path || '')
+  return p === '/' || p === '' || p === '/login' || p === '/registro' || p === '/verificar'
+})
 
 const isEmbedded = computed(
   () => route.query.embed === '1' || (typeof window !== 'undefined' && window.self !== window.top),

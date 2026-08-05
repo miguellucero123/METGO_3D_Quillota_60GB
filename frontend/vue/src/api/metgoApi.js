@@ -150,6 +150,22 @@ export async function registerV2(body) {
   return res.data
 }
 
+export async function reenviarVerificacion(body) {
+  const res = await axios.post(`${resolveApiBaseURL()}/auth/reenviar-verificacion`, body, {
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    timeout: 90000,
+    validateStatus: () => true,
+  })
+  if (res.status >= 400) {
+    const err = new Error(res.data?.error || `HTTP ${res.status}`)
+    err.status = res.status
+    err.data = res.data
+    err.code = res.data?.code
+    throw err
+  }
+  return res.data
+}
+
 export async function verifyEmail(token) {
   const res = await axios.get(`${resolveApiBaseURL()}/auth/verify-email`, {
     params: { token },

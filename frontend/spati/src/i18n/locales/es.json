@@ -20,7 +20,12 @@
     "password": "Contraseña",
     "submit": "Iniciar sesión",
     "loading": "Ingresando…",
-    "errorGeneric": "Usuario o contraseña incorrectos"
+    "errorGeneric": "Usuario o contraseña incorrectos",
+    "registeredOk": "Cuenta creada. Revise su correo, verifique el enlace y luego inicie sesión aquí.",
+    "resend": "Reenviar verificación",
+    "resendOk": "Correo de verificación reenviado. Revise bandeja y spam.",
+    "resendNeedPass": "Ingrese email y contraseña para reenviar la verificación.",
+    "emailNotVerified": "Debe verificar su email antes de ingresar. Revise el correo o use Reenviar verificación."
   },
   "lang": {
     "es": "ES",
@@ -121,8 +126,16 @@
     "consentTruth": "Declaro que los datos entregados son verídicos y correctos.",
     "submit": "Crear cuenta",
     "loading": "Validando…",
-    "ok": "Registro OK. Revise el email de verificación e inicie sesión.",
+    "ok": "Cuenta creada. Revise su correo: debe verificar el email para poder iniciar sesión.",
+    "okTitle": "Registro exitoso — piloto 15 días",
+    "okHint": "Le enviamos un correo con el enlace de verificación y el detalle del piloto. Sin verificar el email no podrá entrar. Al día 15 sin plan pago, el acceso se bloquea. Si no llega el mail, revise spam o use «Reenviar verificación» en el login.",
+    "okTrial": "Piloto activo: {days} días desde el alta. Luego el acceso queda bloqueado hasta contratar un plan.",
+    "okMailSent": "Correo de verificación enviado a {email}.",
+    "okMailFail": "No pudimos confirmar el envío del correo. Use «Reenviar verificación» en login o revise SMTP (ops).",
+    "okRutNote": "El RUT solo se valida por formato y dígito verificador chileno (no es verificación SII/KYC automática).",
+    "goLogin": "Ir a iniciar sesión",
     "error": "Error de registro",
+    "rutHint": "Formato chileno con dígito verificador. No es KYC/SII automático.",
     "plansTitle": "Planes escalonados ({faena})",
     "haveAccount": "¿Ya tiene cuenta?",
     "signIn": "Ingresar"

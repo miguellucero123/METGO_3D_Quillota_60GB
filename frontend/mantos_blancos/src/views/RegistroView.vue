@@ -29,6 +29,8 @@ const form = reactive({
 const errors = ref({})
 const msg = ref('')
 const cargando = ref(false)
+const done = ref(false)
+const registeredEmail = ref('')
 const planes = ref([])
 const brandName = computed(() => site.siteLabel || 'Mantos Blancos')
 
@@ -71,14 +73,19 @@ async function onSubmit() {
       return
     }
     await registerV2(body)
+    registeredEmail.value = body.email
+    done.value = true
     msg.value = t('registro.ok')
-    setTimeout(() => router.replace('/login'), 1200)
   } catch (e) {
     if (e.data?.validation?.errors) errors.value = e.data.validation.errors
     else msg.value = e.message || t('registro.error')
   } finally {
     cargando.value = false
   }
+}
+
+function irLogin() {
+  router.push({ path: '/login', query: { registered: '1', email: registeredEmail.value || undefined } })
 }
 </script>
 
@@ -97,6 +104,16 @@ async function onSubmit() {
         </div>
         <router-link to="/">{{ t('app.home') }}</router-link>
       </div>
+
+      <div v-if="done" class="success-panel" role="status">
+        <h1>{{ t('registro.okTitle') }}</h1>
+        <p class="ok">{{ msg || t('registro.ok') }}</p>
+        <p v-if="registeredEmail" class="hint">Email: <strong>{{ registeredEmail }}</strong></p>
+        <p class="hint">{{ t('registro.okHint') }}</p>
+        <button type="button" class="btn-primary" @click="irLogin">{{ t('registro.goLogin') }}</button>
+      </div>
+
+      <template v-else>
       <div class="brand">
         <div class="logo"><HardHat aria-hidden="true" /></div>
         <h1>{{ t('registro.title', { name: brandName }) }}</h1>
@@ -104,14 +121,14 @@ async function onSubmit() {
       </div>
 
       <form class="grid" @submit.prevent="onSubmit">
-        <label><span>{{ t('registro.nombres') }}</span><input v-model="form.nombres" required /></label>
-        <label><span>{{ t('registro.apellidos') }}</span><input v-model="form.apellidos" required /></label>
-        <label><span>{{ t('registro.email') }}</span><input v-model="form.email" type="email" required /></label>
-        <label><span>{{ t('registro.telefono') }}</span><input v-model="form.telefono" placeholder="+56912345678" /></label>
-        <label><span>{{ t('registro.razon') }}</span><input v-model="form.razon_social" required /></label>
-        <label><span>{{ t('registro.rut') }}</span><input v-model="form.rut" required placeholder="76.123.456-0" /></label>
-        <label><span>{{ t('registro.password') }}</span><input v-model="form.password" type="password" required minlength="10" /></label>
-        <label><span>{{ t('registro.confirm') }}</span><input v-model="form.password_confirm" type="password" required /></label>
+        <label><span>{{ t('registro.nombres') }}</span><input v-model="form.nombres" required autocomplete="given-name" /></label>
+        <label><span>{{ t('registro.apellidos') }}</span><input v-model="form.apellidos" required autocomplete="family-name" /></label>
+        <label><span>{{ t('registro.email') }}</span><input v-model="form.email" type="email" required autocomplete="email" /></label>
+        <label><span>{{ t('registro.telefono') }}</span><input v-model="form.telefono" placeholder="+56912345678" autocomplete="tel" /></label>
+        <label><span>{{ t('registro.razon') }}</span><input v-model="form.razon_social" required autocomplete="organization" /></label>
+        <label><span>{{ t('registro.rut') }}</span><input v-model="form.rut" required placeholder="76.123.456-0" autocomplete="off" /></label>
+        <label><span>{{ t('registro.password') }}</span><input v-model="form.password" type="password" required minlength="10" autocomplete="new-password" /></label>
+        <label><span>{{ t('registro.confirm') }}</span><input v-model="form.password_confirm" type="password" required autocomplete="new-password" /></label>
 
         <fieldset class="consents">
           <legend>{{ t('registro.consentsLegend') }}</legend>
@@ -138,7 +155,7 @@ async function onSubmit() {
             <strong>{{ k }}:</strong> {{ msgs.join('; ') }}
           </div>
         </div>
-        <p v-if="msg" class="ok">{{ msg }}</p>
+        <p v-if="msg && !done" class="err">{{ msg }}</p>
 
         <button type="submit" class="btn-primary" :disabled="cargando">
           {{ cargando ? t('registro.loading') : t('registro.submit') }}
@@ -159,6 +176,7 @@ async function onSubmit() {
         {{ t('registro.haveAccount') }}
         <router-link to="/login">{{ t('registro.signIn') }}</router-link>
       </p>
+      </template>
     </div>
   </div>
 </template>
@@ -216,6 +234,23 @@ async function onSubmit() {
 .brand {
   text-align: center;
   margin-bottom: 1.25rem;
+}
+.success-panel {
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+}
+.success-panel h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+}
+.success-panel .hint {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+.success-panel .btn-primary {
+  margin-top: 1.25rem;
+  width: 100%;
 }
 .logo {
   width: 3rem;
