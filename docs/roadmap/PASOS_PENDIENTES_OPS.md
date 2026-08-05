@@ -62,9 +62,10 @@ Referencia típica actual:
 ### P1 — Alertas y observado
 
 - [x] **6.** `CRON_SECRET` en GitHub Actions (= Render); workflow SPATI por sitio OK
-- [ ] **7.** En SPA `/f/{faena}/umbrales`, guardar destinos email/webhook
+- [ ] **7.** En SPA `/f/{faena}/umbrales`, guardar destinos email/webhook (**UI lista**; falta guardar en prod)
 - [ ] **8.** (Cuando haya datos reales) carpeta CSV en Render + `METGO_SINCA_CSV_DIR`
-- [ ] **9.** Probar sync: `POST /api/cron/sync?token=CRON_SECRET`
+- [x] **9.** Sync ETL: workflow `etl-meteo-cron.yml` OK (GET `/api/cron/sync`; también acepta POST + `X-Cron-Token`)
+      Último schedule exitoso 2026-08-05 ~14:12 UTC.
 
 ### P2 — Calidad / datos oficiales
 

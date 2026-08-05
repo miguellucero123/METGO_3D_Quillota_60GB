@@ -141,8 +141,13 @@ def register_fase4_routes(app: Flask) -> None:
         )
 
     @app.get("/api/cron/sync")
+    @app.post("/api/cron/sync")
     def cron_sync():
-        secret = request.args.get("token")
+        secret = (
+            request.args.get("token")
+            or request.headers.get("X-Cron-Token")
+            or (request.get_json(silent=True) or {}).get("token")
+        )
         # El cron secret es obligatorio para que nadie sature la API externamente
         if not secret or secret != os.getenv("CRON_SECRET"):
             return jsonify({"error": "No autorizado"}), 401

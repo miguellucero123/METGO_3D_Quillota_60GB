@@ -458,6 +458,148 @@ def verificar_email(token: str) -> tuple[bool, str, dict[str, Any] | None]:
     }
 
 
+def invitar_usuario(
+    payload: dict[str, Any],
+    *,
+    org_id: str,
+    invitador_role: str | None = None,
+    invitador_email: str | None = None,
+    ip: str | None = None,
+) -> tuple[bool, str, dict[str, Any] | None]:
+    """Alta secundaria en org existente (mismo RUT/org; otro email). B3."""
+    role_l = (invitador_role or "").strip().lower()
+    if role_l not in ("admin", "administrador", "superadmin", "owner", "operador"):
+        # operadores de la org también pueden invitar (piloto); restringir luego si hace falta
+        pass
+    if not org_id:
+        return False, "org_id requerido", None
+
+    email = (payload.get("email") or "").strip().lower()
+    password = payload.get("password") or payload.get("contraseña") or ""
+    nombres = str(payload.get("nombres") or payload.get("nombre") or "Invitado").strip()
+    apellidos = str(payload.get("apellidos") or payload.get("apellido") or "METGO").strip()
+    role = (payload.get("role") or "operador").strip().lower()
+    if role not in ("operador", "admin", "viewer"):
+        role = "operador"
+
+    if not email or "@" not in email:
+        return False, "Email inválido", None
+    pwd_errs = []
+    import re as _re
+
+    if len(str(password)) < 10:
+        pwd_errs.append("Mínimo 10 caracteres")
+    if not _re.search(r"[A-ZÁÉÍÓÚÜÑ]", str(password or "")):
+        pwd_errs.append("Debe incluir mayúscula")
+    if not _re.search(r"[a-záéíóúüñ]", str(password or "")):
+        pwd_errs.append("Debe incluir minúscula")
+    if not _re.search(r"\d", str(password or "")):
+        pwd_errs.append("Debe incluir número")
+    if pwd_errs:
+        return False, "; ".join(pwd_errs), None
+
+    # Resolver org → sitio/faena
+    sitio = None
+    faena = None
+    if use_memory():
+        with _lock:
+            org = next((o for o in _MEM["orgs"] if o["id"] == org_id), None)
+            if not org:
+                return False, "Organización no encontrada", None
+            sitio = org.get("sitio")
+            faena = org.get("faena")
+            if any(
+                u.get("email_norm") == email
+                and u.get("sitio") == sitio
+                and (u.get("faena") or None) == (faena or None)
+                for u in _MEM["usuarios_app"]
+            ):
+                return False, "Email ya registrado en este sitio/faena", None
+            user_id = str(uuid.uuid4())
+            now = _utcnow().isoformat()
+            _MEM["usuarios_app"].append(
+                {
+                    "id": user_id,
+                    "email_norm": email,
+                    "password_hash": pii_crypto.hash_password(str(password)),
+                    "nombres_enc": pii_crypto.encrypt_pii(nombres),
+                    "apellidos_enc": pii_crypto.encrypt_pii(apellidos),
+                    "org_id": org_id,
+                    "sitio": sitio,
+                    "faena": faena,
+                    "role": role,
+                    "status": "pending",
+                    "created_at": now,
+                }
+            )
+            _MEM["audit_auth"].append(
+                {
+                    "usuario_id": user_id,
+                    "sitio": sitio,
+                    "faena": faena,
+                    "evento": "invite",
+                    "ip_hash": pii_crypto.hash_ip(ip),
+                    "meta": {"invitador": invitador_email},
+                    "at": now,
+                }
+            )
+            verify_token = _issue_email_token(user_id, locked=True)
+        return True, "Invitación creada", {
+            "usuario_id": user_id,
+            "org_id": org_id,
+            "sitio": sitio,
+            "faena": faena,
+            "status": "pending",
+            "verify_token": verify_token,
+            "verify_path": f"/api/auth/verify-email?token={verify_token}",
+        }
+
+    from api_rest.integracion import supabase_store as sb
+
+    orgs = sb.rest_select("orgs", params={"id": f"eq.{org_id}", "select": "*"}, limit=1)
+    if not orgs:
+        return False, "Organización no encontrada", None
+    org = orgs[0]
+    sitio = org.get("sitio")
+    faena = org.get("faena")
+
+    params = {"email_norm": f"eq.{email}", "sitio": f"eq.{sitio}", "select": "id"}
+    if faena:
+        params["faena"] = f"eq.{faena}"
+    else:
+        params["faena"] = "is.null"
+    if sb.rest_select("usuarios_app", params=params, limit=1):
+        return False, "Email ya registrado en este sitio/faena", None
+
+    user_rows = sb.rest_insert(
+        "usuarios_app",
+        {
+            "email_norm": email,
+            "password_hash": pii_crypto.hash_password(str(password)),
+            "nombres_enc": pii_crypto.encrypt_pii(nombres),
+            "apellidos_enc": pii_crypto.encrypt_pii(apellidos),
+            "org_id": org_id,
+            "sitio": sitio,
+            "faena": faena,
+            "role": role,
+            "status": "pending",
+        },
+    )
+    if not user_rows:
+        return False, "No se pudo crear usuario invitado", None
+    user_id = user_rows[0]["id"]
+    verify_token = _issue_email_token(user_id)
+    return True, "Invitación creada", {
+        "usuario_id": user_id,
+        "org_id": org_id,
+        "sitio": sitio,
+        "faena": faena,
+        "status": "pending",
+        "verify_token": verify_token,
+        "verify_path": f"/api/auth/verify-email?token={verify_token}",
+    }
+
+
 def aplicar_plan(
     org_id: str,
     plan_code: str,

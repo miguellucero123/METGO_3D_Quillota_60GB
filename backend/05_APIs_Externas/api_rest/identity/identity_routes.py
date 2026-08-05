@@ -98,6 +98,52 @@ def register_identity_routes(app: Flask) -> None:
             return jsonify({"error": msg}), 400
         return jsonify({"message": msg, **(extra or {})})
 
+    @app.post("/api/auth/invitar")
+    @auth_required
+    def auth_invitar():
+        """B3: invita otro email a la misma org (sin nuevo RUT)."""
+        data = request.get_json(silent=True) or {}
+        org_id = getattr(g, "org_id", None) or data.get("org_id")
+        if not org_id:
+            return jsonify({"error": "org_id requerido (sesión registrada)"}), 400
+        ok, msg, extra = identity_store.invitar_usuario(
+            data,
+            org_id=str(org_id),
+            invitador_role=getattr(g, "user_role", None),
+            invitador_email=getattr(g, "current_user", None),
+            ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+        )
+        if not ok:
+            return jsonify({"error": msg}), 400
+
+        token = (extra or {}).get("verify_token")
+        faena = (extra or {}).get("faena")
+        sitio = (extra or {}).get("sitio") or getattr(g, "sitio_id", None) or "quillota"
+        if token:
+            verify_url = _verify_email_url(str(sitio), faena, token)
+            if verify_url:
+                extra["verify_url"] = verify_url
+                try:
+                    from api_rest.identity import email_notify
+
+                    mail = email_notify.enviar_verificacion(
+                        to_email=str(data.get("email") or ""),
+                        verify_url=verify_url,
+                        sitio=str(sitio),
+                        faena=faena,
+                    )
+                    extra["email"] = mail
+                except Exception as exc:
+                    extra["email"] = {"mode": "error", "error": str(exc)}
+
+        email_dev = os.getenv("METGO_EMAIL_DEV")
+        if email_dev is None:
+            email_dev = "1" if identity_store.use_memory() else "0"
+        if email_dev != "1" and extra:
+            extra.pop("verify_token", None)
+            extra.pop("verify_path", None)
+        return jsonify({"message": msg, **(extra or {})}), 201
+
     @app.get("/api/auth/access")
     @auth_required
     def auth_access():

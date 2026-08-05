@@ -210,10 +210,28 @@ def enviar_notificacion(
     mensaje: str,
     asunto: str = "METGO 3D — Notificación",
     destino: str | None = None,
+    *,
+    destinos: list[str] | None = None,
+    webhook_url: str | None = None,
 ) -> dict[str, Any]:
-    """Webhook (si URL) + email (SMTP u outbox). No requiere SMTP para operar."""
+    """Webhook (si URL) + email (SMTP u outbox). No requiere SMTP para operar.
+
+    - destino / destinos: emails (si hay varios, se envía a cada uno).
+    - webhook_url: override del webhook global (p. ej. por faena SPATI M9).
+    """
     cfg = leer_config()
-    to_addr = (destino or cfg.get("email_destino") or _email_destino_default()).strip()
+    emails: list[str] = []
+    if destinos:
+        emails = [str(e).strip() for e in destinos if str(e).strip()]
+    elif destino and str(destino).strip():
+        emails = [str(destino).strip()]
+    elif cfg.get("email_destino"):
+        emails = [str(cfg.get("email_destino")).strip()]
+    else:
+        default = _email_destino_default()
+        if default:
+            emails = [default]
+
     cuerpo = (
         f"{mensaje}\n\n"
         f"— METGO 3D · Valle de Aconcagua\n"
@@ -222,8 +240,8 @@ def enviar_notificacion(
     canales: list[dict[str, Any]] = []
     errores: list[dict[str, Any]] = []
 
-    url = _webhook_url(cfg)
-    if url and cfg.get("webhook_habilitado", True):
+    url = (webhook_url or "").strip() or _webhook_url(cfg)
+    if url and (webhook_url or cfg.get("webhook_habilitado", True)):
         try:
             canales.append(
                 _enviar_webhook(
@@ -231,7 +249,8 @@ def enviar_notificacion(
                     {
                         "asunto": asunto,
                         "mensaje": mensaje,
-                        "destino": to_addr,
+                        "destino": emails[0] if emails else None,
+                        "destinos": emails,
                         "app": "METGO3D",
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                     },
@@ -240,8 +259,9 @@ def enviar_notificacion(
         except (urllib.error.URLError, OSError, TimeoutError) as e:
             errores.append({"canal": "webhook", "error": str(e)})
 
-    if cfg.get("email_habilitado", True) and to_addr:
-        canales.append(_enviar_email_canal(to_addr, asunto, cuerpo, mensaje))
+    if cfg.get("email_habilitado", True):
+        for to_addr in emails:
+            canales.append(_enviar_email_canal(to_addr, asunto, cuerpo, mensaje))
 
     ok = any(c.get("ok") for c in canales)
     return {

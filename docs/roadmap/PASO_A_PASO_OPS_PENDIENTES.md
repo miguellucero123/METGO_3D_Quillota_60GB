@@ -4,22 +4,20 @@
 > **Objetivo:** dejar registro usable (verify-email), RUT único, demo retirada, y smoke en las SPAs.  
 > Detalle de claves: [`INVENTARIO_CLAVES_PLATAFORMAS.md`](INVENTARIO_CLAVES_PLATAFORMAS.md)
 
-## Checkpoint 2026-08-05 (tarde)
+## Checkpoint 2026-08-05 (sesión P1)
 
 | Hecho | Estado |
 |-------|--------|
-| Paso 0 health | ✅ `smtp_configurado=True` (queda Stripe opcional) |
-| Paso 1 Supabase `db push` | ✅ rut_hash + remove demo + grants |
-| Paine landing/auth | ✅ push + Pages |
-| Mantos/Copiapó landing click/scroll | ✅ redeploy Pages 2026-08-05 |
-| Cron SPATI alertas | ✅ por sitio (no `forzar=1` global); schedule OK |
-| Demo VENTORA | ✅ login `demo@ventora.demo` → 401 |
-| Vista `/cuenta` + banner piloto | ✅ Quillota, Copiapó, Mantos (+ SPATI banner) |
-| Smoke registro → mail verify | 🔶 **manual** (correo real en `/registro`) |
+| Paso 0 health | ✅ SMTP OK; Stripe opcional |
+| Cron SPATI + ETL sync | ✅ schedule OK (ETL GET `/api/cron/sync`) |
+| `/cuenta` + banner piloto | ✅ deploy CF |
+| Webhook/email por faena en M9 | ✅ código (emails N + webhook_url) |
+| Outbox flush cron | ✅ `POST /api/cron/notificaciones/outbox-retry` |
+| Invite org (B3 API) | ✅ `POST /api/auth/invitar` |
+| Destinos umbrales en UI | 🔶 **humano:** login SPATI → `/f/{faena}/umbrales` → Guardar |
+| Smoke registro → mail | 🔶 **humano:** correo real en `/registro` |
 
-**Siguiente humano:** smoke en https://metgo-paine.pages.dev/registro (o Quillota) con correo real → inbox → login → `/app`. Luego deploy CF de Quillota/Copiapó/Mantos/SPATI si aún no se publicó este commit.
-
-Orden: **1 diagnóstico → 2 Supabase → 3 Render → 4 redeploy → 5 smoke → 6 P1**.
+**Siguiente humano:** (1) umbrales email/webhook en faena, (2) smoke verify-email, (3) Stripe si cobro real.
 
 ---
 
@@ -176,8 +174,8 @@ Break-glass (ops): usuario `paine` / `mantos` / … con `METGO_PASSWORD_*` en Re
 4. Probar (opcional):
 
 ```powershell
-# reemplazar TOKEN
-Invoke-RestMethod "https://metgo-api.onrender.com/api/cron/sync?token=TOKEN" -Method POST
+# reemplazar TOKEN — GET (o POST); también header X-Cron-Token
+Invoke-RestMethod "https://metgo-api.onrender.com/api/cron/sync?token=TOKEN" -Method Get
 ```
 
 ---

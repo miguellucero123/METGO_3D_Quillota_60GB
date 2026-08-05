@@ -240,6 +240,29 @@ paths:
           description: Email verificado
         "400":
           description: Token inválido
+  /api/auth/invitar:
+    post:
+      tags: [auth]
+      summary: Invitar usuario a la misma org (sin nuevo RUT)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+                nombres: { type: string }
+                apellidos: { type: string }
+                role: { type: string, enum: [operador, admin, viewer] }
+      responses:
+        "201":
+          description: Invitación creada (+ email verify)
+        "400":
+          description: Error de validación
   /api/auth/cuenta:
     get:
       tags: [auth]
@@ -1942,9 +1965,10 @@ paths:
       parameters:
         - name: token
           in: query
-          required: true
+          required: false
           schema:
             type: string
+          description: CRON_SECRET (alternativa header X-Cron-Token)
         - name: incluir_archive
           in: query
           required: false
@@ -1964,6 +1988,39 @@ paths:
           description: Sincronización exitosa
         '401':
           description: No autorizado
+    post:
+      tags:
+        - Automatización ETL
+      summary: Alias POST del sync ETL (mismo contrato que GET)
+      security: []
+      parameters:
+        - name: token
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sincronización exitosa
+        '401':
+          description: No autorizado
+  /api/cron/notificaciones/outbox-retry:
+    post:
+      tags: [cron]
+      summary: Reintenta envíos SMTP pendientes en outbox
+      security: []
+      parameters:
+        - name: token
+          in: query
+          schema: { type: string }
+        - name: max
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Resultado reintentos
+        "401":
+          description: CRON_SECRET inválido
   /api/ensemble:
     get:
       tags:

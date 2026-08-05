@@ -58,8 +58,8 @@
       <section class="alertas-card">
         <h2>Destinos de alerta (M9)</h2>
         <p class="muted small">
-          Por faena. El cron notifica solo si el nivel sube y es ≥ nivel mínimo.
-          Requiere sesión (Bearer) para guardar en producción.
+          Por faena. El cron notifica email(s) y webhook de esta faena si el nivel sube
+          y es ≥ nivel mínimo. Requiere sesión (Bearer) para guardar en producción.
         </p>
         <form class="form" @submit.prevent="guardarAlertas">
           <label>

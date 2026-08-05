@@ -60,7 +60,7 @@
 |----|-------|-------------------------|-------|
 | B1 | Vista **Cuenta / planes / checkout** en Quillota, Copiapó, Mantos (como SPATI) | Usuario trial puede pagar Starter/Pro tras login | ✅ código |
 | B2 | Banner “quedan X días de piloto” en panel | Visible si `trialing` | ✅ código |
-| B3 | Flujo **invitar usuario** a org existente (mismo RUT) | Segundo correo entra sin re-registrar RUT | Dev |
+| B3 | Flujo **invitar usuario** a org existente (mismo RUT) | Segundo correo entra sin re-registrar RUT | ✅ API `POST /api/auth/invitar`; 🔶 UI |
 | B4 | Smoke E2E: registro → verify → login → trial → checkout mock | Checklist pasado en Pages + Render | Dev + Ops |
 | B5 | Port registro/landing a **Paine** (repo `metgo-paine`) | `/` landing, `/app` JWT, `/registro` `sitio=paine` | ✅ push `c78e4eb`; verificar Pages |
 | B6 | Decidir KYC: ClaveÚnica vs proveedor vs revisión manual | ADR escrito en roadmap | Producto |
@@ -79,8 +79,8 @@
 
 | ID | Tarea | Condición de aceptación | Dueño |
 |----|-------|-------------------------|-------|
-| D1 | `CRON_SECRET` igual en Render y GitHub Actions | Cron SPATI/ETL corre | Ops |
-| D2 | Destinos alerta en UI umbrales SPATI | Email/webhook guardados | Ops |
+| D1 | `CRON_SECRET` igual en Render y GitHub Actions | Cron SPATI/ETL corre | ✅ |
+| D2 | Destinos alerta en UI umbrales SPATI | Email/webhook guardados | 🔶 ops UI; M9 usa destinos por faena |
 | D3 | CSV/IDs SINCA / Agromet / DMC prod | `e12_ops` sin pendientes de IDs | Ops |
 | D4 | `METGO_OPENMETEO_API_KEY` | Menos 429 | Ops |
 | D5 | Deploy Cloudflare de landings+registro (Quillota/Copiapó/Mantos) | `/registro` vivo en `*.pages.dev` | Ops |

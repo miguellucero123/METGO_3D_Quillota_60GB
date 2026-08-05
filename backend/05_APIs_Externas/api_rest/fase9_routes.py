@@ -28,3 +28,20 @@ def register_fase9_routes(app: Flask) -> None:
         body = request.get_json(silent=True) or {}
         max_items = int(body.get("max", 10))
         return jsonify(notificaciones.reintentar_outbox(max_items=max_items))
+
+    @app.post("/api/cron/notificaciones/outbox-retry")
+    def cron_notificaciones_outbox_retry():
+        """Flush outbox SMTP (CRON_SECRET). Evita depender de JWT admin en Actions."""
+        import os
+
+        secret = (
+            request.args.get("token")
+            or request.headers.get("X-Cron-Token")
+            or (request.get_json(silent=True) or {}).get("token")
+        )
+        expected = (os.getenv("CRON_SECRET") or "").strip()
+        if not expected or secret != expected:
+            return jsonify({"error": "No autorizado"}), 401
+        body = request.get_json(silent=True) or {}
+        max_items = int(request.args.get("max") or body.get("max") or 20)
+        return jsonify(notificaciones.reintentar_outbox(max_items=max_items))

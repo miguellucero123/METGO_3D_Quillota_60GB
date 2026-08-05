@@ -139,4 +139,24 @@ jobs:
             echo "::error::Ningún sitio respondió 200. Revisá Render (logs) y OpenMeteo cooldown."
             exit 1
           fi
+
+      - name: Flush outbox SMTP (reintentos)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          code=$(curl -sS -o /tmp/outbox_retry.json -w "%{http_code}" \
+            --connect-timeout 20 --max-time 90 \
+            -X POST \
+            -H "Accept: application/json" \
+            -H "X-Cron-Token: ${CRON_SECRET}" \
+            "https://metgo-api.onrender.com/api/cron/notificaciones/outbox-retry?max=20" || true)
+          if [ -z "$code" ]; then code="000"; fi
+          echo "outbox-retry -> HTTP $code"
+          head -c 800 /tmp/outbox_retry.json || true
+          echo
+          # No fallar el job M9 si outbox está vacío o SMTP lento
+          if [ "$code" = "401" ]; then
+            echo "::error::401 outbox-retry — CRON_SECRET"
+            exit 1
+          fi
           exit 0

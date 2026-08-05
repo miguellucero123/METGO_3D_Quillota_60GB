@@ -121,15 +121,18 @@ def evaluar_y_notificar(
     try:
         from api_rest.integracion import notificaciones
 
-        emails = dest.get("emails") or []
-        destino = emails[0] if emails else None
+        emails = [str(e).strip() for e in (dest.get("emails") or []) if str(e).strip()]
+        webhook = (dest.get("webhook_url") or "").strip() or None
         r = notificaciones.enviar_notificacion(
             mensaje=mensaje,
             asunto=asunto,
-            destino=destino,
+            destinos=emails or None,
+            destino=emails[0] if emails else None,
+            webhook_url=webhook,
         )
         result["envio"] = r
-        notif_ok = True
+        result["destinos"] = {"emails": emails, "webhook": bool(webhook)}
+        notif_ok = bool(r.get("ok"))
     except Exception as exc:
         result["envio_error"] = str(exc)
 
