@@ -8,6 +8,7 @@
   <div v-else class="app-shell" :class="{ 'app-shell--nav-open': navOpen }">
     <a href="#contenido-principal" class="skip-link">{{ t('app.skipContent') }}</a>
     <OfflineBanner />
+    <TrialBanner />
     <AppHeader />
     <div class="app-body">
       <div
@@ -31,6 +32,7 @@ import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import OfflineBanner from '@/components/layout/OfflineBanner.vue'
+import TrialBanner from '@/components/layout/TrialBanner.vue'
 import { useAuth } from '@/stores/auth'
 
 const { t } = useI18n()

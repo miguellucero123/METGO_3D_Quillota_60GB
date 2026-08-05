@@ -48,7 +48,8 @@ def enviar_verificacion(
     msg.set_content(body)
 
     try:
-        with smtplib.SMTP(host, port, timeout=30) as smtp:
+        smtp_timeout = int(os.getenv("METGO_SMTP_TIMEOUT", "20"))
+        with smtplib.SMTP(host, port, timeout=smtp_timeout) as smtp:
             if use_tls:
                 smtp.starttls()
             if user:

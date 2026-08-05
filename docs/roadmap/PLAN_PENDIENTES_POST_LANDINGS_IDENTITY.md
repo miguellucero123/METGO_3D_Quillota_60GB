@@ -46,20 +46,20 @@
 
 | ID | Tarea | Condición de aceptación | Dueño |
 |----|-------|-------------------------|-------|
-| A1 | Configurar **SMTP** en Render (`METGO_SMTP_*`) | `health.s5_ops.smtp_configurado=true`; verify-email llega | Ops |
-| A2 | Redeploy API tras SMTP | `s5_ops.pendiente` sin `METGO_SMTP_HOST` | Ops |
-| A3 | Aplicar migración Supabase `20260804150000_orgs_rut_hash_unique.sql` | Columna `orgs.rut_hash` + índice unique | Ops |
+| A1 | Configurar **SMTP** en Render (`METGO_SMTP_*`) | `health.s5_ops.smtp_configurado=true`; verify-email llega | ✅ SMTP OK; 🔶 smoke mail |
+| A2 | Redeploy API tras SMTP | `s5_ops.pendiente` sin `METGO_SMTP_HOST` | ✅ |
+| A3 | Aplicar migración Supabase `20260804150000_orgs_rut_hash_unique.sql` | Columna `orgs.rut_hash` + índice unique | ✅ |
 | A4 | Confirmar / documentar `METGO_PASSWORD_MANTOS`, `_COPIAPO`, `_ADMIN` | Login break-glass OK en cada SPA | Ops |
 | A5 | (Opcional) Stripe keys + Price IDs | Checkout real; si no, mock OK | Ops / comercial |
 | A6 | Env verify URLs en Render (`METGO_MANTOS_PUBLIC_URL`, etc.) | Link del mail apunta al SPA correcto | Ops |
-| A7 | Aplicar `20260804160000_remove_demo_ventora.sql` + confirmar `METGO_SEED_DEMO_PREVIEW` ≠ 1 | Login `demo@ventora.demo` → 401 | Ops |
+| A7 | Aplicar `20260804160000_remove_demo_ventora.sql` + confirmar `METGO_SEED_DEMO_PREVIEW` ≠ 1 | Login `demo@ventora.demo` → 401 | ✅ |
 
 ### Bloque B — Producto identity (código + UX)
 
 | ID | Tarea | Condición de aceptación | Dueño |
 |----|-------|-------------------------|-------|
-| B1 | Vista **Cuenta / planes / checkout** en Quillota, Copiapó, Mantos (como SPATI) | Usuario trial puede pagar Starter/Pro tras login | Dev |
-| B2 | Banner “quedan X días de piloto” en panel | Visible si `trialing` | Dev |
+| B1 | Vista **Cuenta / planes / checkout** en Quillota, Copiapó, Mantos (como SPATI) | Usuario trial puede pagar Starter/Pro tras login | ✅ código |
+| B2 | Banner “quedan X días de piloto” en panel | Visible si `trialing` | ✅ código |
 | B3 | Flujo **invitar usuario** a org existente (mismo RUT) | Segundo correo entra sin re-registrar RUT | Dev |
 | B4 | Smoke E2E: registro → verify → login → trial → checkout mock | Checklist pasado en Pages + Render | Dev + Ops |
 | B5 | Port registro/landing a **Paine** (repo `metgo-paine`) | `/` landing, `/app` JWT, `/registro` `sitio=paine` | ✅ push `c78e4eb`; verificar Pages |

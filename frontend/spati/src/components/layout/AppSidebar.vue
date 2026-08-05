@@ -20,7 +20,7 @@
 import { computed, inject, watch, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Wind, Plane, SlidersHorizontal, CloudSun, LayoutGrid, Gauge, MapPinned, FileText } from 'lucide-vue-next'
+import { Wind, Plane, SlidersHorizontal, CloudSun, LayoutGrid, Gauge, MapPinned, FileText, CreditCard } from 'lucide-vue-next'
 import { useAccess } from '@/stores/access'
 import { fetchMe, getToken } from '@/services/authApi'
 
@@ -99,6 +99,12 @@ const items = computed(() => {
       label: t('nav.umbrales'),
       icon: SlidersHorizontal,
       tab: 'umbrales',
+    },
+    {
+      name: 'faena-cuenta',
+      to: { name: 'faena-cuenta', params: { faena: f } },
+      label: t('nav.cuenta', 'Cuenta'),
+      icon: CreditCard,
     },
   ]
   if (showHubLink.value) {

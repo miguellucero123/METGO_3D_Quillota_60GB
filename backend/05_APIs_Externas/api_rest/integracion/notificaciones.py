@@ -169,7 +169,8 @@ def _enviar_smtp(destino: str, asunto: str, cuerpo: str) -> dict[str, Any]:
     msg["Subject"] = asunto
     msg.attach(MIMEText(cuerpo, "plain", "utf-8"))
 
-    with smtplib.SMTP(host, port, timeout=30) as server:
+    smtp_timeout = int(os.environ.get("METGO_SMTP_TIMEOUT", "20"))
+    with smtplib.SMTP(host, port, timeout=smtp_timeout) as server:
         if use_tls:
             server.starttls()
         if user and password:

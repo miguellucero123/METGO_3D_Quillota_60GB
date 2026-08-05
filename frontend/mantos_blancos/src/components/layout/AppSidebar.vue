@@ -44,6 +44,7 @@ import {
   Wind,
   Layers,
   CloudSun,
+  CreditCard,
 } from 'lucide-vue-next'
 
 const site = inject('site')
@@ -53,6 +54,7 @@ const operaciones = [
   { to: '/ventanas', label: 'Ventanas', icon: Clock3 },
   { to: '/umbrales', label: 'Umbrales', icon: SlidersHorizontal },
   { to: '/ambiente', label: 'Ambiente faena', icon: CloudSun },
+  { to: '/cuenta', label: 'Cuenta / planes', icon: CreditCard },
 ]
 
 const observatorio = [

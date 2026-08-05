@@ -8,6 +8,7 @@ import { useFavoritesStore } from '@/stores/favorites'
 import MetgoHeader from '@/components/layout/MetgoHeader.vue'
 import MetgoSidebar from '@/components/layout/MetgoSidebar.vue'
 import OfflineBanner from '@/components/layout/OfflineBanner.vue'
+import TrialBanner from '@/components/layout/TrialBanner.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -61,6 +62,7 @@ onMounted(async () => {
   <div v-else class="app-shell" :class="{ 'app-shell--embed': isEmbedded, 'app-shell--nav-open': navOpen }">
     <a href="#contenido-principal" class="skip-link">{{ $t('app.skipContent') }}</a>
     <OfflineBanner />
+    <TrialBanner />
     <MetgoHeader />
     <div class="app-body">
       <div

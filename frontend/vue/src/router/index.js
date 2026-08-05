@@ -160,6 +160,12 @@ const routes = [
     component: () => import('@/views/PuertosView.vue'),
     meta: { title: 'Visor de puertos' },
   },
+  {
+    path: '/cuenta',
+    name: 'cuenta',
+    component: () => import('@/views/CuentaView.vue'),
+    meta: { title: 'Cuenta / planes' },
+  },
 ]
 
 const router = createRouter({

@@ -96,6 +96,12 @@ const routes = [
     component: () => import('@/views/AireHistoricoView.vue'),
     meta: { title: 'Histórico' },
   },
+  {
+    path: '/cuenta',
+    name: 'cuenta',
+    component: () => import('@/views/CuentaView.vue'),
+    meta: { title: 'Cuenta' },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

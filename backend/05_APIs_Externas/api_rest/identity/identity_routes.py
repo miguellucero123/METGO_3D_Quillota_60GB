@@ -277,14 +277,13 @@ def register_identity_routes(app: Flask) -> None:
                 }
             ), 501
 
-        success = data.get("success_url") or (
-            f"{(os.getenv('METGO_SPATI_PUBLIC_URL') or 'https://metgo-spati.pages.dev').rstrip('/')}"
-            f"/f/{faena or 'escondida'}/cuenta?checkout=success"
-        )
-        cancel = data.get("cancel_url") or (
-            f"{(os.getenv('METGO_SPATI_PUBLIC_URL') or 'https://metgo-spati.pages.dev').rstrip('/')}"
-            f"/f/{faena or 'escondida'}/cuenta?checkout=cancel"
-        )
+        spa = _public_spa_base(str(sitio))
+        if str(sitio).lower() == "spati":
+            cuenta_path = f"/f/{faena or 'escondida'}/cuenta"
+        else:
+            cuenta_path = "/cuenta"
+        success = data.get("success_url") or f"{spa}{cuenta_path}?checkout=success"
+        cancel = data.get("cancel_url") or f"{spa}{cuenta_path}?checkout=cancel"
         try:
             import requests
 

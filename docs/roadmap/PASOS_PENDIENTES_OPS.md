@@ -55,20 +55,16 @@ Referencia típica actual:
 
 - [x] **1.** `METGO_PII_KEK` en Render (**ya OK** en health 2026-08-03)
 - [x] **2.** `METGO_EMAIL_DEV=0` (**ya OK**)
-- [ ] **3.** Configurar SMTP: `METGO_SMTP_HOST`, `PORT`, `USER`, `PASSWORD`, `FROM`, `TLS=1`
+- [x] **3.** Configurar SMTP: `METGO_SMTP_*` (**health `smtp_configurado=true` 2026-08-05**)
 - [ ] **4.** (Opcional) Stripe: `STRIPE_SECRET_KEY` + Price IDs; si no, el checkout mock sigue válido
-- [ ] **5.** Manual Deploy (clear cache) tras SMTP/Stripe y verificar `$h.s5_ops.pendiente` sin SMTP (Stripe opcional)
+- [x] **5.** Redeploy API + verificar `s5_ops.pendiente` sin SMTP (Stripe opcional OK)
 
 ### P1 — Alertas y observado
 
-- [ ] **6.** Copiar `CRON_SECRET` de Render a GitHub → Settings → Secrets (mismo valor)  
-      Workflow: `spati-alertas-cron.yml`
+- [x] **6.** `CRON_SECRET` en GitHub Actions (= Render); workflow SPATI por sitio OK
 - [ ] **7.** En SPA `/f/{faena}/umbrales`, guardar destinos email/webhook
-- [ ] **8.** (Cuando haya datos reales) carpeta CSV en Render + `METGO_SINCA_CSV_DIR`  
-      + `METGO_SINCA_USE_EJEMPLOS=0`  
-      Plantillas: `docs/ejemplos/sinca_csv/`
-- [ ] **9.** Probar sync:  
-      `POST https://metgo-api.onrender.com/api/cron/sync?token=CRON_SECRET`
+- [ ] **8.** (Cuando haya datos reales) carpeta CSV en Render + `METGO_SINCA_CSV_DIR`
+- [ ] **9.** Probar sync: `POST /api/cron/sync?token=CRON_SECRET`
 
 ### P2 — Calidad / datos oficiales
 

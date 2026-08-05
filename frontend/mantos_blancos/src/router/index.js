@@ -102,6 +102,12 @@ const routes = [
     component: () => import('@/views/AirshedModelView.vue'),
     meta: { title: 'Airshed Modeler' },
   },
+  {
+    path: '/cuenta',
+    name: 'cuenta',
+    component: () => import('@/views/CuentaView.vue'),
+    meta: { title: 'Cuenta' },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

@@ -28,6 +28,7 @@ import {
   Wrench,
   Layers,
   Home,
+  CreditCard,
 } from 'lucide-vue-next'
 
 const STORAGE_KEY = 'metgo_sidebar_groups_v2'
@@ -117,8 +118,11 @@ const gruposDef = [
     label: 'Cuenta',
     icon: Wrench,
     match: (path) =>
-      path.startsWith('/preferencias') || path.startsWith('/configuracion'),
+      path.startsWith('/preferencias') ||
+      path.startsWith('/configuracion') ||
+      path.startsWith('/cuenta'),
     items: [
+      { to: '/cuenta', label: 'Planes / suscripción', icon: CreditCard, requiresAuth: true },
       { to: '/preferencias', label: 'Preferencias', icon: UserCog, requiresAuth: true },
       { to: '/configuracion', label: 'Configuración', icon: Settings },
     ],

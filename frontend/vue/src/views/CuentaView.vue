@@ -1,31 +1,16 @@
 <script setup>
-import { computed, inject, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { fetchCuenta, checkoutPlan, wakeApi } from '@/services/authApi'
-import { useAuth } from '@/stores/auth'
-import { useAccess } from '@/stores/access'
+import { computed, onMounted, ref } from 'vue'
+import { fetchCuenta, checkoutPlan, wakeApi } from '@/api/metgoApi'
+import { useAuthStore } from '@/stores/auth'
 
-const site = inject('site')
-const route = useRoute()
-const auth = useAuth()
-const accessStore = useAccess()
-const faena = computed(() => String(route.params.faena || '').toLowerCase())
-const blockedTab = computed(() => String(route.query.blocked || '').toLowerCase())
-const blockedFaena = computed(() => String(route.query.blocked_faena || '').toLowerCase())
+const SITIO = 'quillota'
+const auth = useAuthStore()
 
 const loading = ref(true)
 const error = ref('')
 const msg = ref('')
 const data = ref(null)
 const applying = ref('')
-
-const TAB_LABEL = {
-  ahora: 'Ahora',
-  panel: 'Panel técnico',
-  ambiente: 'Ambiente faena',
-  dron: 'Calibración dron',
-  umbrales: 'Umbrales',
-}
 
 onMounted(async () => {
   wakeApi().catch(() => {})
@@ -36,9 +21,7 @@ async function reload() {
   loading.value = true
   error.value = ''
   try {
-    data.value = await fetchCuenta(faena.value)
-    accessStore.invalidate(faena.value)
-    await accessStore.refresh(faena.value, { force: true })
+    data.value = await fetchCuenta()
   } catch (e) {
     error.value = e.message || 'No se pudo cargar la cuenta'
   } finally {
@@ -52,11 +35,10 @@ async function elegirPlan(planCode) {
   try {
     const res = await checkoutPlan({
       plan_code: planCode,
-      sitio: 'spati',
-      faena: faena.value,
-      org_id: auth.state.user?.org_id || data.value?.usuario?.org_id,
-      success_url: `${window.location.origin}/f/${faena.value}/cuenta?checkout=success`,
-      cancel_url: `${window.location.origin}/f/${faena.value}/cuenta?checkout=cancel`,
+      sitio: SITIO,
+      org_id: auth.user?.org_id || data.value?.usuario?.org_id,
+      success_url: `${window.location.origin}/cuenta?checkout=success`,
+      cancel_url: `${window.location.origin}/cuenta?checkout=cancel`,
     })
     if (res.checkout_url) {
       window.location.href = res.checkout_url
@@ -79,18 +61,9 @@ const tabs = computed(() => data.value?.access?.tabs || {})
 <template>
   <div class="cuenta">
     <header>
-      <h1>Cuenta · {{ faena }}</h1>
-      <p>Suscripción y acceso por pestaña para esta faena.</p>
+      <h1>Cuenta · Quillota</h1>
+      <p>Suscripción, piloto y planes del producto.</p>
     </header>
-
-    <p v-if="blockedTab" class="warn" role="status">
-      La pestaña <strong>{{ TAB_LABEL[blockedTab] || blockedTab }}</strong> no está
-      incluida en tu plan actual. Elige un plan superior para habilitarla.
-    </p>
-    <p v-if="blockedFaena" class="warn" role="status">
-      No tiene membresía en la faena <strong>{{ blockedFaena }}</strong>.
-      Solo puede operar en las mineras de su contrato (plan Enterprise multi-faena o admin ven el catálogo completo).
-    </p>
 
     <p v-if="loading">Cargando…</p>
     <p v-else-if="error" class="err" role="alert">{{ error }}</p>
@@ -100,8 +73,11 @@ const tabs = computed(() => data.value?.access?.tabs || {})
       <h2>Usuario</h2>
       <dl>
         <div><dt>Email</dt><dd>{{ data.usuario?.email }}</dd></div>
-        <div><dt>Estado</dt><dd>{{ data.usuario?.status }} · verificado: {{ data.usuario?.email_verified ? 'sí' : 'no' }}</dd></div>
-        <div><dt>Sitio / faena</dt><dd>{{ data.usuario?.sitio }} / {{ data.usuario?.faena }}</dd></div>
+        <div>
+          <dt>Estado</dt>
+          <dd>{{ data.usuario?.status }} · verificado: {{ data.usuario?.email_verified ? 'sí' : 'no' }}</dd>
+        </div>
+        <div><dt>Sitio</dt><dd>{{ data.usuario?.sitio }}</dd></div>
       </dl>
     </section>
 
@@ -112,7 +88,7 @@ const tabs = computed(() => data.value?.access?.tabs || {})
         estado <strong>{{ sub.status }}</strong>
         <template v-if="sub.current_period_end"> · hasta {{ String(sub.current_period_end).slice(0, 10) }}</template>
       </p>
-      <ul class="tabs">
+      <ul v-if="Object.keys(tabs).length" class="tabs">
         <li v-for="(ok, tab) in tabs" :key="tab" :class="{ on: ok }">
           {{ tab }}: {{ ok ? 'habilitado' : 'bloqueado' }}
         </li>
@@ -120,8 +96,8 @@ const tabs = computed(() => data.value?.access?.tabs || {})
     </section>
 
     <section class="card">
-      <h2>Planes escalonados</h2>
-      <p class="hint">Sin Stripe: el checkout mock aplica el plan de inmediato (S2).</p>
+      <h2>Planes</h2>
+      <p class="hint">Sin Stripe: el checkout mock aplica el plan de inmediato.</p>
       <ul class="planes">
         <li v-for="p in planes" :key="p.plan_code">
           <div>
@@ -145,19 +121,19 @@ const tabs = computed(() => data.value?.access?.tabs || {})
 <style scoped>
 .cuenta { padding: 1.25rem; max-width: 820px; color: var(--color-text); }
 header h1 { margin: 0 0 0.25rem; font-size: 1.35rem; }
-header p, .hint { color: var(--color-muted); font-size: 0.9rem; }
+header p, .hint { color: var(--color-muted, var(--color-text-secondary)); font-size: 0.9rem; }
 .card {
   margin-top: 1rem;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 1rem;
-  background: rgba(17, 24, 39, 0.55);
+  background: var(--color-surface, rgba(17, 24, 39, 0.55));
 }
 dl { display: grid; gap: 0.5rem; margin: 0; }
-dt { font-size: 0.7rem; text-transform: uppercase; color: var(--color-muted); }
+dt { font-size: 0.7rem; text-transform: uppercase; color: var(--color-muted, var(--color-text-secondary)); }
 dd { margin: 0; }
 .tabs, .planes { list-style: none; padding: 0; margin: 0.75rem 0 0; }
-.tabs li { font-size: 0.85rem; color: var(--color-muted); }
+.tabs li { font-size: 0.85rem; color: var(--color-muted, var(--color-text-secondary)); }
 .tabs li.on { color: var(--color-primary); font-weight: 600; }
 .planes li {
   display: flex;
@@ -167,7 +143,7 @@ dd { margin: 0; }
   padding: 0.65rem 0;
   border-top: 1px solid var(--color-border);
 }
-.planes em { display: block; font-style: normal; font-size: 0.8rem; color: var(--color-muted); }
+.planes em { display: block; font-style: normal; font-size: 0.8rem; color: var(--color-muted, var(--color-text-secondary)); }
 .btn {
   border: none;
   border-radius: 8px;
@@ -178,15 +154,6 @@ dd { margin: 0; }
   color: #0f172a;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.err { color: var(--color-danger); }
+.err { color: var(--color-danger, #f87171); }
 .ok { color: var(--color-primary); }
-.warn {
-  margin: 0.75rem 0;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  color: var(--color-text);
-  font-size: 0.9rem;
-}
 </style>

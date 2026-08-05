@@ -165,6 +165,18 @@ export async function fetchPlanes(sitio = 'quillota', faena) {
   return data
 }
 
+export async function fetchCuenta(faena) {
+  const params = {}
+  if (faena) params.faena = faena
+  const { data } = await api.get('/auth/cuenta', { params })
+  return data
+}
+
+export async function checkoutPlan(body) {
+  const { data } = await api.post('/billing/checkout', body)
+  return data
+}
+
 export async function fetchMe() {
   const { data } = await api.get('/auth/me')
   return data

@@ -18,7 +18,7 @@
 
 <script setup>
 import { inject } from 'vue'
-import { Wind, CalendarRange, History, Waves, Map, Layers, HardHat, Activity, Satellite, Thermometer, ChartLine } from 'lucide-vue-next'
+import { Wind, CalendarRange, History, Waves, Map, Layers, HardHat, Activity, Satellite, Thermometer, ChartLine, CreditCard } from 'lucide-vue-next'
 
 const site = inject('site')
 const items = [
@@ -33,6 +33,7 @@ const items = [
   { to: '/olas-calor', label: 'Olas de calor', icon: Thermometer },
   { to: '/pronostico', label: 'Pronóstico', icon: CalendarRange },
   { to: '/historico', label: 'Histórico', icon: History },
+  { to: '/cuenta', label: 'Cuenta / planes', icon: CreditCard },
 ]
 </script>
 
