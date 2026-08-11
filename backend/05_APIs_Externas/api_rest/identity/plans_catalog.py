@@ -2,19 +2,39 @@
 # -*- coding: utf-8 -*-
 """Catálogo de planes y precios escalonados por sitio/faena.
 
-Fuente comercial: docs/roadmap/PLAN_COMERCIAL_SPATI_3_PLANES.md
+Fuente: docs/roadmap/PRECIOS_VALOR_VS_LISTA.md
 Moneda de lista: **USD**/mes (sin IVA).
-Básico $299 · Pro $499 · Enterprise desde $1.199 (a medida).
+Lista = ~15–25 % del valor techo del stack completo (no cobramos el 100 %).
 """
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
 # Referencia CLP solo informativa (facturación Chile / cotización)
 _CLP_PER_USD = 950
 
-# Precio base USD/mes por plan (Stripe Price IDs vía env en S2)
+# Lista USD/mes por sitio (entrada / medio / enterprise-desde). Trial siempre 0.
+# Ver PRECIOS_VALOR_VS_LISTA.md — techo vs lista.
+_SITE_LIST_USD: dict[str, dict[str, int]] = {
+    "spati": {"starter": 299, "pro": 499, "enterprise": 1_199},
+    "mantos_blancos": {"starter": 249, "pro": 449, "enterprise": 999},
+    "copiapo": {"starter": 199, "pro": 399, "enterprise": 799},
+    "quillota": {"starter": 99, "pro": 179, "enterprise": 399},
+    "paine": {"starter": 49, "pro": 99, "enterprise": 249},
+}
+
+# Valor techo interno (referencia; no se usa para cobro)
+_SITE_VALUE_CEILING_USD: dict[str, tuple[int, int]] = {
+    "spati": (1_800, 3_000),
+    "mantos_blancos": (1_200, 2_200),
+    "copiapo": (900, 1_800),
+    "quillota": (400, 800),
+    "paine": (200, 500),
+}
+
+# Precio base = SPATI (fallback si sitio desconocido)
 _BASE_PLANS: dict[str, dict[str, Any]] = {
     "trial": {
         "plan_code": "trial",
@@ -27,7 +47,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "features": ["panel", "ambiente", "ahora"],
         "trial_days": 15,
         "canales_alerta": ["email"],
-        "descripcion": "Pronóstico 72 h y vista Ahora en una faena, sin tarjeta.",
+        "descripcion": "Acceso completo al sitio por 15 días, sin tarjeta.",
         "entregables": ["panel_web", "pdf_operacion"],
     },
     "starter": {
@@ -41,11 +61,10 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "features": ["panel", "ambiente", "ahora", "alertas"],
         "canales_alerta": ["email"],
         "descripcion": (
-            "1 faena, hasta 2 grúas. Vista Ahora + pronóstico 72 h, PDF por "
-            "operación y alertas por correo."
+            "1 sitio/faena. Panel + pronóstico, alertas por correo e informe PDF."
         ),
         "entregables": ["panel_web", "pdf_operacion", "datasheet"],
-        "publico_objetivo": "Una faena que necesita decidir izaje con datos en el punto GPS.",
+        "publico_objetivo": "Operación que necesita decidir con datos en el punto.",
     },
     "pro": {
         "plan_code": "pro",
@@ -67,8 +86,8 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "canales_alerta": ["email", "whatsapp"],
         "recomendado": True,
         "descripcion": (
-            "Hasta 3 faenas / 5 grúas. WhatsApp, umbrales editables, calibración "
-            "dron y reporte mensual de ROI."
+            "Hasta 3 faenas/zonas. WhatsApp, umbrales editables, módulos avanzados "
+            "y reporte mensual."
         ),
         "entregables": [
             "panel_web",
@@ -77,7 +96,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
             "datasheet",
             "propuesta_comercial",
         ],
-        "publico_objetivo": "Jefes de operaciones con flota activa y necesidad de ROI medible.",
+        "publico_objetivo": "Jefes de operaciones con flota o varias zonas activas.",
     },
     "enterprise": {
         "plan_code": "enterprise",
@@ -108,8 +127,8 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "contacto": True,
         "sla_uptime": 0.995,
         "descripcion": (
-            "Multi-faena ilimitada, API REST + webhooks, SLA 99.5%, soporte 24/7, "
-            "account manager, integración ERP/SAP e informes legales / white-label."
+            "Multi-sitio, API + webhooks, SLA 99.5%, soporte 24/7, account manager "
+            "e integración ERP / white-label."
         ),
         "entregables": [
             "panel_web",
@@ -122,7 +141,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
             "runbook_ops",
         ],
         "publico_objetivo": (
-            "Mandantes, EPC y empresas con varias faenas que integran SPATI al sistema."
+            "Mandantes, EPC y empresas con varias faenas o redes de estaciones."
         ),
         "incluye": [
             "Board ops multi-faena (/ops)",
@@ -132,7 +151,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
             "Account manager + canal 24/7",
             "Reporte mensual ejecutivo personalizado",
             "PDF con firma digital y pack legal",
-            "Umbrales y destinos por faena/grúa",
+            "Umbrales y destinos por faena/zona",
             "Revisión trimestral de exactitud del modelo",
         ],
         "add_ons": [
@@ -143,7 +162,6 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
             {"codigo": "informe_pericial", "nombre": "Informe pericial / caso legal"},
         ],
     },
-    # Acceso temporal interno / demo (no listado comercial)
     "preview": {
         "plan_code": "preview",
         "nombre": "Vista previa 1 h",
@@ -162,7 +180,6 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
     },
 }
 
-# Multiplicador comercial por faena (escalado; 1.0 = base)
 _FAENA_MULTIPLIER: dict[str, float] = {
     "escondida": 1.25,
     "los_bronces": 1.15,
@@ -173,7 +190,6 @@ _FAENA_MULTIPLIER: dict[str, float] = {
 
 _PLAN_RANK = {"preview": 0, "trial": 0, "starter": 1, "pro": 2, "enterprise": 3}
 
-# Mapeo tab SPA → feature / sistema
 TAB_FEATURE = {
     "panel": "panel",
     "ahora": "ahora",
@@ -195,33 +211,45 @@ def plan_rank(code: str | None) -> int:
     return _PLAN_RANK.get((code or "trial").lower(), 0)
 
 
+def _lista_usd_sitio(sitio: str) -> dict[str, int]:
+    key = (sitio or "spati").strip().lower()
+    return dict(_SITE_LIST_USD.get(key) or _SITE_LIST_USD["spati"])
+
+
 def listar_planes(sitio: str, faena: str | None = None) -> dict[str, Any]:
-    mult = _FAENA_MULTIPLIER.get((faena or "").lower(), 1.0) if sitio == "spati" else 1.0
+    sitio_l = (sitio or "spati").strip().lower()
+    lista = _lista_usd_sitio(sitio_l)
+    mult = _FAENA_MULTIPLIER.get((faena or "").lower(), 1.0) if sitio_l == "spati" else 1.0
+    ceiling = _SITE_VALUE_CEILING_USD.get(sitio_l) or _SITE_VALUE_CEILING_USD["spati"]
     planes = []
     for code, p in _BASE_PLANS.items():
         if p.get("hidden"):
             continue
-        item = dict(p)
-        base_usd = p.get("precio_mensual_usd")
-        if base_usd is not None:
+        item = deepcopy(p)
+        if code == "trial":
+            usd = 0
+        elif code in lista:
+            usd = int(round(lista[code] * mult))
+        else:
+            base_usd = p.get("precio_mensual_usd") or 0
             usd = int(round(base_usd * mult))
-            item["precio_mensual_usd"] = usd
-            # Compat: referencia CLP aproximada (no lista de cobro)
-            item["precio_mensual_clp"] = int(round(usd * _CLP_PER_USD))
-            item["precio_display"] = f"USD {usd:,}".replace(",", ".")
+        item["precio_mensual_usd"] = usd
+        item["precio_mensual_clp"] = int(round(usd * _CLP_PER_USD))
+        item["precio_display"] = f"USD {usd:,}".replace(",", ".")
         item["multiplicador_faena"] = mult
         item["moneda"] = "USD"
         item["iva"] = "no_incluido"
         planes.append(item)
     return {
-        "sitio": sitio,
+        "sitio": sitio_l,
         "faena": faena,
         "moneda": "USD",
         "iva": "no_incluido",
+        "valor_techo_usd": {"min": ceiling[0], "max": ceiling[1]},
         "nota": (
-            "Precios mensuales en USD, sin IVA. Enterprise: precio desde; cotización a medida. "
-            "Facturación Chile puede liquidarse en CLP al tipo de cambio del día. "
-            "Sin tarifa por informe suelto."
+            "Precios de lista en USD (sin IVA), ~15–25 % del valor del stack completo. "
+            "Enterprise: cotización a medida. Chile puede liquidar en CLP al tipo del día. "
+            "Detalle: docs/roadmap/PRECIOS_VALOR_VS_LISTA.md"
         ),
         "planes": planes,
     }
@@ -233,4 +261,7 @@ def features_for_plan(plan_code: str) -> set[str]:
 
 
 def trial_days() -> int:
-    return int((_BASE_PLANS.get("trial") or {}).get("trial_days") or 15)
+    try:
+        return max(1, int((_BASE_PLANS.get("trial") or {}).get("trial_days") or 15))
+    except (TypeError, ValueError):
+        return 15

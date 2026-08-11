@@ -73,7 +73,7 @@ async function iniciarCheckout(planCode) {
           <p class="plan-target">Agricultura de precisión</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">$990</span>
+            <span class="price-value">$99</span>
             <span class="price-period">USD/mes</span>
           </div>
           <p class="plan-unit">por zona de cultivo</p>
@@ -98,10 +98,10 @@ async function iniciarCheckout(planCode) {
           <p class="plan-target">Minería, izaje y alta montaña</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">$1.800</span>
+            <span class="price-value">$299</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por faena</p>
+          <p class="plan-unit">por faena (VENTORA / SPATI)</p>
           
           <ul class="plan-features">
             <li><span class="check">✓</span> Semáforo operacional hora a hora</li>
@@ -122,10 +122,10 @@ async function iniciarCheckout(planCode) {
           <p class="plan-target">Calidad del aire y sector público</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">$600</span>
+            <span class="price-value">$399</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por red de estaciones</p>
+          <p class="plan-unit">por red de estaciones · cotización formal</p>
           
           <ul class="plan-features">
             <li><span class="check">✓</span> Dashboard de calidad del aire con tu logo</li>
@@ -147,7 +147,11 @@ async function iniciarCheckout(planCode) {
         <div class="faq-grid">
           <div class="faq-item">
             <h4>¿Los precios son en USD o CLP?</h4>
-            <p>Facturamos en la moneda que mejor se adapte a tu empresa (USD o CLP). Para contratos en Chile, usamos el valor UF/CLP de referencia del día de facturación.</p>
+            <p>
+              La lista pública es en <strong>USD</strong>. El precio de lista es una fracción
+              (~15–25 %) del valor del stack completo (panel, alertas, pronóstico, informes, API).
+              En Chile podemos facturar en CLP al tipo de cambio del día.
+            </p>
           </div>
           <div class="faq-item">
             <h4>¿Hay contrato mínimo?</h4>

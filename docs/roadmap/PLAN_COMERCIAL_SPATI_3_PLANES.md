@@ -1,8 +1,9 @@
 # Catálogo comercial SPATI — 3 planes + Enterprise de alto valor
 
 > **Fuente de verdad comercial** · METGO 3D SpA · Julio 2026  
-> Precios **USD** sin IVA · Piloto 15 días $0 · Sin tarifa mínima por informe  
-> Lista: Básico **USD 299** · Pro **USD 499** · Enterprise **desde USD 1.199** (≈ lista CLP anterior convertida). 
+> Precios **USD** sin IVA · Piloto 15 días $0  
+> Lista SPATI: Básico **USD 299** · Pro **USD 499** · Enterprise **desde USD 1.199**  
+> Método techo→lista (todas las plataformas): [`PRECIOS_VALOR_VS_LISTA.md`](PRECIOS_VALOR_VS_LISTA.md) 
 > Relacionado: [`PLAN_UX_SPATI_LANDING_AHORA.md`](PLAN_UX_SPATI_LANDING_AHORA.md) · `plans_catalog.py` · plantillas en `docs/comercial/spati/`
 
 ---

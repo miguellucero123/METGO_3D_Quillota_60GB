@@ -117,6 +117,15 @@ def test_planes_escalados_faena():
     assert p_esc["precio_mensual_usd"] > p_base["precio_mensual_usd"]
 
 
+def test_planes_por_sitio_lista_mas_baja_que_techo():
+    q = listar_planes("quillota", None)
+    starter = next(p for p in q["planes"] if p["plan_code"] == "starter")
+    assert starter["precio_mensual_usd"] == 99
+    assert q["valor_techo_usd"]["min"] >= starter["precio_mensual_usd"] * 3
+    c = listar_planes("copiapo", None)
+    assert next(p for p in c["planes"] if p["plan_code"] == "pro")["precio_mensual_usd"] == 399
+
+
 def test_login_requires_email_verify_and_trial_meta():
     from api_rest.app import create_app
 
