@@ -19,3 +19,4 @@ supabase>=2.4.0,<3
 httpx>=0.26.0,<0.29
 sentry-sdk[flask]>=2.0.0; python_version>='3.8'
 xhtml2pdf>=0.2.13
+stripe>=11.0.0
