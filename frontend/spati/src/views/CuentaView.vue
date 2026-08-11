@@ -129,6 +129,14 @@ async function copiarVerifyUrl() {
 const planes = computed(() => data.value?.planes?.planes || [])
 const sub = computed(() => data.value?.suscripcion)
 const tabs = computed(() => data.value?.access?.tabs || {})
+
+function precioPlan(p) {
+  const usd = p?.precio_mensual_usd
+  if (usd == null) return ''
+  const tag = p.precio_etiqueta === 'desde' ? 'Desde ' : ''
+  if (Number(usd) === 0) return 'USD 0 / mes'
+  return `${tag}USD ${Number(usd).toLocaleString('en-US')} / mes`
+}
 </script>
 
 <template>
@@ -181,6 +189,7 @@ const tabs = computed(() => data.value?.access?.tabs || {})
         <li v-for="p in planes" :key="p.plan_code">
           <div>
             <strong>{{ p.nombre }}</strong>
+            <em v-if="precioPlan(p)">{{ precioPlan(p) }}</em>
             <em>{{ p.descripcion || (p.features || []).join(', ') }}</em>
           </div>
           <button

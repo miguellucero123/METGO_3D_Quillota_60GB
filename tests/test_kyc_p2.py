@@ -14,7 +14,6 @@ os.environ["METGO_JWT_SECRET"] = "test-secret-kyc-p2-min-32-bytes!!!!!!"
 os.environ["METGO_API_AUTH_REQUIRED"] = "1"
 os.environ["METGO_SCRYPT_N"] = "1024"
 os.environ["METGO_EMAIL_DEV"] = "1"
-os.environ["METGO_KYC_GATE_PAID"] = "1"
 os.environ.pop("METGO_SESSION_IDLE_S", None)
 
 from api_rest.identity import identity_store, pii_crypto
@@ -22,12 +21,12 @@ from api_rest.identity import session_store
 
 
 @pytest.fixture(autouse=True)
-def _reset():
+def _reset(monkeypatch):
     identity_store.reset_memory()
     session_store.reset_for_tests()
-    os.environ["METGO_KYC_GATE_PAID"] = "1"
-    os.environ.pop("METGO_SESSION_IDLE_S", None)
-    os.environ.pop("METGO_PII_KEK_PREV", None)
+    monkeypatch.setenv("METGO_KYC_GATE_PAID", "1")
+    monkeypatch.delenv("METGO_SESSION_IDLE_S", raising=False)
+    monkeypatch.delenv("METGO_PII_KEK_PREV", raising=False)
     yield
     identity_store.reset_memory()
     session_store.reset_for_tests()
@@ -95,15 +94,15 @@ def test_verified_allows_paid_and_cuenta_includes_kyc():
     assert cuenta["kyc"]["kyc_status"] == "verified"
 
 
-def test_gate_off_allows_paid_without_kyc():
-    os.environ["METGO_KYC_GATE_PAID"] = "0"
+def test_gate_off_allows_paid_without_kyc(monkeypatch):
+    monkeypatch.setenv("METGO_KYC_GATE_PAID", "0")
     out = _register()
     ok, _ = identity_store.assert_kyc_allows_paid_plan(out["org_id"], "starter")
     assert ok is True
 
 
-def test_session_idle_expires():
-    os.environ["METGO_SESSION_IDLE_S"] = "1"
+def test_session_idle_expires(monkeypatch):
+    monkeypatch.setenv("METGO_SESSION_IDLE_S", "1")
     session_store.register_session("user@x.com", "jti-1")
     assert session_store.is_session_active("user@x.com", "jti-1") is True
     # fuerza idle

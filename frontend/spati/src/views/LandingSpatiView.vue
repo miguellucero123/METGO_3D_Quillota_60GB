@@ -87,6 +87,7 @@
       <div class="plans">
         <article v-for="p in planesUi" :key="p.code" class="plan" :class="{ featured: p.featured }">
           <p class="plan-name">{{ p.nombre }}</p>
+          <p v-if="p.precio" class="plan-price">{{ p.precio }}</p>
           <p class="plan-desc">{{ p.descripcion }}</p>
           <ul>
             <li v-for="(f, i) in p.bullets" :key="i">{{ f }}</li>
@@ -175,9 +176,10 @@ const planesUi = computed(() => {
   const list = src.length ? src : FALLBACK
   return list.map((p) => {
     const code = p.plan_code || p.code
-    return {
+      return {
       code,
       nombre: p.nombre || p.nombre_corto || code,
+      precio: precioLinea(p),
       descripcion: p.descripcion || '',
       bullets: BULLETS[code] || (p.features || []).slice(0, 4),
       featured: Boolean(p.recomendado || code === 'pro'),
@@ -185,6 +187,14 @@ const planesUi = computed(() => {
     }
   })
 })
+
+function precioLinea(p) {
+  const usd = p.precio_mensual_usd
+  if (usd == null) return ''
+  const tag = p.precio_etiqueta === 'desde' ? 'Desde ' : ''
+  if (Number(usd) === 0) return 'Piloto sin costo'
+  return `${tag}USD ${Number(usd).toLocaleString('en-US')}/mes`
+}
 
 const faq = [
   {
@@ -559,6 +569,16 @@ onMounted(async () => {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+}
+.plan-price {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #e2e8f0;
+}
+.plan.featured .plan-price {
+  color: var(--emer);
 }
 .plan-desc {
   margin: 0;

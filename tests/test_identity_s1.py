@@ -112,7 +112,9 @@ def test_planes_escalados_faena():
     esc = listar_planes("spati", "escondida")
     p_base = next(p for p in base["planes"] if p["plan_code"] == "starter")
     p_esc = next(p for p in esc["planes"] if p["plan_code"] == "starter")
-    assert p_esc["precio_mensual_clp"] > p_base["precio_mensual_clp"]
+    assert base["moneda"] == "USD"
+    assert p_base["precio_mensual_usd"] == 299
+    assert p_esc["precio_mensual_usd"] > p_base["precio_mensual_usd"]
 
 
 def test_login_requires_email_verify_and_trial_meta():

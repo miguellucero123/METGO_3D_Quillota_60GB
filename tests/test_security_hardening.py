@@ -22,7 +22,8 @@ from api_rest.identity import identity_store
 
 
 @pytest.fixture(autouse=True)
-def _reset():
+def _reset(monkeypatch):
+    monkeypatch.setenv("METGO_RATE_LIMIT_ENABLED", "1")
     identity_store.reset_memory()
     sec.reset_rate_limits()
     yield

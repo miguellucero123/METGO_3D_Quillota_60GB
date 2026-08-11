@@ -22,6 +22,15 @@ def mock_env_passwords(monkeypatch):
     monkeypatch.setenv("METGO_PASSWORD_OPERADOR", "op123")
     monkeypatch.setenv("METGO_PASSWORD_AGRONOMO", "agro123")
     monkeypatch.setenv("METGO_PASSWORD_METGO", "metgo2025")
+    # Seguridad: no ensuciar la suite con rate-limit ni gate KYC de pago
+    monkeypatch.setenv("METGO_RATE_LIMIT_ENABLED", "0")
+    monkeypatch.setenv("METGO_KYC_GATE_PAID", "0")
+    try:
+        from api_rest import security_hardening as sec
+
+        sec.reset_rate_limits()
+    except Exception:
+        pass
 
 class MockTable:
     def __init__(self, name, db):

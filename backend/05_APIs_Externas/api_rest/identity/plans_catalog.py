@@ -3,20 +3,24 @@
 """Catálogo de planes y precios escalonados por sitio/faena.
 
 Fuente comercial: docs/roadmap/PLAN_COMERCIAL_SPATI_3_PLANES.md
-Básico $300.000 · Pro $500.000 · Enterprise desde $1.200.000 (a medida).
+Moneda de lista: **USD**/mes (sin IVA).
+Básico $299 · Pro $499 · Enterprise desde $1.199 (a medida).
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-# Precio base CLP/mes por plan (Stripe Price IDs vía env en S2)
+# Referencia CLP solo informativa (facturación Chile / cotización)
+_CLP_PER_USD = 950
+
+# Precio base USD/mes por plan (Stripe Price IDs vía env en S2)
 _BASE_PLANS: dict[str, dict[str, Any]] = {
     "trial": {
         "plan_code": "trial",
         "nombre": "Piloto 15 días",
         "nombre_corto": "Piloto",
-        "precio_mensual_clp": 0,
+        "precio_mensual_usd": 0,
         "seats": 2,
         "faenas_max": 1,
         "gruas_max": 1,
@@ -30,7 +34,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "starter",
         "nombre": "Básico",
         "nombre_corto": "Básico",
-        "precio_mensual_clp": 300_000,
+        "precio_mensual_usd": 299,
         "seats": 3,
         "faenas_max": 1,
         "gruas_max": 2,
@@ -47,7 +51,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "pro",
         "nombre": "Pro",
         "nombre_corto": "Pro",
-        "precio_mensual_clp": 500_000,
+        "precio_mensual_usd": 499,
         "seats": 10,
         "faenas_max": 3,
         "gruas_max": 5,
@@ -79,7 +83,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "enterprise",
         "nombre": "Enterprise",
         "nombre_corto": "Enterprise",
-        "precio_mensual_clp": 1_200_000,
+        "precio_mensual_usd": 1_199,
         "precio_etiqueta": "desde",
         "seats": None,
         "faenas_max": None,
@@ -144,7 +148,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "preview",
         "nombre": "Vista previa 1 h",
         "nombre_corto": "Preview",
-        "precio_mensual_clp": 0,
+        "precio_mensual_usd": 0,
         "seats": 1,
         "faenas_max": 1,
         "gruas_max": 1,
@@ -198,20 +202,25 @@ def listar_planes(sitio: str, faena: str | None = None) -> dict[str, Any]:
         if p.get("hidden"):
             continue
         item = dict(p)
-        base = p.get("precio_mensual_clp")
-        if base is not None:
-            item["precio_mensual_clp"] = int(round(base * mult))
+        base_usd = p.get("precio_mensual_usd")
+        if base_usd is not None:
+            usd = int(round(base_usd * mult))
+            item["precio_mensual_usd"] = usd
+            # Compat: referencia CLP aproximada (no lista de cobro)
+            item["precio_mensual_clp"] = int(round(usd * _CLP_PER_USD))
+            item["precio_display"] = f"USD {usd:,}".replace(",", ".")
         item["multiplicador_faena"] = mult
-        item["moneda"] = "CLP"
+        item["moneda"] = "USD"
         item["iva"] = "no_incluido"
         planes.append(item)
     return {
         "sitio": sitio,
         "faena": faena,
-        "moneda": "CLP",
+        "moneda": "USD",
         "iva": "no_incluido",
         "nota": (
-            "Precios mensuales sin IVA. Enterprise: precio desde; cotización a medida. "
+            "Precios mensuales en USD, sin IVA. Enterprise: precio desde; cotización a medida. "
+            "Facturación Chile puede liquidarse en CLP al tipo de cambio del día. "
             "Sin tarifa por informe suelto."
         ),
         "planes": planes,
@@ -224,9 +233,4 @@ def features_for_plan(plan_code: str) -> set[str]:
 
 
 def trial_days() -> int:
-    """Días del piloto (fuente: catálogo trial.trial_days)."""
-    p = _BASE_PLANS.get("trial") or {}
-    try:
-        return max(1, int(p.get("trial_days") or 15))
-    except (TypeError, ValueError):
-        return 15
+    return int((_BASE_PLANS.get("trial") or {}).get("trial_days") or 15)

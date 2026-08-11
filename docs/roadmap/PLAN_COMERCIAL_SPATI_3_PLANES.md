@@ -1,7 +1,8 @@
 # Catálogo comercial SPATI — 3 planes + Enterprise de alto valor
 
 > **Fuente de verdad comercial** · METGO 3D SpA · Julio 2026  
-> Precios **sin IVA** · Piloto 15 días $0 · Sin tarifa mínima por informe  
+> Precios **USD** sin IVA · Piloto 15 días $0 · Sin tarifa mínima por informe  
+> Lista: Básico **USD 299** · Pro **USD 499** · Enterprise **desde USD 1.199** (≈ lista CLP anterior convertida). 
 > Relacionado: [`PLAN_UX_SPATI_LANDING_AHORA.md`](PLAN_UX_SPATI_LANDING_AHORA.md) · `plans_catalog.py` · plantillas en `docs/comercial/spati/`
 
 ---
@@ -11,7 +12,7 @@
 | | **Básico** | **Pro** | **Enterprise** |
 |--|------------|---------|----------------|
 | **Código API** | `starter` | `pro` | `enterprise` |
-| **Precio** | **$300.000**/mes | **$500.000**/mes | **Desde $1.200.000**/mes (a medida) |
+| **Precio** | **USD 299**/mes | **USD 499**/mes | **Desde USD 1.199**/mes (a medida) |
 | **Para quién** | 1 faena, pocas grúas, empezar | Flota operativa, alertas 24/7, ROI mensual | Corporativo multi-faena, API, SLA, legal |
 | **Promesa** | Decidir izaje con datos en el punto GPS | Operar la flota con alertas + reporte mensual | Integrar SPATI al sistema de la empresa |
 
