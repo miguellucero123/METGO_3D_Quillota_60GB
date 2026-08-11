@@ -29,9 +29,36 @@ from metgo.streamlit_theme import (
 )
 from metgo.vue_embed import get_vue_base_url
 
-DEFAULT_VUE_PROD = "https://metgo3d.netlify.app"
+DEFAULT_VUE_PROD = "https://metgo-quillota.pages.dev"
 DEFAULT_API_PROD = "https://metgo-api.onrender.com"
 DEFAULT_API_DOCS = "https://metgo-api.onrender.com/api/docs"
+
+def check_auth() -> bool:
+    """Valida el JWT provisto en la URL o sesión."""
+    # 1. Obtener token de URL
+    token = st.query_params.get("token")
+    if token:
+        st.session_state["jwt_token"] = token
+        
+    # 2. Obtener de sesión
+    session_token = st.session_state.get("jwt_token")
+    if not session_token:
+        return False
+        
+    # 3. Validar contra API (usando request simple para no bloquear)
+    import requests
+    try:
+        res = requests.get(
+            f"{_api_base()}/api/auth/me", 
+            headers={"Authorization": f"Bearer {session_token}"},
+            timeout=5.0
+        )
+        if res.status_code == 200:
+            st.session_state["user_data"] = res.json()
+            return True
+    except Exception:
+        pass
+    return False
 
 
 def _vue_url() -> str:
@@ -166,6 +193,17 @@ def _render_kpi_cards(summary: dict[str, Any]) -> None:
 def render_inicio_page() -> None:
     """Portal ejecutivo: acceso a Vue, API, Streamlit y legacy controlado."""
     inject_theme()
+    
+    # --- BARRERA DE AUTENTICACIÓN ---
+    if not check_auth():
+        st.error("🔒 **Acceso Denegado**")
+        st.warning("Debe iniciar sesión desde la plataforma principal para acceder a estos paneles operativos.")
+        st.link_button("Ir a Iniciar Sesión", f"{_vue_url().rstrip('/')}/login", type="primary")
+        st.stop()
+        
+    user_data = st.session_state.get("user_data", {})
+    st.sidebar.success(f"Sesión activa: {user_data.get('username', 'Usuario')}")
+    
     _mostrar_modulo_activado()
     vue = _vue_url()
     summary = _health_summary()

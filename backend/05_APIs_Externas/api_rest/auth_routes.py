@@ -176,6 +176,13 @@ def register_auth_routes(app: Flask) -> None:
         sitio_req = data.get("sitio") or data.get("site")
         faena_req = (data.get("faena") or "").strip().lower() or None
 
+        # Control de fuerza bruta con el nuevo servicio
+        from api_rest.services.auth_service import auth_service
+        ip_address = request.remote_addr or "unknown"
+        is_allowed, error_msg = auth_service.check_brute_force(username, ip_address)
+        if not is_allowed:
+            return jsonify({"error": error_msg, "code": "brute_force_blocked"}), 429
+
         # S1: identidad comercial (email + sitio + faena)
         try:
             from api_rest.identity import identity_store, pii_crypto
@@ -237,11 +244,14 @@ def register_auth_routes(app: Flask) -> None:
                 }
                 if rem is not None and (sub.get("plan_code") == "preview" or rem < 3600):
                     token_kwargs["expires_in"] = max(60, rem)
+                
+                auth_service.record_successful_login(username)
                 return jsonify(metgo_auth.crear_token_identidad(**token_kwargs))
         except Exception:
             pass
 
         if not metgo_auth.verificar_credenciales(username, password):
+            auth_service.record_failed_login(username, ip_address)
             return jsonify({"error": "Usuario o contraseña incorrectos"}), 401
 
         try:
@@ -250,9 +260,63 @@ def register_auth_routes(app: Flask) -> None:
             sitio, err = resolver_sitio_login(username, sitio_req)
             if err:
                 return jsonify({"error": err}), 403
+            
+            auth_service.record_successful_login(username)
             return jsonify(metgo_auth.crear_token_acceso(username, sitio=sitio))
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+    @app.post("/api/public/leads")
+    def create_lead():
+        """Recibe prospectos comerciales (demo/cotización) desde la SPA Vue y los guarda en Supabase."""
+        from api_rest import security_hardening as sec
+        from api_rest.integracion.supabase_store import get_supabase_client, rest_insert
+        from datetime import datetime
+
+        ok_rl, meta = sec.check_rate_limit("public_leads", limit=10, window_s=3600)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
+
+        data = request.get_json(silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
+        if not email:
+            return jsonify({"error": "El email es requerido"}), 400
+            
+        # Pydantic validation
+        from api_rest.schemas import LeadCaptureRequest
+        try:
+            lead_validated = LeadCaptureRequest(**data)
+        except Exception as e:
+            return jsonify({"error": "Datos inválidos", "detail": str(e)}), 400
+
+        row = {
+            "first_name": lead_validated.first_name,
+            "last_name": lead_validated.last_name,
+            "company_name": lead_validated.company_name,
+            "sector": lead_validated.sector,
+            "email": lead_validated.email,
+            "phone": lead_validated.phone,
+            "whatsapp": lead_validated.whatsapp,
+            "notes": lead_validated.message,
+            "source": lead_validated.source,
+            "created_at": datetime.utcnow().isoformat() + "Z"
+        }
+
+        try:
+            client = get_supabase_client()
+            if client:
+                res = client.table("leads").insert(row).execute()
+                if not res.data:
+                    return jsonify({"error": "Error al guardar prospecto"}), 500
+            else:
+                inserted = rest_insert("leads", row)
+                if not inserted:
+                    return jsonify({"error": "Error de conexión con la base de datos"}), 500
+
+            return jsonify({"status": "ok", "message": "Lead registrado exitosamente"}), 201
+        except Exception as e:
+            app.logger.error("Error al registrar lead: %s", e)
+            return jsonify({"error": "Error interno del servidor"}), 500
 
     @app.post("/api/auth/register")
     def register():
@@ -265,6 +329,13 @@ def register_auth_routes(app: Flask) -> None:
         ok, msg = metgo_auth.registrar_usuario(username, password, email, sitio=sitio)
         if not ok:
             return jsonify({"error": msg}), 400
+            
+        # Enviar email bienvenida
+        try:
+            from api_rest.services.email_service import email_service
+            email_service.send_welcome_email(user_email=email, user_name=username)
+        except Exception as e:
+            app.logger.error(f"Failed to send welcome email: {e}")
 
         try:
             sitio_tok = metgo_auth.sitio_de_usuario(username)

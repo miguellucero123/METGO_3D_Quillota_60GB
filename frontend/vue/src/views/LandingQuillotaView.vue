@@ -14,10 +14,12 @@
           </span>
         </a>
         <div class="nav-links">
-          <a href="#servicios">{{ t('landing.navServices') }}</a>
-          <a href="#funciona">{{ t('landing.navHow') }}</a>
-          <a href="#alertas">{{ t('landing.navAlerts') }}</a>
-          <a href="#faq">{{ t('landing.navFaq') }}</a>
+          <router-link to="/planes">Planes</router-link>
+          <router-link to="/izaje">Izaje</router-link>
+          <router-link to="/mineria">Minería</router-link>
+          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
+          <router-link to="/nosotros">Nosotros</router-link>
+          <router-link to="/contacto">Contacto</router-link>
         </div>
         <div class="nav-cta">
           <div class="lang-switch" role="group" :aria-label="t('lang.label')">
@@ -45,36 +47,29 @@
           <div>
             <p class="eyebrow">{{ t('landing.eyebrow') }}</p>
             <h1>
-              {{ t('landing.heroBefore') }} <em>{{ t('landing.heroEm') }}</em>.<br />
-              {{ t('landing.heroAfter') }}
+              {{ t('landing.heroTitle') }}
             </h1>
             <p class="hero-sub">{{ t('landing.heroSub') }}</p>
             <div class="hero-actions">
-              <router-link v-if="isLoggedIn" class="btn btn-primary btn-lg" to="/app">
-                {{ t('landing.goPanel') }}
+              <router-link class="btn btn-primary btn-lg" to="/planes">
+                {{ t('landing.requestDemo') }}
               </router-link>
-              <template v-else>
-                <router-link class="btn btn-primary btn-lg" :to="accessPath">
-                  {{ t('landing.requestAccess') }}
-                </router-link>
-                <router-link class="btn btn-ghost btn-lg" to="/login">
-                  {{ t('landing.login') }}
-                </router-link>
-              </template>
-              <a href="#funciona" class="btn btn-ghost btn-lg">{{ t('landing.navHow') }}</a>
+              <a href="https://metgo-quillota.pages.dev" target="_blank" class="btn btn-ghost btn-lg">
+                {{ t('landing.viewLivePanel') }}
+              </a>
             </div>
             <div class="hero-meta">
               <div>
-                <strong>6</strong>
-                {{ t('landing.metaStations') }}
+                <strong>3+</strong>
+                {{ t('landing.metaFaenas') }}
               </div>
               <div>
-                <strong>15 min</strong>
-                {{ t('landing.metaFreq') }}
+                <strong>1.200+</strong>
+                {{ t('landing.metaAlertas') }}
               </div>
               <div>
-                <strong>72 h</strong>
-                {{ t('landing.metaHorizon') }}
+                <strong>4</strong>
+                {{ t('landing.metaAnos') }}
               </div>
             </div>
           </div>
@@ -122,45 +117,6 @@
         </div>
       </section>
 
-      <section id="acceso" class="access-gate">
-        <div class="wrap access-grid">
-          <div class="access-copy">
-            <p class="section-eyebrow">{{ t('landing.accessEyebrow') }}</p>
-            <h2>{{ t('landing.accessTitle') }}</h2>
-            <p class="section-desc">{{ t('landing.accessDesc') }}</p>
-            <ul class="access-list">
-              <li>{{ t('landing.accessBullet1') }}</li>
-              <li>{{ t('landing.accessBullet2') }}</li>
-              <li>{{ t('landing.accessBullet3') }}</li>
-            </ul>
-          </div>
-          <div class="card access-card">
-            <div class="access-card-brand">
-              <span class="brand-icon" aria-hidden="true"><Leaf :size="20" /></span>
-              <div>
-                <strong>METGO</strong>
-                <span>{{ t('login.subtitle') }}</span>
-              </div>
-            </div>
-            <p class="access-region">Quillota · Región de Valparaíso</p>
-            <div class="access-actions">
-              <router-link v-if="isLoggedIn" class="btn btn-primary btn-lg btn-block" to="/app">
-                <LayoutDashboard :size="18" aria-hidden="true" />
-                {{ t('landing.goPanel') }}
-              </router-link>
-              <template v-else>
-                <router-link class="btn btn-primary btn-lg btn-block" to="/login">
-                  <LogIn :size="18" aria-hidden="true" />
-                  {{ t('landing.login') }}
-                </router-link>
-                <router-link class="btn btn-ghost btn-lg btn-block" to="/registro">
-                  {{ t('landing.register') }}
-                </router-link>
-              </template>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <div class="stats">
         <div class="wrap stats-grid">
@@ -289,9 +245,12 @@
           {{ t('landing.footerBrand') }}
         </div>
         <div class="foot-links">
-          <a href="#servicios">{{ t('landing.navServices') }}</a>
-          <a href="#funciona">{{ t('landing.navHow') }}</a>
-          <a href="#acceso">{{ t('landing.accessEyebrow') }}</a>
+          <router-link to="/planes">Planes</router-link>
+          <router-link to="/izaje">Izaje</router-link>
+          <router-link to="/mineria">Minería</router-link>
+          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
+          <router-link to="/nosotros">Nosotros</router-link>
+          <router-link to="/contacto">Contacto</router-link>
           <router-link to="/login">{{ t('landing.login') }}</router-link>
           <router-link v-if="isLoggedIn" to="/app">{{ t('landing.goPanel') }}</router-link>
         </div>

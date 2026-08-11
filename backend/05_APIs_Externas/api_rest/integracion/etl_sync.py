@@ -252,6 +252,14 @@ def sincronizar_estaciones(
         if archive_res.get("errores"):
             errores.extend(archive_res["errores"])
     stats = meteo_store.estadisticas_store()
+    
+    # === FASE C: DISPARADOR AUTOMÁTICO DE ALERTAS POST-ETL ===
+    try:
+        from api_rest.services import generar_alertas
+        generar_alertas()
+    except Exception as e:
+        errores.append(f"Auto-alertas fallidas: {e}")
+
     out = {
         "estaciones_sync": detalle,
         "pronostico_sync": detalle_pronostico,

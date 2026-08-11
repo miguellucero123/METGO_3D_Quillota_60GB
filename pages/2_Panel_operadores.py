@@ -15,7 +15,8 @@ from metgo.vue_embed import get_vue_base_url
 
 bootstrap("01_meteo", "05_apis", "07_monitoreo")
 
-_vue = (get_vue_base_url() or "https://metgo3d.netlify.app").rstrip("/")
+_vue = (get_vue_base_url() or "https://metgo-quillota.pages.dev").rstrip("/")
+_api = (os.getenv("METGO_API_URL") or "https://metgo-api.onrender.com").rstrip("/")
 _legacy = metgo_paths.streamlit_dashboard_path("sistema_auth_dashboard_principal_metgo.py")
 
 st.warning(

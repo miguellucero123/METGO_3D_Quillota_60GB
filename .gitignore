@@ -67,3 +67,5 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+.early.coverage

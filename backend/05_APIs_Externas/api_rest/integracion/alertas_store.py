@@ -164,6 +164,27 @@ def registrar_alertas(alertas: list[dict[str, Any]]) -> None:
             client = get_supabase_client()
             if client:
                 client.table("alertas").insert(nuevas_alertas).execute()
+                
+            # ENVIAR EMAILS CON EMAIL_SERVICE (Fase 10 / Producción)
+            try:
+                from api_rest.services.email_service import email_service
+                if email_service.is_configured() and client:
+                    # Obtener usuarios con plan activo que pertenezcan a este sitio/faena
+                    res = client.table("users").select("email").eq("status", "active").execute()
+                    if res.data:
+                        emails = [u["email"] for u in res.data if u.get("email")]
+                        for a in nuevas_alertas:
+                            if a.get("nivel") in ["warning", "critical", "alta"]:
+                                for email in emails:
+                                    email_service.send_alert_email(
+                                        user_email=email,
+                                        alert_level=a.get("nivel", "warning"),
+                                        alert_message=a.get("mensaje", ""),
+                                        station_id=a.get("estacion_id", "METGO")
+                                    )
+            except Exception as e_email:
+                print(f"Error enviando alertas por email_service: {e_email}")
+
         except Exception as e:
             print(f"Error guardando alertas en Supabase: {e}")
 

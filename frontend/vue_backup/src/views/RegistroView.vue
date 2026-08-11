@@ -1,0 +1,394 @@
+<script setup>
+import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { Leaf } from 'lucide-vue-next'
+import { fetchPlanes, registerV2, validateRegistro, wakeApi } from '@/api/metgoApi'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
+import TurnstileWidget from '@/components/TurnstileWidget.vue'
+import { setLocale } from '@/i18n'
+
+const { t, locale } = useI18n()
+const router = useRouter()
+
+const form = reactive({
+  email: '',
+  password: '',
+  password_confirm: '',
+  nombres: '',
+  apellidos: '',
+  telefono: '',
+  razon_social: '',
+  rut: '',
+  almacenamiento_datos: false,
+  tos: false,
+  privacy: false,
+  veracidad: false,
+})
+
+const errors = ref({})
+const msg = ref('')
+const cargando = ref(false)
+const done = ref(false)
+const registeredEmail = ref('')
+const planes = ref([])
+const SITIO = 'quillota'
+const turnstileSiteKey = ref('')
+const turnstileRequired = ref(false)
+const turnstileToken = ref('')
+
+onMounted(async () => {
+  wakeApi().catch(() => {})
+  try {
+    const apiBase = String(
+      import.meta.env.VITE_METGO_API || 'https://metgo-api.onrender.com/api',
+    ).replace(/\/$/, '')
+    const res = await fetch(`${apiBase}/public/security-config`)
+    if (res.ok) {
+      const cfg = await res.json()
+      turnstileSiteKey.value =
+        import.meta.env.VITE_TURNSTILE_SITE_KEY || cfg?.turnstile?.site_key || ''
+      turnstileRequired.value = Boolean(cfg?.turnstile?.required)
+    }
+  } catch {
+    turnstileSiteKey.value = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
+  }
+  try {
+    const data = await fetchPlanes(SITIO)
+    planes.value = (data.planes || []).filter((p) => p.plan_code !== 'preview')
+  } catch {
+    planes.value = []
+  }
+})
+
+async function onSubmit() {
+  msg.value = ''
+  errors.value = {}
+  if (turnstileRequired.value && turnstileSiteKey.value && !turnstileToken.value) {
+    msg.value = 'Complete la verificación anti-bot antes de continuar.'
+    return
+  }
+  cargando.value = true
+  const body = {
+    email: form.email.trim(),
+    password: form.password,
+    password_confirm: form.password_confirm,
+    nombres: form.nombres.trim(),
+    apellidos: form.apellidos.trim(),
+    telefono: form.telefono.trim(),
+    razon_social: form.razon_social.trim(),
+    rut: form.rut.trim(),
+    sitio: SITIO,
+    turnstile_token: turnstileToken.value || undefined,
+    consentimientos: {
+      almacenamiento_datos: form.almacenamiento_datos,
+      tos: form.tos,
+      privacy: form.privacy,
+      veracidad: form.veracidad,
+    },
+  }
+  try {
+    const v = await validateRegistro(body)
+    if (!v.ok) {
+      errors.value = v.errors || {}
+      return
+    }
+    await registerV2(body)
+    registeredEmail.value = body.email
+    done.value = true
+    msg.value = t('registro.ok')
+  } catch (e) {
+    if (e.data?.validation?.errors) errors.value = e.data.validation.errors
+    else msg.value = e.message || t('registro.error')
+  } finally {
+    cargando.value = false
+  }
+}
+
+function irLogin() {
+  router.push({ path: '/login', query: { registered: '1', email: registeredEmail.value || undefined } })
+}
+</script>
+
+<template>
+  <div class="auth-page">
+    <div class="auth-panel wide">
+      <div class="top">
+        <ThemeToggle />
+        <div class="lang-switch" role="group" :aria-label="t('lang.label')">
+          <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
+            {{ t('lang.es') }}
+          </button>
+          <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">
+            {{ t('lang.en') }}
+          </button>
+        </div>
+        <router-link to="/">{{ t('app.home') }}</router-link>
+      </div>
+
+      <div v-if="done" class="success-panel" role="status">
+        <h1>{{ t('registro.okTitle') }}</h1>
+        <p class="ok">{{ msg || t('registro.ok') }}</p>
+        <p v-if="registeredEmail" class="hint">Email: <strong>{{ registeredEmail }}</strong></p>
+        <p class="hint">{{ t('registro.okHint') }}</p>
+        <button type="button" class="btn-primary" @click="irLogin">{{ t('registro.goLogin') }}</button>
+      </div>
+
+      <template v-else>
+      <div class="brand">
+        <div class="logo"><Leaf aria-hidden="true" /></div>
+        <h1>{{ t('registro.title', { name: 'Quillota' }) }}</h1>
+        <p>{{ t('registro.sub') }}</p>
+      </div>
+
+      <form class="grid" @submit.prevent="onSubmit">
+        <label><span>{{ t('registro.nombres') }}</span><input v-model="form.nombres" required autocomplete="given-name" /></label>
+        <label><span>{{ t('registro.apellidos') }}</span><input v-model="form.apellidos" required autocomplete="family-name" /></label>
+        <label><span>{{ t('registro.email') }}</span><input v-model="form.email" type="email" required autocomplete="email" /></label>
+        <label><span>{{ t('registro.telefono') }}</span><input v-model="form.telefono" placeholder="+56912345678" autocomplete="tel" /></label>
+        <label><span>{{ t('registro.razon') }}</span><input v-model="form.razon_social" required autocomplete="organization" /></label>
+        <label><span>{{ t('registro.rut') }}</span><input v-model="form.rut" required placeholder="76.123.456-0" autocomplete="off" /></label>
+        <label><span>{{ t('registro.password') }}</span><input v-model="form.password" type="password" required minlength="10" autocomplete="new-password" /></label>
+        <label><span>{{ t('registro.confirm') }}</span><input v-model="form.password_confirm" type="password" required autocomplete="new-password" /></label>
+
+        <div v-if="turnstileSiteKey" class="full captcha">
+          <TurnstileWidget :site-key="turnstileSiteKey" @token="turnstileToken = $event" />
+          <p v-if="turnstileRequired && !turnstileToken" class="field-hint">
+            Complete la verificación anti-bot antes de crear la cuenta.
+          </p>
+        </div>
+
+        <fieldset class="consents">
+          <legend>{{ t('registro.consentsLegend') }}</legend>
+          <label class="check">
+            <input v-model="form.almacenamiento_datos" type="checkbox" />
+            {{ t('registro.consentStore') }}
+          </label>
+          <label class="check">
+            <input v-model="form.tos" type="checkbox" />
+            {{ t('registro.consentTos') }}
+          </label>
+          <label class="check">
+            <input v-model="form.privacy" type="checkbox" />
+            {{ t('registro.consentPrivacy') }}
+          </label>
+          <label class="check">
+            <input v-model="form.veracidad" type="checkbox" />
+            {{ t('registro.consentTruth') }}
+          </label>
+        </fieldset>
+
+        <div v-if="Object.keys(errors).length" class="err" role="alert">
+          <div v-for="(msgs, k) in errors" :key="k">
+            <strong>{{ k }}:</strong> {{ msgs.join('; ') }}
+          </div>
+        </div>
+        <p v-if="msg && !done" class="err">{{ msg }}</p>
+
+        <button type="submit" class="btn-primary" :disabled="cargando">
+          {{ cargando ? t('registro.loading') : t('registro.submit') }}
+        </button>
+      </form>
+
+      <section v-if="planes.length" class="planes">
+        <h2>{{ t('registro.plansTitle') }}</h2>
+        <ul>
+          <li v-for="p in planes" :key="p.plan_code">
+            <strong>{{ p.nombre }}</strong>
+            <span class="feats"> — {{ p.descripcion || (p.features || []).join(', ') }}</span>
+          </li>
+        </ul>
+      </section>
+
+      <p class="foot">
+        {{ t('registro.haveAccount') }}
+        <router-link to="/login">{{ t('registro.signIn') }}</router-link>
+      </p>
+      </template>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: #0a0f1a;
+  background-image: radial-gradient(ellipse 800px 400px at 10% 0%, rgba(0, 255, 170, 0.14), transparent 55%);
+}
+.auth-panel {
+  width: min(640px, 100%);
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+  color: #f8fafc;
+}
+.auth-panel.wide {
+  width: min(720px, 100%);
+}
+.top {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+.top a {
+  color: #94a3b8;
+}
+.lang-switch {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+.lang-switch button {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.lang-switch button.active {
+  color: #00ffaa;
+  border-color: #00ffaa;
+  background: rgba(0, 255, 170, 0.12);
+}
+.brand {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.success-panel {
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+}
+.success-panel h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+}
+.success-panel .hint {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+.success-panel .btn-primary {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+.logo {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 0.75rem;
+  display: grid;
+  place-items: center;
+  background: #00ffaa;
+  color: #0a0f1a;
+  border-radius: 10px;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.brand p {
+  margin: 0.4rem 0 0;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+.grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.grid input {
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0a0f1a;
+  color: #f8fafc;
+}
+.consents {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+.consents legend {
+  color: #e2e8f0;
+  font-size: 0.85rem;
+}
+.check {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.45rem 0;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+}
+.err {
+  grid-column: 1 / -1;
+  color: #f87171;
+  font-size: 0.85rem;
+}
+.captcha {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0;
+}
+.field-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+.ok {
+  grid-column: 1 / -1;
+  color: #34d399;
+}
+.btn-primary {
+  grid-column: 1 / -1;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 9px;
+  background: #00ffaa;
+  color: #0a0f1a;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+.planes {
+  margin-top: 1.25rem;
+}
+.planes h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+.feats {
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+.foot {
+  margin-top: 1rem;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+.foot a {
+  color: #00ffaa;
+}
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

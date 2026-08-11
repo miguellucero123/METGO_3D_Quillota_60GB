@@ -3,7 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Leaf } from 'lucide-vue-next'
-import { fetchPlanes, registerV2, validateRegistro, wakeApi } from '@/api/metgoApi'
+import { fetchPlanes, register, validateRegistro, wakeApi } from '@/api/metgoApi'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 import TurnstileWidget from '@/components/TurnstileWidget.vue'
 import { setLocale } from '@/i18n'
@@ -93,7 +93,7 @@ async function onSubmit() {
       errors.value = v.errors || {}
       return
     }
-    await registerV2(body)
+    await register(body)
     registeredEmail.value = body.email
     done.value = true
     msg.value = t('registro.ok')

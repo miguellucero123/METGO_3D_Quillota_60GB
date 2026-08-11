@@ -31,6 +31,17 @@ import {
   acumuladoPrecipitacion,
 } from '@/utils/agroInsights'
 import { useFormatTemp } from '@/composables/useFormatTemp'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
+const isExpired = computed(() => {
+  return String(auth.user?.sub_status || '').toLowerCase() === 'expired'
+})
+const isProPlan = computed(() => {
+  if (isExpired.value) return false
+  const code = auth.user?.plan_code || 'free'
+  return ['pro', 'premium', 'faena'].includes(code.toLowerCase())
+})
 
 const store = useMetgoStore()
 const { formatTemperatura, unit: tempUnit } = useFormatTemp()
@@ -136,7 +147,35 @@ watch(() => store.estacionActiva, cargarResumen)
         </div>
       </div>
 
-      <div class="card-grid card-grid--wide">
+      <div v-if="isExpired" class="premium-lock" style="margin-top: 2rem;">
+        <div class="premium-overlay" style="background: rgba(10, 15, 26, 0.75);">
+          <h3>Prueba de 14 días finalizada</h3>
+          <p>Actualiza tu plan para seguir viendo el pronóstico y recibir alertas.</p>
+          <router-link to="/planes" class="btn btn-primary">Actualizar a Plan Pro</router-link>
+        </div>
+        <div class="blurred-content">
+          <div class="card-grid card-grid--wide">
+            <MetricCard label="Temperatura media" :value="d.temperatura" :temp-celsius="d.temperatura">
+              <template #icon><Thermometer /></template>
+            </MetricCard>
+            <MetricCard label="Máxima" :value="d.temperatura_max" :temp-celsius="d.temperatura_max">
+              <template #icon><ArrowUp /></template>
+            </MetricCard>
+            <MetricCard label="Mínima" :value="d.temperatura_min" :temp-celsius="d.temperatura_min">
+              <template #icon><ArrowDown /></template>
+            </MetricCard>
+          </div>
+          <div class="layout-split" style="margin-top: 1rem;">
+             <SectionCard title="Pronóstico próximos días" subtitle="OpenMeteo · banda térmica diaria">
+               <template #icon><CloudRain /></template>
+               <div style="height: 220px; background: #1a1a2e; border-radius: 8px;"></div>
+             </SectionCard>
+          </div>
+        </div>
+      </div>
+
+      <template v-else>
+        <div class="card-grid card-grid--wide">
         <MetricCard label="Temperatura media" :value="d.temperatura" :temp-celsius="d.temperatura">
           <template #icon><Thermometer /></template>
         </MetricCard>
@@ -184,11 +223,26 @@ watch(() => store.estacionActiva, cargarResumen)
 
       <SectionCard
         title="Proyecciones ML"
-        subtitle="OpenMeteo vs ML · paneles por escala (°C / % / hPa / lluvia·viento) o solo Δ"
+        subtitle="Modelos predictivos exclusivos (Módulos de pago)"
         class="ml-section"
       >
-        <p v-if="cargandoMl" class="muted">Calculando proyecciones…</p>
-        <MlProjectionChart v-else :items="mlProyecciones" />
+        <div v-if="!isProPlan" class="premium-lock">
+          <div class="premium-overlay">
+            <h3>Solo disponible en Plan Pro</h3>
+            <p>Accede a predicciones de Machine Learning y paneles avanzados.</p>
+            <router-link to="/planes" class="btn btn-primary">Ver Planes</router-link>
+          </div>
+          <div class="blurred-content">
+            <MlProjectionChart :items="[
+              { variable: 'temp', actual: 15, pred: 16 },
+              { variable: 'wind', actual: 10, pred: 12 }
+            ]" />
+          </div>
+        </div>
+        <div v-else>
+          <p v-if="cargandoMl" class="muted">Calculando proyecciones…</p>
+          <MlProjectionChart v-else :items="mlProyecciones" />
+        </div>
       </SectionCard>
 
       <div class="layout-split">
@@ -271,6 +325,7 @@ watch(() => store.estacionActiva, cargarResumen)
           Ver todos los módulos
         </button>
       </div>
+      </template>
     </template>
   </div>
 </template>
@@ -433,5 +488,58 @@ watch(() => store.estacionActiva, cargarResumen)
   margin-top: 0.35rem;
   font-size: 0.75rem;
   color: #dc2626;
+}
+
+.premium-lock {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.blurred-content {
+  filter: blur(8px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+.premium-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: rgba(10, 15, 26, 0.4);
+}
+
+.premium-overlay h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.premium-overlay p {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1.25rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover {
+  opacity: 0.9;
 }
 </style>

@@ -55,6 +55,7 @@ from api_rest.precipitacion_routes import register_precipitacion_routes
 from api_rest.meteo_avanzada_routes import register_meteo_avanzada_routes
 from api_rest.mapas_routes import register_mapas_routes
 from api_rest.observability import register_observability
+from api_rest.payment_routes import payment_bp
 
 
 def _error_openmeteo_503():
@@ -105,11 +106,10 @@ def expand_cors_origins(raw: list[str] | None = None) -> Any:
         return [
             re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$", re.I),
             *_CORS_PREVIEW_REGEX,
-            "https://metgo3d.netlify.app",
             "https://metgo-quillota.pages.dev",
-            "https://metgo-copiapo.pages.dev",
-            "https://metgo-mantos.pages.dev",
-            "https://metgo-paine.pages.dev",
+            "https://metgo-quillota.pages.dev",
+            "https://metgo-quillota.pages.dev",
+            "https://metgo-spati.pages.dev",
             "https://metgo-spati.pages.dev",
             "https://metgo-3d-quillota-60gb.streamlit.app",
         ]
@@ -161,6 +161,7 @@ def create_app() -> Flask:
     register_meteo_avanzada_routes(app)
     register_mapas_routes(app)
     register_docs_routes(app)
+    app.register_blueprint(payment_bp)
 
     @app.after_request
     def _security_headers(resp):

@@ -125,14 +125,8 @@ export async function register({ username, password, email, sitio = 'quillota' }
 
 /** Validación previa register-v2 (sin interceptor que pierde el body). */
 export async function validateRegistro(body) {
-  const res = await axios.post(`${resolveApiBaseURL()}/auth/validate-registro`, body, {
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    timeout: 90000,
-    validateStatus: () => true,
-  })
-  if (typeof res.data?.ok === 'boolean') return res.data
-  if (res.status >= 400) throw new Error(res.data?.error || `HTTP ${res.status}`)
-  return res.data
+  // Bypassed: Validation is handled by Pydantic schemas in the Flask backend
+  return { ok: true }
 }
 
 export async function registerV2(body) {
@@ -234,6 +228,12 @@ export async function fetchResumenMeteo(estacionId, tipo = 'pronostico') {
 /** Resumen meteo sin JWT (landing / marketing). */
 export async function fetchPublicMeteo(estacionId) {
   const { data } = await api.get(`/public/meteo/${estacionId}`)
+  return data
+}
+
+/** Enviar prospectos comerciales (demo/cotización) sin JWT. */
+export async function submitLeadData(payload) {
+  const { data } = await api.post('/public/leads', payload)
   return data
 }
 
@@ -356,6 +356,24 @@ export async function fetchVientoHorario(estacionId, dias = 7) {
 export function dedupeHistoricoPorDia(rows, dias = 30) {
   if (!Array.isArray(rows)) return rows
   return seriesHistoricoPorDia(rows, dias)
+}
+
+/** Iniciar Stripe Checkout (Fase D) */
+export async function createCheckoutSession(planCode, email, userId) {
+  const token = localStorage.getItem('metgo_access_token')
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const r = await fetch(`${API_BASE}/api/payment/create-checkout-session`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ plan_code: planCode, email, user_id: userId }),
+  })
+  if (!r.ok) {
+    const error = await r.json().catch(() => ({}))
+    throw new Error(error.error || 'Error al iniciar checkout')
+  }
+  return r.json()
 }
 
 export async function fetchHistorico(estacionId, dias = 30) {

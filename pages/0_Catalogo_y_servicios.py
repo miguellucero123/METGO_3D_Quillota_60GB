@@ -197,7 +197,7 @@ with tab_srv:
         with col_c:
             sid = s["id"]
             if s.get("ruta_vue_alternativa"):
-                vue_base = os.getenv("METGO_VUE_URL", "https://metgo3d.netlify.app").rstrip("/")
+                vue_base = os.getenv("METGO_VUE_URL", "https://metgo-quillota.pages.dev").rstrip("/")
                 st.link_button(
                     "Vue",
                     f"{vue_base}{s['ruta_vue_alternativa']}",

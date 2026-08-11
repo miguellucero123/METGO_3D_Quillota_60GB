@@ -1,0 +1,323 @@
+<template>
+  <div class="commercial-page">
+    <header class="top">
+      <nav class="nav" aria-label="Principal">
+        <router-link to="/" class="brand">
+          <span class="brand-text">
+            <span class="brand-name">METGO</span>
+            <span class="brand-sub">3D</span>
+          </span>
+        </router-link>
+        <div class="nav-links">
+          <router-link to="/planes" class="router-link-active">Planes</router-link>
+          <router-link to="/izaje">Izaje</router-link>
+          <router-link to="/mineria">Minería</router-link>
+          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
+        </div>
+        <div class="nav-cta">
+          <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
+        </div>
+      </nav>
+    </header>
+
+    <main class="commercial-wrap commercial-section">
+      <div style="text-align: center; margin-bottom: 4rem;">
+        <h1>Planes diseñados para faenas reales</h1>
+        <p class="subtitle" style="margin: 0 auto;">
+          Precio fijo mensual por zona o faena. Sin sorpresas. Sin costo por alerta.
+          Comienza a tomar decisiones con datos que protegen tu operación.
+        </p>
+      </div>
+
+      <div class="commercial-grid-3">
+        <!-- Plan Campo -->
+        <div class="commercial-card pricing-card">
+          <h3 class="plan-name">Plan Campo</h3>
+          <p class="plan-target">Agricultura de precisión</p>
+          <div class="plan-price">
+            <span class="price-from">desde</span>
+            <span class="price-value">$990</span>
+            <span class="price-period">USD/mes</span>
+          </div>
+          <p class="plan-unit">por zona de cultivo</p>
+          
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Panel operativo en tiempo real para tu zona</li>
+            <li><span class="check">✓</span> Alertas de helada, lluvia y viento por WhatsApp</li>
+            <li><span class="check">✓</span> Pronóstico 72h con resolución de 1–3 km</li>
+            <li><span class="check">✓</span> Informe semanal descargable</li>
+            <li><span class="check">✓</span> 14 días de prueba sin costo</li>
+          </ul>
+          
+          <router-link to="/contacto?sector=agricultura" class="commercial-btn primary" style="width: 100%; margin-top: 1.5rem;">
+            Solicitar acceso
+          </router-link>
+        </div>
+
+        <!-- Plan Faena -->
+        <div class="commercial-card pricing-card featured">
+          <div class="featured-badge">Más popular</div>
+          <h3 class="plan-name">Plan Faena</h3>
+          <p class="plan-target">Minería, izaje y alta montaña</p>
+          <div class="plan-price">
+            <span class="price-from">desde</span>
+            <span class="price-value">$1.800</span>
+            <span class="price-period">USD/mes</span>
+          </div>
+          <p class="plan-unit">por faena</p>
+          
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Semáforo operacional hora a hora</li>
+            <li><span class="check">✓</span> Viento en perfil vertical (10m, 50m, 100m)</li>
+            <li><span class="check">✓</span> Alertas de tormenta eléctrica y cizalladura</li>
+            <li><span class="check">✓</span> Pronóstico subestacional 20–90 días</li>
+            <li><span class="check">✓</span> Soporte técnico directo</li>
+          </ul>
+          
+          <router-link to="/contacto?sector=mineria" class="commercial-btn primary" style="width: 100%; margin-top: 1.5rem;">
+            Solicitar demo para tu faena
+          </router-link>
+        </div>
+
+        <!-- Plan Municipio -->
+        <div class="commercial-card pricing-card">
+          <h3 class="plan-name">Plan Municipio</h3>
+          <p class="plan-target">Calidad del aire y sector público</p>
+          <div class="plan-price">
+            <span class="price-from">desde</span>
+            <span class="price-value">$600</span>
+            <span class="price-period">USD/mes</span>
+          </div>
+          <p class="plan-unit">por red de estaciones</p>
+          
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Dashboard de calidad del aire con tu logo</li>
+            <li><span class="check">✓</span> Red de estaciones integrada en la plataforma</li>
+            <li><span class="check">✓</span> Alertas de episodios críticos (DS 59/DS 138)</li>
+            <li><span class="check">✓</span> Informes exportables para SINCA y fiscalización</li>
+            <li><span class="check">✓</span> Cotización formal por Mercado Público</li>
+          </ul>
+          
+          <router-link to="/contacto?sector=calidad-aire" class="commercial-btn secondary" style="width: 100%; margin-top: 1.5rem;">
+            Solicitar cotización formal
+          </router-link>
+        </div>
+      </div>
+
+      <div class="faq-section" style="margin-top: 6rem;">
+        <h2 style="text-align: center; margin-bottom: 3rem;">Preguntas frecuentes</h2>
+        
+        <div class="faq-grid">
+          <div class="faq-item">
+            <h4>¿Los precios son en USD o CLP?</h4>
+            <p>Facturamos en la moneda que mejor se adapte a tu empresa (USD o CLP). Para contratos en Chile, usamos el valor UF/CLP de referencia del día de facturación.</p>
+          </div>
+          <div class="faq-item">
+            <h4>¿Hay contrato mínimo?</h4>
+            <p>Ofrecemos contratos mes a mes para máxima flexibilidad. Sin embargo, los contratos anuales o por temporada (ej. 6 meses de cosecha) incluyen descuentos significativos.</p>
+          </div>
+          <div class="faq-item">
+            <h4>¿Qué pasa si mi zona no está cubierta actualmente?</h4>
+            <p>Desplegamos nuestro modelo en nuevas zonas constantemente. Solicita una evaluación gratuita de tu faena y te confirmaremos si podemos activarla (usualmente toma &lt;72h).</p>
+          </div>
+          <div class="faq-item">
+            <h4>Garantía: Primer mes sin costo</h4>
+            <p>Entendemos que necesitas validar que la herramienta es útil para tu operación. El primer mes de piloto es sin costo. Si no te ahorramos dinero o tiempo, no pagas.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<style scoped>
+/* Navigation styles (duplicated temporarily until we extract a Layout component for commercial pages) */
+.top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(8, 12, 20, 0.82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+}
+.nav {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-links {
+  display: none;
+  gap: 1.5rem;
+}
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
+}
+.nav-links a {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.nav-links a:hover,
+.nav-links a.router-link-active {
+  color: var(--text-primary);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.brand-name {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.brand-sub {
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-ghost {
+  color: var(--text-primary);
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Pricing specific styles */
+.pricing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-card.featured {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+}
+
+.featured-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.plan-name {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+
+.plan-target {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.price-from {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.price-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+.price-period {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.plan-unit {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.check {
+  color: var(--accent-secondary);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* FAQ */
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.faq-item h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: white;
+}
+
+.faq-item p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

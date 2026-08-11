@@ -203,9 +203,9 @@ Detalle: [`FASE_SEGURIDAD_DT_AUTH.md`](FASE_SEGURIDAD_DT_AUTH.md) · KYC: [`ADR_
 | Rate limit login/register/reenviar | ✅ código — deploy API |
 | Turnstile registro (4 SPAs) | ✅ código — keys Render + Pages |
 | CSP + `_headers` Pages | ✅ código — redeploy SPAs |
-| RLS identity deny anon | ✅ migración — `supabase db push` |
+| RLS identity deny anon | ✅ aplicado CLI 2026-08-05 |
 | ETL retry-queue + CRON | ✅ código |
-| KYC manual + gate pago | ✅ código — `METGO_KYC_GATE_PAID` off hasta cobrar |
+| KYC manual + gate pago | ✅ migración aplicada; gate off hasta cobrar |
 | Sesión idle / KEK_PREV | ✅ código — Redis multi-worker ⬜ |
 
 ---
