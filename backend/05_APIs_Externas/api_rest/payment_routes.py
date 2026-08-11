@@ -1,7 +1,12 @@
 import os
-import stripe
 import logging
 from flask import Blueprint, request, jsonify, redirect
+
+try:
+    import stripe
+except ImportError:
+    stripe = None
+
 from api_rest.integracion.supabase_store import get_supabase_client
 from api_rest.services.payment_service import payment_service
 
@@ -16,7 +21,7 @@ def create_checkout_session():
     email = data.get("email")
     user_id = data.get("user_id")
 
-    if not stripe.api_key:
+    if not stripe or not stripe.api_key:
         return jsonify({"error": "Stripe no configurado en backend", "url": "/planes?mock=1"}), 200
 
     # Map plan_code to Price ID (Mock or configure real ones in ENV)
@@ -58,7 +63,7 @@ def stripe_webhook():
     endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
     event = None
-    if stripe.api_key and endpoint_secret:
+    if stripe and stripe.api_key and endpoint_secret:
         try:
             event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
         except ValueError as e:
