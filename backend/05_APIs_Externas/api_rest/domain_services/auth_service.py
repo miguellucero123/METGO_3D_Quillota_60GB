@@ -5,7 +5,7 @@ import jwt
 import os
 from typing import Tuple, Optional
 
-from integracion.supabase_store import rest_select, rest_insert, rest_patch, rest_delete
+from api_rest.integracion.supabase_store import rest_select, rest_insert, rest_patch, rest_delete
 
 logger = logging.getLogger(__name__)
 
