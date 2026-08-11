@@ -51,12 +51,12 @@
             </h1>
             <p class="hero-sub">{{ t('landing.heroSub') }}</p>
             <div class="hero-actions">
-              <router-link class="btn btn-primary btn-lg" to="/planes">
+              <router-link class="btn btn-primary btn-lg" to="/contacto">
                 {{ t('landing.requestDemo') }}
               </router-link>
-              <a href="https://metgo-quillota.pages.dev" target="_blank" class="btn btn-ghost btn-lg">
+              <router-link class="btn btn-ghost btn-lg" to="/app">
                 {{ t('landing.viewLivePanel') }}
-              </a>
+              </router-link>
             </div>
             <div class="hero-meta">
               <div>
@@ -117,6 +117,31 @@
         </div>
       </section>
 
+      <section class="innov wrap" aria-labelledby="innov-title">
+        <h2 id="innov-title">{{ t('landing.innovTitle') }}</h2>
+        <p class="innov-sub">{{ t('landing.innovSub') }}</p>
+        <div class="innov-grid">
+          <article>
+            <h3>{{ t('landing.innov1Title') }}</h3>
+            <p>{{ t('landing.innov1Body') }}</p>
+            <a href="https://metgo-spati.pages.dev" target="_blank" rel="noopener">VENTORA →</a>
+          </article>
+          <article>
+            <h3>{{ t('landing.innov2Title') }}</h3>
+            <p>{{ t('landing.innov2Body') }}</p>
+            <a href="https://metgo-copiapo.pages.dev" target="_blank" rel="noopener">Copiapó →</a>
+          </article>
+          <article>
+            <h3>{{ t('landing.innov3Title') }}</h3>
+            <p>{{ t('landing.innov3Body') }}</p>
+            <router-link to="/planes">{{ t('landing.innovCta') }} →</router-link>
+          </article>
+        </div>
+        <p class="innov-mail">
+          Demo / cotización:
+          <a href="mailto:miguel.lucero@metgo3d.com">miguel.lucero@metgo3d.com</a>
+        </p>
+      </section>
 
       <div class="stats">
         <div class="wrap stats-grid">
@@ -852,6 +877,57 @@ h1 em {
   margin-top: 4px;
 }
 
+.innov {
+  padding: 3.5rem 0 1rem;
+}
+.innov h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+}
+.innov-sub {
+  margin: 0 0 1.5rem;
+  color: var(--text-secondary, #94a3b8);
+  max-width: 40rem;
+}
+.innov-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 800px) {
+  .innov-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.innov-grid article {
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--border-color, #1e293b);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.45);
+}
+.innov-grid h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+.innov-grid p {
+  margin: 0 0 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.innov-grid a {
+  color: var(--accent-primary, #10b981);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.innov-mail {
+  margin: 1.5rem 0 0;
+  font-size: 0.95rem;
+}
+.innov-mail a {
+  color: var(--accent-primary, #10b981);
+}
 .stats {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);

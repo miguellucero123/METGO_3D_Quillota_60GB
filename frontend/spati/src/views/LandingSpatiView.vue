@@ -118,7 +118,7 @@
 
     <footer class="foot">
       <span>METGO 3D SpA · Santiago, Chile</span>
-      <a href="mailto:contacto@metgo3d.com">contacto@metgo3d.com</a>
+      <a href="mailto:miguel.lucero@metgo3d.com">miguel.lucero@metgo3d.com</a>
       <router-link v-if="isLoggedIn" to="/app">{{ t('landing.goHub') }}</router-link>
     </footer>
   </div>

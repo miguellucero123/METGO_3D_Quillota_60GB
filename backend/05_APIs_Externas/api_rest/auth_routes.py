@@ -313,6 +313,32 @@ def register_auth_routes(app: Flask) -> None:
                 if not inserted:
                     return jsonify({"error": "Error de conexión con la base de datos"}), 500
 
+            # Aviso comercial (no bloquea si SMTP falla)
+            try:
+                from api_rest.identity import email_notify
+
+                dest = (
+                    (os.getenv("METGO_LEADS_TO") or "").strip()
+                    or "miguel.lucero@metgo3d.com"
+                )
+                body = (
+                    f"Nuevo lead METGO\n"
+                    f"Nombre: {row.get('first_name')} {row.get('last_name')}\n"
+                    f"Empresa: {row.get('company_name')}\n"
+                    f"Sector: {row.get('sector')}\n"
+                    f"Email: {row.get('email')}\n"
+                    f"Tel: {row.get('phone') or row.get('whatsapp')}\n"
+                    f"Notas: {row.get('notes')}\n"
+                    f"Fuente: {row.get('source')}\n"
+                )
+                email_notify.enviar_texto(
+                    to_email=dest,
+                    subject=f"[METGO lead] {row.get('company_name') or row.get('email')}",
+                    body=body,
+                )
+            except Exception as mail_exc:
+                app.logger.warning("Lead guardado pero email no enviado: %s", mail_exc)
+
             return jsonify({"status": "ok", "message": "Lead registrado exitosamente"}), 201
         except Exception as e:
             app.logger.error("Error al registrar lead: %s", e)

@@ -79,3 +79,36 @@ def enviar_verificacion(
     except Exception as exc:
         print(f"[identity-email] SMTP error: {exc}")
         return {"mode": "smtp", "sent": False, "error": str(exc), "to": to_email}
+
+
+def enviar_texto(*, to_email: str, subject: str, body: str) -> dict[str, Any]:
+    """Email de texto plano (leads / ops). Sin SMTP → mode=log."""
+    if not smtp_configurado():
+        print(f"[identity-email] (log) to={to_email} subject={subject}")
+        return {"mode": "log", "sent": False, "to": to_email, "reason": "smtp_not_configured"}
+
+    host = os.getenv("METGO_SMTP_HOST", "").strip()
+    port = int(os.getenv("METGO_SMTP_PORT", "587"))
+    user = (os.getenv("METGO_SMTP_USER") or "").strip()
+    password = os.getenv("METGO_SMTP_PASSWORD") or ""
+    from_addr = os.getenv("METGO_SMTP_FROM", "").strip()
+    use_tls = (os.getenv("METGO_SMTP_TLS") or "1") == "1"
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = from_addr
+    msg["To"] = to_email
+    msg.set_content(body or "")
+
+    try:
+        smtp_timeout = int(os.getenv("METGO_SMTP_TIMEOUT", "20"))
+        with smtplib.SMTP(host, port, timeout=smtp_timeout) as smtp:
+            if use_tls:
+                smtp.starttls()
+            if user:
+                smtp.login(user, password)
+            smtp.send_message(msg)
+        return {"mode": "smtp", "sent": True, "to": to_email}
+    except Exception as exc:
+        print(f"[identity-email] SMTP error: {exc}")
+        return {"mode": "smtp", "sent": False, "error": str(exc), "to": to_email}

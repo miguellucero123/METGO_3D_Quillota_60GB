@@ -34,7 +34,7 @@
             <p style="color: var(--text-secondary); margin-bottom: 1rem;">
               ¿Necesitas ayuda inmediata o hablar con un especialista?
             </p>
-            <p><strong>Email:</strong> contacto@metgo3d.com</p>
+            <p><strong>Email:</strong> <a href="mailto:miguel.lucero@metgo3d.com">miguel.lucero@metgo3d.com</a></p>
             <p><strong>Ubicación:</strong> Quillota, Región de Valparaíso, Chile</p>
           </div>
         </div>
@@ -86,7 +86,7 @@
               ¡Mensaje enviado! Te contactaremos pronto.
             </div>
             <div v-if="error" style="margin-top: 1rem; color: #ef5b5b; text-align: center;">
-              Hubo un error al enviar. Por favor, intenta de nuevo o escríbenos a contacto@metgo3d.com.
+              Hubo un error al enviar. Por favor, intenta de nuevo o escríbenos a miguel.lucero@metgo3d.com.
             </div>
           </form>
         </div>

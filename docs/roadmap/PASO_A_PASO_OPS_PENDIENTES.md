@@ -3,7 +3,7 @@
 > **Corte:** 2026-08-05 · API prod `version=d3f8c2e`  
 > **Para quién:** acceso a Render, Supabase, GitHub y correo real.  
 > **Objetivo:** cerrar lo que aún es **humano** (mail verify, destinos umbrales, Stripe opcional, datos oficiales).  
-> Claves: [`INVENTARIO_CLAVES_PLATAFORMAS.md`](INVENTARIO_CLAVES_PLATAFORMAS.md) · Plan mejoras: [`PLAN_TRABAJO_MEJORAS.md`](PLAN_TRABAJO_MEJORAS.md) · Checklist corto: [`PASOS_PENDIENTES_OPS.md`](PASOS_PENDIENTES_OPS.md)
+> Claves: [`INVENTARIO_CLAVES_PLATAFORMAS.md`](INVENTARIO_CLAVES_PLATAFORMAS.md) · Plan mejoras: [`PLAN_TRABAJO_MEJORAS.md`](PLAN_TRABAJO_MEJORAS.md) · Checklist corto: [`PASOS_PENDIENTES_OPS.md`](PASOS_PENDIENTES_OPS.md) · Venta WP: [`PLAN_WORDPRESS_VENTA.md`](PLAN_WORDPRESS_VENTA.md) · Innovaciones: [`CATALOGO_INNOVACIONES_VENDIBLES.md`](CATALOGO_INNOVACIONES_VENDIBLES.md) · Leads: `miguel.lucero@metgo3d.com`
 
 API: `https://metgo-api.onrender.com/api` · SPATI: `https://metgo-spati.pages.dev`
 
