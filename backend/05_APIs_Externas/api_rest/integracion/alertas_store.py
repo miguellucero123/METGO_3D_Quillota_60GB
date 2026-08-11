@@ -167,7 +167,7 @@ def registrar_alertas(alertas: list[dict[str, Any]]) -> None:
                 
             # ENVIAR EMAILS CON EMAIL_SERVICE (Fase 10 / Producción)
             try:
-                from api_rest.services.email_service import email_service
+                from api_rest.domain_services.email_service import email_service
                 if email_service.is_configured() and client:
                     # Obtener usuarios con plan activo que pertenezcan a este sitio/faena
                     res = client.table("users").select("email").eq("status", "active").execute()

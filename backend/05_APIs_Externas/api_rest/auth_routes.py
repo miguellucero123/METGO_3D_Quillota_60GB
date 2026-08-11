@@ -177,7 +177,7 @@ def register_auth_routes(app: Flask) -> None:
         faena_req = (data.get("faena") or "").strip().lower() or None
 
         # Control de fuerza bruta con el nuevo servicio
-        from api_rest.services.auth_service import auth_service
+        from api_rest.domain_services.auth_service import auth_service
         ip_address = request.remote_addr or "unknown"
         is_allowed, error_msg = auth_service.check_brute_force(username, ip_address)
         if not is_allowed:
@@ -332,7 +332,7 @@ def register_auth_routes(app: Flask) -> None:
             
         # Enviar email bienvenida
         try:
-            from api_rest.services.email_service import email_service
+            from api_rest.domain_services.email_service import email_service
             email_service.send_welcome_email(user_email=email, user_name=username)
         except Exception as e:
             app.logger.error(f"Failed to send welcome email: {e}")

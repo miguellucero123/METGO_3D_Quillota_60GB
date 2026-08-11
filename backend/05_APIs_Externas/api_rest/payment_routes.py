@@ -8,7 +8,7 @@ except ImportError:
     stripe = None
 
 from api_rest.integracion.supabase_store import get_supabase_client
-from api_rest.services.payment_service import payment_service
+from api_rest.domain_services.payment_service import payment_service
 
 logger = logging.getLogger(__name__)
 payment_bp = Blueprint("payment", __name__, url_prefix="/api/payment")
