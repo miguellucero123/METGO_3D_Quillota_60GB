@@ -118,6 +118,7 @@
 
     <footer class="foot">
       <span>METGO 3D SpA · Santiago, Chile</span>
+      <span class="giro">Servicios de análisis meteorológico, inteligencia climática y desarrollo de plataformas tecnológicas para la gestión de riesgos ambientales y operacionales.</span>
       <a href="mailto:miguel.lucero@metgo3d.com">miguel.lucero@metgo3d.com</a>
       <router-link v-if="isLoggedIn" to="/app">{{ t('landing.goHub') }}</router-link>
     </footer>
@@ -643,6 +644,13 @@ onMounted(async () => {
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.8rem;
+}
+.foot .giro {
+  flex: 1 1 100%;
+  max-width: 52rem;
+  line-height: 1.45;
+  font-size: 0.75rem;
+  opacity: 0.9;
 }
 .foot a {
   color: var(--emer);

@@ -7,16 +7,30 @@
 
 ## 0. ¿Puede Cursor editar WordPress desde aquí?
 
-**No de forma nativa.** `metgo3d.com` vive en **WordPress.com** (fuera del monorepo). Desde este chat **no** hay login al dashboard WP ni FTP.
+**Sí, vía REST** con Application Password (local: `WP_USER` / `WP_APP_PASSWORD` en `.env`, nunca en git). Script: `scripts/wp_rest.py`.
 
-| Qué sí se puede hacer aquí | Qué debes hacer tú en WP |
-|----------------------------|---------------------------|
-| Plan + textos listos para copiar | Pegar en Gutenberg |
-| Mejorar landings Vue (Pages) | Publicar / despublicar entradas |
-| Formulario lead → API → email | Actualizar menús y slugs |
-| Catálogo de innovaciones vendibles | Enlazar a `*.pages.dev` |
+| Qué sí se puede hacer aquí | Qué sigue en panel WP |
+|----------------------------|------------------------|
+| Crear/editar/papelera páginas y posts | Menús visuales / bloques Cover finos |
+| Textos de venta + innovaciones | Widgets / footer del theme |
+| Enlaces a `*.pages.dev` en contenido | Diseño fino Gutenberg si hace falta |
 
-**Si más adelante quieres automatizar WP:** Application Password en WP + REST API (`/wp-json/wp/v2/…`) y se puede scriptar. Hoy el camino más rápido es **copiar/pegar** este plan (1–2 h).
+**Hecho 2026-08-11 (REST):**
+- post `hello-world` (id 2) y página **CV** (id 206) → papelera  
+- Portada = página Inicio (211); ya no muestra posts  
+- Home venta v3 (hero + 3 columnas + precios + demo)  
+- Páginas nuevas: `/planes/` (351), `/innovaciones/` (352), `/contacto/` (353)  
+- Navegación 203: menú fijo (sin `page-list`)  
+- Script: `scripts/wp_apply_venta.py`
+
+**Hecho 2026-08-11 (REST comercial v5):**
+- Header sin “En creación” / Turismo / MJO / links rotos; menú Productos + precios  
+- Footer con giro canónico, productos activos, sin GitHub personal ni WIP  
+- Signup/CTA oscuros (sin Netlify / fondo claro CoachBen)  
+- Home v5 con 4 productos + planes ancla + VENTORA destacado  
+- Página nueva `/izaje-ventora/` (374)  
+- Banners comerciales en Agricultura (204) y Minería/Aire (213)  
+- Script: `scripts/wp_apply_comercial_v5.py`
 
 ---
 

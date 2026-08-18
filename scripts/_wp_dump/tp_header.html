@@ -1,0 +1,110 @@
+<!-- wp:group {"align":"full","style":{"color":{"background":"#0f172a","text":"#ffffff"},"spacing":{"padding":{"top":"0px","bottom":"0px","right":"0px","left":"0px"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignfull has-text-color has-background" style="color:#ffffff;background-color:#0f172a">
+
+<!-- wp:html -->
+<nav style="background:#0f172a;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:relative;font-family:sans-serif;gap:16px">
+
+  <!-- Logo -->
+  <div style="color:#fff;font-weight:800;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;flex-shrink:0">
+    METGO 3D
+  </div>
+
+  <!-- Menú principal -->
+  <ul id="mg-menu" style="display:flex;align-items:center;gap:2px;list-style:none;margin:0;padding:0;flex:1;justify-content:center">
+
+    <li style="position:relative">
+      <a href="/" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;gap:4px;border-radius:6px;text-decoration:none;white-space:nowrap">Inicio</a>
+    </li>
+
+    <li style="position:relative">
+      <span onclick="mgToggle(this.parentElement)" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;gap:4px;border-radius:6px;cursor:pointer;white-space:nowrap">
+        Agricultura de precisión <span class="mg-chev">▾</span>
+      </span>
+      <div class="mg-drop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#1e293b;border:1px solid #334155;border-radius:8px;min-width:220px;z-index:9999;overflow:hidden">
+        <a href="/agricultura-de-precision/" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50">Quillota <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50;cursor:default">Melipilla <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50;cursor:default">San Fernando <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;cursor:default">Curicó <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+      </div>
+    </li>
+
+    <li style="position:relative">
+      <span onclick="mgToggle(this.parentElement)" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;gap:4px;border-radius:6px;cursor:pointer;white-space:nowrap">
+        Minería y calidad del aire <span class="mg-chev">▾</span>
+      </span>
+      <div class="mg-drop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#1e293b;border:1px solid #334155;border-radius:8px;min-width:240px;z-index:9999;overflow:hidden">
+        <a href="/mineria-y-calidad-del-aire/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50">Copiapó <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+        <a href="https://metgo-mantos.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50">Mantos Blancos <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+        <a href="https://metgo-spati.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50">Pronósticos Izajes (17 sectores) <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50;cursor:default">WRF-Python y Calpuff <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;cursor:default">Huella de carbono <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+      </div>
+    </li>
+
+    <li style="position:relative">
+      <span onclick="mgToggle(this.parentElement)" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;gap:4px;border-radius:6px;cursor:pointer;white-space:nowrap">
+        Turismo aventura <span class="mg-chev">▾</span>
+      </span>
+      <div class="mg-drop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#1e293b;border:1px solid #334155;border-radius:8px;min-width:220px;z-index:9999;overflow:hidden">
+        <a href="https://metgo-paine.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50">Torres del Paine <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50;cursor:default">Huilo-Huilo <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50;cursor:default">Malalcahuello <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#64748b;font-size:13px;font-weight:500;cursor:default">Termas de Chillán <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+      </div>
+    </li>
+
+    <li style="position:relative">
+      <span onclick="mgToggle(this.parentElement)" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;gap:4px;border-radius:6px;cursor:pointer;white-space:nowrap">
+        MJO Chile <span class="mg-chev">▾</span>
+      </span>
+      <div class="mg-drop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#1e293b;border:1px solid #334155;border-radius:8px;min-width:220px;z-index:9999;overflow:hidden">
+        <a href="/mjo_chile/" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:500;border-bottom:1px solid #2d3c50">MJO_Chile <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Demo</span></a>
+      </div>
+    </li>
+
+    <li><a href="/nosotros/" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;border-radius:6px;text-decoration:none;white-space:nowrap">Nosotros</a></li>
+    <li><a href="//" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;border-radius:6px;text-decoration:none;white-space:nowrap">__</a></li>
+  </ul>
+
+  <!-- Botón Acceder -->
+  <div id="mg-acceder" style="position:relative;flex-shrink:0">
+    <button onclick="mgToggleAcceder()" style="background:#ea580c;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">Acceder ▾</button>
+    <div id="mg-adrop" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#1e293b;border:1px solid #334155;border-radius:8px;min-width:250px;z-index:9999;overflow:hidden">
+      <a href="https://metgo-copiapo.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #334155">Copiapó <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+      <a href="https://metgo-quillota.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #334155">Quillota <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+      <a href="https://metgo-mantos.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #334155">Mantos Blancos <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+      <a href="https://metgo-spati.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #334155">Pronósticos Izajes <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+      <a href="https://metgo-paine.pages.dev" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #334155">Torres del Paine <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">ACTIVO</span></a>
+      <a href="https://metgo-mjo-chile.pages.dev/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #334155">MJO Chile <span style="background:#166534;color:#86efac;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">DEMO</span></a>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;color:#64748b;font-size:13px;font-weight:600;cursor:default">Huella de carbono <span style="background:#1e3a5f;color:#7dd3fc;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">En creación</span></div>
+    </div>
+  </div>
+
+</nav>
+
+<script>
+function mgToggle(li) {
+  var drops = document.querySelectorAll('#mg-menu .mg-drop');
+  var myDrop = li.querySelector('.mg-drop');
+  var isOpen = myDrop.style.display === 'block';
+  drops.forEach(function(d){ d.style.display='none'; });
+  document.getElementById('mg-adrop').style.display = 'none';
+  if (!isOpen) myDrop.style.display = 'block';
+}
+function mgToggleAcceder() {
+  var d = document.getElementById('mg-adrop');
+  var drops = document.querySelectorAll('#mg-menu .mg-drop');
+  drops.forEach(function(x){ x.style.display='none'; });
+  d.style.display = d.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#mg-menu') && !e.target.closest('#mg-acceder')) {
+    document.querySelectorAll('#mg-menu .mg-drop').forEach(function(d){ d.style.display='none'; });
+    document.getElementById('mg-adrop').style.display = 'none';
+  }
+});
+</script>
+<!-- /wp:html -->
+
+</div>
+<!-- /wp:group -->

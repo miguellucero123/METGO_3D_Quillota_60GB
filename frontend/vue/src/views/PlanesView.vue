@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -10,7 +10,7 @@ const cargando = ref(false)
 
 async function iniciarCheckout(planCode) {
   if (!auth.isAuthenticated) {
-    // Si no está logueado, mandarlo a registro con el plan en mente
+    // Si no estÃ¡ logueado, mandarlo a registro con el plan en mente
     router.push({ path: '/registro', query: { plan: planCode } })
     return
   }
@@ -47,9 +47,6 @@ async function iniciarCheckout(planCode) {
         </router-link>
         <div class="nav-links">
           <router-link to="/planes" class="router-link-active">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
         </div>
         <div class="nav-cta">
           <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
@@ -59,10 +56,10 @@ async function iniciarCheckout(planCode) {
 
     <main class="commercial-wrap commercial-section">
       <div style="text-align: center; margin-bottom: 4rem;">
-        <h1>Planes diseñados para faenas reales</h1>
+        <h1>Planes diseÃ±ados para faenas reales</h1>
         <p class="subtitle" style="margin: 0 auto;">
           Precio fijo mensual por zona o faena. Sin sorpresas. Sin costo por alerta.
-          Comienza a tomar decisiones con datos que protegen tu operación.
+          Comienza a tomar decisiones con datos que protegen tu operaciÃ³n.
         </p>
       </div>
 
@@ -70,7 +67,7 @@ async function iniciarCheckout(planCode) {
         <!-- Plan Campo -->
         <div class="commercial-card pricing-card">
           <h3 class="plan-name">Plan Campo</h3>
-          <p class="plan-target">Agricultura de precisión</p>
+          <p class="plan-target">Agricultura de precisiÃ³n</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
             <span class="price-value">$99</span>
@@ -79,23 +76,23 @@ async function iniciarCheckout(planCode) {
           <p class="plan-unit">por zona de cultivo</p>
           
           <ul class="plan-features">
-            <li><span class="check">✓</span> Panel operativo en tiempo real para tu zona</li>
-            <li><span class="check">✓</span> Alertas de helada, lluvia y viento por WhatsApp</li>
-            <li><span class="check">✓</span> Pronóstico 72h con resolución de 1–3 km</li>
-            <li><span class="check">✓</span> Informe semanal descargable</li>
-            <li><span class="check">✓</span> 14 días de prueba sin costo</li>
+            <li><span class="check">âœ“</span> Panel operativo en tiempo real para tu zona</li>
+            <li><span class="check">âœ“</span> Alertas de helada, lluvia y viento por WhatsApp</li>
+            <li><span class="check">âœ“</span> PronÃ³stico 72h con resoluciÃ³n de 1â€“3 km</li>
+            <li><span class="check">âœ“</span> Informe semanal descargable</li>
+            <li><span class="check">âœ“</span> 14 dÃ­as de prueba sin costo</li>
           </ul>
           
           <button type="button" @click="iniciarCheckout('pro')" :disabled="cargando" class="commercial-btn primary" style="width: 100%; margin-top: 1.5rem; cursor: pointer;">
-            {{ cargando ? 'Redirigiendo...' : 'Comenzar Prueba Gratis (14 Días)' }}
+            {{ cargando ? 'Redirigiendo...' : 'Comenzar Prueba Gratis (14 DÃ­as)' }}
           </button>
         </div>
 
         <!-- Plan Faena -->
         <div class="commercial-card pricing-card featured">
-          <div class="featured-badge">Más popular</div>
+          <div class="featured-badge">MÃ¡s popular</div>
           <h3 class="plan-name">Plan Faena</h3>
-          <p class="plan-target">Minería, izaje y alta montaña</p>
+          <p class="plan-target">MinerÃ­a, izaje y alta montaÃ±a</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
             <span class="price-value">$299</span>
@@ -104,11 +101,11 @@ async function iniciarCheckout(planCode) {
           <p class="plan-unit">por faena (VENTORA / SPATI)</p>
           
           <ul class="plan-features">
-            <li><span class="check">✓</span> Semáforo operacional hora a hora</li>
-            <li><span class="check">✓</span> Viento en perfil vertical (10m, 50m, 100m)</li>
-            <li><span class="check">✓</span> Alertas de tormenta eléctrica y cizalladura</li>
-            <li><span class="check">✓</span> Pronóstico subestacional 20–90 días</li>
-            <li><span class="check">✓</span> Soporte técnico directo</li>
+            <li><span class="check">âœ“</span> SemÃ¡foro operacional hora a hora</li>
+            <li><span class="check">âœ“</span> Viento en perfil vertical (10m, 50m, 100m)</li>
+            <li><span class="check">âœ“</span> Alertas de tormenta elÃ©ctrica y cizalladura</li>
+            <li><span class="check">âœ“</span> PronÃ³stico subestacional 20â€“90 dÃ­as</li>
+            <li><span class="check">âœ“</span> Soporte tÃ©cnico directo</li>
           </ul>
           
           <button type="button" @click="iniciarCheckout('faena')" :disabled="cargando" class="commercial-btn primary" style="width: 100%; margin-top: 1.5rem; cursor: pointer;">
@@ -119,24 +116,24 @@ async function iniciarCheckout(planCode) {
         <!-- Plan Municipio -->
         <div class="commercial-card pricing-card">
           <h3 class="plan-name">Plan Municipio</h3>
-          <p class="plan-target">Calidad del aire y sector público</p>
+          <p class="plan-target">Calidad del aire y sector pÃºblico</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
             <span class="price-value">$399</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por red de estaciones · cotización formal</p>
+          <p class="plan-unit">por red de estaciones Â· cotizaciÃ³n formal</p>
           
           <ul class="plan-features">
-            <li><span class="check">✓</span> Dashboard de calidad del aire con tu logo</li>
-            <li><span class="check">✓</span> Red de estaciones integrada en la plataforma</li>
-            <li><span class="check">✓</span> Alertas de episodios críticos (DS 59/DS 138)</li>
-            <li><span class="check">✓</span> Informes exportables para SINCA y fiscalización</li>
-            <li><span class="check">✓</span> Cotización formal por Mercado Público</li>
+            <li><span class="check">âœ“</span> Dashboard de calidad del aire con tu logo</li>
+            <li><span class="check">âœ“</span> Red de estaciones integrada en la plataforma</li>
+            <li><span class="check">âœ“</span> Alertas de episodios crÃ­ticos (DS 59/DS 138)</li>
+            <li><span class="check">âœ“</span> Informes exportables para SINCA y fiscalizaciÃ³n</li>
+            <li><span class="check">âœ“</span> CotizaciÃ³n formal por Mercado PÃºblico</li>
           </ul>
           
           <router-link to="/contacto?sector=calidad-aire" class="commercial-btn secondary" style="width: 100%; margin-top: 1.5rem;">
-            Solicitar cotización formal
+            Solicitar cotizaciÃ³n formal
           </router-link>
         </div>
       </div>
@@ -146,24 +143,24 @@ async function iniciarCheckout(planCode) {
         
         <div class="faq-grid">
           <div class="faq-item">
-            <h4>¿Los precios son en USD o CLP?</h4>
+            <h4>Â¿Los precios son en USD o CLP?</h4>
             <p>
-              La lista pública es en <strong>USD</strong>. El precio de lista es una fracción
-              (~15–25 %) del valor del stack completo (panel, alertas, pronóstico, informes, API).
-              En Chile podemos facturar en CLP al tipo de cambio del día.
+              La lista pÃºblica es en <strong>USD</strong>. El precio de lista es una fracciÃ³n
+              (~15â€“25 %) del valor del stack completo (panel, alertas, pronÃ³stico, informes, API).
+              En Chile podemos facturar en CLP al tipo de cambio del dÃ­a.
             </p>
           </div>
           <div class="faq-item">
-            <h4>¿Hay contrato mínimo?</h4>
-            <p>Ofrecemos contratos mes a mes para máxima flexibilidad. Sin embargo, los contratos anuales o por temporada (ej. 6 meses de cosecha) incluyen descuentos significativos.</p>
+            <h4>Â¿Hay contrato mÃ­nimo?</h4>
+            <p>Ofrecemos contratos mes a mes para mÃ¡xima flexibilidad. Sin embargo, los contratos anuales o por temporada (ej. 6 meses de cosecha) incluyen descuentos significativos.</p>
           </div>
           <div class="faq-item">
-            <h4>¿Qué pasa si mi zona no está cubierta actualmente?</h4>
-            <p>Desplegamos nuestro modelo en nuevas zonas constantemente. Solicita una evaluación gratuita de tu faena y te confirmaremos si podemos activarla (usualmente toma &lt;72h).</p>
+            <h4>Â¿QuÃ© pasa si mi zona no estÃ¡ cubierta actualmente?</h4>
+            <p>Desplegamos nuestro modelo en nuevas zonas constantemente. Solicita una evaluaciÃ³n gratuita de tu faena y te confirmaremos si podemos activarla (usualmente toma &lt;72h).</p>
           </div>
           <div class="faq-item">
-            <h4>Garantía: Primer mes sin costo</h4>
-            <p>Entendemos que necesitas validar que la herramienta es útil para tu operación. El primer mes de piloto es sin costo. Si no te ahorramos dinero o tiempo, no pagas.</p>
+            <h4>GarantÃ­a: Primer mes sin costo</h4>
+            <p>Entendemos que necesitas validar que la herramienta es Ãºtil para tu operaciÃ³n. El primer mes de piloto es sin costo. Si no te ahorramos dinero o tiempo, no pagas.</p>
           </div>
         </div>
       </div>
@@ -362,3 +359,4 @@ async function iniciarCheckout(planCode) {
   }
 }
 </style>
+

@@ -1,0 +1,65 @@
+<!--
+  METGO 3D · Parte de plantilla «Comments» (reemplaza bloque genérico CoachBen)
+  Editor del sitio → Patrones → Partes → Comments → Editar → pegar TODO
+
+  Solo útil si las entradas del blog tienen comentarios activos.
+  Si no usas comentarios: quita esta parte de las plantillas (single, etc.).
+-->
+<!-- wp:group {"metadata":{"name":"comments-metgo","categories":["metgo3d"],"patternName":"metgo3d/comments"},"align":"wide","style":{"color":{"background":"#ffffff"},"spacing":{"padding":{"top":"48px","bottom":"48px","left":"24px","right":"24px"},"margin":{"top":"32px"}},"border":{"radius":"12px","width":"1px","color":"#e2e8f0"}},"layout":{"type":"constrained","contentSize":"760px"}} -->
+<div class="wp-block-group alignwide has-border-color has-background" style="border-color:#e2e8f0;border-width:1px;border-radius:12px;background-color:#ffffff;margin-top:32px;padding-top:48px;padding-right:24px;padding-bottom:48px;padding-left:24px">
+	<!-- wp:paragraph {"style":{"color":{"text":"#ea580c"},"typography":{"fontSize":"13px","fontWeight":"700","letterSpacing":"1.5px","textTransform":"uppercase"},"spacing":{"margin":{"bottom":"8px"}}}} -->
+	<p class="has-text-color" style="color:#ea580c;margin-bottom:8px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">Diálogo técnico</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"24px","fontWeight":"800"},"color":{"text":"#0f172a"},"spacing":{"margin":{"bottom":"12px"}}}} -->
+	<h3 class="wp-block-heading has-text-color" style="color:#0f172a;margin-bottom:12px;font-size:24px;font-weight:800">Comentarios</h3>
+	<!-- /wp:heading -->
+
+	<!-- wp:paragraph {"style":{"color":{"text":"#64748b"},"typography":{"fontSize":"15px","lineHeight":"1.7"},"spacing":{"margin":{"bottom":"32px"}}}} -->
+	<p class="has-text-color" style="color:#64748b;margin-bottom:32px;font-size:15px;line-height:1.7">Preguntas sobre pronósticos, MJO Chile o integración con la plataforma METGO. Respuestas orientadas a uso operativo (minería, agricultura, calidad del aire).</p>
+	<!-- /wp:paragraph -->
+
+	<!-- wp:comments {"className":"wp-block-comments-query-loop metgo-comments"} -->
+	<div class="wp-block-comments wp-block-comments-query-loop metgo-comments">
+		<!-- wp:comments-title {"level":4,"style":{"typography":{"fontSize":"18px","fontWeight":"700"},"color":{"text":"#0f172a"},"spacing":{"margin":{"bottom":"24px"}}}} /-->
+
+		<!-- wp:comment-template -->
+		<!-- wp:group {"style":{"spacing":{"margin":{"top":"0","bottom":"32px"},"padding":{"bottom":"32px"}},"border":{"bottom":{"color":"#e2e8f0","width":"1px"}}}} -->
+		<div class="wp-block-group" style="border-bottom-color:#e2e8f0;border-bottom-width:1px;margin-top:0;margin-bottom:32px;padding-bottom:32px">
+			<!-- wp:group {"style":{"spacing":{"blockGap":"16px","margin":{"bottom":"16px"}}},"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"top"}} -->
+			<div class="wp-block-group" style="margin-bottom:16px">
+				<!-- wp:avatar {"size":48,"isLink":true,"style":{"border":{"radius":"8px"}}} /-->
+
+				<!-- wp:group {"style":{"spacing":{"blockGap":"4px"}},"layout":{"type":"constrained"}} -->
+				<div class="wp-block-group">
+					<!-- wp:comment-author-name {"style":{"typography":{"fontWeight":"700","fontSize":"15px"},"color":{"text":"#0f172a"}},"className":"no-underline"} /-->
+
+					<!-- wp:group {"style":{"spacing":{"margin":{"top":"0","bottom":"0"},"blockGap":"8px"}},"layout":{"type":"flex","flexWrap":"wrap"}} -->
+					<div class="wp-block-group" style="margin-top:0;margin-bottom:0">
+						<!-- wp:comment-date {"format":"j M Y","style":{"typography":{"fontSize":"13px"},"color":{"text":"#64748b"}},"className":"no-underline"} /-->
+						<!-- wp:comment-edit-link {"style":{"typography":{"fontSize":"13px"},"color":{"text":"#64748b"}}} /-->
+					</div>
+					<!-- /wp:group -->
+				</div>
+				<!-- /wp:group -->
+			</div>
+			<!-- /wp:group -->
+
+			<!-- wp:comment-content {"style":{"typography":{"fontSize":"15px","lineHeight":"1.7"},"color":{"text":"#475569"}}} /-->
+
+			<!-- wp:comment-reply-link {"style":{"typography":{"fontSize":"14px","fontWeight":"600"},"color":{"text":"#ea580c"}}} /-->
+		</div>
+		<!-- /wp:group -->
+		<!-- /wp:comment-template -->
+
+		<!-- wp:comments-pagination {"style":{"spacing":{"margin":{"top":"24px","bottom":"32px"}}}} -->
+		<!-- wp:comments-pagination-previous /-->
+		<!-- wp:comments-pagination-numbers /-->
+		<!-- wp:comments-pagination-next /-->
+		<!-- /wp:comments-pagination -->
+
+		<!-- wp:post-comments-form /-->
+	</div>
+	<!-- /wp:comments -->
+</div>
+<!-- /wp:group -->

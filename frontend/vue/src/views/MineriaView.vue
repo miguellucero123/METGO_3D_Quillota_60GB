@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="commercial-page">
     <header class="top">
       <nav class="nav" aria-label="Principal">
@@ -10,9 +10,6 @@
         </router-link>
         <div class="nav-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria" class="router-link-active">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
         </div>
         <div class="nav-cta">
           <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
@@ -24,7 +21,7 @@
       <section class="commercial-hero">
         <h1>Continuidad operacional y cero accidentes en altura</h1>
         <p class="subtitle" style="margin: 0 auto 2.5rem;">
-          Panel meteorológico hiperlocal para faenas mineras en alta montaña. Protege a tu equipo y optimiza tu planificación con alertas tempranas de viento, tormentas eléctricas y visibilidad, cumpliendo con el DS 72.
+          Panel meteorolÃ³gico hiperlocal para faenas mineras en alta montaÃ±a. Protege a tu equipo y optimiza tu planificaciÃ³n con alertas tempranas de viento, tormentas elÃ©ctricas y visibilidad, cumpliendo con el DS 72.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center;">
           <router-link to="/planes" class="commercial-btn primary">
@@ -36,43 +33,43 @@
       <section class="commercial-section">
         <div class="commercial-grid-2">
           <div>
-            <h2 style="font-size: 2rem;">Monitoreo diseñado para la realidad de la faena</h2>
+            <h2 style="font-size: 2rem;">Monitoreo diseÃ±ado para la realidad de la faena</h2>
             <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
-              Los pronósticos generales fallan en alta montaña porque no consideran la topografía específica de tu operación. METGO integra tus estaciones locales con modelos de alta resolución para entregar un pronóstico que realmente sirve para la toma de decisiones.
+              Los pronÃ³sticos generales fallan en alta montaÃ±a porque no consideran la topografÃ­a especÃ­fica de tu operaciÃ³n. METGO integra tus estaciones locales con modelos de alta resoluciÃ³n para entregar un pronÃ³stico que realmente sirve para la toma de decisiones.
             </p>
 
             <ul class="benefit-list">
               <li>
-                <strong>Viento en perfil vertical:</strong> Fundamental para operaciones de izaje, tronaduras y dispersión de polvo.
+                <strong>Viento en perfil vertical:</strong> Fundamental para operaciones de izaje, tronaduras y dispersiÃ³n de polvo.
               </li>
               <li>
-                <strong>Tormentas eléctricas:</strong> Alertas preventivas para protocolos de evacuación temprana y resguardo de personal.
+                <strong>Tormentas elÃ©ctricas:</strong> Alertas preventivas para protocolos de evacuaciÃ³n temprana y resguardo de personal.
               </li>
               <li>
-                <strong>Caminos de acceso y visibilidad:</strong> Pronóstico de nieve y neblina densa para programar logística y cambios de turno.
+                <strong>Caminos de acceso y visibilidad:</strong> PronÃ³stico de nieve y neblina densa para programar logÃ­stica y cambios de turno.
               </li>
             </ul>
           </div>
           
           <div class="demo-card">
             <div class="demo-header">
-              <span>Alerta Temprana · Ejemplo</span>
+              <span>Alerta Temprana Â· Ejemplo</span>
             </div>
             
             <div class="alert-preview">
-              <div class="alert-icon">⚡</div>
+              <div class="alert-icon">âš¡</div>
               <div class="alert-content">
-                <strong>Alerta Naranja: Tormenta Eléctrica</strong>
-                <p>Probabilidad >80% de descargas eléctricas en un radio de 5km a partir de las 14:00 hrs. Se recomienda preparar protocolo de evacuación en rajo.</p>
+                <strong>Alerta Naranja: Tormenta ElÃ©ctrica</strong>
+                <p>Probabilidad >80% de descargas elÃ©ctricas en un radio de 5km a partir de las 14:00 hrs. Se recomienda preparar protocolo de evacuaciÃ³n en rajo.</p>
                 <span class="alert-time">Emitida hoy a las 08:15 AM</span>
               </div>
             </div>
 
             <div class="alert-preview warning" style="margin-top: 1rem;">
-              <div class="alert-icon">💨</div>
+              <div class="alert-icon">ðŸ’¨</div>
               <div class="alert-content">
                 <strong>Aviso: Viento Fuerte</strong>
-                <p>Ráfagas proyectadas sobre 65 km/h entre las 16:00 y 19:00 hrs en sector botadero. Evaluar suspensión de trabajos en altura.</p>
+                <p>RÃ¡fagas proyectadas sobre 65 km/h entre las 16:00 y 19:00 hrs en sector botadero. Evaluar suspensiÃ³n de trabajos en altura.</p>
                 <span class="alert-time">Emitida hoy a las 06:30 AM</span>
               </div>
             </div>
@@ -81,24 +78,24 @@
       </section>
 
       <section class="commercial-section" style="padding-bottom: 5rem;">
-        <h2 style="text-align: center; margin-bottom: 3rem;">El diferencial METGO para Minería</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem;">El diferencial METGO para MinerÃ­a</h2>
         <div class="commercial-grid-3">
           <div class="commercial-card">
-            <h3>Resolución Hiperlocal</h3>
+            <h3>ResoluciÃ³n Hiperlocal</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              No usamos el dato del pueblo más cercano. Modelamos el clima exactamente sobre las coordenadas de tu rajo, relave o campamento usando downscaling.
+              No usamos el dato del pueblo mÃ¡s cercano. Modelamos el clima exactamente sobre las coordenadas de tu rajo, relave o campamento usando downscaling.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Cumplimiento DS 72</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Respalda tus decisiones operativas ante fiscalizaciones. Cada evento crítico genera un reporte PDF automático con los datos pronosticados vs observados.
+              Respalda tus decisiones operativas ante fiscalizaciones. Cada evento crÃ­tico genera un reporte PDF automÃ¡tico con los datos pronosticados vs observados.
             </p>
           </div>
           <div class="commercial-card">
-            <h3>Integración Tecnológica</h3>
+            <h3>IntegraciÃ³n TecnolÃ³gica</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Nos conectamos a tus estaciones meteorológicas existentes (Vaisala, Campbell, Davis) para calibrar nuestros modelos de pronóstico específicamente para tu faena.
+              Nos conectamos a tus estaciones meteorolÃ³gicas existentes (Vaisala, Campbell, Davis) para calibrar nuestros modelos de pronÃ³stico especÃ­ficamente para tu faena.
             </p>
           </div>
         </div>
@@ -194,7 +191,7 @@
   line-height: 1.5;
 }
 .benefit-list li::before {
-  content: '→';
+  content: 'â†’';
   position: absolute;
   left: 0;
   color: var(--accent-primary);
@@ -255,3 +252,4 @@
   opacity: 0.7;
 }
 </style>
+

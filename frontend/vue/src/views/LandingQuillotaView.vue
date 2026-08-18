@@ -15,9 +15,6 @@
         </a>
         <div class="nav-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
           <router-link to="/nosotros">Nosotros</router-link>
           <router-link to="/contacto">Contacto</router-link>
         </div>
@@ -271,9 +268,6 @@
         </div>
         <div class="foot-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
           <router-link to="/nosotros">Nosotros</router-link>
           <router-link to="/contacto">Contacto</router-link>
           <router-link to="/login">{{ t('landing.login') }}</router-link>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="commercial-page">
     <header class="top">
       <nav class="nav" aria-label="Principal">
@@ -10,9 +10,6 @@
         </router-link>
         <div class="nav-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
         </div>
         <div class="nav-cta">
           <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
@@ -25,17 +22,17 @@
         <div>
           <h2>Conversemos sobre tu faena</h2>
           <p class="subtitle">
-            Agenda una demo gratuita o solicita acceso piloto para tu operación. 
+            Agenda una demo gratuita o solicita acceso piloto para tu operaciÃ³n. 
             Te responderemos en menos de 24 horas.
           </p>
           
           <div style="margin-top: 3rem;">
             <h3>Soporte directo</h3>
             <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-              ¿Necesitas ayuda inmediata o hablar con un especialista?
+              Â¿Necesitas ayuda inmediata o hablar con un especialista?
             </p>
             <p><strong>Email:</strong> <a href="mailto:miguel.lucero@metgo3d.com">miguel.lucero@metgo3d.com</a></p>
-            <p><strong>Ubicación:</strong> Quillota, Región de Valparaíso, Chile</p>
+            <p><strong>UbicaciÃ³n:</strong> Quillota, RegiÃ³n de ValparaÃ­so, Chile</p>
           </div>
         </div>
 
@@ -43,7 +40,7 @@
           <form class="commercial-form" @submit.prevent="submitLead">
             <div class="form-group">
               <label for="nombre">Nombre completo</label>
-              <input type="text" id="nombre" v-model="form.nombre" required placeholder="Ej: Juan Pérez">
+              <input type="text" id="nombre" v-model="form.nombre" required placeholder="Ej: Juan PÃ©rez">
             </div>
             
             <div class="form-group">
@@ -56,8 +53,8 @@
               <select id="sector" v-model="form.sector" required>
                 <option value="" disabled>Selecciona tu sector...</option>
                 <option value="agricultura">Agricultura</option>
-                <option value="mineria">Minería y Alta Montaña</option>
-                <option value="izaje">Izaje y Construcción</option>
+                <option value="mineria">MinerÃ­a y Alta MontaÃ±a</option>
+                <option value="izaje">Izaje y ConstrucciÃ³n</option>
                 <option value="calidad-aire">Calidad del Aire / Municipio</option>
                 <option value="otro">Otro</option>
               </select>
@@ -69,13 +66,13 @@
             </div>
 
             <div class="form-group">
-              <label for="telefono">Teléfono / WhatsApp</label>
+              <label for="telefono">TelÃ©fono / WhatsApp</label>
               <input type="tel" id="telefono" v-model="form.telefono" placeholder="+56 9 1234 5678">
             </div>
 
             <div class="form-group">
               <label for="mensaje">Mensaje (opcional)</label>
-              <textarea id="mensaje" v-model="form.mensaje" placeholder="¿En qué te podemos ayudar?"></textarea>
+              <textarea id="mensaje" v-model="form.mensaje" placeholder="Â¿En quÃ© te podemos ayudar?"></textarea>
             </div>
 
             <button type="submit" class="commercial-btn primary" style="width: 100%;" :disabled="loading">
@@ -83,10 +80,10 @@
             </button>
             
             <div v-if="success" style="margin-top: 1rem; color: var(--accent-secondary); text-align: center;">
-              ¡Mensaje enviado! Te contactaremos pronto.
+              Â¡Mensaje enviado! Te contactaremos pronto.
             </div>
             <div v-if="error" style="margin-top: 1rem; color: #ef5b5b; text-align: center;">
-              Hubo un error al enviar. Por favor, intenta de nuevo o escríbenos a miguel.lucero@metgo3d.com.
+              Hubo un error al enviar. Por favor, intenta de nuevo o escrÃ­benos a miguel.lucero@metgo3d.com.
             </div>
           </form>
         </div>
@@ -202,3 +199,4 @@ const submitLead = async () => {
   background: rgba(255, 255, 255, 0.1);
 }
 </style>
+

@@ -180,6 +180,15 @@ paths:
           description: Credenciales incorrectas
         "429":
           description: Rate limited
+  /api/public/marketing/ticker:
+    get:
+      tags: [public]
+      summary: Cinta marketing (snapshot paneles Quillota/VENTORA/Copiapó/Paine/Mantos)
+      responses:
+        "200":
+          description: "{ actualizado, ttl_s, items[{dot,label,val,detail,href}], n }"
+        "503":
+          description: Agregación fallida
   /api/public/security-config:
     get:
       tags: [public]

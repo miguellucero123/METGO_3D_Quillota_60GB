@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="commercial-page">
     <header class="top">
       <nav class="nav" aria-label="Principal">
@@ -10,9 +10,6 @@
         </router-link>
         <div class="nav-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire" class="router-link-active">Calidad del Aire</router-link>
         </div>
         <div class="nav-cta">
           <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
@@ -24,7 +21,7 @@
       <section class="commercial-hero">
         <h1>Cumplimiento normativo sin sobresaltos</h1>
         <p class="subtitle" style="margin: 0 auto 2.5rem;">
-          Redes de monitoreo ICAP y modelación de dispersión de material particulado para cumplimiento de la normativa ambiental chilena (DS 59 y DS 138). Centraliza tus datos y automatiza tus reportes al SINCA.
+          Redes de monitoreo ICAP y modelaciÃ³n de dispersiÃ³n de material particulado para cumplimiento de la normativa ambiental chilena (DS 59 y DS 138). Centraliza tus datos y automatiza tus reportes al SINCA.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center;">
           <router-link to="/planes" class="commercial-btn primary">
@@ -38,18 +35,18 @@
           <div>
             <h2 style="font-size: 2rem;">Operar sin monitoreo continuo es volar a ciegas</h2>
             <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
-              Los Planes de Prevención y Descontaminación Atmosférica (PPDA) exigen a industrias y municipios medir, reportar y reaccionar. METGO facilita la gestión integral de la calidad del aire para que te enfoques en tu operación.
+              Los Planes de PrevenciÃ³n y DescontaminaciÃ³n AtmosfÃ©rica (PPDA) exigen a industrias y municipios medir, reportar y reaccionar. METGO facilita la gestiÃ³n integral de la calidad del aire para que te enfoques en tu operaciÃ³n.
             </p>
 
             <ul class="benefit-list">
               <li>
-                <strong>Cumplimiento DS 59/2000 y DS 138/2005:</strong> Monitoreo de MP10 y MP2.5 con reportes estructurados para auditorías SEIA.
+                <strong>Cumplimiento DS 59/2000 y DS 138/2005:</strong> Monitoreo de MP10 y MP2.5 con reportes estructurados para auditorÃ­as SEIA.
               </li>
               <li>
-                <strong>Conexión directa a SINCA:</strong> Olvídate de reportes manuales. Nuestros sistemas se integran para enviar datos validados a la autoridad.
+                <strong>ConexiÃ³n directa a SINCA:</strong> OlvÃ­date de reportes manuales. Nuestros sistemas se integran para enviar datos validados a la autoridad.
               </li>
               <li>
-                <strong>Alertas de Episodios Críticos:</strong> Notificaciones tempranas ante preemergencias y emergencias ambientales para activar protocolos.
+                <strong>Alertas de Episodios CrÃ­ticos:</strong> Notificaciones tempranas ante preemergencias y emergencias ambientales para activar protocolos.
               </li>
             </ul>
           </div>
@@ -60,11 +57,11 @@
             </div>
             
             <div style="text-align: center; padding: 2rem 0;">
-              <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-primary);">Cuenca de Copiapó</h3>
+              <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-primary);">Cuenca de CopiapÃ³</h3>
               <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">7 estaciones integradas en tiempo real</p>
               
               <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
-                <span class="station-tag">Copiapó Centro</span>
+                <span class="station-tag">CopiapÃ³ Centro</span>
                 <span class="station-tag">Palpote</span>
                 <span class="station-tag">Tierra Amarilla</span>
                 <span class="station-tag">Nantoco</span>
@@ -74,7 +71,7 @@
             </div>
             
             <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-              Dashboard white-label disponible para municipios e instituciones públicas (Convenio Marco / Mercado Público).
+              Dashboard white-label disponible para municipios e instituciones pÃºblicas (Convenio Marco / Mercado PÃºblico).
             </p>
           </div>
         </div>
@@ -86,19 +83,19 @@
           <div class="commercial-card">
             <h3>Monitoreo Continuo</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Integración de tu red de estaciones en nuestra plataforma en la nube. Visualización en tiempo real 24/7 y generación de reportes mensuales para la SMA.
+              IntegraciÃ³n de tu red de estaciones en nuestra plataforma en la nube. VisualizaciÃ³n en tiempo real 24/7 y generaciÃ³n de reportes mensuales para la SMA.
             </p>
           </div>
           <div class="commercial-card">
-            <h3>Modelación de Dispersión</h3>
+            <h3>ModelaciÃ³n de DispersiÃ³n</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Pronóstico de la pluma de dispersión de material particulado basado en el modelo meteorológico hiperlocal, permitiendo programar actividades críticas.
+              PronÃ³stico de la pluma de dispersiÃ³n de material particulado basado en el modelo meteorolÃ³gico hiperlocal, permitiendo programar actividades crÃ­ticas.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Dashboard Institucional</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para municipios y DGA: Un portal público con la marca de tu institución para informar a la ciudadanía sobre el Índice de Calidad del Aire (ICAP).
+              Para municipios y DGA: Un portal pÃºblico con la marca de tu instituciÃ³n para informar a la ciudadanÃ­a sobre el Ãndice de Calidad del Aire (ICAP).
             </p>
           </div>
         </div>
@@ -194,7 +191,7 @@
   line-height: 1.5;
 }
 .benefit-list li::before {
-  content: '→';
+  content: 'â†’';
   position: absolute;
   left: 0;
   color: var(--accent-primary);
@@ -226,3 +223,4 @@
   font-size: 0.85rem;
 }
 </style>
+

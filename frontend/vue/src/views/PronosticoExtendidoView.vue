@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="commercial-page">
     <header class="top">
       <nav class="nav" aria-label="Principal">
@@ -10,9 +10,6 @@
         </router-link>
         <div class="nav-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
         </div>
         <div class="nav-cta">
           <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
@@ -22,9 +19,9 @@
 
     <main class="commercial-wrap">
       <section class="commercial-hero">
-        <h1>¿Qué clima esperar los próximos 3 meses en tu región?</h1>
+        <h1>Â¿QuÃ© clima esperar los prÃ³ximos 3 meses en tu regiÃ³n?</h1>
         <p class="subtitle" style="margin: 0 auto 2.5rem;">
-          Anticipa la tendencia de la próxima temporada. Nuestro sistema de pronóstico subestacional te entrega proyecciones probabilísticas con 20 a 90 días de margen para que planifiques cosechas, contratos de agua o mantenciones mineras sin sorpresas.
+          Anticipa la tendencia de la prÃ³xima temporada. Nuestro sistema de pronÃ³stico subestacional te entrega proyecciones probabilÃ­sticas con 20 a 90 dÃ­as de margen para que planifiques cosechas, contratos de agua o mantenciones mineras sin sorpresas.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center;">
           <router-link to="/planes" class="commercial-btn primary">
@@ -34,24 +31,24 @@
       </section>
 
       <section class="commercial-section">
-        <h2 style="text-align: center; margin-bottom: 3rem;">Por qué importa el largo plazo</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem;">Por quÃ© importa el largo plazo</h2>
         <div class="commercial-grid-3">
           <div class="commercial-card">
-            <h3>Planificación Agrícola</h3>
+            <h3>PlanificaciÃ³n AgrÃ­cola</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Saber si la temporada será más seca o lluviosa que el promedio con 3 meses de anticipación permite negociar contratos de agua, ajustar fertilización y programar la cosecha con un margen de maniobra real.
+              Saber si la temporada serÃ¡ mÃ¡s seca o lluviosa que el promedio con 3 meses de anticipaciÃ³n permite negociar contratos de agua, ajustar fertilizaciÃ³n y programar la cosecha con un margen de maniobra real.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Operaciones Mineras</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Planifica las mantenciones mayores (paradas de planta) y la logística de insumos pesados eligiendo los meses con menor probabilidad de eventos climáticos extremos en alta montaña.
+              Planifica las mantenciones mayores (paradas de planta) y la logÃ­stica de insumos pesados eligiendo los meses con menor probabilidad de eventos climÃ¡ticos extremos en alta montaÃ±a.
             </p>
           </div>
           <div class="commercial-card">
-            <h3>Energías Renovables</h3>
+            <h3>EnergÃ­as Renovables</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Proyecta la producción energética a largo plazo en plantas fotovoltaicas o eólicas, ajustando tus compromisos de despacho según la tendencia climática del trimestre.
+              Proyecta la producciÃ³n energÃ©tica a largo plazo en plantas fotovoltaicas o eÃ³licas, ajustando tus compromisos de despacho segÃºn la tendencia climÃ¡tica del trimestre.
             </p>
           </div>
         </div>
@@ -60,26 +57,26 @@
       <section class="commercial-section">
         <div class="commercial-grid-2">
           <div>
-            <h2 style="font-size: 2rem;">¿Cómo funciona y qué te entregamos?</h2>
+            <h2 style="font-size: 2rem;">Â¿CÃ³mo funciona y quÃ© te entregamos?</h2>
             <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
-              A diferencia del pronóstico de 7 días, el pronóstico subestacional no te dice exactamente "cuándo lloverá", sino que proyecta la <strong>tendencia general de la temporada</strong> (probabilidad de que la precipitación o temperatura esté sobre o bajo el promedio histórico).
+              A diferencia del pronÃ³stico de 7 dÃ­as, el pronÃ³stico subestacional no te dice exactamente "cuÃ¡ndo lloverÃ¡", sino que proyecta la <strong>tendencia general de la temporada</strong> (probabilidad de que la precipitaciÃ³n o temperatura estÃ© sobre o bajo el promedio histÃ³rico).
             </p>
 
             <ul class="benefit-list">
               <li>
-                <strong>Reporte Trimestral:</strong> Un informe claro en lenguaje de negocio con las anomalías proyectadas para los próximos 90 días en tu zona geográfica específica.
+                <strong>Reporte Trimestral:</strong> Un informe claro en lenguaje de negocio con las anomalÃ­as proyectadas para los prÃ³ximos 90 dÃ­as en tu zona geogrÃ¡fica especÃ­fica.
               </li>
               <li>
-                <strong>Calibración Local:</strong> Mientras los modelos globales fallan en capturar la geografía chilena, nosotros utilizamos algoritmos entrenados específicamente con la climatología de tu región.
+                <strong>CalibraciÃ³n Local:</strong> Mientras los modelos globales fallan en capturar la geografÃ­a chilena, nosotros utilizamos algoritmos entrenados especÃ­ficamente con la climatologÃ­a de tu regiÃ³n.
               </li>
               <li>
-                <strong>Base Probabilística:</strong> Conocerás el grado de certeza de cada tendencia para poder sopesar el riesgo en tus decisiones.
+                <strong>Base ProbabilÃ­stica:</strong> ConocerÃ¡s el grado de certeza de cada tendencia para poder sopesar el riesgo en tus decisiones.
               </li>
             </ul>
             
             <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 1rem; border-radius: 8px; margin-top: 2rem;">
               <p style="color: var(--text-primary); font-size: 0.9rem; margin: 0;">
-                <strong>Transparencia:</strong> Este es un pronóstico de <em>tendencia probabilística</em>. Está diseñado para planificación estratégica con margen, no para reemplazar el pronóstico operativo de 72 horas.
+                <strong>Transparencia:</strong> Este es un pronÃ³stico de <em>tendencia probabilÃ­stica</em>. EstÃ¡ diseÃ±ado para planificaciÃ³n estratÃ©gica con margen, no para reemplazar el pronÃ³stico operativo de 72 horas.
               </p>
             </div>
           </div>
@@ -91,15 +88,15 @@
               <h4 style="font-size: 1rem; color: var(--accent-secondary); margin-bottom: 0.5rem;">Tendencia de Precipitaciones (Trimestre JJA)</h4>
               <p style="font-size: 0.9rem; color: var(--text-secondary);">
                 <strong>Probabilidad:</strong> 75% de escenario "Bajo lo normal"<br>
-                <strong>Impacto esperado:</strong> Déficit hídrico en cuenca media. Recomendación de asegurar derechos de agua temprano en la temporada.
+                <strong>Impacto esperado:</strong> DÃ©ficit hÃ­drico en cuenca media. RecomendaciÃ³n de asegurar derechos de agua temprano en la temporada.
               </p>
             </div>
             
             <div style="margin-bottom: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-              <h4 style="font-size: 1rem; color: var(--accent-secondary); margin-bottom: 0.5rem;">Tendencia de Temperaturas Mínimas (Trimestre JJA)</h4>
+              <h4 style="font-size: 1rem; color: var(--accent-secondary); margin-bottom: 0.5rem;">Tendencia de Temperaturas MÃ­nimas (Trimestre JJA)</h4>
               <p style="font-size: 0.9rem; color: var(--text-secondary);">
                 <strong>Probabilidad:</strong> 60% de escenario "Bajo lo normal"<br>
-                <strong>Impacto esperado:</strong> Mayor frecuencia de eventos de heladas tardías. Recomendación de adelantar mantención de sistemas antiheladas.
+                <strong>Impacto esperado:</strong> Mayor frecuencia de eventos de heladas tardÃ­as. RecomendaciÃ³n de adelantar mantenciÃ³n de sistemas antiheladas.
               </p>
             </div>
           </div>
@@ -196,7 +193,7 @@
   line-height: 1.5;
 }
 .benefit-list li::before {
-  content: '→';
+  content: 'â†’';
   position: absolute;
   left: 0;
   color: var(--accent-primary);
@@ -210,3 +207,4 @@
   padding: 2rem;
 }
 </style>
+

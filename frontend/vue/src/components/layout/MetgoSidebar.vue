@@ -119,15 +119,9 @@ const gruposDef = [
     label: 'Servicios',
     icon: Star,
     match: (path) =>
-      path.startsWith('/planes') ||
-      path.startsWith('/izaje') ||
-      path.startsWith('/mineria') ||
-      path.startsWith('/calidad-del-aire'),
+      path.startsWith('/planes'),
     items: [
       { to: '/planes', label: 'Planes y precios', icon: CreditCard },
-      { to: '/izaje', label: 'Izaje', icon: CloudFog },
-      { to: '/mineria', label: 'Minería', icon: Activity },
-      { to: '/calidad-del-aire', label: 'Calidad Aire', icon: Wind },
     ],
   },
   {

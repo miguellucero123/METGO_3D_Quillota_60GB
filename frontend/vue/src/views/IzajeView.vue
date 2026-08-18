@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="commercial-page">
     <header class="top">
       <nav class="nav" aria-label="Principal">
@@ -10,9 +10,6 @@
         </router-link>
         <div class="nav-links">
           <router-link to="/planes">Planes</router-link>
-          <router-link to="/izaje" class="router-link-active">Izaje</router-link>
-          <router-link to="/mineria">Minería</router-link>
-          <router-link to="/calidad-del-aire">Calidad del Aire</router-link>
         </div>
         <div class="nav-cta">
           <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
@@ -22,9 +19,9 @@
 
     <main class="commercial-wrap">
       <section class="commercial-hero">
-        <h1>Una grúa parada por viento cuesta miles de dólares. Anticípalo.</h1>
+        <h1>Una grÃºa parada por viento cuesta miles de dÃ³lares. AnticÃ­palo.</h1>
         <p class="subtitle" style="margin: 0 auto 2.5rem;">
-          Anticipa ventanas seguras con 24h de margen. Nuestro semáforo operacional reduce las paradas no planificadas y evita multas por incumplimiento en construcción y gran minería.
+          Anticipa ventanas seguras con 24h de margen. Nuestro semÃ¡foro operacional reduce las paradas no planificadas y evita multas por incumplimiento en construcciÃ³n y gran minerÃ­a.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center;">
           <router-link to="/planes" class="commercial-btn primary">
@@ -36,9 +33,9 @@
       <section class="commercial-section">
         <div class="commercial-grid-2">
           <div>
-            <h2>¿Por qué el viento en superficie no sirve?</h2>
+            <h2>Â¿Por quÃ© el viento en superficie no sirve?</h2>
             <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
-              Los pronósticos tradicionales (y los anemómetros básicos) solo miden el viento a nivel de suelo (10m). Pero una grúa torre o un izaje industrial operan a 50m o 100m de altura, donde la cizalladura y turbulencia mecánica cambian completamente las reglas del juego.
+              Los pronÃ³sticos tradicionales (y los anemÃ³metros bÃ¡sicos) solo miden el viento a nivel de suelo (10m). Pero una grÃºa torre o un izaje industrial operan a 50m o 100m de altura, donde la cizalladura y turbulencia mecÃ¡nica cambian completamente las reglas del juego.
             </p>
 
             <ul class="benefit-list">
@@ -46,17 +43,17 @@
                 <strong>Cumplimiento DS 44/2023:</strong> Trabajo seguro en altura respaldado por datos certificados.
               </li>
               <li>
-                <strong>Perfil vertical completo:</strong> Pronóstico simultáneo a 10m, 50m y 100m sobre el terreno.
+                <strong>Perfil vertical completo:</strong> PronÃ³stico simultÃ¡neo a 10m, 50m y 100m sobre el terreno.
               </li>
               <li>
-                <strong>Alertas push automáticas:</strong> Notificación a tu equipo 12h antes si el viento proyectado supera tu umbral operativo.
+                <strong>Alertas push automÃ¡ticas:</strong> NotificaciÃ³n a tu equipo 12h antes si el viento proyectado supera tu umbral operativo.
               </li>
             </ul>
           </div>
           
           <div class="demo-card">
             <div class="demo-header">
-              <span>Semáforo Operacional · Ventana 12h</span>
+              <span>SemÃ¡foro Operacional Â· Ventana 12h</span>
               <span class="live-dot"><span class="pulse"></span> Demo</span>
             </div>
             
@@ -71,7 +68,7 @@
               </div>
               <div class="tl-hour">
                 <span>10:00</span>
-                <div class="tl-status yellow" title="26-34 km/h">Precaución</div>
+                <div class="tl-status yellow" title="26-34 km/h">PrecauciÃ³n</div>
               </div>
               <div class="tl-hour">
                 <span>11:00</span>
@@ -83,7 +80,7 @@
               </div>
               <div class="tl-hour">
                 <span>13:00</span>
-                <div class="tl-status yellow" title="26-34 km/h">Precaución</div>
+                <div class="tl-status yellow" title="26-34 km/h">PrecauciÃ³n</div>
               </div>
             </div>
             
@@ -95,24 +92,24 @@
       </section>
 
       <section class="commercial-section">
-        <h2 style="text-align: center; margin-bottom: 3rem;">Para quién es esto</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem;">Para quiÃ©n es esto</h2>
         <div class="commercial-grid-3">
           <div class="commercial-card">
-            <h3>Grúas Torre en Construcción</h3>
+            <h3>GrÃºas Torre en ConstrucciÃ³n</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para constructoras en obras urbanas de gran altura que necesitan planificar los izajes del día siguiente con precisión, evitando equipos inactivos y protegiendo al personal.
+              Para constructoras en obras urbanas de gran altura que necesitan planificar los izajes del dÃ­a siguiente con precisiÃ³n, evitando equipos inactivos y protegiendo al personal.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Izaje Industrial Minero</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para mantenciones mayores en plantas industriales y faenas (paradas de planta) donde el costo por hora de retraso es crítico y la seguridad es innegociable.
+              Para mantenciones mayores en plantas industriales y faenas (paradas de planta) donde el costo por hora de retraso es crÃ­tico y la seguridad es innegociable.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Transporte Excepcional</h3>
             <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para logística de cargas sobredimensionadas que requieren evaluar las condiciones de viento en la ruta completa, especialmente en cruces de alta exposición o parques eólicos.
+              Para logÃ­stica de cargas sobredimensionadas que requieren evaluar las condiciones de viento en la ruta completa, especialmente en cruces de alta exposiciÃ³n o parques eÃ³licos.
             </p>
           </div>
         </div>
@@ -122,7 +119,7 @@
       <section class="commercial-section" style="padding-bottom: 5rem;">
         <div style="text-align: center; margin-bottom: 2rem;">
           <h2>Explora el panel en vivo</h2>
-          <p class="subtitle" style="margin: 0 auto;">Interactúa con el semáforo operativo real (demo nacional)</p>
+          <p class="subtitle" style="margin: 0 auto;">InteractÃºa con el semÃ¡foro operativo real (demo nacional)</p>
         </div>
         <div class="iframe-container">
           <iframe src="https://metgo-spati.pages.dev" width="100%" height="600" frameborder="0"></iframe>
@@ -219,7 +216,7 @@
   line-height: 1.5;
 }
 .benefit-list li::before {
-  content: '→';
+  content: 'â†’';
   position: absolute;
   left: 0;
   color: var(--accent-primary);
@@ -316,3 +313,4 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 </style>
+

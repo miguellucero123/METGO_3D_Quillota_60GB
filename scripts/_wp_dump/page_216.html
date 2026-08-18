@@ -1,0 +1,280 @@
+<!-- Copia canónica: MOJ_Chile/wordpress/pagina.html -->
+<!-- Plantilla WP: Paginas.html · URL: /mjo-chile/ -->
+<!-- Actualizado 2026-08-06 · narrativa A′ · Fase 6+ · métricas OOS E1 -->
+
+<!-- wp:html -->
+<div style="font-family:Inter,Roboto,Montserrat,Helvetica,Arial,sans-serif;line-height:1.6;color:#e2e8f0;background-color:#0d1117">
+
+<!-- ========== HERO ========== -->
+<div style="background-color:#0d1117;padding:80px 20px 64px">
+  <div style="max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:48px">
+
+    <!-- Texto izquierda -->
+    <div style="flex:1;min-width:300px">
+      <p style="color:#a78bfa;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;font-size:11px;margin:0 0 12px;font-family:monospace">◌ ΨPSA-CL · MOJ_Chile · METGO 3D · GO_CONDICIONAL</p>
+      <h1 style="font-size:clamp(2rem,4vw,2.75rem);font-weight:800;line-height:1.08;color:#ffffff;margin:0 0 16px;letter-spacing:-0.02em">Pronóstico subestacional–estacional para Chile:<br><span style="color:#c4b5fd">7 a 90 días</span></h1>
+      <p style="font-size:16px;color:#94a3b8;line-height:1.75;margin:0 0 28px">Sistema de I+D que combina la <strong style="color:#e2e8f0">Oscilación Madden–Julian (MJO)</strong>, moduladores de baja frecuencia (ONI, SAM, QBO) y diagnósticos de teleconexión MJO→PSA para producir escenarios probabilísticos de precipitación en Chile central — validados fuera de muestra (OOS) y en expansión hacia humedad (IVT), ríos atmosféricos y cascada seamless hasta 90 días.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <a href="https://github.com/miguellucero123" target="_blank" rel="noopener" style="display:inline-block;background:#8b5cf6;color:#ffffff;padding:11px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px">Repositorio GitHub</a>
+        <a href="https://www.linkedin.com/in/metgo3d/" target="_blank" rel="noopener" style="display:inline-block;background:#1e293b;color:#a78bfa;padding:11px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px">LinkedIn METGO 3D</a>
+        <a href="https://metgo-mjo-chile.pages.dev/" target="_blank" rel="noopener" style="display:inline-block;background:transparent;color:#64748b;padding:11px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;border:1px solid #334155">Panel en vivo →</a>
+      </div>
+    </div>
+
+    <!-- Panel estado derecha -->
+    <div style="flex:1;min-width:280px">
+
+      <!-- Estado del proyecto -->
+      <div style="background:#161b22;border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:22px;margin-bottom:10px">
+        <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;font-family:monospace;margin:0 0 14px">Estado · ΨPSA-CL · ago 2026</p>
+        <p style="color:#94a3b8;font-size:13px;line-height:2.1;font-family:monospace;margin:0">
+          <span style="color:#10b981">✓</span> Skill residual OOS (E1) — ACC≈0.47 h14<br>
+          <span style="color:#10b981">✓</span> Narrativa A′ · residual + moduladores<br>
+          <span style="color:#10b981">✓</span> Ablación: IVCS/β solos ≠ techo<br>
+          <span style="color:#10b981">✓</span> Índices PDO · SOI · DMI · Niño1+2<br>
+          <span style="color:#fbbf24">→</span> IVT / ríos atmosféricos — descarga<br>
+          <span style="color:#fbbf24">→</span> E5–E9 + cascada h90 — activo<br>
+          <span style="color:#7dd3fc">◌</span> Benchmark S2S / conformal — pendiente<br>
+          <span style="color:#7dd3fc">◌</span> Dashboard operacional — pendiente
+        </p>
+      </div>
+
+      <!-- Skill OOS demo -->
+      <div style="background:#0d1117;border:1px solid rgba(167,139,250,0.1);border-radius:10px;padding:16px 18px">
+        <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 10px">Techo skill OOS · residual E1 · test ≥2015</p>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;background:#161b22;border-radius:7px;padding:10px">
+            <p style="color:#475569;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:monospace;margin:0 0 4px">h7 ACC</p>
+            <p style="color:#a78bfa;font-size:22px;font-weight:700;font-family:monospace;margin:0">~0.51</p>
+          </div>
+          <div style="flex:1;background:#161b22;border-radius:7px;padding:10px">
+            <p style="color:#475569;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:monospace;margin:0 0 4px">h14 ACC</p>
+            <p style="color:#e2e8f0;font-size:22px;font-weight:700;font-family:monospace;margin:0">~0.47</p>
+          </div>
+          <div style="flex:1;background:#161b22;border-radius:7px;padding:10px">
+            <p style="color:#475569;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:monospace;margin:0 0 4px">h21 ACC</p>
+            <p style="color:#fbbf24;font-size:22px;font-weight:700;font-family:monospace;margin:0">~0.45</p>
+          </div>
+        </div>
+        <p style="color:#334155;font-size:9px;font-family:monospace;margin:8px 0 0">Target: central_pp_anom · CI bootstrap ΔACC&gt;0 vs RMM · GO_CONDICIONAL</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Franja de estado -->
+<div style="background:#161b22;border-top:1px solid rgba(167,139,250,0.15);border-bottom:1px solid rgba(255,255,255,0.05);padding:13px 20px">
+  <div style="max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-around;gap:8px">
+    <p style="color:#10b981;font-size:11px;font-weight:600;font-family:monospace;margin:0">✓ A′ residual + ONI/SAM/QBO</p>
+    <p style="color:#10b981;font-size:11px;font-weight:600;font-family:monospace;margin:0">✓ Protocolo OOS · splits calendario</p>
+    <p style="color:#fbbf24;font-size:11px;font-weight:600;font-family:monospace;margin:0">→ Fase 6 · IVT / RWS / h90</p>
+    <p style="color:#7dd3fc;font-size:11px;font-weight:600;font-family:monospace;margin:0">◌ Salidas METGO · Q4 2026</p>
+  </div>
+</div>
+
+<!-- ========== HORIZONTES / CASCADA ========== -->
+<div style="background:#0d1117;padding:56px 20px 40px">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Cascada seamless · tres regímenes de predictibilidad</p>
+    <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0 0 20px;max-width:720px">Un solo modelo no cubre 7→90 días. ΨPSA-CL separa tramos: subestacional (condiciones iniciales + MJO), zona gris (régimen) y estacional (moduladores lentos + terciles).</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+
+      <!-- 7-21 días -->
+      <div style="flex:1;min-width:240px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-top:3px solid #8b5cf6;border-radius:10px;padding:26px 22px">
+        <p style="color:#8b5cf6;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">7–21 días · w1–w3</p>
+        <h3 style="color:#e2e8f0;font-size:17px;font-weight:700;margin:0 0 10px">Subestacional</h3>
+        <p style="color:#64748b;font-size:13px;line-height:1.7;margin:0 0 14px">Anomalía de precipitación zonal (Chile central) con residual ElasticNet / HGB sobre RMM + waveguide + moduladores. Skill OOS respaldado; foco operacional en <strong style="color:#94a3b8">MJJA</strong> (régimen frontal + ríos atmosféricos).</p>
+        <p style="color:#475569;font-size:11px;font-family:monospace;margin:0;line-height:1.9"><span style="color:#10b981">✓</span> E1 techo ACC≈0.47 h14<br><span style="color:#fbbf24">→</span> E5 no lineal · HGB MJJA</p>
+      </div>
+
+      <!-- 21-45 días -->
+      <div style="flex:1;min-width:240px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-top:3px solid #6366f1;border-radius:10px;padding:26px 22px">
+        <p style="color:#6366f1;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">21–45 días · w4–w6</p>
+        <h3 style="color:#e2e8f0;font-size:17px;font-weight:700;margin:0 0 10px">Zona gris</h3>
+        <p style="color:#64748b;font-size:13px;line-height:1.7;margin:0 0 14px">Medias semanales probabilísticas. Candidato estructural: mixture-of-experts / Markov-switching con gating por ONI, SAM, QBO y estación — formaliza que el skill vive en subgrupos (E2/E3).</p>
+        <p style="color:#475569;font-size:11px;font-family:monospace;margin:0;line-height:1.9"><span style="color:#fbbf24">→</span> Regímenes / NHMM<br><span style="color:#fbbf24">→</span> GAM · IVCS×ONI · IVT×SAM</p>
+      </div>
+
+      <!-- 45-90 días -->
+      <div style="flex:1;min-width:240px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-top:3px solid #3b82f6;border-radius:10px;padding:26px 22px">
+        <p style="color:#3b82f6;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">45–90 días · w7–w13</p>
+        <h3 style="color:#e2e8f0;font-size:17px;font-weight:700;margin:0 0 10px">Estacional</h3>
+        <p style="color:#64748b;font-size:13px;line-height:1.7;margin:0 0 14px">Terciles y agregados mensuales condicionados a modos lentos (ENSO, QBO, PDO, IOD). Métrica de cierre: RPSS vs climatología — no un dt90 puntual (límite de Lorenz).</p>
+        <p style="color:#475569;font-size:11px;font-family:monospace;margin:0;line-height:1.9"><span style="color:#7dd3fc">◌</span> E9 targets semanales<br><span style="color:#7dd3fc">◌</span> CS-LIM / Koopman / conformal</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ========== NARRATIVA CIENTÍFICA ========== -->
+<div style="background:#0d1117;padding:16px 20px 40px">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <div style="background:#161b22;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:40px 36px">
+      <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+
+        <!-- Texto -->
+        <div style="flex:1;min-width:300px">
+          <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:monospace;margin:0 0 10px">Narrativa vigente · A′</p>
+          <h2 style="font-size:22px;font-weight:800;color:#ffffff;margin:0 0 14px">El composite RMM no agota la predictibilidad</h2>
+          <p style="color:#94a3b8;font-size:14px;line-height:1.75;margin:0 0 14px">Un modelo <strong style="color:#e2e8f0">residual con moduladores</strong> (ONI, SAM, QBO) mejora ACC/BSS fuera de muestra sobre el target zonal de Chile central. La señal <em>no</em> se atribuye al waveguide (IVCS/β*) aislado: las ablaciones OOS rechazan esa hipótesis fuerte.</p>
+          <p style="color:#94a3b8;font-size:14px;line-height:1.75;margin:0 0 20px">La MJO sigue siendo el modo intraseasonal clave; ΨPSA-CL la combina con teleconexiones PSA, eficiencia de waveguide y forzantes lentos — y ahora incorpora humedad (IVT), ríos atmosféricos y la fuente de ondas de Rossby (RWS) como puente físico MJO→Chile.</p>
+          <ul style="color:#64748b;font-size:13px;line-height:1.9;padding-left:20px;margin:0">
+            <li>Target oficial: <code style="color:#94a3b8">central_pp_anom_dt{7,14,21}</code> · splits train≤2009 / val 2010–14 / test≥2015</li>
+            <li>Skill condicional (Narrativa B): refuerzo en IVCS alto × invierno</li>
+            <li>Análogos ganan solo con moduladores (ACC h14≈0.36)</li>
+            <li>Evaluación por temporada: MJJA (claim de producción), SON, DJF+MAM, año hidrológico</li>
+          </ul>
+        </div>
+
+        <!-- Panel técnico -->
+        <div style="flex:1;min-width:260px">
+
+          <!-- Líneas técnicas -->
+          <div style="background:#0d1117;border:1px solid rgba(167,139,250,0.15);border-radius:10px;padding:22px;margin-bottom:10px">
+            <p style="color:#8b5cf6;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 14px">Variables · PSACLNet / catálogo</p>
+            <p style="color:#94a3b8;font-size:13px;line-height:2.1;font-family:monospace;margin:0">
+              <span style="color:#10b981">✓</span> IVCS · β* · IMHC* · I_FPA · IREF<br>
+              <span style="color:#10b981">✓</span> RMM1/2 · ONI · SAM · QBO30<br>
+              <span style="color:#10b981">✓</span> PDO · SOI · DMI · Niño 1+2 / 3.4<br>
+              <span style="color:#fbbf24">→</span> IVT · TCWV · flag río atmosférico<br>
+              <span style="color:#7dd3fc">◌</span> RWS 200 hPa · Takaya–Nakamura
+            </p>
+            <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:14px 0">
+            <p style="color:#475569;font-size:11px;font-family:monospace;margin:0;line-height:1.7">Física: vorticidad + Ks · omega QG · P−E<br>Protocolo: OOS + bootstrap por bloques · sin leakage</p>
+          </div>
+
+          <!-- Skill vs baseline -->
+          <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:18px">
+            <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 12px">Skill h14 ACC · test ≥2015 · OOS</p>
+
+            <p style="color:#94a3b8;font-size:11px;font-family:monospace;margin:0 0 4px">Composite RMM (baseline)</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <div style="flex:1;height:6px;background:#1e293b;border-radius:3px"><div style="width:5%;height:6px;background:#ef4444;border-radius:3px"></div></div>
+              <span style="color:#ef4444;font-size:11px;font-family:monospace;white-space:nowrap">≈ 0.00</span>
+            </div>
+
+            <p style="color:#94a3b8;font-size:11px;font-family:monospace;margin:0 0 4px">Análogos + moduladores (E3)</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <div style="flex:1;height:6px;background:#1e293b;border-radius:3px"><div style="width:36%;height:6px;background:#fbbf24;border-radius:3px"></div></div>
+              <span style="color:#fbbf24;font-size:11px;font-family:monospace;white-space:nowrap">≈ 0.36</span>
+            </div>
+
+            <p style="color:#94a3b8;font-size:11px;font-family:monospace;margin:0 0 4px">Residual + moduladores (E1)</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <div style="flex:1;height:6px;background:#1e293b;border-radius:3px"><div style="width:47%;height:6px;background:#10b981;border-radius:3px"></div></div>
+              <span style="color:#10b981;font-size:11px;font-family:monospace;white-space:nowrap">≈ 0.47</span>
+            </div>
+
+            <p style="color:#334155;font-size:9px;font-family:monospace;margin:0">Fuente: results/experiments · ΔACC con CI_lo&gt;0 · PINN prod aún bajo techo</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FASE 6+ EXPANSIÓN ========== -->
+<div style="background:#0d1117;padding:16px 20px 40px">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Fase 6+ · expansión científica en curso</p>
+    <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0 0 20px;max-width:780px">Programa integral encima del techo A′: más variables, física determinista y modelos — todo bajo el mismo protocolo OOS. Nada entra a “producción científica” sin tabla con bootstrap.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #8b5cf6;border-radius:10px;padding:22px 20px">
+        <p style="color:#8b5cf6;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Humedad · V2</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">IVT y ríos atmosféricos</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">Transporte integrado de vapor frente a 25–45°S, TCWV y flag de río atmosférico (IVT≥250). Hipótesis E8: median ≥60% del skill residual en h7–h14.</p>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #3b82f6;border-radius:10px;padding:22px 20px">
+        <p style="color:#3b82f6;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Física · F3</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Fuente RWS</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">RWS Sardeshmukh–Hoskins a 200 hPa: puente entre convección MJO/ENSO y el tren de ondas hacia Sudamérica. Complementa Ks, β* y flujos Takaya–Nakamura.</p>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #10b981;border-radius:10px;padding:22px 20px">
+        <p style="color:#10b981;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Conjeturas · E6–E7</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Interacciones de régimen</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">E6: fases MJO 6–8 × IVCS alto × ENSO. E7: QBO×RMM (modulación estratosférica). Cada una con experimento OOS numerado y decisión go/no-go.</p>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #f59e0b;border-radius:10px;padding:22px 20px">
+        <p style="color:#f59e0b;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Modelos · M2–M5</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Regímenes · S2S · conformal</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">Mixture-of-experts, GAM interpretable, benchmark S2S (ECMWF/SubX) obligatorio para publicar, y conformal prediction para intervalos con cobertura garantizada.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ========== APLICACIONES OPERACIONALES ========== -->
+<div style="background:#0d1117;padding:16px 20px 40px">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <p style="color:#475569;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:monospace;margin:0 0 20px">Aplicaciones operacionales · uso de los pronósticos</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #10b981;border-radius:10px;padding:22px 20px">
+        <p style="color:#10b981;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Agricultura</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Ventanas MJJA</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">Riesgo de helada y déficit hídrico con 1–3 semanas de anticipación (h7–h21). Escenarios trimestrales (terciles) para planificación de riego en año hidrológico.</p>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #3b82f6;border-radius:10px;padding:22px 20px">
+        <p style="color:#3b82f6;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Minería</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Logística cordillerana</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">Anticipar cierres de accesos y acumulación nival con escenarios semanales. Moduladores lentos informan la planificación de faena a 45–90 días.</p>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #f59e0b;border-radius:10px;padding:22px 20px">
+        <p style="color:#f59e0b;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Calidad del aire</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Inversión y MP10</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">Períodos de mayor estabilización asociados a fases MJO y bloqueo Pacífico SE. Comunicación preventiva con horizontes subestacionales.</p>
+      </div>
+
+      <div style="flex:1;min-width:220px;background:#161b22;border:1px solid rgba(255,255,255,0.07);border-left:3px solid #8b5cf6;border-radius:10px;padding:22px 20px">
+        <p style="color:#8b5cf6;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:monospace;margin:0 0 8px">Recursos hídricos</p>
+        <h3 style="color:#e2e8f0;font-size:15px;font-weight:700;margin:0 0 8px">Cuencas y embalses</h3>
+        <p style="color:#64748b;font-size:12px;line-height:1.7;margin:0">Aporte hídrico por anomalía zonal y terciles estacionales. Contexto megasequía 2010–2019: skill reportado dentro y fuera del régimen seco.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ========== CTA FINAL ========== -->
+<div style="background:#0a1628;border-top:1px solid rgba(167,139,250,0.15);padding:56px 20px">
+  <div style="max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:40px">
+
+    <div style="flex:1;min-width:300px">
+      <p style="color:#8b5cf6;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:monospace;margin:0 0 10px">◌ GO_CONDICIONAL · desarrollo activo</p>
+      <h2 style="font-size:22px;font-weight:800;color:#ffffff;margin:0 0 12px">Seguimiento del proyecto</h2>
+      <p style="color:#94a3b8;font-size:14px;line-height:1.75;margin:0 0 20px">Código, experimentos OOS (E1–E9) y notebooks de validación en GitHub. Novedades de producto en LinkedIn. Las salidas operacionales se integran al dashboard METGO cuando el modelo supera el techo residual con intervalos conformal y benchmark S2S.</p>
+      <p style="color:#64748b;font-size:13px;line-height:2;font-family:monospace;margin:0">
+        <span style="color:#a78bfa">→</span> <a href="https://github.com/miguellucero123" style="color:#e2e8f0;text-decoration:none" target="_blank" rel="noopener">github.com/miguellucero123</a><br>
+        <span style="color:#a78bfa">→</span> <a href="https://www.linkedin.com/in/metgo3d/" style="color:#e2e8f0;text-decoration:none" target="_blank" rel="noopener">linkedin.com/in/metgo3d</a><br>
+        <span style="color:#a78bfa">→</span> <a href="https://metgo-mjo-chile.pages.dev/" style="color:#e2e8f0;text-decoration:none" target="_blank" rel="noopener">metgo-mjo-chile.pages.dev</a> — panel activo
+      </p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:220px">
+      <a href="https://github.com/miguellucero123" target="_blank" rel="noopener" style="display:block;background:#8b5cf6;color:#ffffff;padding:14px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;text-align:center">Ver repositorio GitHub</a>
+      <a href="https://metgo-mjo-chile.pages.dev/" target="_blank" rel="noopener" style="display:block;background:#10b981;color:#ffffff;padding:14px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;text-align:center">→ Panel MJO_Chile en vivo</a>
+      <a href="/nosotros/" style="display:block;background:transparent;color:#64748b;padding:14px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;border:1px solid #334155">Equipo METGO 3D →</a>
+    </div>
+
+  </div>
+</div>
+
+</div>
+<!-- /wp:html -->

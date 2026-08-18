@@ -106,11 +106,13 @@ def expand_cors_origins(raw: list[str] | None = None) -> Any:
         return [
             re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$", re.I),
             *_CORS_PREVIEW_REGEX,
-            "https://metgo-quillota.pages.dev",
-            "https://metgo-quillota.pages.dev",
+            "https://metgo3d.com",
+            "https://www.metgo3d.com",
             "https://metgo-quillota.pages.dev",
             "https://metgo-spati.pages.dev",
-            "https://metgo-spati.pages.dev",
+            "https://metgo-copiapo.pages.dev",
+            "https://metgo-mantos.pages.dev",
+            "https://metgo-paine.pages.dev",
             "https://metgo-3d-quillota-60gb.streamlit.app",
         ]
 
@@ -127,8 +129,19 @@ def expand_cors_origins(raw: list[str] | None = None) -> Any:
             out.append(re.compile(rf"^{re.escape(scheme)}://{rest_esc}$", re.I))
         else:
             out.append(o)
-    # Siempre cubrir deploys preview (hash.proyecto.pages.dev)
+    # Siempre cubrir deploys preview (hash.proyecto.pages.dev) + sitio marketing
     out.extend(_CORS_PREVIEW_REGEX)
+    for extra in (
+        "https://metgo3d.com",
+        "https://www.metgo3d.com",
+        "https://metgo-quillota.pages.dev",
+        "https://metgo-spati.pages.dev",
+        "https://metgo-copiapo.pages.dev",
+        "https://metgo-mantos.pages.dev",
+        "https://metgo-paine.pages.dev",
+    ):
+        if extra not in out:
+            out.append(extra)
     return out
 
 
@@ -190,9 +203,21 @@ def create_app() -> Flask:
                     "public_estaciones": "/api/public/estaciones",
                     "public_meteo": "/api/public/meteo/<estacion_id>",
                     "public_aire": "/api/public/aire/<estacion_id>",
+                    "public_marketing_ticker": "/api/public/marketing/ticker",
                 },
             }
         )
+
+    @app.get("/api/public/marketing/ticker")
+    def public_marketing_ticker():
+        """Cinta WP/marketing: snapshot público de paneles (cache corto)."""
+        from api_rest.marketing_ticker import build_marketing_ticker
+
+        try:
+            return jsonify(build_marketing_ticker())
+        except Exception as exc:
+            app.logger.warning("marketing_ticker error: %s", exc)
+            return jsonify({"error": "ticker no disponible", "detalle": str(exc)[:200]}), 503
 
     @app.get("/api/health")
     def health():
