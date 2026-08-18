@@ -1,44 +1,12 @@
 <template>
-  <div class="landing">
-    <a href="#inicio" class="skip-link">{{ t('app.skipContent') }}</a>
-
-    <header class="top">
-      <nav class="nav" aria-label="Principal">
-        <a href="#inicio" class="brand">
-          <span class="brand-icon" aria-hidden="true">
-            <Leaf :size="17" />
-          </span>
-          <span class="brand-text">
-            <span class="brand-name">METGO</span>
-            <span class="brand-sub">QUILLOTA</span>
-          </span>
-        </a>
-        <div class="nav-links">
-          <router-link to="/planes">Planes</router-link>
-          <router-link to="/nosotros">Nosotros</router-link>
-          <router-link to="/contacto">Contacto</router-link>
-        </div>
-        <div class="nav-cta">
-          <div class="lang-switch" role="group" :aria-label="t('lang.label')">
-            <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
-              {{ t('lang.es') }}
-            </button>
-            <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">
-              {{ t('lang.en') }}
-            </button>
-          </div>
-          <template v-if="isLoggedIn">
-            <router-link class="btn btn-primary" to="/app">{{ t('landing.goPanel') }}</router-link>
-          </template>
-          <template v-else>
-            <router-link class="btn btn-ghost" to="/login">{{ t('landing.login') }}</router-link>
-            <router-link class="btn btn-primary" :to="accessPath">{{ t('landing.requestAccess') }}</router-link>
-          </template>
-        </div>
-      </nav>
-    </header>
-
-    <main>
+  <CommercialLayout
+    brandName="METGO"
+    brandSub="QUILLOTA"
+    :brandIcon="Leaf"
+    accentColor="#00ffaa"
+    :seoTitle="t('landing.seoTitle', 'METGO Quillota | Panel Operacional')"
+    :seoDescription="t('landing.seoDesc', 'Inteligencia climática construida para Chile')"
+  >
       <section id="inicio" class="hero">
         <div class="wrap hero-grid">
           <div>
@@ -121,12 +89,12 @@
           <article>
             <h3>{{ t('landing.innov1Title') }}</h3>
             <p>{{ t('landing.innov1Body') }}</p>
-            <a href="https://metgo-spati.pages.dev" target="_blank" rel="noopener">VENTORA →</a>
+            <router-link to="/planes">Ver módulos →</router-link>
           </article>
           <article>
             <h3>{{ t('landing.innov2Title') }}</h3>
             <p>{{ t('landing.innov2Body') }}</p>
-            <a href="https://metgo-copiapo.pages.dev" target="_blank" rel="noopener">Copiapó →</a>
+            <router-link to="/planes">Ver módulos →</router-link>
           </article>
           <article>
             <h3>{{ t('landing.innov3Title') }}</h3>
@@ -258,27 +226,11 @@
           </div>
         </div>
       </section>
-    </main>
-
-    <footer class="foot">
-      <div class="wrap foot-row">
-        <div class="foot-brand">
-          <span class="brand-icon brand-icon--sm" aria-hidden="true"><Leaf :size="12" /></span>
-          {{ t('landing.footerBrand') }}
-        </div>
-        <div class="foot-links">
-          <router-link to="/planes">Planes</router-link>
-          <router-link to="/nosotros">Nosotros</router-link>
-          <router-link to="/contacto">Contacto</router-link>
-          <router-link to="/login">{{ t('landing.login') }}</router-link>
-          <router-link v-if="isLoggedIn" to="/app">{{ t('landing.goPanel') }}</router-link>
-        </div>
-      </div>
-    </footer>
-  </div>
+  </CommercialLayout>
 </template>
 
 <script setup>
+import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -364,198 +316,10 @@ const faqs = computed(() => [
 </script>
 
 <style scoped>
-.landing {
-  --bg: #080c14;
-  --bg-glow: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(0, 255, 170, 0.1), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(14, 165, 233, 0.06), transparent 55%);
-  --surface: #121a2b;
-  --surface-2: #0d1420;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-accent: rgba(0, 255, 170, 0.28);
-  --accent: #00ffaa;
-  --accent-dim: rgba(0, 255, 170, 0.12);
-  --text: #f4f7fa;
-  --muted: #8fa0b3;
-  --dim: #4c5a70;
-  --amber: #f5b942;
-  --red: #ef5b5b;
-  --mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', monospace;
-  min-height: 100vh;
-  background: var(--bg);
-  background-image: var(--bg-glow);
-  background-attachment: fixed;
-  color: var(--text);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-.landing a {
-  color: inherit;
-  text-decoration: none;
-}
 .wrap {
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 28px;
-}
-.skip-link {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 100;
-  padding: 0.75rem 1rem;
-  background: var(--accent);
-  color: #04140e;
-  font-weight: 700;
-}
-.skip-link:focus {
-  left: 1rem;
-  top: 1rem;
-}
-a:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(8, 12, 20, 0.82);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-}
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 28px;
-  max-width: 1120px;
-  margin: 0 auto;
-  gap: 1rem;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.brand-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: linear-gradient(145deg, #2ef2b8, #0fae7d);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #04140e;
-  box-shadow: 0 4px 16px rgba(0, 255, 170, 0.35);
-  flex-shrink: 0;
-}
-.brand-icon--sm {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  box-shadow: none;
-}
-.brand-name {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-}
-.brand-sub {
-  display: block;
-  font-size: 10px;
-  color: var(--dim);
-  font-family: var(--mono);
-  letter-spacing: 1px;
-  margin-top: 1px;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-}
-.nav-links a {
-  font-size: 13.5px;
-  color: var(--muted);
-  transition: color 0.15s;
-}
-.nav-links a:hover {
-  color: var(--text);
-}
-.nav-cta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-.lang-switch {
-  display: flex;
-  gap: 4px;
-  margin-right: 4px;
-}
-.lang-switch button {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  border-radius: 6px;
-  padding: 0.2rem 0.45rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.lang-switch button.active {
-  border-color: var(--border-accent);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 9px 18px;
-  border-radius: 9px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-  white-space: nowrap;
-}
-.btn-primary {
-  background: var(--accent);
-  color: #04140e;
-}
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 255, 170, 0.3);
-}
-.btn-ghost {
-  border-color: var(--border);
-  color: var(--text);
-  background: transparent;
-}
-.btn-ghost:hover {
-  border-color: var(--border-accent);
-  background: var(--accent-dim);
-}
-.btn-lg {
-  padding: 13px 24px;
-  font-size: 14.5px;
-  border-radius: 11px;
-}
-.btn-block {
-  width: 100%;
-}
-@media (max-width: 900px) {
-  .nav-links {
-    display: none;
-  }
 }
 
 .hero {

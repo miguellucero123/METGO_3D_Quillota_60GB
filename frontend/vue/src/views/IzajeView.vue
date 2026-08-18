@@ -1,30 +1,26 @@
-﻿<template>
-  <div class="commercial-page">
-    <header class="top">
-      <nav class="nav" aria-label="Principal">
-        <router-link to="/" class="brand">
-          <span class="brand-text">
-            <span class="brand-name">METGO</span>
-            <span class="brand-sub">3D</span>
-          </span>
-        </router-link>
-        <div class="nav-links">
-          <router-link to="/planes">Planes</router-link>
-        </div>
-        <div class="nav-cta">
-          <router-link class="btn btn-ghost" to="/login">Ingresar</router-link>
-        </div>
-      </nav>
-    </header>
+<script setup>
+import { Mountain } from 'lucide-vue-next'
+import CommercialLayout from '@/components/layout/CommercialLayout.vue'
+</script>
+
+<template>
+  <CommercialLayout
+    brandName="VENTORA"
+    brandSub="IZAJE"
+    :brandIcon="Mountain"
+    accentColor="#0ea5e9"
+    seoTitle="Izaje Industrial | VENTORA"
+    seoDescription="Anticipa ventanas seguras con 24h de margen. Nuestro semáforo operacional reduce las paradas no planificadas."
+  >
 
     <main class="commercial-wrap">
       <section class="commercial-hero">
-        <h1>Una grÃºa parada por viento cuesta miles de dÃ³lares. AnticÃ­palo.</h1>
-        <p class="subtitle" style="margin: 0 auto 2.5rem;">
-          Anticipa ventanas seguras con 24h de margen. Nuestro semÃ¡foro operacional reduce las paradas no planificadas y evita multas por incumplimiento en construcciÃ³n y gran minerÃ­a.
+        <h1>Una grúa parada por viento cuesta miles de dólares. Anticípalo.</h1>
+        <p class="subtitle" style="margin: 0 auto 2.5rem; color: var(--muted); line-height: 1.6;">
+          Anticipa ventanas seguras con 24h de margen. Nuestro semáforo operacional reduce las paradas no planificadas y evita multas por incumplimiento en construcción y gran minería.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center;">
-          <router-link to="/planes" class="commercial-btn primary">
+          <router-link to="/planes" class="btn btn-primary" style="height: 48px; font-size: 15px; padding: 0 2rem;">
             Ver planes y precios
           </router-link>
         </div>
@@ -33,9 +29,9 @@
       <section class="commercial-section">
         <div class="commercial-grid-2">
           <div>
-            <h2>Â¿Por quÃ© el viento en superficie no sirve?</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
-              Los pronÃ³sticos tradicionales (y los anemÃ³metros bÃ¡sicos) solo miden el viento a nivel de suelo (10m). Pero una grÃºa torre o un izaje industrial operan a 50m o 100m de altura, donde la cizalladura y turbulencia mecÃ¡nica cambian completamente las reglas del juego.
+            <h2>¿Por qué el viento en superficie no sirve?</h2>
+            <p style="color: var(--muted); margin-bottom: 2rem; line-height: 1.6;">
+              Los pronósticos tradicionales (y los anemómetros básicos) solo miden el viento a nivel de suelo (10m). Pero una grúa torre o un izaje industrial operan a 50m o 100m de altura, donde la cizalladura y turbulencia mecánica cambian completamente las reglas del juego.
             </p>
 
             <ul class="benefit-list">
@@ -43,17 +39,17 @@
                 <strong>Cumplimiento DS 44/2023:</strong> Trabajo seguro en altura respaldado por datos certificados.
               </li>
               <li>
-                <strong>Perfil vertical completo:</strong> PronÃ³stico simultÃ¡neo a 10m, 50m y 100m sobre el terreno.
+                <strong>Perfil vertical completo:</strong> Pronóstico simultáneo a 10m, 50m y 100m sobre el terreno.
               </li>
               <li>
-                <strong>Alertas push automÃ¡ticas:</strong> NotificaciÃ³n a tu equipo 12h antes si el viento proyectado supera tu umbral operativo.
+                <strong>Alertas push automáticas:</strong> Notificación a tu equipo 12h antes si el viento proyectado supera tu umbral operativo.
               </li>
             </ul>
           </div>
           
           <div class="demo-card">
             <div class="demo-header">
-              <span>SemÃ¡foro Operacional Â· Ventana 12h</span>
+              <span>Semáforo Operacional · Ventana 12h</span>
               <span class="live-dot"><span class="pulse"></span> Demo</span>
             </div>
             
@@ -68,7 +64,7 @@
               </div>
               <div class="tl-hour">
                 <span>10:00</span>
-                <div class="tl-status yellow" title="26-34 km/h">PrecauciÃ³n</div>
+                <div class="tl-status yellow" title="26-34 km/h">Precaución</div>
               </div>
               <div class="tl-hour">
                 <span>11:00</span>
@@ -80,11 +76,11 @@
               </div>
               <div class="tl-hour">
                 <span>13:00</span>
-                <div class="tl-status yellow" title="26-34 km/h">PrecauciÃ³n</div>
+                <div class="tl-status yellow" title="26-34 km/h">Precaución</div>
               </div>
             </div>
             
-            <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 1rem;">
+            <p style="font-size: 0.85rem; color: var(--muted); text-align: center; margin-top: 1rem;">
               Ejemplo de panel. El cliente puede definir sus propios umbrales operativos (ej: 26 km/h, 35 km/h, 60 km/h).
             </p>
           </div>
@@ -92,24 +88,24 @@
       </section>
 
       <section class="commercial-section">
-        <h2 style="text-align: center; margin-bottom: 3rem;">Para quiÃ©n es esto</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem;">Para quién es esto</h2>
         <div class="commercial-grid-3">
           <div class="commercial-card">
-            <h3>GrÃºas Torre en ConstrucciÃ³n</h3>
-            <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para constructoras en obras urbanas de gran altura que necesitan planificar los izajes del dÃ­a siguiente con precisiÃ³n, evitando equipos inactivos y protegiendo al personal.
+            <h3>Grúas Torre en Construcción</h3>
+            <p style="color: var(--muted); line-height: 1.5;">
+              Para constructoras en obras urbanas de gran altura que necesitan planificar los izajes del día siguiente con precisión, evitando equipos inactivos y protegiendo al personal.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Izaje Industrial Minero</h3>
-            <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para mantenciones mayores en plantas industriales y faenas (paradas de planta) donde el costo por hora de retraso es crÃ­tico y la seguridad es innegociable.
+            <p style="color: var(--muted); line-height: 1.5;">
+              Para mantenciones mayores en plantas industriales y faenas (paradas de planta) donde el costo por hora de retraso es crítico y la seguridad es innegociable.
             </p>
           </div>
           <div class="commercial-card">
             <h3>Transporte Excepcional</h3>
-            <p style="color: var(--text-secondary); line-height: 1.5;">
-              Para logÃ­stica de cargas sobredimensionadas que requieren evaluar las condiciones de viento en la ruta completa, especialmente en cruces de alta exposiciÃ³n o parques eÃ³licos.
+            <p style="color: var(--muted); line-height: 1.5;">
+              Para logística de cargas sobredimensionadas que requieren evaluar las condiciones de viento en la ruta completa, especialmente en cruces de alta exposición o parques eólicos.
             </p>
           </div>
         </div>
@@ -119,87 +115,64 @@
       <section class="commercial-section" style="padding-bottom: 5rem;">
         <div style="text-align: center; margin-bottom: 2rem;">
           <h2>Explora el panel en vivo</h2>
-          <p class="subtitle" style="margin: 0 auto;">InteractÃºa con el semÃ¡foro operativo real (demo nacional)</p>
+          <p class="subtitle" style="margin: 0 auto; color: var(--muted);">Interactúa con el semáforo operativo real (demo nacional)</p>
         </div>
         <div class="iframe-container">
           <iframe src="https://metgo-spati.pages.dev" width="100%" height="600" frameborder="0"></iframe>
         </div>
       </section>
     </main>
-  </div>
+  </CommercialLayout>
 </template>
 
 <style scoped>
-/* Navigation styles (duplicated temporarily) */
-.top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  background: rgba(8, 12, 20, 0.82);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-color);
-}
-.nav {
+
+.commercial-wrap {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 28px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: 4rem 28px;
 }
-.nav-links {
-  display: none;
-  gap: 1.5rem;
+
+h1, h2, h3 {
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 1rem;
 }
-@media (min-width: 768px) {
-  .nav-links {
-    display: flex;
-  }
+
+.commercial-hero h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  text-align: center;
 }
-.nav-links a {
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 0.95rem;
-  transition: color 0.2s;
-  text-decoration: none;
+.commercial-hero .subtitle {
+  text-align: center;
+  font-size: 1.1rem;
+  max-width: 800px;
 }
-.nav-links a:hover,
-.nav-links a.router-link-active {
-  color: var(--text-primary);
+
+.commercial-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 4rem;
+  margin-top: 2rem;
 }
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-primary);
-  text-decoration: none;
+
+.commercial-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
 }
-.brand-name {
-  font-weight: 700;
-  letter-spacing: 0.05em;
+
+.commercial-card {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: transform 0.2s;
 }
-.brand-sub {
-  color: var(--accent-primary);
-  font-weight: 700;
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  font-weight: 600;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-.btn-ghost {
-  color: var(--text-primary);
-}
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
+.commercial-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--border-accent);
 }
 
 /* Page styles */
@@ -212,20 +185,20 @@
   margin-bottom: 1.25rem;
   padding-left: 1.5rem;
   position: relative;
-  color: var(--text-primary);
+  color: var(--text);
   line-height: 1.5;
 }
 .benefit-list li::before {
-  content: 'â†’';
+  content: '→';
   position: absolute;
   left: 0;
-  color: var(--accent-primary);
+  color: var(--accent);
   font-weight: bold;
 }
 
 /* Traffic Light Demo */
 .demo-card {
-  background: var(--bg-card);
+  background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
@@ -242,7 +215,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--accent-secondary);
+  color: var(--accent);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -250,14 +223,14 @@
 .pulse {
   width: 8px;
   height: 8px;
-  background-color: var(--accent-secondary);
+  background-color: var(--accent);
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(0, 255, 170, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
 }
 
 .traffic-light-grid {
@@ -281,7 +254,7 @@
 .tl-hour span {
   display: block;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--muted);
   margin-bottom: 0.5rem;
 }
 .tl-status {
@@ -302,7 +275,7 @@
 }
 .tl-status.red {
   background: rgba(239, 91, 91, 0.15);
-  color: #ef5b5b;
+  color: var(--red);
   border: 1px solid rgba(239, 91, 91, 0.3);
 }
 
