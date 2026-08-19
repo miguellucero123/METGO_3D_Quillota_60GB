@@ -1,5 +1,6 @@
 <script setup>
 import { Leaf } from 'lucide-vue-next'
+import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 </script>
 
 <template>
@@ -102,9 +103,6 @@ import { Leaf } from 'lucide-vue-next'
     </main>
   </CommercialLayout>
 </template>
-
-<script setup>
-import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 <style scoped>
 

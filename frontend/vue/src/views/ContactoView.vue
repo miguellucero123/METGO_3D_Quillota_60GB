@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { submitLeadData } from '@/api/metgoApi'
 import { Leaf } from 'lucide-vue-next'
+import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 const form = ref({
   nombre: '',
@@ -118,9 +119,6 @@ const submitLead = async () => {
     </main>
   </CommercialLayout>
 </template>
-
-<script setup>
-import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 <style scoped>
 

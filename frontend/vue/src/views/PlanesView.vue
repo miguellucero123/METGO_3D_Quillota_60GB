@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { createCheckoutSession } from '@/api/metgoApi'
 import { Leaf } from 'lucide-vue-next'
+import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -158,9 +159,6 @@ async function iniciarCheckout(planCode) {
     </div>
   </CommercialLayout>
 </template>
-
-<script setup>
-import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 <style scoped>
 
