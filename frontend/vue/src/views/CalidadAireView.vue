@@ -101,7 +101,6 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 </template>
 
 <style scoped>
-
 .commercial-wrap {
   max-width: 1120px;
   margin: 0 auto;
@@ -119,6 +118,7 @@ h1, h2, h3 {
   font-size: clamp(2rem, 4vw, 3rem);
   text-align: center;
 }
+
 .commercial-hero .subtitle {
   text-align: center;
   font-size: 1.1rem;
@@ -145,6 +145,7 @@ h1, h2, h3 {
   padding: 2rem;
   transition: transform 0.2s;
 }
+
 .commercial-card:hover {
   transform: translateY(-5px);
   border-color: var(--border-accent);
@@ -156,6 +157,7 @@ h1, h2, h3 {
   padding: 0;
   margin: 0;
 }
+
 .benefit-list li {
   margin-bottom: 1.25rem;
   padding-left: 1.5rem;
@@ -163,6 +165,7 @@ h1, h2, h3 {
   color: var(--text);
   line-height: 1.5;
 }
+
 .benefit-list li::before {
   content: '→';
   position: absolute;
@@ -178,6 +181,7 @@ h1, h2, h3 {
   border-radius: 12px;
   padding: 1.5rem;
 }
+
 .demo-header {
   margin-bottom: 1.5rem;
   font-weight: 600;
@@ -195,3 +199,4 @@ h1, h2, h3 {
   border-radius: 20px;
 }
 </style>
+
