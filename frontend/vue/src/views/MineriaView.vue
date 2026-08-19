@@ -31,7 +31,7 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
           <div>
             <h2 style="font-size: 2rem;">Monitoreo diseñado para la realidad de la faena</h2>
             <p style="color: var(--muted); margin-bottom: 2rem; line-height: 1.6;">
-              Los pronósticos generales fallan en alta montaña porque no consideran la topografía específica de tu operación. METGO integra tus estaciones locales con modelos de alta resolución para entregar un pronóstico que realmente sirve para la toma de decisiones.
+              Los pronósticos generales fallan en alta montaña porque no consideran la topografía específica de tu operación. METGO3D integra tus estaciones locales con modelos de alta resolución para entregar un pronóstico que realmente sirve para la toma de decisiones.
             </p>
 
             <ul class="benefit-list">
@@ -74,7 +74,7 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
       </section>
 
       <section class="commercial-section" style="padding-bottom: 5rem;">
-        <h2 style="text-align: center; margin-bottom: 3rem;">El diferencial METGO para Minería</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem;">El diferencial METGO3D para Minería</h2>
         <div class="commercial-grid-3">
           <div class="commercial-card">
             <h3>Resolución Hiperlocal</h3>

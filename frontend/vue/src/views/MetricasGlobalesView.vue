@@ -140,7 +140,7 @@ function irEstacion(estacionId) {
                 <td>{{ r.precipitacion }} mm</td>
                 <td>{{ r.viento }} km/h</td>
                 <td>{{ r.humedad }}%</td>
-                <td class="muted-cell">{{ r.fuente || 'METGO' }}</td>
+                <td class="muted-cell">{{ r.fuente || 'METGO3D' }}</td>
               </tr>
             </tbody>
           </table>

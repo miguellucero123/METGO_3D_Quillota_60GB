@@ -69,7 +69,7 @@ async function enviarInvitacion() {
     const res = await invitarUsuario({
       ...invite.value,
       nombres: invite.value.nombres || 'Invitado',
-      apellidos: invite.value.apellidos || 'METGO',
+      apellidos: invite.value.apellidos || 'METGO3D',
       org_id: auth.user?.org_id || data.value?.usuario?.org_id,
     })
     inviteMsg.value = res.message || 'Invitación creada. El usuario debe verificar el email.'

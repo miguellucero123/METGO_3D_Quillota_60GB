@@ -51,7 +51,7 @@ const prefs = usePreferencesStore()
             :checked="prefs.theme === 'light'"
             @change="prefs.setTheme('light')"
           />
-          Claro (verde METGO)
+          Claro (verde METGO3D)
         </label>
         <label class="radio-row">
           <input

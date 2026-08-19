@@ -181,7 +181,7 @@ onUnmounted(() => clearInterval(pollTimer))
               <button
                 type="button"
                 class="btn btn-sm btn--primary-soft"
-                title="Ver en iframe dentro de METGO"
+                title="Ver en iframe dentro de METGO3D"
                 @click="verEnVisor(s.id)"
               >
                 <Monitor /> Ver en visor

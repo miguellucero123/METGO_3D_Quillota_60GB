@@ -88,7 +88,7 @@ async function guardarNotif() {
 
 async function probarNotif() {
   try {
-    const r = await probarNotificaciones('Prueba alertas METGO')
+    const r = await probarNotificaciones('Prueba alertas METGO3D')
     const canal = r.canal || (r.canales || []).map((c) => c.canal).join(', ')
     notifMsg.value = `Enviado: ${canal || 'ok'}`
     await cargar()

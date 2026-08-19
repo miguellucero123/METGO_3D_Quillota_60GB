@@ -33,7 +33,7 @@ onMounted(async () => {
 <template>
   <div class="page">
     <header class="page-header">
-      <h2 class="page-title">Catálogo de módulos METGO</h2>
+      <h2 class="page-title">Catálogo de módulos METGO3D</h2>
       <p class="page-subtitle">
         Acceso interconectado a dashboards Vue, Streamlit y componentes del proyecto (01–12)
       </p>

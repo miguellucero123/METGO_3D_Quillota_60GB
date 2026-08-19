@@ -37,11 +37,11 @@ const submitLead = async () => {
 
 <template>
   <CommercialLayout
-    brandName="METGO"
+    brandName="METGO3D"
     brandSub="QUILLOTA"
     :brandIcon="Leaf"
     accentColor="#00ffaa"
-    seoTitle="Contacto | METGO Quillota"
+    seoTitle="Contacto | METGO3D Quillota"
     seoDescription="Agenda una demo gratuita o solicita acceso piloto para tu operación."
   >
 

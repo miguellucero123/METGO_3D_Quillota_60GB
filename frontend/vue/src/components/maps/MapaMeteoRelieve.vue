@@ -26,7 +26,7 @@ let layerControl = null
 
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · ' +
-  '<a href="https://opentopomap.org">OpenTopoMap</a> · METGO 3D'
+  '<a href="https://opentopomap.org">OpenTopoMap</a> · METGO3D'
 
 function initMap() {
   if (!mapRoot.value || map) return
@@ -49,7 +49,7 @@ function initMap() {
     }),
     '🛰️ Satélite': L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { maxZoom: 18, attribution: 'Esri · METGO 3D' }
+      { maxZoom: 18, attribution: 'Esri · METGO3D' }
     ),
   }
 

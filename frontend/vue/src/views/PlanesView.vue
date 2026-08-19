@@ -39,11 +39,11 @@ async function iniciarCheckout(planCode) {
 
 <template>
   <CommercialLayout
-    brandName="METGO"
+    brandName="METGO3D"
     brandSub="QUILLOTA"
     :brandIcon="Leaf"
     accentColor="#00ffaa"
-    seoTitle="Planes y Precios | METGO Quillota"
+    seoTitle="Planes y Precios | METGO3D Quillota"
     seoDescription="Precio fijo mensual por zona o faena. Sin sorpresas. Sin costo por alerta."
   >
     <div class="commercial-wrap commercial-section">

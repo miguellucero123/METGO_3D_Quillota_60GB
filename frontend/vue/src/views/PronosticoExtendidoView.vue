@@ -5,11 +5,11 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 <template>
   <CommercialLayout
-    brandName="METGO"
+    brandName="METGO3D"
     brandSub="QUILLOTA"
     :brandIcon="Leaf"
     accentColor="#00ffaa"
-    seoTitle="Pronóstico Extendido | METGO Quillota"
+    seoTitle="Pronóstico Extendido | METGO3D Quillota"
     seoDescription="Anticipa la tendencia climática estacional para planificar cosechas, mantenciones o contratos."
   >
 

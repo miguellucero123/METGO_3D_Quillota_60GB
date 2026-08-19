@@ -31,7 +31,7 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
           <div>
             <h2 style="font-size: 2rem;">Operar sin monitoreo continuo es volar a ciegas</h2>
             <p style="color: var(--muted); margin-bottom: 2rem; line-height: 1.6;">
-              Los Planes de Prevención y Descontaminación Atmosférica (PPDA) exigen a industrias y municipios medir, reportar y reaccionar. METGO facilita la gestión integral de la calidad del aire para que te enfoques en tu operación.
+              Los Planes de Prevención y Descontaminación Atmosférica (PPDA) exigen a industrias y municipios medir, reportar y reaccionar. METGO3D facilita la gestión integral de la calidad del aire para que te enfoques en tu operación.
             </p>
 
             <ul class="benefit-list">

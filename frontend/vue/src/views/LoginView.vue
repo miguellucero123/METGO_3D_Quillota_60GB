@@ -104,7 +104,7 @@ async function onSubmit() {
         {{ t('login.noAccount') }}
         <router-link to="/registro">{{ t('app.register') }}</router-link>
       </p>
-      <p class="hint">Acceso restringido · JWT en servidor METGO</p>
+      <p class="hint">Acceso restringido · JWT en servidor METGO3D</p>
     </div>
   </div>
 </template>

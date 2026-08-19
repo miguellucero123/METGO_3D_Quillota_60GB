@@ -261,7 +261,7 @@ watch(
           :key="iframeKey"
           :src="embedUrl"
           class="viewer-iframe"
-          title="Dashboard Streamlit METGO"
+          title="Dashboard Streamlit METGO3D"
           allow="fullscreen"
         />
         <div v-else class="viewer-placeholder">

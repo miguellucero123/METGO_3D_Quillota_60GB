@@ -1,10 +1,10 @@
 <template>
   <CommercialLayout
-    brandName="METGO"
+    brandName="METGO3D"
     brandSub="QUILLOTA"
     :brandIcon="Leaf"
     accentColor="#00ffaa"
-    :seoTitle="t('landing.seoTitle', 'METGO Quillota | Panel Operacional')"
+    :seoTitle="t('landing.seoTitle', 'METGO3D Quillota | Panel Operacional')"
     :seoDescription="t('landing.seoDesc', 'Inteligencia climática construida para Chile')"
   >
       <section id="inicio" class="hero">

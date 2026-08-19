@@ -234,7 +234,7 @@ function linkIsActive(link) {
   <aside id="metgo-sidebar" class="sidebar" aria-label="Navegación principal">
     <div class="sidebar__brand">
       <span class="sidebar__mark">M</span>
-      <span class="sidebar__name">METGO</span>
+      <span class="sidebar__name">METGO3D</span>
     </div>
 
     <nav class="sidebar__nav">

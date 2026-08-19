@@ -5,19 +5,19 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 
 <template>
   <CommercialLayout
-    brandName="METGO"
+    brandName="METGO3D"
     brandSub="QUILLOTA"
     :brandIcon="Leaf"
     accentColor="#00ffaa"
-    seoTitle="Nosotros | METGO Quillota"
-    seoDescription="Conoce más sobre METGO Quillota"
+    seoTitle="Nosotros | METGO3D Quillota"
+    seoDescription="Conoce más sobre METGO3D Quillota"
   >
 
     <main class="commercial-wrap">
       <section class="commercial-hero">
         <h1>Inteligencia climática construida para Chile</h1>
         <p class="subtitle" style="margin: 0 auto 2.5rem; color: var(--muted); max-width: 800px; line-height: 1.6;">
-          Los sistemas climáticos globales no están diseñados para las faenas reales de Atacama, el Valle del Aconcagua o los proyectos de izaje en Santiago. METGO nació para llenar ese vacío: datos precisos, alertas útiles y pronósticos que se ajustan al microclima donde operas.
+          Los sistemas climáticos globales no están diseñados para las faenas reales de Atacama, el Valle del Aconcagua o los proyectos de izaje en Santiago. METGO3D nació para llenar ese vacío: datos precisos, alertas útiles y pronósticos que se ajustan al microclima donde operas.
         </p>
       </section>
 
@@ -57,7 +57,7 @@ import CommercialLayout from '@/components/layout/CommercialLayout.vue'
           <div class="commercial-card">
             <h3>El Equipo</h3>
             <p style="color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem;">
-              METGO 3D SpA es impulsada por profesionales con profunda especialización en meteorología aplicada y desarrollo tecnológico.
+              METGO3D SpA es impulsada por profesionales con profunda especialización en meteorología aplicada y desarrollo tecnológico.
             </p>
             <div style="background: var(--surface-2); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
               <h4 style="margin-bottom: 0.5rem;">Meteorólogo y Científico de Datos</h4>

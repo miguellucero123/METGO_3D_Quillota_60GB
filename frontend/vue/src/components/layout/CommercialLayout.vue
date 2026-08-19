@@ -8,11 +8,11 @@ import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 import { useSeo } from '@/composables/useSeo'
 
 const props = defineProps({
-  brandName: { type: String, default: 'METGO' },
+  brandName: { type: String, default: 'METGO3D' },
   brandSub: { type: String, default: 'QUILLOTA' },
-  brandIcon: { type: [Object, Function], default: Leaf },
+  brandIcon: { type: [Object, Function], required: true },
   accentColor: { type: String, default: '#00ffaa' },
-  seoTitle: { type: String, default: 'METGO Quillota' },
+  seoTitle: { type: String, default: 'METGO3D Quillota' },
   seoDescription: { type: String, default: 'Inteligencia climática construida para Chile' },
 })
 
@@ -126,7 +126,7 @@ const accessPath = '/registro'
           <span class="brand-icon brand-icon--sm" aria-hidden="true">
             <component :is="brandIcon" :size="12" />
           </span>
-          {{ t('landing.footerBrand', '© METGO 3D SpA.') }}
+          {{ t('landing.footerBrand', '© METGO3D SpA.') }}
         </div>
         <div class="foot-links">
           <router-link to="/planes">Planes</router-link>
