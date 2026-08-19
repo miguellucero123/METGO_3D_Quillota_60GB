@@ -193,5 +193,5 @@ h1, h2, h3 {
   border: 1px solid rgba(0, 255, 170, 0.3);
   padding: 0.35rem 0.75rem;
   border-radius: 20px;
+}
 </style>
-
