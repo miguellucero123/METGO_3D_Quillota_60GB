@@ -50,6 +50,10 @@
   "lang": {
     "es": "ES",
     "en": "EN",
+    "de": "DE",
+    "fr": "FR",
+    "it": "IT",
+    "ko": "KO",
     "label": "Language"
   },
   "landing": {

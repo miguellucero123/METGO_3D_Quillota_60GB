@@ -75,6 +75,41 @@ body:has(.mg-page) .wp-block-template-part[slug="footer"] {
   width: 100%;
 }
 
+/* ============================================================
+   TEMA CLARO (Light Mode)
+   Para modificar el contraste desde WordPress, entra a:
+   Apariencia → Personalizar → CSS adicional
+   y agrega reglas como esta:
+   .mg-theme-light {
+     --mg-text: #111827;
+   }
+   ============================================================ */
+.mg-theme-light {
+  --mg-bg:           #F9FAFB;
+  --mg-nav-bg:       #FFFFFF;
+  --mg-card-bg:      #FFFFFF;
+  --mg-border:       #E5E7EB;
+  --mg-text:         #4B5563;
+  --mg-soft:         #6B7280;
+  --mg-white:        #111827;
+
+  --mg-agro-tint:    #F0FDF4;
+  --mg-agro-badge:   #DCFCE7;
+  --mg-agro-border:  #BBF7D0;
+  
+  --mg-izaje-tint:   #FFFBEB;
+  --mg-izaje-badge:  #FEF3C7;
+  --mg-izaje-border: #FDE68A;
+  
+  --mg-aire-tint:    #EFF6FF;
+  --mg-aire-badge:   #DBEAFE;
+  --mg-aire-border:  #BFDBFE;
+
+  --mg-outdoor-tint:   #F5F3FF;
+  --mg-outdoor-badge:  #EDE9FE;
+  --mg-outdoor-border: #DDD6FE;
+}
+
 /* --- Navegación --- */
 .mg-nav {
   display: flex;

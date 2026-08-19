@@ -56,22 +56,12 @@ function switchLang(lang) {
     </div>
     <div class="header__right">
       <div class="lang-switch" role="group" :aria-label="t('lang.label')">
-        <button
-          type="button"
-          class="lang-btn"
-          :class="{ active: locale === 'es' }"
-          @click="switchLang('es')"
-        >
-          {{ t('lang.es') }}
-        </button>
-        <button
-          type="button"
-          class="lang-btn"
-          :class="{ active: locale === 'en' }"
-          @click="switchLang('en')"
-        >
-          {{ t('lang.en') }}
-        </button>
+        <button type="button" class="lang-btn" :class="{ active: locale === 'es' }" @click="switchLang('es')">{{ t('lang.es') }}</button>
+        <button type="button" class="lang-btn" :class="{ active: locale === 'en' }" @click="switchLang('en')">{{ t('lang.en') }}</button>
+        <button type="button" class="lang-btn" :class="{ active: locale === 'de' }" @click="switchLang('de')">{{ t('lang.de') }}</button>
+        <button type="button" class="lang-btn" :class="{ active: locale === 'fr' }" @click="switchLang('fr')">{{ t('lang.fr') }}</button>
+        <button type="button" class="lang-btn" :class="{ active: locale === 'it' }" @click="switchLang('it')">{{ t('lang.it') }}</button>
+        <button type="button" class="lang-btn" :class="{ active: locale === 'ko' }" @click="switchLang('ko')">{{ t('lang.ko') }}</button>
       </div>
       <ThemeToggle />
       <div class="status-pill" :class="store.apiOnline ? 'status-pill--on' : 'status-pill--off'">

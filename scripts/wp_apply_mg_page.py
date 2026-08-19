@@ -21,7 +21,7 @@ MANTOS = "https://metgo-mantos.pages.dev"
 PAINE = "https://metgo-paine.pages.dev"
 MAIL = "miguel.lucero@metgo3d.com"
 MAILTO = (
-    f"mailto:{MAIL}?subject=Demo%20METGO%203D"
+    f"mailto:{MAIL}?subject=Demo%20METGO3D"
     "&body=Nombre%3A%0AEmpresa%3A%0ASector%3A%0AFaena%20o%20zona%3A%0A"
 )
 
@@ -38,22 +38,29 @@ def nav_html(active: str = "") -> str:
 
     return f"""
   <nav class="mg-nav">
-    <a href="https://metgo3d.com/" class="mg-nav__logo">METGO 3D</a>
+    <a href="https://metgo3d.com/" class="mg-nav__logo">METGO3D</a>
     <ul class="mg-nav__links">
       {a("productos", "https://metgo3d.com/#productos", "Productos")}
+      {a("mjo_chile", "https://metgo3d.com/mjo_chile/", "MJO Chile")}
       {a("izaje", "https://metgo3d.com/izaje-ventora/", "VENTORA")}
       {a("planes", "https://metgo3d.com/planes/", "Planes")}
       {a("nosotros", "https://metgo3d.com/nosotros/", "Nosotros")}
       {a("contacto", "https://metgo3d.com/contacto/", "Contacto")}
     </ul>
-    <div class="mg-nav__cta-wrap">
-      <button type="button" class="mg-nav__cta" onclick="this.parentElement.classList.toggle('is-open')">Acceder ▾</button>
-      <div class="mg-nav__drop">
-        <a href="{QUILLOTA}" target="_blank" rel="noopener">Quillota · Agro</a>
-        <a href="{SPATI}" target="_blank" rel="noopener">VENTORA · Izaje</a>
-        <a href="{COPIAPO}" target="_blank" rel="noopener">Copiapó · Aire</a>
-        <a href="{MANTOS}" target="_blank" rel="noopener">Mantos Blancos</a>
-        <a href="{PAINE}" target="_blank" rel="noopener">Paine</a>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <button type="button" class="mg-nav__cta" onclick="window.mgToggleTheme && window.mgToggleTheme()" aria-label="Cambiar tema" style="padding: 6px 10px;" title="Modo Claro / Oscuro">
+        ☀ / ☾
+      </button>
+      <div class="mg-nav__cta-wrap">
+        <button type="button" class="mg-nav__cta" onclick="this.parentElement.classList.toggle('is-open')">Acceder ▾</button>
+        <div class="mg-nav__drop">
+          <a href="{QUILLOTA}" target="_blank" rel="noopener">Quillota · Agro</a>
+          <a href="{SPATI}" target="_blank" rel="noopener">VENTORA · Izaje</a>
+          <a href="{COPIAPO}" target="_blank" rel="noopener">Copiapó · Aire</a>
+          <a href="{MANTOS}" target="_blank" rel="noopener">Mantos Blancos</a>
+          <a href="{PAINE}" target="_blank" rel="noopener">Paine</a>
+          <a href="https://metgo3d.com/mjo_chile/">MJO Chile · 7–90 d</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -68,6 +75,7 @@ def ticker_html() -> str:
       <span class="mg-ticker__item"><span class="mg-ticker__dot mg-ticker__dot--agro"></span>Quillota · cargando datos…</span>
       <span class="mg-ticker__item"><span class="mg-ticker__dot mg-ticker__dot--izaje"></span>VENTORA · cargando datos…</span>
       <span class="mg-ticker__item"><span class="mg-ticker__dot mg-ticker__dot--aire"></span>Copiapó · cargando datos…</span>
+      <a class="mg-ticker__item" href="https://metgo3d.com/mjo_chile/" style="text-decoration:none;color:inherit"><span class="mg-ticker__dot mg-ticker__dot--agro"></span>MJO Chile · <span class="mg-ticker__val" id="mg-mjo-status">cargando…</span></a>
     </div>
   </div>
 """
@@ -163,6 +171,20 @@ def ticker_script() -> str:
   setInterval(load, REFRESH_MS);
 })();
 </script>
+<script>
+(function () {
+  var el = document.getElementById('mg-mjo-status');
+  if (!el) return;
+  fetch('https://metgo-mjo-chile.pages.dev/forecasts/metgo_bundle_latest.json')
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (b) {
+      var phase = b.current_phase != null ? 'Fase ' + b.current_phase : '';
+      var status = b.model_status || '';
+      el.textContent = phase + (phase && status ? ' · ' : '') + status;
+    })
+    .catch(function () { el.textContent = 'A″ GO'; });
+})();
+</script>
 """
 
 
@@ -204,6 +226,15 @@ document.addEventListener('click', function(e) {{
     document.querySelectorAll('.mg-nav__cta-wrap').forEach(function(w){{ w.classList.remove('is-open'); }});
   }}
 }});
+(function() {{
+  var t = localStorage.getItem('mg-theme');
+  if (t === 'light') document.querySelector('.mg-page').classList.add('mg-theme-light');
+  window.mgToggleTheme = function() {{
+    var p = document.querySelector('.mg-page');
+    p.classList.toggle('mg-theme-light');
+    localStorage.setItem('mg-theme', p.classList.contains('mg-theme-light') ? 'light' : 'dark');
+  }};
+}})();
 </script>
 {ticker_script()}
 <!-- /wp:html -->
@@ -223,6 +254,7 @@ def home_body() -> str:
     <div class="mg-hero__actions">
       <a href="{CONTACTO}" class="mg-btn--primary" target="_blank" rel="noopener">Solicitar demo gratis</a>
       <a href="https://metgo3d.com/planes/" class="mg-btn--ghost">Ver planes →</a>
+      <a href="https://metgo3d.com/mjo_chile/" class="mg-btn--ghost">MJO Chile 7–90 d →</a>
     </div>
   </section>
   <hr class="mg-divider">
@@ -268,6 +300,35 @@ def home_body() -> str:
         <div class="mg-card__links">
           <a href="{PAINE}" class="mg-card-link mg-card-link--outdoor" target="_blank" rel="noopener">Panel en vivo →</a>
         </div>
+      </div>
+      <div class="mg-card mg-card--agro">
+        <span class="mg-badge mg-badge--agro">I+D · 7–90 días</span>
+        <p class="mg-card__title">MJO Chile · ΨPSA-CL</p>
+        <p class="mg-card__desc">Tendencia subestacional A″ + conformal. Régimen / terciles, no mm del día. Skill OOS CONFIRMADO h7/w1.</p>
+        <p class="mg-card__price">Línea científica · <strong>A″ GO</strong></p>
+        <div class="mg-card__links">
+          <a href="https://metgo3d.com/mjo_chile/" class="mg-card-link mg-card-link--agro">Abrir MJO Chile →</a>
+          <a href="https://metgo-mjo-chile.pages.dev/explorar" class="mg-card-link mg-card-link--agro" target="_blank" rel="noopener">Explorador</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <hr class="mg-divider">
+  <section class="mg-section" id="innovacion">
+    <p class="mg-section__label">Innovación y Próximos Enfoques</p>
+    <p class="mg-section__subtitle">Desarrollos tecnológicos en curso para abordar nuevos desafíos medioambientales.</p>
+    <div class="mg-products-grid">
+      <div class="mg-card mg-card--aire">
+        <span class="mg-badge mg-badge--aire">I+D · Olores y SEIA</span>
+        <p class="mg-card__title">Modelación con WRF</p>
+        <p class="mg-card__desc">Uso del modelo WRF para procesos de informes requeridos por el SEIA respecto a la modelación y dispersión de olores.</p>
+        <p class="mg-card__price"><strong>Próximamente</strong></p>
+      </div>
+      <div class="mg-card mg-card--agro">
+        <span class="mg-badge mg-badge--agro">I+D · Sostenibilidad</span>
+        <p class="mg-card__title">Huella de Carbono</p>
+        <p class="mg-card__desc">Desarrollo de medición de huellas de carbono y proyecciones de cambio climático aplicadas a distintas industrias.</p>
+        <p class="mg-card__price"><strong>Próximamente</strong></p>
       </div>
     </div>
   </section>
@@ -423,7 +484,7 @@ TABLER_CSS = (
 
 def planes_body() -> str:
     return f"""
-  <h2 class="mg-sr-only">Página de planes METGO 3D — comparación detallada por sector con precios y features técnicas</h2>
+  <h2 class="mg-sr-only">Página de planes METGO3D - comparación detallada por sector con precios y features técnicas</h2>
 
   <section class="plans-hero">
     <p class="eyebrow">Planes y precios</p>
@@ -852,9 +913,9 @@ def nosotros_body() -> str:
 
 <div class="mg-nosotros-wrapper">
   <section class="mg-hero" style="padding:4rem 2rem 3.5rem;max-width:820px;margin:0 auto">
-    <p class="mg-eyebrow" style="font-size:10px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;margin-bottom:1rem">METGO 3D SpA · Nosotros</p>
+    <p class="mg-eyebrow" style="font-size:10px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;margin-bottom:1rem">METGO3D SpA · Nosotros</p>
     <h1>Inteligencia climática<br>construida para <em>Chile</em></h1>
-    <p class="mg-hero-desc">Los sistemas globales no están pensados para Atacama, Aconcagua o el Valle Central. METGO entrega datos útiles para decidir en faena y predio — alertas anticipadas, no dashboards para mirar.</p>
+    <p class="mg-hero-desc">Los sistemas globales no están pensados para Atacama, Aconcagua o el Valle Central. METGO3D entrega datos útiles para decidir en faena y predio — alertas anticipadas, no dashboards para mirar.</p>
     <div style="display:flex;gap:.7rem;flex-wrap:wrap">
       <a href="https://metgo3d.com/planes/" class="mg-btn--primary mg-btn--agro">Ver planes</a>
       <a href="{CONTACTO}" class="mg-btn--ghost">Solicitar demo</a>
@@ -867,8 +928,8 @@ def nosotros_body() -> str:
   <section class="mg-sec">
     <p class="mg-sec-label">Misión</p>
     <div class="mg-mision-block">
-      <p>El clima de Chile no cabe en un modelo global. Cada valle, cada cuenca minera, cada ruta de cordillera tiene su propia firma meteorológica. METGO existe para convertir esa complejidad en una decisión concreta: izar o no, regar o no, salir o no.</p>
-      <cite>Miguel Lucero · Fundador, METGO 3D SpA</cite>
+      <p>El clima de Chile no cabe en un modelo global. Cada valle, cada cuenca minera, cada ruta de cordillera tiene su propia firma meteorológica. METGO3D existe para convertir esa complejidad en una decisión concreta: izar o no, regar o no, salir o no.</p>
+      <cite>Miguel Lucero · Fundador, METGO3D SpA</cite>
     </div>
     <p class="mg-sec-sub">Operamos en tres frentes: alertas operacionales en tiempo real, investigación subseasonal con validación OOS, y datos de calidad del aire para cumplimiento normativo. <span>Cada frente con su propio panel, su propio precio y su propio protocolo.</span></p>
   </section>
@@ -988,7 +1049,7 @@ def nosotros_body() -> str:
         <p class="mg-member-name">Miguel Lucero</p>
         <p class="mg-member-role">Fundador · Meteorólogo y analista de datos</p>
         <div class="mg-member-tags">
-          <span class="mg-member-tag mg-a">METGO 3D SpA</span>
+          <span class="mg-member-tag mg-a">METGO3D SpA</span>
           <span class="mg-member-tag mg-b">ΨPSA-CL</span>
           <span class="mg-member-tag mg-c">Magíster Estadística</span>
         </div>
@@ -1005,7 +1066,7 @@ def nosotros_body() -> str:
       <div class="mg-member" style="background:var(--agro-t);border-left:2.5px solid var(--agro)">
         <div style="font-size:18px;color:var(--agro-tx);margin-bottom:.5rem"><i class="ti ti-user-plus" aria-hidden="true"></i></div>
         <p class="mg-member-name">¿Tu nombre aquí?</p>
-        <p class="mg-member-role" style="margin-bottom:.75rem">METGO está creciendo. Si trabajas en meteorología operacional, datos ambientales o desarrollo backend, escríbenos.</p>
+        <p class="mg-member-role" style="margin-bottom:.75rem">METGO3D está creciendo. Si trabajas en meteorología operacional, datos ambientales o desarrollo backend, escríbenos.</p>
         <a href="mailto:miguel.lucero@metgo3d.com" style="font-size:11px;color:var(--agro-tx);text-decoration:none;border-bottom:.5px solid var(--agro-br)">miguel.lucero@metgo3d.com</a>
       </div>
     </div>
@@ -1094,7 +1155,7 @@ def main() -> None:
         "POST",
         "/wp/v2/settings",
         {
-            "title": "METGO 3D",
+            "title": "METGO3D",
             "show_on_front": "page",
             "page_on_front": 211,
             "page_for_posts": 0,

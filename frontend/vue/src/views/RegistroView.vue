@@ -115,13 +115,13 @@ function irLogin() {
     <div class="auth-panel wide">
       <div class="top">
         <ThemeToggle />
-        <div class="lang-switch" role="group" :aria-label="t('lang.label')">
-          <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">
-            {{ t('lang.es') }}
-          </button>
-          <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">
-            {{ t('lang.en') }}
-          </button>
+        <div class="lang-switch" role="group" :aria-label="t('lang.label')" style="display:flex;gap:0.2rem">
+          <button type="button" :class="{ active: locale === 'es' }" @click="setLocale('es')">{{ t('lang.es') }}</button>
+          <button type="button" :class="{ active: locale === 'en' }" @click="setLocale('en')">{{ t('lang.en') }}</button>
+          <button type="button" :class="{ active: locale === 'de' }" @click="setLocale('de')">{{ t('lang.de') }}</button>
+          <button type="button" :class="{ active: locale === 'fr' }" @click="setLocale('fr')">{{ t('lang.fr') }}</button>
+          <button type="button" :class="{ active: locale === 'it' }" @click="setLocale('it')">{{ t('lang.it') }}</button>
+          <button type="button" :class="{ active: locale === 'ko' }" @click="setLocale('ko')">{{ t('lang.ko') }}</button>
         </div>
         <router-link to="/">{{ t('app.home') }}</router-link>
       </div>
