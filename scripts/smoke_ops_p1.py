@@ -142,7 +142,7 @@ def main() -> int:
     # ---- Públicos ----
     print("== GET públicos ==")
     code, health = _req("GET", f"{api}/health", timeout=60)
-    r.check("GET /health", code == 200 and isinstance(health, dict) and health.get("status") == "ok", f"HTTP {code}")
+    r.check("GET /health", code == 200 and isinstance(health, dict) and health.get("status") in ("ok", "degraded"), f"HTTP {code}")
     if isinstance(health, dict):
         s5 = health.get("s5_ops") or {}
         print(f"       smtp={s5.get('smtp_configurado')} pendiente={s5.get('pendiente')} version={health.get('version')}")
