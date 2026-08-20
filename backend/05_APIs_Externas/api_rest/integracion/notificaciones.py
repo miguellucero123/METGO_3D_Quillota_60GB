@@ -155,7 +155,7 @@ def _enviar_webhook(url: str, payload: dict[str, Any]) -> dict[str, Any]:
         return {"ok": True, "canal": "webhook", "status": resp.status, "url": url.split("?")[0]}
 
 
-def _enviar_smtp(destino: str, asunto: str, cuerpo: str) -> dict[str, Any]:
+def _enviar_smtp(destino: str, asunto: str, cuerpo: str, cuerpo_html: str | None = None) -> dict[str, Any]:
     host = os.environ.get("METGO_SMTP_HOST", "smtp.zoho.com")
     port = int(os.environ.get("METGO_SMTP_PORT", "587"))
     user = os.environ.get("METGO_SMTP_USER", "")
@@ -163,11 +163,14 @@ def _enviar_smtp(destino: str, asunto: str, cuerpo: str) -> dict[str, Any]:
     remitente = os.environ.get("METGO_SMTP_FROM", user or "noreply@metgo3d.com")
     use_tls = os.environ.get("METGO_SMTP_TLS", "1") != "0"
 
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     msg["From"] = remitente
     msg["To"] = destino
     msg["Subject"] = asunto
+    
     msg.attach(MIMEText(cuerpo, "plain", "utf-8"))
+    if cuerpo_html:
+        msg.attach(MIMEText(cuerpo_html, "html", "utf-8"))
 
     smtp_timeout = int(os.environ.get("METGO_SMTP_TIMEOUT", "20"))
     with smtplib.SMTP(host, port, timeout=smtp_timeout) as server:
@@ -180,10 +183,10 @@ def _enviar_smtp(destino: str, asunto: str, cuerpo: str) -> dict[str, Any]:
     return {"ok": True, "canal": "email_smtp", "destino": destino, "remitente": remitente}
 
 
-def _enviar_email_canal(to_addr: str, asunto: str, cuerpo: str, mensaje: str) -> dict[str, Any]:
+def _enviar_email_canal(to_addr: str, asunto: str, cuerpo: str, mensaje: str, cuerpo_html: str | None = None) -> dict[str, Any]:
     if _smtp_configurado():
         try:
-            return {**_enviar_smtp(to_addr, asunto, cuerpo), "mensaje": mensaje}
+            return {**_enviar_smtp(to_addr, asunto, cuerpo, cuerpo_html), "mensaje": mensaje}
         except Exception as e:
             entry = _encolar_outbox(to_addr, asunto, cuerpo)
             return {
@@ -237,6 +240,36 @@ def enviar_notificacion(
         f"— METGO 3D · Valle de Aconcagua\n"
         f"{datetime.now(timezone.utc).isoformat()}\n"
     )
+    
+    color = "#10b981" # Verde Normal
+    asunto_upper = asunto.upper()
+    if "ROJO" in asunto_upper or "CRITICAL" in asunto_upper or "CRÍTICO" in asunto_upper or "ALTA" in asunto_upper:
+        color = "#ef4444" # Rojo Peligro
+    elif "AMARILLO" in asunto_upper or "WARNING" in asunto_upper:
+        color = "#f59e0b" # Amarillo Precaución
+    elif "AZUL" in asunto_upper or "INFO" in asunto_upper:
+        color = "#3b82f6" # Azul Información
+        
+    cuerpo_html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <div style="background-color: {color}; padding: 20px; color: white; text-align: center;">
+            <h2 style="margin: 0; font-size: 20px;">{asunto}</h2>
+          </div>
+          <div style="padding: 30px; font-size: 16px; line-height: 1.6; color: #374151;">
+            {mensaje.replace(chr(10), '<br>')}
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            <p style="font-size: 13px; color: #6b7280; text-align: center; margin: 0;">
+              <strong>METGO 3D</strong> · Plataforma de Inteligencia Climática<br>
+              Valle de Aconcagua, Chile
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+    """
+
     canales: list[dict[str, Any]] = []
     errores: list[dict[str, Any]] = []
 
@@ -261,7 +294,7 @@ def enviar_notificacion(
 
     if cfg.get("email_habilitado", True):
         for to_addr in emails:
-            canales.append(_enviar_email_canal(to_addr, asunto, cuerpo, mensaje))
+            canales.append(_enviar_email_canal(to_addr, asunto, cuerpo, mensaje, cuerpo_html))
 
     ok = any(c.get("ok") for c in canales)
     return {

@@ -111,10 +111,26 @@ def evaluar_y_notificar(
 
     nombre = (pronostico.get("sitio") or {}).get("nombre") or sid
     asunto = f"METGO SPATI — Izaje {NIVEL_NOMBRE.get(nivel, nivel)} · {nombre}"
+    
+    try:
+        vt_dt = datetime.fromisoformat(valid_time.replace("Z", "+00:00"))
+        vt_legible = vt_dt.strftime("%d/%m/%Y a las %H:%M UTC")
+    except Exception:
+        vt_legible = valid_time
+
+    recomendaciones = {
+        0: "Operación normal. Condiciones óptimas.",
+        1: "Precaución. Monitorear ráfagas de viento antes de maniobras críticas.",
+        2: "Riesgo Medio. Restringir izajes de gran volumen o peso. Informar al operador.",
+        3: "Riesgo CRÍTICO. Suspender maniobras de izaje y trabajos en altura inmediatamente."
+    }
+    rec = recomendaciones.get(nivel, "Seguir protocolo interno de la faena.")
+
     mensaje = (
-        f"Sitio {nombre} ({sid}): nivel {prev_nivel}→{nivel} "
-        f"({NIVEL_NOMBRE.get(nivel)}). valid_time={valid_time}. "
-        f"Máximo horizonte: {pronostico.get('nivel_maximo')}."
+        f"Transición de Riesgo en {nombre}: de Nivel {prev_nivel} a Nivel {nivel} ({NIVEL_NOMBRE.get(nivel)}).\n\n"
+        f"📅 Condición esperada para: {vt_legible}\n"
+        f"⚠️ Riesgo máximo en el turno: Nivel {pronostico.get('nivel_maximo')}\n\n"
+        f"Recomendación Operativa:\n{rec}"
     )
 
     notif_ok = False

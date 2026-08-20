@@ -606,7 +606,7 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                     "id": aid,
                     "nivel": "warning",
                     "estacion_id": eid,
-                    "mensaje": f"{nombre}: temperatura máxima alta ({resumen['temperatura_max']}°C)",
+                    "mensaje": f"Ola de Calor en {nombre}. Temperatura esperada: {resumen['temperatura_max']}°C.\nRecomendación: Incrementar riego base y monitorear estrés hídrico.",
                 }
             )
             aid += 1
@@ -616,7 +616,7 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                     "id": aid,
                     "nivel": "warning",
                     "estacion_id": eid,
-                    "mensaje": f"{nombre}: riesgo de heladas (mín {resumen['temperatura_min']}°C)",
+                    "mensaje": f"Alerta de Helada en {nombre}. Mínima esperada: {resumen['temperatura_min']}°C.\nRecomendación: Activar protocolos de mitigación térmica (control de heladas).",
                 }
             )
             aid += 1
@@ -626,7 +626,7 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                     "id": aid,
                     "nivel": "info",
                     "estacion_id": eid,
-                    "mensaje": f"{nombre}: precipitación significativa ({resumen['precipitacion']} mm)",
+                    "mensaje": f"Alerta de Precipitaciones en {nombre}. Esperado: {resumen['precipitacion']} mm.\nRecomendación: Suspender riego programado para evitar saturación del suelo.",
                 }
             )
             aid += 1
@@ -636,7 +636,7 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                     "id": aid,
                     "nivel": "warning",
                     "estacion_id": eid,
-                    "mensaje": f"{nombre}: viento fuerte ({resumen['viento']} km/h)",
+                    "mensaje": f"Viento Fuerte en {nombre}. Ráfagas de hasta {resumen['viento']} km/h.\nRecomendación: Suspender aplicaciones fitosanitarias y asegurar estructuras.",
                 }
             )
             aid += 1
@@ -646,7 +646,7 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                     "id": aid,
                     "nivel": "info",
                     "estacion_id": eid,
-                    "mensaje": f"{nombre}: humedad muy alta ({resumen['humedad']}%)",
+                    "mensaje": f"Humedad muy alta en {nombre} ({resumen['humedad']}%).\nRecomendación: Monitoreo preventivo por alto riesgo de enfermedades fungosas.",
                 }
             )
             aid += 1
