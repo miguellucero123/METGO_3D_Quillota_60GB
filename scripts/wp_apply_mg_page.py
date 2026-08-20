@@ -48,6 +48,18 @@ def nav_html(active: str = "") -> str:
       {a("contacto", "https://metgo3d.com/contacto/", "Contacto")}
     </ul>
     <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <!-- Language Selector -->
+      <div class="mg-nav__cta-wrap">
+        <button type="button" class="mg-nav__cta" onclick="this.parentElement.classList.toggle('is-open')" title="Idioma">🌐 ES ▾</button>
+        <div class="mg-nav__drop" style="min-width: 120px; right: auto; left: 0;">
+          <a href="#" onclick="alert('Traducción a Inglés próximamente'); return false;">EN - English</a>
+          <a href="#" onclick="alert('Traducción a Alemán próximamente'); return false;">DE - Deutsch</a>
+          <a href="#" onclick="alert('Traducción a Francés próximamente'); return false;">FR - Français</a>
+          <a href="#" onclick="alert('Traducción a Italiano próximamente'); return false;">IT - Italiano</a>
+          <a href="#" onclick="alert('Traducción a Surcoreano próximamente'); return false;">KO - 한국어</a>
+        </div>
+      </div>
+      <!-- Theme Toggle -->
       <button type="button" class="mg-nav__cta" onclick="window.mgToggleTheme && window.mgToggleTheme()" aria-label="Cambiar tema" style="padding: 6px 10px;" title="Modo Claro / Oscuro">
         ☀ / ☾
       </button>
