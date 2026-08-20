@@ -44,13 +44,13 @@ jobs:
 
       - name: Despertar API (cold start Render)
         run: |
-          for i in $(seq 1 12); do
+          for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 45 "https://metgo-api.onrender.com/api/health" || true)
             echo "health intento $i -> HTTP $code"
             [ "$code" = "200" ] && exit 0
             sleep 15
           done
-          echo "La API no respondió tras 12 intentos" && exit 1
+          echo "La API no respondió tras 30 intentos" && exit 1
 
       - name: Decidir flags Archive
         id: flags

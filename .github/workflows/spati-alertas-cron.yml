@@ -40,7 +40,7 @@ jobs:
 
       - name: Despertar API (Render cold start)
         run: |
-          for i in $(seq 1 12); do
+          for i in $(seq 1 30); do
             code=$(curl -sS -o /tmp/metgo_health.json -w "%{http_code}" --connect-timeout 20 --max-time 45 \
               "https://metgo-api.onrender.com/api/health" || true)
             # curl en fallo a veces imprime 000; no concatenar otro 000
