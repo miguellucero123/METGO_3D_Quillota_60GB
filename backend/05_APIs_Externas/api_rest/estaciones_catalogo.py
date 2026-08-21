@@ -16,7 +16,7 @@ SITIOS = ("quillota", "paine", "copiapo", "mantos_blancos", "spati", "demo")
 SITIOS_META: dict[str, dict[str, Any]] = {
     "quillota": {
         "slug": "quillota",
-        "nombre": "METGO Quillota",
+        "nombre": "METGO3D Quillota",
         "region": "Valle de Aconcagua",
         "dominio": "agro",
         "estado": "activo",

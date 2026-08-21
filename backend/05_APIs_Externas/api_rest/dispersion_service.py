@@ -28,6 +28,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 from api_rest.estaciones_catalogo import COORDS, ESTACIONES_POR_SITIO, SLUG_A_NOMBRE
+from api_rest.domain_services.restricciones_copiapo import clasificar_condicion
 
 TZ_CHILE = ZoneInfo("America/Santiago")
 
@@ -323,6 +324,47 @@ def dispersion_horaria(estacion_id: str, horas: int = 72) -> list[dict[str, Any]
         filas.append(_fila_horaria(hourly, i))
         if len(filas) >= horas:
             break
+    return _enriquecer_filas_con_restricciones(filas)
+
+def _enriquecer_filas_con_restricciones(filas: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def degrees_to_cardinal(d: float | None) -> str:
+        if d is None: return "N"
+        dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+        return dirs[int((d + 11.25) / 22.5) % 16]
+
+    viento_sur_consecutivo = 0
+    for fila in filas:
+        dir_cardinal = degrees_to_cardinal(fila.get("viento_direccion"))
+        if dir_cardinal in ["SSW", "S", "SSE"]:
+            viento_sur_consecutivo += 1
+        else:
+            viento_sur_consecutivo = 0
+            
+        inv_intensidad = fila.get("inversion_intensidad") or 0.0
+        
+        # Estabilidad heuristica simple (basada en gradiente termico)
+        if inv_intensidad > 2.0:
+            estabilidad = "muy estable"
+        elif inv_intensidad > 0.5:
+            estabilidad = "estable"
+        else:
+            estabilidad = "neutra"
+            
+        # Proxy de dorsal en altura (alta presion calida) + capa baja fria = inversion fuerte
+        dorsal_proxy = inv_intensidad > 3.0
+        
+        datos_eval = {
+            "estabilidad": estabilidad,
+            "viento_sup_dir": dir_cardinal,
+            "viento_sup_vel": fila.get("viento_velocidad", 0.0),
+            "horas_viento_sur": viento_sur_consecutivo,
+            "inversion_termica": fila.get("inversion", False),
+            "dorsal_altura": dorsal_proxy,
+            "cielo": fila.get("tipo_nubosidad", "despejado")
+        }
+        fila["condicion_ambiental"] = clasificar_condicion(datos_eval)
+        
     return filas
 
 
@@ -354,6 +396,7 @@ def _agregar_diario(filas: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "horas_inversion": len(inversiones),
                 "tipo_nubosidad": peor.get("tipo_nubosidad"),
                 "niebla": any(g.get("niebla") for g in grupo),
+                "condicion_ambiental_peor": peor.get("condicion_ambiental", "Normal"),
             }
         )
     return salida
@@ -371,6 +414,7 @@ def dispersion_diaria(estacion_id: str, dias: int = 7) -> list[dict[str, Any]] |
     hourly = payload.get("hourly") or {}
     tiempos = hourly.get("time") or []
     filas = [_fila_horaria(hourly, i) for i in range(len(tiempos))]
+    filas = _enriquecer_filas_con_restricciones(filas)
     return _agregar_diario(filas)[:dias]
 
 

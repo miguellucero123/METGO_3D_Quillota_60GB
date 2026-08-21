@@ -20,7 +20,7 @@ comment on column public.sitios.estado is 'activo|plantilla|archivado';
 insert into public.sitios (slug, nombre, region, dominio, estado, primary_color, center_lat, center_lon, modules) values
   (
     'quillota',
-    'METGO Quillota',
+    'METGO3D Quillota',
     'Valle de Aconcagua',
     'agro',
     'activo',

@@ -100,7 +100,7 @@
     "frostActionMed": "Vigilancia: T° mínima cerca del umbral. Monitorear en el panel agrícola.",
     "seeInPanel": "Ver detalle en el panel",
     "accessEyebrow": "Puerta de acceso",
-    "accessTitle": "Entre al sistema METGO Quillota",
+    "accessTitle": "Entre al sistema METGO3D",
     "accessDesc": "La misma entrada segura con JWT que ya usaba la plataforma: panel meteorológico, agrícola y monitoreo del valle.",
     "accessBullet1": "Pronóstico y estaciones del Aconcagua",
     "accessBullet2": "Alertas y configuración por rol",

@@ -2,7 +2,7 @@
   "name": "metgo-frontend-vue",
   "version": "1.0.0",
   "private": true,
-  "description": "Frontend Vue.js para el sistema METGO Quillota",
+  "description": "Frontend Vue.js para el sistema METGO3D",
   "type": "module",
   "scripts": {
     "dev": "vite",

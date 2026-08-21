@@ -100,7 +100,7 @@
     "frostActionMed": "Achtung: Tiefsttemperatur nahe dem Schwellenwert. Überwachen Sie dies im landwirtschaftlichen Dashboard.",
     "seeInPanel": "Details im Dashboard ansehen",
     "accessEyebrow": "Zugangstor",
-    "accessTitle": "Zugang zum METGO Quillota System",
+    "accessTitle": "Zugang zum METGO3D System",
     "accessDesc": "Derselbe sichere JWT-Zugang, den die Plattform bereits verwendet hat: Wetter-, Agrar- und Talüberwachungs-Dashboard.",
     "accessBullet1": "Prognose und Stationen in Aconcagua",
     "accessBullet2": "Warnungen und Konfiguration nach Rolle",

@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: 'METGO Quillota',
+          name: 'METGO3D',
           short_name: 'METGO',
           description: 'Monitoreo meteorológico y agrícola',
           theme_color: '#00ffaa',

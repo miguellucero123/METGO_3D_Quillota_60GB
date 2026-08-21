@@ -6,7 +6,7 @@ const routes = [
     path: '/',
     name: 'landing',
     component: () => import('@/views/LandingQuillotaView.vue'),
-    meta: { public: true, title: 'METGO Quillota' },
+    meta: { public: true, title: 'METGO3D' },
   },
   {
     path: '/blog',
