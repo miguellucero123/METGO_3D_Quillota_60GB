@@ -50,13 +50,14 @@ def nav_html(active: str = "") -> str:
     <div style="display: flex; gap: 0.5rem; align-items: center;">
       <!-- Language Selector -->
       <div class="mg-nav__cta-wrap">
-        <button type="button" class="mg-nav__cta" onclick="this.parentElement.classList.toggle('is-open')" title="Idioma">🌐 ES ▾</button>
+        <button type="button" class="mg-nav__cta" onclick="this.parentElement.classList.toggle('is-open')" title="Idioma">🌐 Idioma ▾</button>
         <div class="mg-nav__drop" style="min-width: 120px; right: auto; left: 0;">
-          <a href="#" onclick="alert('Traducción a Inglés próximamente'); return false;">EN - English</a>
-          <a href="#" onclick="alert('Traducción a Alemán próximamente'); return false;">DE - Deutsch</a>
-          <a href="#" onclick="alert('Traducción a Francés próximamente'); return false;">FR - Français</a>
-          <a href="#" onclick="alert('Traducción a Italiano próximamente'); return false;">IT - Italiano</a>
-          <a href="#" onclick="alert('Traducción a Surcoreano próximamente'); return false;">KO - 한국어</a>
+          <a href="#" onclick="mgTranslate('es'); return false;">ES - Español</a>
+          <a href="#" onclick="mgTranslate('en'); return false;">EN - English</a>
+          <a href="#" onclick="mgTranslate('de'); return false;">DE - Deutsch</a>
+          <a href="#" onclick="mgTranslate('fr'); return false;">FR - Français</a>
+          <a href="#" onclick="mgTranslate('it'); return false;">IT - Italiano</a>
+          <a href="#" onclick="mgTranslate('ko'); return false;">KO - 한국어</a>
         </div>
       </div>
       <!-- Theme Toggle -->
@@ -225,6 +226,9 @@ def wrap(body: str, active: str = "", extra_head: str = "") -> str:
 {extra_head}
 <style>
 {css}
+body {{ top: 0 !important; }}
+.skiptranslate {{ display: none !important; }}
+#goog-gt-tt {{ display: none !important; }}
 </style>
 <div class="mg-page">
 {nav_html(active)}
@@ -232,6 +236,19 @@ def wrap(body: str, active: str = "", extra_head: str = "") -> str:
 {body}
 {footer_html()}
 </div>
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+function mgTranslate(lang) {{
+  var selectField = document.querySelector("#google_translate_element select");
+  if (!selectField) return;
+  selectField.value = lang;
+  selectField.dispatchEvent(new Event("change"));
+}}
+function googleTranslateElementInit() {{
+  new google.translate.TranslateElement({{pageLanguage: 'es', includedLanguages: 'es,en,de,fr,it,ko', autoDisplay: false}}, 'google_translate_element');
+}}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script>
 document.addEventListener('click', function(e) {{
   if (!e.target.closest('.mg-nav__cta-wrap')) {{
