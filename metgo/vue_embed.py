@@ -84,7 +84,7 @@ def render_vue_iframe(
 2. En Streamlit Cloud → **Settings → Secrets** añada:
 
 ```toml
-METGO_VUE_URL = "https://su-sitio.netlify.app"
+METGO_VUE_URL = "https://metgo-quillota.pages.dev"
 ```
 
 3. **Reboot app** y abra esta página de nuevo.

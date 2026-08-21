@@ -6,6 +6,8 @@ import { useI18n } from 'vue-i18n'
 import { setLocale } from '@/i18n'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 import { useSeo } from '@/composables/useSeo'
+import LeadCaptureBar from '@/components/ui/LeadCaptureBar.vue'
+import LeadMagnetModal from '@/components/ui/LeadMagnetModal.vue'
 
 const props = defineProps({
   brandName: { type: String, default: 'METGO3D' },
@@ -52,6 +54,7 @@ const accessPath = '/registro'
 
         <div class="nav-links desktop-only">
           <router-link to="/planes">Planes</router-link>
+          <router-link to="/blog">Blog</router-link>
           <router-link to="/nosotros">Nosotros</router-link>
           <router-link to="/contacto">Contacto</router-link>
         </div>
@@ -91,6 +94,7 @@ const accessPath = '/registro'
       </div>
       <div class="drawer-content">
         <router-link to="/planes" @click="closeMobileMenu">Planes</router-link>
+        <router-link to="/blog" @click="closeMobileMenu">Blog</router-link>
         <router-link to="/nosotros" @click="closeMobileMenu">Nosotros</router-link>
         <router-link to="/contacto" @click="closeMobileMenu">Contacto</router-link>
         
@@ -120,6 +124,9 @@ const accessPath = '/registro'
       <slot></slot>
     </main>
 
+    <LeadCaptureBar />
+    <LeadMagnetModal />
+
     <footer class="foot">
       <div class="wrap foot-row">
         <div class="foot-brand">
@@ -130,6 +137,7 @@ const accessPath = '/registro'
         </div>
         <div class="foot-links">
           <router-link to="/planes">Planes</router-link>
+          <router-link to="/blog">Blog</router-link>
           <router-link to="/nosotros">Nosotros</router-link>
           <router-link to="/contacto">Contacto</router-link>
           <router-link to="/login">{{ t('landing.login', 'Ingresar') }}</router-link>

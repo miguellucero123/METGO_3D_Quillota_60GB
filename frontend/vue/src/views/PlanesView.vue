@@ -1,14 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { createCheckoutSession } from '@/api/metgoApi'
-import { Leaf } from 'lucide-vue-next'
+import { Leaf, Lock } from 'lucide-vue-next'
 import CommercialLayout from '@/components/layout/CommercialLayout.vue'
+import { trackEvent } from '@/utils/analytics'
 
 const auth = useAuthStore()
 const router = useRouter()
 const cargando = ref(false)
+const esAnual = ref(false)
+
+onMounted(() => {
+  trackEvent('pricing_view', { plan_type: esAnual.value ? 'anual' : 'mensual' })
+})
 
 async function iniciarCheckout(planCode) {
   if (!auth.isAuthenticated) {
@@ -19,6 +25,8 @@ async function iniciarCheckout(planCode) {
 
   try {
     cargando.value = true
+    trackEvent('checkout_start', { plan: planCode, periodo: esAnual.value ? 'anual' : 'mensual' })
+    
     const { url } = await createCheckoutSession(
       planCode,
       auth.user?.email,
@@ -30,10 +38,14 @@ async function iniciarCheckout(planCode) {
       router.push(url || '/dashboard') // fallback para mock
     }
   } catch (error) {
-    alert(error.message || 'Error al conectar con Stripe')
+    alert(error.message || 'Error al conectar con PayPal')
   } finally {
     cargando.value = false
   }
+}
+
+function getPrice(basePrice) {
+  return esAnual.value ? Math.floor(basePrice * 0.8) : basePrice
 }
 </script>
 
@@ -53,6 +65,22 @@ async function iniciarCheckout(planCode) {
           Precio fijo mensual por zona o faena. Sin sorpresas. Sin costo por alerta.
           Comienza a tomar decisiones con datos que protegen tu operación.
         </p>
+
+        <div class="billing-toggle">
+          <span :class="{ active: !esAnual }">Mensual</span>
+          <button 
+            type="button" 
+            class="toggle-btn" 
+            :class="{ 'is-annual': esAnual }" 
+            @click="esAnual = !esAnual; trackEvent('plan_toggle', { es_anual: esAnual })"
+            aria-label="Alternar facturación anual"
+          >
+            <span class="toggle-thumb"></span>
+          </button>
+          <span :class="{ active: esAnual }">
+            Anual <span class="discount-badge">Ahorra 20%</span>
+          </span>
+        </div>
       </div>
 
       <div class="commercial-grid-3">
@@ -62,7 +90,7 @@ async function iniciarCheckout(planCode) {
           <p class="plan-target">Agricultura de precisión</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">$99</span>
+            <span class="price-value">${{ getPrice(99) }}</span>
             <span class="price-period">USD/mes</span>
           </div>
           <p class="plan-unit">por zona de cultivo</p>
@@ -76,7 +104,8 @@ async function iniciarCheckout(planCode) {
           </ul>
           
           <button type="button" @click="iniciarCheckout('pro')" :disabled="cargando" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; cursor: pointer;">
-            {{ cargando ? 'Redirigiendo...' : 'Comenzar Prueba Gratis (14 Días)' }}
+            <Lock :size="16" v-if="!cargando" />
+            {{ cargando ? 'Redirigiendo a PayPal...' : 'Comenzar Prueba Gratis (14 Días)' }}
           </button>
         </div>
 
@@ -87,7 +116,7 @@ async function iniciarCheckout(planCode) {
           <p class="plan-target">Minería, izaje y alta montaña</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">$299</span>
+            <span class="price-value">${{ getPrice(299) }}</span>
             <span class="price-period">USD/mes</span>
           </div>
           <p class="plan-unit">por faena (VENTORA / SPATI)</p>
@@ -101,7 +130,8 @@ async function iniciarCheckout(planCode) {
           </ul>
           
           <button type="button" @click="iniciarCheckout('faena')" :disabled="cargando" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; cursor: pointer;">
-            {{ cargando ? 'Redirigiendo...' : 'Contratar Plan Faena' }}
+            <Lock :size="16" v-if="!cargando" />
+            {{ cargando ? 'Redirigiendo a PayPal...' : 'Contratar Plan Faena' }}
           </button>
         </div>
 
@@ -180,6 +210,65 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
+}
+
+/* Toggle Styles */
+.billing-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.billing-toggle span.active {
+  color: var(--text-color);
+}
+
+.toggle-btn {
+  width: 56px;
+  height: 30px;
+  border-radius: 15px;
+  background: var(--surface-2-color);
+  border: 1px solid var(--border-color);
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.3s;
+}
+
+.toggle-btn.is-annual {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--text-color);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-btn.is-annual .toggle-thumb {
+  transform: translateX(26px);
+  background: #04140e;
+}
+
+.discount-badge {
+  background: rgba(0, 255, 170, 0.15);
+  color: var(--accent);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
 /* Pricing specific styles */

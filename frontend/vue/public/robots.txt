@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /dashboard
+Disallow: /meteo
+Disallow: /agricola
+Disallow: /iot
+Disallow: /ml
+Disallow: /monitoreo
+Disallow: /alertas
+Disallow: /modulos
+Disallow: /configuracion
+Disallow: /servicios
+Disallow: /puertos
+Disallow: /cuenta
+Disallow: /preferencias
+Disallow: /favoritos
+Disallow: /403
+
+Sitemap: https://metgo-quillota.pages.dev/sitemap.xml

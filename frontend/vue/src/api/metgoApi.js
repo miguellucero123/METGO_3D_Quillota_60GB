@@ -358,22 +358,14 @@ export function dedupeHistoricoPorDia(rows, dias = 30) {
   return seriesHistoricoPorDia(rows, dias)
 }
 
-/** Iniciar Stripe Checkout (Fase D) */
+/** Iniciar Checkout (Fase D - PayPal) */
 export async function createCheckoutSession(planCode, email, userId) {
-  const token = localStorage.getItem('metgo_access_token')
-  const headers = { 'Content-Type': 'application/json' }
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
-  const r = await fetch(`${API_BASE}/api/payment/create-checkout-session`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ plan_code: planCode, email, user_id: userId }),
+  const { data } = await api.post('/paypal/create-checkout-session', {
+    plan_code: planCode,
+    email,
+    user_id: userId
   })
-  if (!r.ok) {
-    const error = await r.json().catch(() => ({}))
-    throw new Error(error.error || 'Error al iniciar checkout')
-  }
-  return r.json()
+  return data
 }
 
 export async function fetchHistorico(estacionId, dias = 30) {

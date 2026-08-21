@@ -9,6 +9,18 @@ const routes = [
     meta: { public: true, title: 'METGO Quillota' },
   },
   {
+    path: '/blog',
+    name: 'blog',
+    component: () => import('@/views/BlogView.vue'),
+    meta: { public: true, title: 'Blog' },
+  },
+  {
+    path: '/blog/:slug',
+    name: 'blog-post',
+    component: () => import('@/views/BlogPostView.vue'),
+    meta: { public: true, title: 'Artículo' },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
@@ -215,6 +227,10 @@ const router = createRouter({
   routes,
 })
 
+// Initialize analytics (GA4 / LinkedIn)
+import { initAnalytics, trackPageView } from '@/utils/analytics'
+initAnalytics()
+
 function roleAllowed(userRole, required) {
   if (!required?.length) return true
   if (userRole === 'admin') return true
@@ -248,7 +264,10 @@ router.beforeEach(async (to) => {
 })
 
 router.afterEach((to) => {
-  document.title = `${to.meta.title ?? 'METGO'} — Quillota`
+  const title = `${to.meta.title ?? 'METGO'} — Quillota`
+  document.title = title
+  // Send pageview event to GA4
+  trackPageView(to.fullPath, title)
 })
 
 // Catch chunk loading errors caused by new deployments and force a page reload

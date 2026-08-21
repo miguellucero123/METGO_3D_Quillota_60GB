@@ -56,6 +56,7 @@ from api_rest.meteo_avanzada_routes import register_meteo_avanzada_routes
 from api_rest.mapas_routes import register_mapas_routes
 from api_rest.observability import register_observability
 from api_rest.payment_routes import payment_bp
+from api_rest.paypal_routes import paypal_bp
 
 
 def _error_openmeteo_503():
@@ -175,6 +176,7 @@ def create_app() -> Flask:
     register_mapas_routes(app)
     register_docs_routes(app)
     app.register_blueprint(payment_bp)
+    app.register_blueprint(paypal_bp)
 
     @app.after_request
     def _security_headers(resp):
