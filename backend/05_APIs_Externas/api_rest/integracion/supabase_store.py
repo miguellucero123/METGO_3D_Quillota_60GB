@@ -59,6 +59,7 @@ def rest_select(
     *,
     params: dict[str, str] | None = None,
     limit: int = 100,
+    timeout: int = 20,
 ) -> list[dict[str, Any]]:
     """GET /rest/v1/{table} sin SDK."""
     global _rest_ok, _supabase_init_error
@@ -69,7 +70,7 @@ def rest_select(
     q = dict(params or {})
     q.setdefault("limit", str(limit))
     try:
-        res = requests.get(endpoint, headers=_rest_headers(key), params=q, timeout=20)
+        res = requests.get(endpoint, headers=_rest_headers(key), params=q, timeout=timeout)
         if res.status_code >= 400:
             _rest_ok = False
             _supabase_init_error = f"PostgREST {res.status_code}: {res.text[:180]}"
@@ -331,20 +332,27 @@ def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
 
 def estadisticas_store() -> dict[str, Any]:
     url, _ = _resolve_supabase_creds()
-    client = get_supabase_client()
-    if client:
-        try:
-            res = client.table("meteo_registros").select("estacion_id", count="exact").limit(1).execute()
-            total = res.count if res.count is not None else 0
-            return {"registros": total, "estaciones": 0, "db": url}
-        except Exception as e:
-            return {"registros": 0, "estaciones": 0, "db": url, "error": str(e)}
-
+    # Usar rest_select con timeout muy corto (3s) para evitar bloquear el /health
+    # si el proyecto Supabase está pausado.
     sample = rest_select(
         "meteo_registros",
-        params={"select": "estacion_id", "estacion_id": "eq.quillota"},
-        limit=5,
+        params={"select": "estacion_id", "limit": "1"},
+        limit=1,
+        timeout=3,
     )
+    if _rest_ok:
+        return {
+            "registros": 1 if sample else 0,
+            "estaciones": 0,
+            "db": url,
+            "mode": "rest_fast",
+        }
+    return {
+        "registros": 0,
+        "estaciones": 0,
+        "db": url or "supabase (inactivo)",
+        "error": _supabase_init_error,
+    }
     if _rest_ok:
         return {
             "registros": len(sample),

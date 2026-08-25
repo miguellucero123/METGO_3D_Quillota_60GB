@@ -1097,8 +1097,9 @@ def health_check() -> dict[str, Any]:
         out["meteo_store_db"] = str(st.get("db") or "")[:80]
         if st.get("error"):
             out["meteo_store_error"] = str(st["error"])[:200]
-        sample = meteo_store.leer_registros("quillota", 3)
-        out["meteo_store_quillota"] = len(sample)
+        # Skip reading records in /health to prevent 60s timeout if Supabase is paused
+        # sample = meteo_store.leer_registros("quillota", 3)
+        # out["meteo_store_quillota"] = len(sample)
     except Exception as exc:
         out["supabase_configurado"] = False
         out["supabase_client_ok"] = False
