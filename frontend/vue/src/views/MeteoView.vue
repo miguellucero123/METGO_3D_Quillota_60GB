@@ -32,6 +32,7 @@ import WindRoseChart from '@/components/charts/WindRoseChart.vue'
 import EnsemblePredictivoPanel from '@/components/meteo/EnsemblePredictivoPanel.vue'
 import TimeSeriesChart from '@/components/charts/TimeSeriesChart.vue'
 import { usePreferencesStore } from '@/stores/preferences'
+import { useApiCall } from '@/composables/useApiCall'
 
 const store = useMetgoStore()
 const favorites = useFavoritesStore()
@@ -39,10 +40,7 @@ const prefs = usePreferencesStore()
 const { formatTemperatura } = useFormatTemp()
 const pronosticoRaw = ref([])
 const historico = ref([])
-const cargandoPron = ref(false)
-const cargandoHist = ref(false)
 const vientoHorario = ref(null)
-const cargandoViento = ref(false)
 const vistaPronostico = ref('cards')
 
 const estacionInfo = computed(() =>
@@ -87,21 +85,25 @@ const vientoSpeedsPron = computed(() =>
     : pronostico.value.filter((r) => r.direccion_viento != null).map((r) => r.viento)
 )
 
+const callPron = useApiCall(async () => {
+  pronosticoRaw.value = await fetchPronostico(store.estacionActiva, 7)
+})
+const callHist = useApiCall(async () => {
+  historico.value = await fetchHistorico(store.estacionActiva, 14)
+})
+const callViento = useApiCall(async () => {
+  vientoHorario.value = await fetchVientoHorario(store.estacionActiva, 7)
+})
+
+const cargandoPron = callPron.loading
+const cargandoHist = callHist.loading
+const cargandoViento = callViento.loading
+
 async function cargar() {
-  cargandoPron.value = true
-  cargandoHist.value = true
-  cargandoViento.value = true
-  const [pRes, hRes, vRes] = await Promise.allSettled([
-    fetchPronostico(store.estacionActiva, 7),
-    fetchHistorico(store.estacionActiva, 14),
-    fetchVientoHorario(store.estacionActiva, 7),
-  ])
-  pronosticoRaw.value = pRes.status === 'fulfilled' ? pRes.value : []
-  historico.value = hRes.status === 'fulfilled' ? hRes.value : []
-  vientoHorario.value = vRes.status === 'fulfilled' ? vRes.value : null
-  cargandoPron.value = false
-  cargandoHist.value = false
-  cargandoViento.value = false
+  await Promise.allSettled([callPron.run(), callHist.run(), callViento.run()])
+  if (callPron.error.value) pronosticoRaw.value = []
+  if (callHist.error.value) historico.value = []
+  if (callViento.error.value) vientoHorario.value = null
 }
 
 onMounted(cargar)

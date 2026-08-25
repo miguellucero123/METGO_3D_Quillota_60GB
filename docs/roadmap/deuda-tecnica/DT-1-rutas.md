@@ -1,6 +1,6 @@
 # DT-1 — Eliminar rutas hardcodeadas
 
-> **Estado (2026-07-24):** casi cerrado en runtime.  
+> **Estado (2026-08-21):** Cerrado en runtime.  
 > Launchers `ejecutar_sistema_organizado.py` / `_final` / `_reorganizado` usan `metgo.paths` + checklist F.
 
 ```bash

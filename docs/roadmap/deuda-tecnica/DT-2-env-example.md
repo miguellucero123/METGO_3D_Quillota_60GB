@@ -1,6 +1,6 @@
 # DT-2 — `.env.example` completo
 
-**Estado:** parcial · **Prioridad:** media
+**Estado:** Cerrado · **Prioridad:** media
 
 ## Objetivo
 
@@ -8,8 +8,8 @@ Documentar en `.env.example` todas las variables usadas por módulos 01–08 y d
 
 ## Criterio de cierre
 
-- [ ] Cada clave referenciada en código/`settings` aparece en `.env.example` con comentario
-- [ ] Sin secretos reales; solo placeholders
+- [x] Cada clave referenciada en código/`settings` aparece en `.env.example` con comentario
+- [x] Sin secretos reales; solo placeholders
 - [ ] Alineado con `docs/manuales` de deployment
 
 ## Notas

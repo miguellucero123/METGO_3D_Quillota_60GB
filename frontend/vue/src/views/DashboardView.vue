@@ -32,6 +32,7 @@ import {
 } from '@/utils/agroInsights'
 import { useFormatTemp } from '@/composables/useFormatTemp'
 import { useAuthStore } from '@/stores/auth'
+import { useApiCall } from '@/composables/useApiCall'
 
 const auth = useAuthStore()
 const isExpired = computed(() => {
@@ -48,10 +49,7 @@ const { formatTemperatura, unit: tempUnit } = useFormatTemp()
 const pronosticoRaw = ref([])
 const alertas = ref([])
 const recomendaciones = ref([])
-const cargandoExtra = ref(false)
 const mlProyecciones = ref([])
-const cargandoMl = ref(false)
-const pronosticoError = ref('')
 
 /** Misma serie para gráfico y tabla (hoy Chile + futuros, 1 fila/día). */
 const pronostico = computed(() => seriePronosticoPorDia(pronosticoRaw.value, 7))
@@ -67,39 +65,40 @@ const helada = computed(() => riesgoHelada(d.value?.temperatura_min))
 const riego = computed(() => necesidadRiego(d.value?.humedad, d.value?.precipitacion))
 const lluvia7d = computed(() => acumuladoPrecipitacion(pronostico.value))
 
-async function cargarResumen() {
-  cargandoExtra.value = true
-  cargandoMl.value = true
+const callResumen = useApiCall(async () => {
   const [pRes, aRes, rRes] = await Promise.allSettled([
     fetchPronostico(store.estacionActiva, 7),
     fetchAlertas(store.estacionActiva),
     fetchRecomendacionesAgricolas(store.estacionActiva),
   ])
+  
   pronosticoRaw.value = pRes.status === 'fulfilled' ? pRes.value : []
-  if (pRes.status === 'rejected') {
-    pronosticoError.value = pRes.reason?.message || 'Error al cargar pronóstico'
-  } else if (!pronostico.value.length) {
-    pronosticoError.value =
-      'La API no devolvió días futuros (OpenMeteo o caché; pruebe Actualizar)'
-  } else {
-    pronosticoError.value = ''
-  }
-  alertas.value =
-    aRes.status === 'fulfilled' ? (aRes.value || []).slice(0, 4) : []
-  recomendaciones.value =
-    rRes.status === 'fulfilled' ? (rRes.value || []).slice(0, 3) : []
-  cargandoExtra.value = false
+  alertas.value = aRes.status === 'fulfilled' ? (aRes.value || []).slice(0, 4) : []
+  recomendaciones.value = rRes.status === 'fulfilled' ? (rRes.value || []).slice(0, 3) : []
 
-  try {
-    const batch = await mlPredictBatch(
-      ML_VARS_DASHBOARD.map((v) => v.variable),
-      store.estacionActiva
-    )
-    mlProyecciones.value = mapMlProjectionItems(batch, store.datosMeteo)
-  } catch {
+  if (pRes.status === 'rejected') {
+    throw new Error(pRes.reason?.message || 'Error al cargar pronóstico')
+  } else if (!pronosticoRaw.value.length) {
+    throw new Error('La API no devolvió días futuros (OpenMeteo o caché; pruebe Actualizar)')
+  }
+})
+
+const callMl = useApiCall(async () => {
+  const batch = await mlPredictBatch(
+    ML_VARS_DASHBOARD.map((v) => v.variable),
+    store.estacionActiva
+  )
+  mlProyecciones.value = mapMlProjectionItems(batch, store.datosMeteo)
+})
+
+const cargandoExtra = callResumen.loading
+const pronosticoError = callResumen.error
+const cargandoMl = callMl.loading
+
+async function cargarResumen() {
+  await Promise.allSettled([callResumen.run(), callMl.run()])
+  if (callMl.error.value) {
     mlProyecciones.value = []
-  } finally {
-    cargandoMl.value = false
   }
 }
 

@@ -13,8 +13,16 @@ export function useSeo({ title, description, keywords }) {
   }
 
   const applySeo = () => {
-    if (title) document.title = title
-    if (description) updateMeta('description', description)
+    if (title) {
+      document.title = title
+      updateMeta('og:title', title)
+      updateMeta('twitter:title', title)
+    }
+    if (description) {
+      updateMeta('description', description)
+      updateMeta('og:description', description)
+      updateMeta('twitter:description', description)
+    }
     if (keywords) updateMeta('keywords', keywords)
   }
 

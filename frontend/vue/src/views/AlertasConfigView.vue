@@ -15,12 +15,12 @@ import {
   fetchNotificacionesOutbox,
   reintentarNotificacionesOutbox,
 } from '@/api/metgoApi'
+import { useApiCall } from '@/composables/useApiCall'
 
 const store = useMetgoStore()
 const { canManageAlertas, canDeleteAlertas } = useRbac()
 const reglas = ref([])
-const cargando = ref(true)
-const error = ref('')
+
 const form = ref({
   estacion: 'quillota',
   variable: 'temperatura_max',
@@ -38,22 +38,19 @@ const notif = ref({
 const notifMsg = ref('')
 const notifStatus = ref(null)
 const outbox = ref([])
+const { loading: cargando, error, run: runCargar } = useApiCall(async () => {
+  reglas.value = await fetchAlertasConfig()
+  const nc = await fetchNotificacionesConfig()
+  notif.value = { ...notif.value, ...nc }
+  notifStatus.value = await fetchNotificacionesStatus().catch(() => null)
+  const ob = await fetchNotificacionesOutbox(15).catch(() => ({ items: [] }))
+  outbox.value = ob.items || []
+})
 
 async function cargar() {
-  cargando.value = true
-  error.value = ''
-  try {
-    reglas.value = await fetchAlertasConfig()
-    const nc = await fetchNotificacionesConfig()
-    notif.value = { ...notif.value, ...nc }
-    notifStatus.value = await fetchNotificacionesStatus().catch(() => null)
-    const ob = await fetchNotificacionesOutbox(15).catch(() => ({ items: [] }))
-    outbox.value = ob.items || []
-  } catch (e) {
+  await runCargar()
+  if (error.value) {
     reglas.value = []
-    error.value = e.message
-  } finally {
-    cargando.value = false
   }
 }
 

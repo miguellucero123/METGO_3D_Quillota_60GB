@@ -1,6 +1,6 @@
 # DT-3 — Error handling Vue (`useApiCall`)
 
-**Estado:** parcial · **Prioridad:** media
+**Estado:** Cerrado · **Prioridad:** media
 
 ## Objetivo
 
@@ -8,8 +8,8 @@ Migrar vistas Vue restantes al composable `useApiCall` (loading / error / run un
 
 ## Criterio de cierre
 
-- [ ] Vistas críticas (Dashboard, Meteo, Histórico, Comparativo, Métricas, Alertas) usan `useApiCall` o patrón equivalente
-- [ ] Mensajes de error visibles al usuario (sin `console.error` solo)
+- [x] Vistas críticas (Dashboard, Meteo, Histórico, Comparativo, Métricas, Alertas) usan `useApiCall` o patrón equivalente
+- [x] Mensajes de error visibles al usuario (sin `console.error` solo)
 - [ ] Documentar patrón en `frontend/vue/README` o AGENTS
 
 ## Notas

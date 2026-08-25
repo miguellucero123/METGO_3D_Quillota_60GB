@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from flask import Flask, jsonify, request
+from enum import Enum
 
 _ERROR_503 = {"error": "Servicio SPATI temporalmente no disponible"}
 
@@ -60,6 +61,43 @@ def register_spati_routes(app: Flask) -> None:
         if data.get("error"):
             return jsonify(data), 503
         return jsonify(data)
+
+    @app.get("/api/public/spati/<sitio_id>/puerto/pronostico")
+    def public_spati_puerto_pronostico(sitio_id: str):
+        """Pronóstico 72h hiperlocal marítimo/portuario."""
+        import dataclasses
+        from datetime import datetime, timezone
+        from enum import Enum
+        from api_rest.spati.spati_puertos_era5_wrf_integration import HyperLocalForecastGenerator
+        
+        try:
+            # En un entorno real se obtendrían coords del sitio desde get_sitio()
+            forecast_gen = HyperLocalForecastGenerator(site_id=sitio_id)
+            start_time = datetime.now(timezone.utc)
+            forecast = forecast_gen.generate_forecast(start_date=start_time, hours_ahead=72)
+            
+            # Helper recursivo para formatear dicts que tienen datetimes u objetos anidados de numpy
+            def json_serialize(obj):
+                if dataclasses.is_dataclass(obj):
+                    return {k: json_serialize(v) for k, v in dataclasses.asdict(obj).items()}
+                elif isinstance(obj, dict):
+                    return {k: json_serialize(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [json_serialize(i) for i in obj]
+                elif hasattr(obj, 'isoformat'):
+                    return obj.isoformat()
+                elif hasattr(obj, 'tolist'):
+                    return obj.tolist()
+                elif isinstance(obj, Enum):
+                    return obj.value
+                return obj
+
+            out = json_serialize(forecast)
+            return jsonify(out)
+            
+        except Exception as exc:
+            app.logger.warning("spati_puerto_pronostico %s: %s", sitio_id, exc)
+            return jsonify({**_ERROR_503, "detalle": str(exc)}), 503
 
     @app.post("/api/public/spati/physics/extrapolar")
     def public_spati_physics_extrapolar():

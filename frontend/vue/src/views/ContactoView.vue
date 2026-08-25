@@ -3,6 +3,12 @@ import { ref } from 'vue'
 import { submitLeadData } from '@/api/metgoApi'
 import { Leaf } from 'lucide-vue-next'
 import CommercialLayout from '@/components/layout/CommercialLayout.vue'
+import { trackEvent } from '@/utils/analytics'
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  trackEvent('lead_form_view')
+})
 
 const form = ref({
   nombre: '',
@@ -25,6 +31,7 @@ const submitLead = async () => {
   try {
     await submitLeadData(form.value)
     success.value = true
+    trackEvent('lead_submitted', { sector: form.value.sector })
     form.value = { nombre: '', empresa: '', sector: '', email: '', telefono: '', mensaje: '' }
   } catch (err) {
     error.value = true

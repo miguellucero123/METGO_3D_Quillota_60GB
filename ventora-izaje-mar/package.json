@@ -1,0 +1,28 @@
+{
+  "name": "ventora-izaje-mar",
+  "version": "1.0.0",
+  "description": "METGO VENTORA — Pronóstico y alerta temprana de izaje | Vue 3 + Vite",
+  "type": "module",
+  "dependencies": {
+    "echarts": "^6.1.0",
+    "leaflet": "^1.9.4",
+    "lucide-vue-next": "^0.574.0",
+    "vue": "^3.4.15",
+    "vue-echarts": "^8.0.1",
+    "vue-i18n": "^11.1.2",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "vite": "^6.4.1",
+    "vite-plugin-pwa": "^0.21.1"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lhci": "npm run build && npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.json",
+    "pages:deploy": "npm run build && npx wrangler pages deploy dist --project-name=metgo-spati --branch=master --commit-dirty=true",
+    "pages:deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name=metgo-spati --branch=main --commit-dirty=true"
+  }
+}
