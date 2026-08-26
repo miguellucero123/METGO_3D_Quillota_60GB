@@ -15,7 +15,7 @@
           <HardHat aria-hidden="true" />
         </div>
         <h1>{{ site.productName }} {{ site.brandName || 'VENTORA' }}</h1>
-        <p class="auth-tagline">{{ t('login.tagline') }}</p>
+        <p class="auth-tagline">Portal de Operaciones Marítimas</p>
         <p v-if="faenaFija" class="auth-region">
           {{ faenaMeta?.nombre || faenaFija }} · {{ faenaMeta?.region || '' }}
         </p>
@@ -29,11 +29,11 @@
       <form class="auth-form" @submit.prevent="onSubmit" aria-labelledby="login-heading">
         <h2 id="login-heading" class="sr-only">{{ t('login.submit') }}</h2>
         <label v-if="!faenaFija" class="field">
-          <span>{{ t('login.faenaCode') }}</span>
+          <span>Terminal ID</span>
           <input
             v-model="faenaCodigo"
             type="text"
-            :placeholder="t('login.faenaPlaceholder')"
+            placeholder="ej. puerto_iquique"
             autocomplete="off"
             spellcheck="false"
           />
@@ -88,12 +88,12 @@ const auth = useAuth()
 const { t, locale } = useI18n()
 
 const faenaFija = computed(() => {
-  const p = route.params.faena
+  const p = route.params.puerto
   return p ? String(p).toLowerCase() : ''
 })
 const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faenaFija.value))
 const registroLink = computed(() =>
-  faenaFija.value ? `/f/${faenaFija.value}/registro` : '/registro',
+  faenaFija.value ? `/p/${faenaFija.value}/registro` : '/registro',
 )
 
 const username = ref('')
@@ -145,11 +145,11 @@ async function resolvePostLogin(preferredFaena) {
   }
   const slugs = faenas.map((f) => String(f.slug || f).toLowerCase()).filter(Boolean)
   if (preferredFaena && (catalogo || slugs.includes(preferredFaena) || !slugs.length)) {
-    return `/f/${preferredFaena}/ahora`
+    return `/p/${preferredFaena}/`
   }
-  if (!catalogo && slugs.length === 1) return `/f/${slugs[0]}/ahora`
+  if (!catalogo && slugs.length === 1) return `/p/${slugs[0]}/`
   if (slugs.length > 1 || catalogo) return '/app'
-  if (preferredFaena) return `/f/${preferredFaena}/ahora`
+  if (preferredFaena) return `/p/${preferredFaena}/`
   return '/app'
 }
 
@@ -174,8 +174,8 @@ async function onSubmit() {
       typeof route.query.redirect === 'string' ? route.query.redirect : ''
     if (!redirect || redirect === '/' || redirect.startsWith('/?') || redirect === '/login') {
       redirect = await resolvePostLogin(faena)
-    } else if (faena && (redirect === `/f/${faena}/` || redirect === `/f/${faena}`)) {
-      redirect = `/f/${faena}/ahora`
+    } else if (faena && (redirect === `/p/${faena}/ahora` || redirect === `/p/${faena}`)) {
+      redirect = `/p/${faena}/`
     }
     await router.replace(redirect.startsWith('/') ? redirect : await resolvePostLogin(faena))
   } catch (e) {
@@ -237,9 +237,10 @@ async function onResend() {
   justify-content: center;
   padding: 1.5rem;
   background: #0f172a;
+  /* Modificamos los gradientes a tonos marítimos: Cyan y Ocean Blue */
   background-image:
-    radial-gradient(ellipse 70% 50% at 15% 0%, rgba(16, 185, 129, 0.2), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 90% 20%, rgba(59, 130, 246, 0.12), transparent 50%);
+    radial-gradient(ellipse 70% 50% at 15% 0%, rgba(6, 182, 212, 0.2), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 20%, rgba(14, 165, 233, 0.12), transparent 50%);
 }
 .auth-panel {
   width: 100%;
@@ -269,9 +270,9 @@ async function onResend() {
   font-family: inherit;
 }
 .auth-lang button.active {
-  color: #10b981;
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
+  color: #06b6d4;
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
 }
 .auth-brand {
   text-align: center;
@@ -283,7 +284,7 @@ async function onResend() {
   margin: 0 auto 0.85rem;
   display: grid;
   place-items: center;
-  background: #10b981;
+  background: #0ea5e9; /* Cyan Ocean */
   color: #0f172a;
   border-radius: 10px;
 }
@@ -351,7 +352,7 @@ async function onResend() {
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  background: #10b981;
+  background: #0ea5e9;
   color: #0f172a;
 }
 .auth-btn:disabled {
@@ -363,14 +364,14 @@ async function onResend() {
   font-size: 0.8rem;
 }
 .auth-footer a {
-  color: #10b981;
+  color: #0ea5e9;
   text-decoration: none;
   font-weight: 600;
 }
 .auth-footer .linkish {
   background: none;
   border: none;
-  color: #10b981;
+  color: #0ea5e9;
   font-weight: 600;
   font-size: inherit;
   font-family: inherit;

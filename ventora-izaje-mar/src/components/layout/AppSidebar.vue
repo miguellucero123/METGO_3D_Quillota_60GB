@@ -59,15 +59,15 @@ const items = computed(() => {
   const f = faena.value
   const all = [
     {
-      name: 'faena-puertos',
-      to: { name: 'faena-puertos', params: { faena: f } },
+      name: 'puerto-dashboard',
+      to: { name: 'puerto-dashboard', params: { puerto: f } },
       label: 'Condiciones Marítimas',
       icon: MapPinned,
       tab: 'panel',
     },
     {
-      name: 'faena-cuenta',
-      to: { name: 'faena-cuenta', params: { faena: f } },
+      name: 'puerto-cuenta',
+      to: { name: 'puerto-cuenta', params: { puerto: f } },
       label: t('nav.cuenta', 'Cuenta'),
       icon: CreditCard,
     },

@@ -53,51 +53,46 @@
       
       <!-- WIDGETS CONDICIONES ACTUALES -->
       <section v-if="estadoActual" class="widgets-section">
-        <h2 class="section-title">Condiciones Atmosféricas Actuales</h2>
+        <h2 class="section-title">Condiciones de Izaje y Fondeo</h2>
         <div class="widgets-grid">
           <div class="widget glass-card">
             <div class="widget-icon">💨</div>
             <div class="widget-info">
-              <span class="lbl">Viento 10m</span>
+              <span class="lbl">Viento Base (10m)</span>
               <strong class="val">{{ n(estadoActual.wind_surface_kmh) }} <small>km/h</small></strong>
               <span class="sub">Dir: {{ n(estadoActual.wind_direction_surface, 0) }}°</span>
             </div>
           </div>
           <div class="widget glass-card highlight">
-            <div class="widget-icon">🌪️</div>
-            <div class="widget-info">
-              <span class="lbl">Ráfagas</span>
-              <strong class="val">{{ n(estadoActual.wind_gust_10m_kmh) }} <small>km/h</small></strong>
-            </div>
-          </div>
-          <div class="widget glass-card">
             <div class="widget-icon">🏗️</div>
             <div class="widget-info">
-              <span class="lbl">Viento 900mb (Altura)</span>
-              <strong class="val">{{ n(estadoActual.wind_900mb_ms * 3.6) }} <small>km/h</small></strong>
+              <span class="lbl">Viento Izaje (40m)</span>
+              <strong class="val">{{ n(vientoActualAlturas[40]) }} <small>km/h</small></strong>
+              <span class="sub">Ráfagas: {{ n(estadoActual.wind_gust_10m_kmh * 1.15) }} km/h</span>
+            </div>
+          </div>
+          <div class="widget glass-card danger">
+            <div class="widget-icon">⚓</div>
+            <div class="widget-info">
+              <span class="lbl">Tensión Espigas (ITE)</span>
+              <strong class="val">{{ estadoActualIte.value }} <small>idx</small></strong>
+              <span class="sub" :class="estadoActualIte.level">{{ estadoActualIte.level }}</span>
             </div>
           </div>
           <div class="widget glass-card ocean">
             <div class="widget-icon">🌊</div>
             <div class="widget-info">
-              <span class="lbl">Oleaje (Hs)</span>
-              <strong class="val">{{ estadoActual.wave_params ? n(estadoActual.wave_params.Hs, 2) : '—' }} <small>m</small></strong>
-              <span class="sub">Tp: {{ estadoActual.wave_params ? n(estadoActual.wave_params.Tp, 1) : '—' }} s</span>
-            </div>
-          </div>
-          <div class="widget glass-card danger">
-            <div class="widget-icon">🚢</div>
-            <div class="widget-info">
-              <span class="lbl">Cabeceo (Heave)</span>
-              <strong class="val">{{ n(estadoActual.ship_heave_m, 2) }} <small>m</small></strong>
+              <span class="lbl">Swell (Energía)</span>
+              <strong class="val">{{ estadoActualIte.waveEnergyFlux_kWm }} <small>kW/m</small></strong>
+              <span class="sub">Hs: {{ estadoActual.wave_params ? n(estadoActual.wave_params.Hs, 2) : '—' }}m</span>
             </div>
           </div>
           <div class="widget glass-card">
-            <div class="widget-icon">👁️</div>
+            <div class="widget-icon">🌔</div>
             <div class="widget-info">
-              <span class="lbl">Visibilidad</span>
-              <strong class="val">{{ n(estadoActual.visibility_m, 0) }} <small>m</small></strong>
-              <span class="sub">Niebla: {{ n(estadoActual.fog_probability_pct, 1) }}%</span>
+              <span class="lbl">Nivel de Marea</span>
+              <strong class="val">{{ n(mareaActual) }} <small>m</small></strong>
+              <span class="sub">Ref: Nivel de Reducción</span>
             </div>
           </div>
         </div>
@@ -105,14 +100,14 @@
 
       <!-- GRAFICOS -->
       <section class="charts-section">
-        <div class="chart-container glass-card">
-          <h3 class="chart-title">Evolución de Vientos (72 h)</h3>
-          <v-chart class="chart-canvas" :option="chartVientoOption" autoresize />
+        <div class="chart-container glass-card chart-large">
+          <h3 class="chart-title">Perfil Vertical de Vientos en Grúas (10m a 200m)</h3>
+          <v-chart class="chart-canvas large" :option="chartVientoOption" autoresize />
         </div>
         
-        <div class="chart-container glass-card">
-          <h3 class="chart-title">Estado del Mar y Cabeceo del Buque (72 h)</h3>
-          <v-chart class="chart-canvas" :option="chartOlaOption" autoresize />
+        <div class="chart-container glass-card chart-large">
+          <h3 class="chart-title">Oceanografía Física y Resonancia en Espigas (ITE)</h3>
+          <v-chart class="chart-canvas large" :option="chartOlaOption" autoresize />
         </div>
       </section>
     </template>
@@ -125,12 +120,13 @@ import { useRoute } from 'vue-router'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, DataZoomComponent } from 'echarts/components'
+import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, MarkAreaComponent, DataZoomComponent, VisualMapComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { fetchSpatiPuertoPronostico, getApiBase } from '@/services/spatiApi'
 import { wakeApi } from '@/services/authApi'
+import { calculateWindProfile, calculateSpudStressIndex, generateSyntheticTide } from '@/utils/oceanPhysics'
 
-use([CanvasRenderer, LineChart, BarChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, DataZoomComponent])
+use([CanvasRenderer, LineChart, BarChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, MarkAreaComponent, DataZoomComponent, VisualMapComponent])
 
 const site = inject('site')
 const route = useRoute()
@@ -156,8 +152,35 @@ const error = ref(null)
 const data = ref(null)
 
 const estados = computed(() => data.value?.hourly_states || [])
-const estadoActual = computed(() => estados.value.length > 0 ? estados.value[0] : null)
 const alertasActivas = computed(() => data.value?.alerts || [])
+
+// --- MODELOS OCEANOGRÁFICOS ---
+const z0 = computed(() => faenaMeta.value?.z0 || 0.05) // Rugosidad
+const alturas = [40, 100, 150, 200]
+
+const estadosFisicos = computed(() => {
+  if (!estados.value.length) return []
+  const times = estados.value.map(s => s.timestamp)
+  const mareas = generateSyntheticTide(times)
+  
+  return estados.value.map((s, i) => {
+    const v10 = s.wind_surface_kmh || 0
+    const hs = s.wave_params?.Hs || 0
+    const tp = s.wave_params?.Tp || 0
+    
+    return {
+      ...s,
+      vientosAltura: calculateWindProfile(v10, z0.value, alturas),
+      ite: calculateSpudStressIndex(hs, tp, v10),
+      marea_m: mareas[i]?.level_m || 0.8
+    }
+  })
+})
+
+const estadoActual = computed(() => estadosFisicos.value.length > 0 ? estadosFisicos.value[0] : null)
+const vientoActualAlturas = computed(() => estadoActual.value?.vientosAltura || {})
+const estadoActualIte = computed(() => estadoActual.value?.ite || { value: 0, level: 'SEGURO', waveEnergyFlux_kWm: 0 })
+const mareaActual = computed(() => estadoActual.value?.marea_m || 0)
 
 function formatoFecha(iso) {
   if (!iso) return '—'
@@ -174,47 +197,60 @@ function n(v, nd = 1) {
 }
 
 const chartVientoOption = computed(() => {
-  if (!estados.value.length) return {}
-  const times = estados.value.map(s => s.timestamp)
-  const v10m = estados.value.map(s => s.wind_surface_kmh)
-  const v900 = estados.value.map(s => (s.wind_900mb_ms || 0) * 3.6)
-  const gust = estados.value.map(s => s.wind_gust_10m_kmh)
+  if (!estadosFisicos.value.length) return {}
+  const times = estadosFisicos.value.map(s => s.timestamp)
+  const v10 = estadosFisicos.value.map(s => s.wind_surface_kmh)
+  const v40 = estadosFisicos.value.map(s => s.vientosAltura[40])
+  const v100 = estadosFisicos.value.map(s => s.vientosAltura[100])
+  const v150 = estadosFisicos.value.map(s => s.vientosAltura[150])
+  const v200 = estadosFisicos.value.map(s => s.vientosAltura[200])
   
   return {
     animation: true,
     tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', textStyle: { color: '#f8fafc' } },
-    legend: { data: ['Viento 10m', 'Viento 900mb', 'Ráfagas'], top: 0, textStyle: { color: '#94a3b8' } },
+    legend: { data: ['Base (10m)', 'Grúa (40m)', 'Pilar (100m)', 'Cima (200m)'], top: 0, textStyle: { color: '#94a3b8' } },
     grid: { left: 45, right: 20, top: 40, bottom: 50 },
     xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b', formatter: (v) => formatoFecha(v).split(',')[1] || v } },
-    yAxis: { type: 'value', name: 'km/h', min: 0, nameTextStyle: { color: '#64748b' }, splitLine: { lineStyle: { color: '#334155', type: 'dashed' } }, axisLabel: { color: '#64748b' } },
+    yAxis: { type: 'value', name: 'km/h', min: 0, max: 70, nameTextStyle: { color: '#64748b' }, splitLine: { lineStyle: { color: '#334155', type: 'dashed' } }, axisLabel: { color: '#64748b' } },
     dataZoom: [{ type: 'inside' }, { type: 'slider', bottom: 0, height: 16, borderColor: 'transparent', fillerColor: 'rgba(56, 189, 248, 0.2)' }],
     series: [
-      { name: 'Viento 10m', type: 'line', data: v10m, showSymbol: false, smooth: true, lineStyle: { width: 3, color: '#38bdf8' }, areaStyle: { color: 'rgba(56, 189, 248, 0.1)' } },
-      { name: 'Viento 900mb', type: 'line', data: v900, showSymbol: false, smooth: true, lineStyle: { width: 2, type: 'dashed', color: '#10b981' } },
-      { name: 'Ráfagas', type: 'line', data: gust, showSymbol: false, smooth: true, lineStyle: { width: 2, type: 'dotted', color: '#f59e0b' } }
+      { name: 'Base (10m)', type: 'line', data: v10, showSymbol: false, smooth: true, lineStyle: { width: 2, color: '#94a3b8', type: 'dashed' } },
+      { name: 'Grúa (40m)', type: 'line', data: v40, showSymbol: false, smooth: true, lineStyle: { width: 3, color: '#38bdf8' }, areaStyle: { color: 'rgba(56, 189, 248, 0.1)' },
+        markArea: { itemStyle: { color: 'rgba(239, 68, 68, 0.1)' }, data: [[{ yAxis: 35, name: 'Prohibición Izaje (>35)', label: {position: 'insideTopLeft', color: '#ef4444'} }, { yAxis: 70 }]] }
+      },
+      { name: 'Pilar (100m)', type: 'line', data: v100, showSymbol: false, smooth: true, lineStyle: { width: 2, color: '#818cf8' } },
+      { name: 'Cima (200m)', type: 'line', data: v200, showSymbol: false, smooth: true, lineStyle: { width: 2, color: '#c084fc' } }
     ]
   }
 })
 
 const chartOlaOption = computed(() => {
-  if (!estados.value.length) return {}
-  const times = estados.value.map(s => s.timestamp)
-  const hs = estados.value.map(s => s.wave_params?.Hs || 0)
-  const swellHs = estados.value.map(s => s.wave_params?.swell_Hs || 0)
-  const heave = estados.value.map(s => s.ship_heave_m || 0)
+  if (!estadosFisicos.value.length) return {}
+  const times = estadosFisicos.value.map(s => s.timestamp)
+  const hs = estadosFisicos.value.map(s => s.wave_params?.Hs || 0)
+  const mareas = estadosFisicos.value.map(s => s.marea_m)
+  const iteSeries = estadosFisicos.value.map(s => s.ite.value)
   
   return {
     animation: true,
     tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', textStyle: { color: '#f8fafc' } },
-    legend: { data: ['Altura (Hs)', 'Swell (Hs)', 'Cabeceo Buque'], top: 0, textStyle: { color: '#94a3b8' } },
-    grid: { left: 45, right: 20, top: 40, bottom: 50 },
+    legend: { data: ['Oleaje Hs (m)', 'Marea (m)', 'ITE (Resonancia Espigas)'], top: 0, textStyle: { color: '#94a3b8' } },
+    grid: { left: 45, right: 45, top: 40, bottom: 50 },
+    visualMap: {
+      show: false,
+      seriesIndex: 2, // Aplicar al ITE
+      pieces: [{ gt: 0, lte: 0.99, color: '#10b981' }, { gt: 1.0, lte: 1.49, color: '#f59e0b' }, { gt: 1.5, color: '#ef4444' }]
+    },
     xAxis: { type: 'category', data: times, axisLabel: { color: '#64748b', formatter: (v) => formatoFecha(v).split(',')[1] || v } },
-    yAxis: { type: 'value', name: 'metros', min: 0, nameTextStyle: { color: '#64748b' }, splitLine: { lineStyle: { color: '#334155', type: 'dashed' } }, axisLabel: { color: '#64748b' } },
+    yAxis: [
+      { type: 'value', name: 'Metros', min: 0, position: 'left', nameTextStyle: { color: '#64748b' }, splitLine: { lineStyle: { color: '#334155', type: 'dashed' } }, axisLabel: { color: '#64748b' } },
+      { type: 'value', name: 'Índice (ITE)', min: 0, position: 'right', nameTextStyle: { color: '#64748b' }, splitLine: { show: false }, axisLabel: { color: '#64748b' } }
+    ],
     dataZoom: [{ type: 'inside' }, { type: 'slider', bottom: 0, height: 16, borderColor: 'transparent', fillerColor: 'rgba(56, 189, 248, 0.2)' }],
     series: [
-      { name: 'Altura (Hs)', type: 'bar', data: hs, itemStyle: { color: '#60a5fa', borderRadius: [4, 4, 0, 0] }, barMaxWidth: 8 },
-      { name: 'Swell (Hs)', type: 'bar', data: swellHs, itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }, barMaxWidth: 8 },
-      { name: 'Cabeceo Buque', type: 'line', data: heave, showSymbol: false, smooth: true, lineStyle: { width: 3, color: '#ef4444' }, markLine: { symbol: 'none', label: { color: '#ef4444' }, data: [{ yAxis: 1.0, lineStyle: { color: '#ef4444', type: 'solid' }, label: { formatter: 'Crítico' } }] } }
+      { name: 'Oleaje Hs (m)', type: 'bar', yAxisIndex: 0, data: hs, itemStyle: { color: 'rgba(56, 189, 248, 0.4)', borderRadius: [4, 4, 0, 0] } },
+      { name: 'Marea (m)', type: 'line', yAxisIndex: 0, data: mareas, smooth: true, showSymbol: false, lineStyle: { width: 3, color: '#3b82f6' }, areaStyle: { color: 'rgba(59, 130, 246, 0.15)' } },
+      { name: 'ITE (Resonancia Espigas)', type: 'line', yAxisIndex: 1, data: iteSeries, smooth: true, showSymbol: false, lineStyle: { width: 4 }, markLine: { data: [{ yAxis: 1.5, name: 'Crítico', lineStyle: { color: '#ef4444', type: 'solid' }, label: { formatter: 'Falla Espiga', color: '#ef4444' } }] } }
     ]
   }
 })
@@ -348,6 +384,14 @@ onMounted(() => cargar())
 .chart-container { padding: 1.5rem; }
 .chart-title { margin: 0 0 1.5rem; font-size: 1.1rem; font-weight: 600; color: #cbd5e1; text-align: center; }
 .chart-canvas { height: 400px; width: 100%; }
+.chart-canvas.large { height: 480px; }
+
+/* COLORES ESTADO ITE */
+.SEGURO { color: #10b981 !important; }
+.PRECAUCION { color: #facc15 !important; }
+.ALERTA { color: #f59e0b !important; font-weight: 800; }
+.CRITICO { color: #ef4444 !important; font-weight: 800; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
 /* LOADER */
 .state-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #38bdf8; }

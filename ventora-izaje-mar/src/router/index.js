@@ -4,34 +4,34 @@ import { getHubCache, setHubCache, invalidateHubCache } from '@/stores/hubCache'
 
 export { invalidateHubCache }
 
-const faenaChildren = [
+const puertoChildren = [
   {
     path: 'login',
-    name: 'faena-login',
+    name: 'puerto-login',
     component: () => import('@/views/LoginView.vue'),
     meta: { title: 'Login', public: true },
   },
   {
     path: 'registro',
-    name: 'faena-registro',
+    name: 'puerto-registro',
     component: () => import('@/views/RegistroView.vue'),
     meta: { title: 'Registro', public: true },
   },
   {
     path: '',
-    name: 'faena-puertos',
-    component: () => import('@/views/SpatiPuertosView.vue'),
+    name: 'puerto-dashboard',
+    component: () => import('@/components/PortalDashboard.vue'),
     meta: { title: 'Condiciones Izaje Mar' },
   },
   {
     path: 'cuenta',
-    name: 'faena-cuenta',
+    name: 'puerto-cuenta',
     component: () => import('@/views/CuentaView.vue'),
     meta: { title: 'Cuenta' },
   },
   {
     path: 'verificar',
-    name: 'faena-verificar',
+    name: 'puerto-verificar',
     component: () => import('@/views/VerificarEmailView.vue'),
     meta: { title: 'Verificar email', public: true },
   },
@@ -41,7 +41,7 @@ const routes = [
   {
     path: '/',
     name: 'landing',
-    component: () => import('@/views/LoginView.vue'),
+    component: () => import('@/views/LandingSpatiView.vue'),
     meta: { title: 'VENTORA IZAJE MAR', public: true },
   },
   {
@@ -58,20 +58,20 @@ const routes = [
   },
   {
     path: '/app',
-    name: 'faenas-hub',
-    component: () => import('@/views/FaenasHubView.vue'),
-    meta: { title: 'Mis faenas', public: true },
+    name: 'puertos-hub',
+    component: () => import('@/views/PuertosHubView.vue'),
+    meta: { title: 'Mis puertos', public: true },
   },
   {
     path: '/ops',
     name: 'ops-board',
     component: () => import('@/views/OpsBoardView.vue'),
-    meta: { title: 'Ops multi-faena', requiresAuth: true },
+    meta: { title: 'Ops multi-puerto', requiresAuth: true },
   },
   {
-    path: '/f/:faena',
-    component: () => import('@/views/FaenaShellView.vue'),
-    children: faenaChildren,
+    path: '/p/:puerto',
+    component: () => import('@/views/PuertoShellView.vue'),
+    children: puertoChildren,
   },
   { path: '/dron', redirect: '/login' },
   { path: '/umbrales', redirect: '/login' },
@@ -117,13 +117,13 @@ router.beforeEach(async (to) => {
     return loginRedirect(to)
   }
 
-  const targetFaena = to.params.faena ? String(to.params.faena).toLowerCase() : ''
-  if (targetFaena) {
+  const targetPuerto = to.params.puerto ? String(to.params.puerto).toLowerCase() : ''
+  if (targetPuerto) {
     try {
       const hub = await loadHub()
-      if (!hub.catalogo_completo && hub.slugs.size > 0 && !hub.slugs.has(targetFaena)) {
+      if (!hub.catalogo_completo && hub.slugs.size > 0 && !hub.slugs.has(targetPuerto)) {
         const first = [...hub.slugs][0]
-        return `/app?blocked_faena=${encodeURIComponent(targetFaena)}`
+        return `/app?blocked_puerto=${encodeURIComponent(targetPuerto)}`
       }
     } catch (e) {
       if (e?.status === 401) {
@@ -136,20 +136,20 @@ router.beforeEach(async (to) => {
   }
 
   const tab = to.meta?.tab
-  if (tab && targetFaena) {
+  if (tab && targetPuerto) {
     try {
       // "ahora" comparte entitlement con panel (vista simplificada del mismo sistema)
       const entitlementTab = tab === 'ahora' ? 'panel' : String(tab)
       const access = await fetchAccess({
         sitio: 'spati',
-        faena: targetFaena,
+        faena: targetPuerto,
         tab: entitlementTab,
       })
       const denied =
         access.tab_allowed === false ||
         (access.tabs && access.tabs[entitlementTab] === false)
       if (denied) {
-        return `/f/${targetFaena}/ahora?blocked=${encodeURIComponent(String(tab))}`
+        return `/p/${targetPuerto}/?blocked=${encodeURIComponent(String(tab))}`
       }
     } catch (e) {
       if (e?.status === 401) {

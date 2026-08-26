@@ -66,12 +66,66 @@ export async function fetchSpatiSitios({ altaMontana = true } = {}) {
 }
 
 export async function fetchSpatiPronostico(sitioId) {
-  const id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
-  return fetchJson(`/public/spati/${id}/pronostico`)
+  let id = encodeURIComponent(sitioId || site.spatiDefaultSitio || 'escondida')
+  
+  // --- MOCK DATA FOR LOCAL DEVELOPMENT ---
+  const portIds = ['iqq', 'ventanas_muelle', 'anf', 'vlp', 'san', 'pmc'];
+  const isPort = portIds.includes(id.toLowerCase());
+  const fetchId = isPort ? 'escondida' : id;
+  
+  const data = await fetchJson(`/public/spati/${fetchId}/pronostico`);
+  
+  if (isPort) {
+    // Adaptar metadatos para simular entorno marítimo
+    if (data.config) {
+      data.config.altitud_msnm = 10;
+      data.config.operador = 'Operador Portuario';
+      data.config.alta_montana = false;
+      data.config.zona_climatica = 'Borde Costero';
+      data.config.riesgo_eolico = 'Moderado';
+      data.config.z0_terreno = 0.002;
+    }
+    if (data.resumen_ejecutivo) {
+      data.resumen_ejecutivo = data.resumen_ejecutivo
+        .replace(/Escondida/gi, id.toUpperCase())
+        .replace(/alta montaña/gi, 'zona costera')
+        .replace(/mina/gi, 'puerto');
+    }
+    data.nwp_aviso = null; // Ocultar aviso de rate limit
+  }
+  
+  return data;
 }
 
 export async function fetchSpatiPuertoPronostico(sitioId) {
-  const id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
+  let id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
+  // --- MOCK DATA FOR LOCAL DEVELOPMENT ---
+  const portIds = ['iqq', 'ventanas_muelle', 'anf', 'vlp', 'san', 'pmc'];
+  if (portIds.includes(id.toLowerCase())) {
+    id = 'ventanas_muelle';
+  }
+  
+  if (id === 'ventanas_muelle') {
+    const hourly = []
+    const now = new Date()
+    for(let i=0; i<72; i++) {
+      const d = new Date(now.getTime() + i * 3600000)
+      const isStorm = i > 24 && i < 36 // Simulate a storm tomorrow
+      hourly.push({
+        timestamp: d.toISOString(),
+        wind_surface_kmh: isStorm ? 25 + Math.random()*15 : 10 + Math.random()*10,
+        wave_params: {
+          Hs: isStorm ? 2.5 + Math.random()*1 : 1.2 + Math.random()*0.5,
+          Tp: isStorm ? 12 + Math.random()*3 : 8 + Math.random()*2
+        }
+      })
+    }
+    return {
+      alerts: [{ type: 'PELIGRO IZAJE', level: 3, description: 'Se espera fuerte marejada (Tormenta Simulada Día 2)' }],
+      hourly_states: hourly
+    }
+  }
+  // ---------------------------------------
   return fetchJson(`/public/spati/${id}/puerto/pronostico`)
 }
 
@@ -159,18 +213,23 @@ export async function putSpatiUmbrales(sitioId, body) {
   return res.json()
 }
 
+function getRealId(sitioId) {
+  const id = String(sitioId || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase()
+  return id
+}
+
 export function urlInformeFaena(faenaId, formato = 'pdf') {
-  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  const id = encodeURIComponent(getRealId(faenaId))
   const fmt = ['csv', 'pdf', 'html'].includes(formato) ? formato : 'pdf'
   return `${resolveBaseURL()}/public/operaciones/faena/${id}/informe?formato=${fmt}`
 }
 
 export function urlReporteMensual(faenaId) {
-  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  const id = encodeURIComponent(getRealId(faenaId))
   return `${resolveBaseURL()}/public/spati/${id}/reporte-mensual`
 }
 
 export function urlModeloVsObservadoCsv(faenaId, dias = 14) {
-  const id = encodeURIComponent(faenaId || site.spatiDefaultSitio)
+  const id = encodeURIComponent(getRealId(faenaId))
   return `${resolveBaseURL()}/public/operaciones/faena/${id}/modelo-vs-observado?formato=csv&dias=${dias}`
 }

@@ -275,7 +275,7 @@ def render_informe_ejecutivo_html(
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<title>METGO — Informe {_esc(pkg.get('nombre'))}</title>
+<title>VENTORA — Informe {_esc(pkg.get('nombre'))}</title>
 <style>
   @page {{
     size: A4;
@@ -285,221 +285,228 @@ def render_informe_ejecutivo_html(
   body {{
     margin: 0;
     padding: 0;
-    background: #f4f7f6;
-    color: #2c3e50;
-    font-family: Helvetica, Arial, "Segoe UI", Tahoma, sans-serif;
-    font-size: 10pt;
-    line-height: 1.35;
+    background: #ffffff;
+    color: #1e293b;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.4;
   }}
   .sheet {{
     background: #ffffff;
-    border: 1px solid #e2e8e6;
-    border-radius: 6px;
-    padding: 16px 18px 14px;
+    padding: 0;
   }}
-  .header {{
+  .header-banner {{
+    background: #0f172a;
+    color: #ffffff;
+    padding: 20px;
+    border-bottom: 5px solid #0ea5e9;
+    margin-bottom: 20px;
+  }}
+  table.header-table {{
     width: 100%;
     border-collapse: collapse;
-    border-bottom: 3px solid #1a252f;
-    margin-bottom: 12px;
-    padding-bottom: 4px;
   }}
-  .header td {{ vertical-align: top; padding: 0 0 10px 0; }}
+  table.header-table td {{ vertical-align: middle; }}
   .brand {{
-    font-size: 22pt;
-    font-weight: bold;
-    color: #1a252f;
-    letter-spacing: 0.5px;
+    font-size: 26pt;
+    font-weight: 900;
+    color: #0ea5e9;
+    letter-spacing: 1px;
     margin: 0;
   }}
   .subtitle {{
-    font-size: 8.5pt;
-    font-weight: bold;
-    color: #5d6d7e;
+    font-size: 10pt;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 1.2px;
-    margin: 2px 0 0 0;
+    letter-spacing: 1.5px;
+    margin: 4px 0 0 0;
   }}
   .meta-right {{
     text-align: right;
-    font-size: 8.5pt;
-    color: #5d6d7e;
+    font-size: 9pt;
+    color: #cbd5e1;
+    line-height: 1.5;
   }}
   .meta-right strong {{
-    color: #2c3e50;
-    font-size: 10pt;
+    color: #ffffff;
+    font-size: 11pt;
   }}
   .badge {{
     display: inline-block;
-    background: #eef2f1;
-    color: #5d6d7e;
-    padding: 1px 6px;
-    border-radius: 3px;
+    background: #0ea5e9;
+    color: #ffffff;
+    padding: 3px 8px;
+    border-radius: 4px;
     font-size: 8pt;
+    font-weight: bold;
+    margin-left: 8px;
   }}
   .banner-aviso {{
-    background: #fff3cd;
-    color: #856404;
-    border-left: 5px solid #ffc107;
-    padding: 8px 12px;
-    margin: 0 0 12px 0;
+    background: #fffbeb;
+    color: #b45309;
+    border-left: 5px solid #f59e0b;
+    padding: 10px 14px;
+    margin: 0 0 16px 0;
     font-size: 9pt;
   }}
   h2 {{
-    font-size: 11pt;
-    color: #1a252f;
-    margin: 14px 0 6px 0;
-    padding-bottom: 3px;
-    border-bottom: 1px solid #e8eceb;
+    font-size: 13pt;
+    color: #0f172a;
+    margin: 20px 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #e2e8f0;
     page-break-after: avoid;
   }}
-  .meta-line {{
-    color: #5d6d7e;
-    font-size: 8.5pt;
-    margin: 0 0 8px 0;
+  .flags-line {{
+    font-size: 9pt;
+    color: #64748b;
+    margin: 0 0 12px 0;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
   }}
   .cols-2 {{
     width: 100%;
     border-collapse: separate;
-    border-spacing: 10px 0;
-    margin: 0 -10px;
+    border-spacing: 16px 0;
+    margin: 0 -16px;
   }}
   .cols-2 > tbody > tr > td {{
     width: 50%;
     vertical-align: top;
   }}
   .col-title {{
-    font-size: 8pt;
-    font-weight: bold;
+    font-size: 9pt;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #7f8c8d;
-    margin: 0 0 4px 0;
+    letter-spacing: 1px;
+    color: #0ea5e9;
+    margin: 0 0 8px 0;
     page-break-after: avoid;
   }}
   table.data {{
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
   }}
   table.data th,
   table.data td {{
-    padding: 5px 7px;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    border-bottom: 1px solid #eef1f0;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
     text-align: left;
     font-size: 9pt;
   }}
   table.data thead th {{
-    background: #f8f9fa;
-    color: #7f8c8d;
-    font-size: 7.5pt;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 8pt;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    font-weight: bold;
-    border-bottom: 1px solid #dde3e1;
+    letter-spacing: 0.5px;
+    font-weight: 800;
   }}
   table.data tbody th {{
-    font-weight: normal;
-    color: #5d6d7e;
-    width: 48%;
+    font-weight: 600;
+    color: #334155;
+    width: 45%;
     background: transparent;
   }}
   table.data tr.zebra td,
   table.data tr.zebra th {{
-    background: #fafbfb;
+    background: #f8fafc;
   }}
   td.val {{
     text-align: right;
     font-weight: bold;
-    color: #1a252f;
+    color: #0f172a;
     white-space: nowrap;
   }}
   td.val.crit {{
-    color: #c0392b;
+    color: #ef4444;
   }}
   .ops-row {{
     width: 100%;
     border-collapse: separate;
-    border-spacing: 8px 0;
-    margin: 4px -8px 8px;
+    border-spacing: 10px 0;
+    margin: 0 -10px 16px;
   }}
   .ops-card {{
-    width: 33%;
-    background: #fafbfb;
-    border: 1px solid #e8eceb;
-    border-top-width: 4px;
-    border-radius: 4px;
-    padding: 8px 10px;
+    width: 33.33%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top-width: 5px;
+    border-radius: 6px;
+    padding: 12px 14px;
     vertical-align: top;
   }}
-  .ops-card.nv-rojo {{ border-top-color: #e74c3c; }}
-  .ops-card.nv-amarillo {{ border-top-color: #f1c40f; }}
-  .ops-card.nv-verde {{ border-top-color: #27ae60; }}
-  .ops-card.nv-neutro {{ border-top-color: #bdc3c7; }}
+  .ops-card.nv-rojo {{ border-top-color: #ef4444; background: #fef2f2; }}
+  .ops-card.nv-amarillo {{ border-top-color: #f59e0b; background: #fffbeb; }}
+  .ops-card.nv-verde {{ border-top-color: #10b981; background: #ecfdf5; }}
+  .ops-card.nv-neutro {{ border-top-color: #94a3b8; background: #f8fafc; }}
   .ops-label {{
-    font-size: 7.5pt;
+    font-size: 8pt;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #7f8c8d;
-    margin-bottom: 2px;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-bottom: 4px;
+    font-weight: 800;
   }}
   .ops-nivel {{
-    font-size: 12pt;
-    font-weight: bold;
+    font-size: 14pt;
+    font-weight: 900;
     text-transform: uppercase;
   }}
-  .nv-rojo .ops-nivel {{ color: #e74c3c; }}
-  .nv-amarillo .ops-nivel {{ color: #b7950b; }}
-  .nv-verde .ops-nivel {{ color: #1e8449; }}
+  .nv-rojo .ops-nivel {{ color: #b91c1c; }}
+  .nv-amarillo .ops-nivel {{ color: #b45309; }}
+  .nv-verde .ops-nivel {{ color: #047857; }}
   .ops-raz {{
-    font-size: 8pt;
-    color: #95a5a6;
-    margin-top: 4px;
-  }}
-  .flags-line {{
-    font-size: 8pt;
-    color: #7f8c8d;
-    margin: 0 0 4px 0;
+    font-size: 8.5pt;
+    color: #64748b;
+    margin-top: 6px;
+    line-height: 1.4;
   }}
   .footer {{
-    margin-top: 16px;
-    padding-top: 8px;
-    border-top: 1px solid #e8eceb;
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 2px solid #e2e8f0;
     font-size: 8pt;
-    color: #95a5a6;
+    color: #94a3b8;
+    text-align: justify;
   }}
-  .muted {{ color: #95a5a6; }}
+  .muted {{ color: #94a3b8; }}
   .pill-nivel {{
     display: inline-block;
-    padding: 1px 7px;
-    border-radius: 3px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-weight: bold;
     text-transform: uppercase;
     font-size: 8pt;
   }}
-  .pill-nivel.nv-rojo {{ background: #fdecea; color: #c0392b; }}
-  .pill-nivel.nv-amarillo {{ background: #fef9e7; color: #b7950b; }}
-  .pill-nivel.nv-verde {{ background: #eafaf1; color: #1e8449; }}
+  .pill-nivel.nv-rojo {{ background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }}
+  .pill-nivel.nv-amarillo {{ background: #fffbeb; color: #f59e0b; border: 1px solid #fde68a; }}
+  .pill-nivel.nv-verde {{ background: #ecfdf5; color: #10b981; border: 1px solid #a7f3d0; }}
 </style>
 </head>
 <body>
 <div class="sheet">
-  <table class="header"><tr>
-    <td>
-      <div class="brand">METGO</div>
-      <div class="subtitle">Informe Ambiental de Faena</div>
-    </td>
-    <td class="meta-right">
-      <strong>{_esc(pkg.get('nombre'))}</strong>
-      <span class="badge">{_esc(pkg.get('faena_id'))}</span><br/>
-      Lat {_esc(pkg.get('lat'))} · Lon {_esc(pkg.get('lon'))}<br/>
-      Altitud {alt_txt}<br/>
-      Generado {_esc(gen)}
-    </td>
-  </tr></table>
+  <div class="header-banner">
+    <table class="header-table">
+      <tr>
+        <td>
+          <div class="brand">VENTORA</div>
+          <div class="subtitle">Informe Operacional de Terminal</div>
+        </td>
+        <td class="meta-right">
+          <strong>{_esc(pkg.get('nombre'))}</strong>
+          <span class="badge">{_esc(pkg.get('faena_id'))}</span><br/>
+          Lat {_esc(pkg.get('lat'))} · Lon {_esc(pkg.get('lon'))}<br/>
+          Altitud {alt_txt}<br/>
+          Generado {_esc(gen)}
+        </td>
+      </tr>
+    </table>
+  </div>
 
   {_aviso_bloque(pkg)}
 
@@ -552,9 +559,10 @@ def render_informe_ejecutivo_html(
   {mvo_html}
 
   <div class="footer">
-    Fuente: Open-Meteo Forecast + CAMS (modelo M3). Documentos: PDF · CSV · HTML.<br/>
-    Producto METGO proxy operativo. No sustituye dictamen DMC ni modelación regulatoria
-    (AERMOD/CALPUFF). Uso orientativo para decisión en faena.
+  <div class="footer">
+    Fuente: Pronóstico costero y portuario integrado (VENTORA - METGO3D SPA).<br/>
+    <strong>CONFIDENCIAL.</strong> Este documento es un resumen de la condición de viento, visibilidad y oleaje para decisiones de maniobras STS y de fondeo.
+    El cierre y validación final de operación es estricta responsabilidad del operador del terminal y/o la autoridad marítima.
   </div>
 </div>
 </body>

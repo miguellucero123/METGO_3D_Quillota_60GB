@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash
 
 def create_admin():
     db = SessionLocal()
-    email = 'admin@ventora.com'
+    email = 'miguel.lucero@metgo3d.com'
     
     existing = db.query(User).filter(User.email == email).first()
     

@@ -45,5 +45,16 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
-  server: { port: 5178, strictPort: false, host: true },
+  server: { 
+    port: 5178, 
+    strictPort: false, 
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'https://metgo-api.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  },
 })

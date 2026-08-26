@@ -158,12 +158,12 @@ import { useRoute } from 'vue-router'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, ScatterChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent } from 'echarts/components'
+import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, TitleComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { fetchSpatiPronostico, getApiBase } from '@/services/spatiApi'
 import { wakeApi } from '@/services/authApi'
 
-use([CanvasRenderer, LineChart, ScatterChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent])
+use([CanvasRenderer, LineChart, ScatterChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, TitleComponent])
 
 const site = inject('site')
 const route = useRoute()

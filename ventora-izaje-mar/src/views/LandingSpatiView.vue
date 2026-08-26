@@ -4,7 +4,7 @@
     <header class="top">
       <a class="brand" href="#inicio">
         <span class="brand-mark">{{ site.brandName || 'VENTORA' }}</span>
-        <span class="brand-sub">METGO 3D</span>
+        <span class="brand-sub">Operaciones Marítimas</span>
       </a>
       <nav class="nav" :aria-label="t('landing.navHow')">
         <a href="#como">{{ t('landing.navHow') }}</a>
@@ -63,11 +63,11 @@
       <h2>{{ t('landing.howTitle') }}</h2>
       <p class="section-sub">{{ t('landing.howSub') }}</p>
       <ol class="steps">
-        <li><strong>Registro</strong> Coordenadas GPS y grúa en el panel.</li>
-        <li><strong>Pronóstico</strong> Modelo hiperlocal 72 h, actualización ~3 h.</li>
-        <li><strong>Alertas</strong> Email / WhatsApp antes del umbral.</li>
-        <li><strong>Decisión</strong> Ejecutar, postergar o suspender con datos.</li>
-        <li><strong>Informe</strong> PDF de respaldo al cierre de la operación.</li>
+        <li><strong>Configuración</strong> Defina su puerto, grúas STS y área de fondeo.</li>
+        <li><strong>Pronóstico</strong> Modelo costero 72 h con actualización dinámica.</li>
+        <li><strong>Alertas</strong> Notificaciones automáticas por umbrales de viento y oleaje.</li>
+        <li><strong>Decisión</strong> Información precisa para amarrar naves o suspender izaje.</li>
+        <li><strong>Informe</strong> PDF de respaldo al cierre del turno operativo.</li>
       </ol>
     </section>
 
@@ -145,29 +145,29 @@ const FALLBACK = [
   {
     code: 'starter',
     nombre: 'Básico',
-    descripcion: '1 faena · hasta 2 grúas · Ahora + PDF · email',
+    descripcion: '1 terminal · pronóstico 72 h · alertas viento · informe PDF',
     features: ['panel', 'ambiente', 'ahora', 'alertas'],
   },
   {
     code: 'pro',
     nombre: 'Pro',
     recomendado: true,
-    descripcion: 'Hasta 3 faenas · WhatsApp · umbrales · reporte mensual',
+    descripcion: 'Hasta 3 terminales · fondeo de naves · WhatsApp · oleaje',
     features: ['dron', 'umbrales', 'reporte_mensual'],
   },
   {
     code: 'enterprise',
     nombre: 'Enterprise',
     contacto: true,
-    descripcion: 'Multi-faena · API · SLA 99.5% · AM 24/7 · ERP',
+    descripcion: 'Multi-puerto · SLA 99.9% · viento a +100m para grúas STS · API',
     features: ['multi_faena', 'api', 'sla'],
   },
 ]
 
 const BULLETS = {
-  starter: ['Vista Ahora + panel 72 h', '1 faena / 2 grúas', 'Alertas email', 'Informe PDF'],
-  pro: ['Hasta 3 faenas / 5 grúas', 'WhatsApp + umbrales', 'Calibración dron', 'Reporte mensual ROI'],
-  enterprise: ['Faenas ilimitadas + /ops', 'API + webhooks', 'SLA 99.5% + soporte 24/7', 'Integración ERP'],
+  starter: ['Panel Marítimo 72 h', '1 terminal', 'Alertas email', 'Informe PDF'],
+  pro: ['Hasta 3 terminales', 'Pronóstico de oleaje y fondeo', 'Alertas por WhatsApp', 'Reporte mensual de métricas'],
+  enterprise: ['Puertos ilimitados + Centro de Ops', 'Soporte 24/7 y SLA 99.9%', 'Perfil vertical para grúas STS', 'Integración ERP / API'],
 }
 
 const planesUi = computed(() => {
@@ -199,20 +199,20 @@ function precioLinea(p) {
 
 const faq = [
   {
-    q: '¿En qué se diferencia de Windy u Open-Meteo?',
-    a: 'VENTORA está calibrado para el punto GPS de su faena de izaje, con umbrales operativos, alertas a operadores e informe PDF de respaldo. No es meteorología genérica.',
+    q: '¿En qué se diferencia de aplicaciones genéricas de clima?',
+    a: 'VENTORA Izaje Mar está calibrado para el contexto marítimo-portuario, incluyendo altura de grúas STS, oleaje y límites de fondeo, en lugar de ser meteorología genérica.',
   },
   {
-    q: '¿Funciona en alta montaña?',
-    a: 'Sí. Cubrimos faenas de altura en Chile. Sobre 3.000 msnm evaluamos con el plan Enterprise.',
+    q: '¿Incluye predicción de oleaje y mareas?',
+    a: 'Sí. El panel cruza los datos de viento superficial con el estado del mar y tablas de mareas locales para la toma de decisiones en el muelle.',
   },
   {
     q: '¿El PDF sirve como respaldo?',
-    a: 'El informe incluye coordenadas, serie 72 h, alertas y decisión registrada, con sello UTC. Pensado para fiscalización y mandantes.',
+    a: 'El informe registra las ráfagas y el umbral exacto que forzó una suspensión de maniobra de atraque o izaje, con marca de tiempo UTC como evidencia.',
   },
   {
-    q: '¿Cómo es el piloto?',
-    a: '15 días sin costo ni tarjeta. Tras el piloto elige Básico, Pro o cotiza Enterprise.',
+    q: '¿Tienen un periodo de prueba?',
+    a: 'Sí, contamos con un plan piloto para un puerto sin costo durante 15 días, permitiendo evaluar el retorno de la plataforma.',
   },
 ]
 
@@ -240,14 +240,14 @@ onMounted(async () => {
 <style scoped>
 .landing {
   --navy: #0f172a;
-  --emer: #10b981;
+  --emer: #0ea5e9; /* Cambiado de verde a Ocean Cyan para Ventora */
   --blue: #3b82f6;
   --amber: #f59e0b;
   --red: #ef4444;
   --muted: #94a3b8;
   --line: #1e293b;
   min-height: 100vh;
-  background: var(--spati-bg-atmosphere, radial-gradient(ellipse 80% 50% at 10% -10%, rgba(16, 185, 129, 0.18), transparent), radial-gradient(ellipse 60% 40% at 90% 10%, rgba(59, 130, 246, 0.12), transparent)), var(--navy);
+  background: var(--spati-bg-atmosphere, radial-gradient(ellipse 80% 50% at 10% -10%, rgba(14, 165, 233, 0.18), transparent), radial-gradient(ellipse 60% 40% at 90% 10%, rgba(59, 130, 246, 0.12), transparent)), var(--navy);
   color: #e2e8f0;
   font-family: var(--font-sans, 'DM Sans', system-ui, sans-serif);
 }
@@ -533,8 +533,8 @@ onMounted(async () => {
   font-weight: 700;
 }
 .umbral.verde {
-  background: rgba(16, 185, 129, 0.18);
-  border: 1px solid #10b98166;
+  background: rgba(14, 165, 233, 0.18);
+  border: 1px solid #0ea5e966;
 }
 .umbral.amarillo {
   background: rgba(245, 158, 11, 0.18);
@@ -561,7 +561,7 @@ onMounted(async () => {
 }
 .plan.featured {
   border-color: var(--emer);
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.35);
 }
 .plan-name {
   margin: 0;
@@ -621,7 +621,7 @@ onMounted(async () => {
 .cta-final {
   text-align: center;
   padding: 3rem 1.25rem;
-  background: linear-gradient(180deg, transparent, rgba(16, 185, 129, 0.08));
+  background: linear-gradient(180deg, transparent, rgba(14, 165, 233, 0.08));
 }
 .cta-final h2 {
   margin: 0 0 0.4rem;

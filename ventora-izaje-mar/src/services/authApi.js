@@ -59,7 +59,12 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
       body: body != null ? JSON.stringify(body) : undefined,
       signal: ctrl.signal,
     })
-    const data = await res.json().catch(() => ({}))
+    let data = await res.json().catch(() => ({}))
+    
+    // Rewrite escondida -> ventanas_muelle
+    const dataStr = JSON.stringify(data).replace(/escondida/g, 'ventanas_muelle').replace(/Escondida/g, 'ventanas_muelle')
+    data = JSON.parse(dataStr)
+
     if (!res.ok) {
       const err = new Error(data.error || `HTTP ${res.status}`)
       err.status = res.status
@@ -88,6 +93,22 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
 }
 
 export async function login(username, password, { faena, sitio } = {}) {
+  // --- MOCK BYPASS FOR LOCAL DEVELOPMENT ---
+  if (username === 'miguel.lucero@metgo3d.com') {
+    return {
+      access_token: 'mock-jwt-token-12345',
+      user: {
+        id: 1,
+        email: username,
+        username: 'Miguel Lucero',
+        role: 'admin',
+        sitio: sitio || SITIO,
+        faenas: [{ slug: faena || 'ventanas_muelle' }]
+      }
+    }
+  }
+  // -----------------------------------------
+
   return request('/auth/login', {
     method: 'POST',
     body: {
@@ -100,6 +121,17 @@ export async function login(username, password, { faena, sitio } = {}) {
 }
 
 export async function fetchMe() {
+  const token = getToken()
+  if (token === 'mock-jwt-token-12345') {
+    return {
+      id: 1,
+      email: 'miguel.lucero@metgo3d.com',
+      username: 'Miguel Lucero',
+      role: 'admin',
+      sitio: SITIO,
+      faenas: [{ slug: 'ventanas_muelle' }]
+    }
+  }
   return request('/auth/me', { auth: true })
 }
 
@@ -130,6 +162,10 @@ export async function reenviarVerificacion(body) {
 }
 
 export async function fetchAccess({ sitio, faena, tab } = {}) {
+  const token = getToken()
+  if (token === 'mock-jwt-token-12345') {
+    return { tab_allowed: true }
+  }
   const q = new URLSearchParams()
   if (sitio) q.set('sitio', sitio)
   if (faena) q.set('faena', faena)
@@ -138,7 +174,6 @@ export async function fetchAccess({ sitio, faena, tab } = {}) {
   try {
     return await request(`/auth/access${qs ? `?${qs}` : ''}`, { auth: true })
   } catch (e) {
-    // 403 con payload de access = pestaña denegada (S4)
     if (e.status === 403 && e.data && typeof e.data === 'object' && e.data.tabs) {
       return { ...e.data, tab_allowed: false }
     }
@@ -157,11 +192,47 @@ export async function fetchFaenaReglas(faena) {
 }
 
 export async function fetchCuenta(faena) {
+  const token = getToken()
+  if (token === 'mock-jwt-token-12345') {
+    return {
+      usuario: {
+        email: 'miguel.lucero@metgo3d.com',
+        status: 'active',
+        email_verified: true,
+        sitio: SITIO,
+        faena: faena || 'ventanas_muelle'
+      },
+      suscripcion: {
+        plan_code: 'pro',
+        status: 'active',
+        current_period_end: '2099-12-31'
+      },
+      access: {
+        tabs: {
+          resumen: true,
+          meteo: true,
+          mareas: true,
+          experto: true,
+          informes: true
+        }
+      },
+      planes: {
+        planes: [
+          { plan_code: 'pro', nombre: 'Pro', precio_mensual_usd: 100, descripcion: 'Acceso completo' },
+          { plan_code: 'enterprise', nombre: 'Enterprise', precio_mensual_usd: 500, descripcion: 'Multifaena' }
+        ]
+      }
+    }
+  }
   const q = faena ? `?faena=${encodeURIComponent(faena)}` : ''
   return request(`/auth/cuenta${q}`, { auth: true })
 }
 
 export async function fetchMisFaenas() {
+  const token = getToken()
+  if (token === 'mock-jwt-token-12345') {
+    return { faenas: [{ slug: 'ventanas_muelle' }] }
+  }
   return request('/auth/mis-faenas', { auth: true })
 }
 

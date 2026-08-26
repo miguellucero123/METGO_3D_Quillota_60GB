@@ -35,10 +35,6 @@
       </ul>
       <p class="fine">{{ t('informes.fine') }}</p>
     </section>
-
-    <p class="back">
-      <router-link :to="{ name: 'faena-ahora', params: { faena: sitioId } }">{{ t('informes.back') }}</router-link>
-    </p>
   </div>
 </template>
 
@@ -149,13 +145,5 @@ function avisoPlantilla() {
   margin: 0.75rem 0 0;
   font-size: 0.75rem;
   color: var(--color-muted);
-}
-.back {
-  margin-top: 1.25rem;
-}
-.back a {
-  color: #10b981;
-  text-decoration: none;
-  font-weight: 600;
 }
 </style>
