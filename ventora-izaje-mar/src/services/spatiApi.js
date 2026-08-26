@@ -215,7 +215,8 @@ export async function putSpatiUmbrales(sitioId, body) {
 
 function getRealId(sitioId) {
   const id = String(sitioId || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase()
-  return id
+  const portIds = ['iqq', 'ventanas_muelle', 'anf', 'vlp', 'san', 'pmc']
+  return portIds.includes(id) ? 'escondida' : id
 }
 
 export function urlInformeFaena(faenaId, formato = 'pdf') {
