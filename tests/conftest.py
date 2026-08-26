@@ -49,6 +49,14 @@ class MockTable:
         self._results = [x for x in self._results if x.get(k) == v]
         return self
         
+    def gte(self, k, v):
+        self._results = [x for x in self._results if str(x.get(k, "")) >= str(v)]
+        return self
+        
+    def lte(self, k, v):
+        self._results = [x for x in self._results if str(x.get(k, "")) <= str(v)]
+        return self
+        
     def order(self, k, desc=False, **kwargs):
         # Para evitar problemas con tipos mixtos, convertimos a string.
         self._results.sort(key=lambda x: str(x.get(k, "")), reverse=desc)
