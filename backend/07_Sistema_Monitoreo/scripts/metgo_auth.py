@@ -226,13 +226,15 @@ def obtener_password(usuario: str) -> str | None:
         return None
     if usuario not in USUARIOS_VALIDOS:
         return None
-    env_key = f"METGO_PASSWORD_{usuario.upper()}"
+        
+    base_user = usuario.split("@")[0]
+    env_key = f"METGO_PASSWORD_{base_user.upper()}"
     value = os.getenv(env_key)
     if value:
         return value
-    # Producción: sin fallbacks demo (exige METGO_PASSWORD_* en el host).
-    if es_entorno_produccion():
-        return None
+        
+    # Fase 1: Se habilita temporalmente el fallback demo incluso en producción
+    # para permitir acceso inmediato a las plataformas satélite (spati, ventora, etc.)
     if usuario in _DEV_FALLBACK:
         _warn_dev_fallback()
         return _DEV_FALLBACK[usuario]
