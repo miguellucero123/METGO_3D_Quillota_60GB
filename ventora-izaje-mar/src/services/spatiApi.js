@@ -96,33 +96,6 @@ export async function fetchSpatiPronostico(sitioId) {
 
 export async function fetchSpatiPuertoPronostico(sitioId) {
   let id = encodeURIComponent(sitioId || site.spatiDefaultSitio)
-  // --- MOCK DATA FOR LOCAL DEVELOPMENT ---
-  const portIds = ['iqq', 'ventanas_muelle', 'anf', 'vlp', 'san', 'pmc'];
-  if (portIds.includes(id.toLowerCase())) {
-    id = 'ventanas_muelle';
-  }
-
-  if (id === 'ventanas_muelle') {
-    const hourly = []
-    const now = new Date()
-    for (let i = 0; i < 72; i++) {
-      const d = new Date(now.getTime() + i * 3600000)
-      const isStorm = i > 24 && i < 36 // Simulate a storm tomorrow
-      hourly.push({
-        timestamp: d.toISOString(),
-        wind_surface_kmh: isStorm ? 25 + Math.random() * 15 : 10 + Math.random() * 10,
-        wave_params: {
-          Hs: isStorm ? 2.5 + Math.random() * 1 : 1.2 + Math.random() * 0.5,
-          Tp: isStorm ? 12 + Math.random() * 3 : 8 + Math.random() * 2
-        }
-      })
-    }
-    return {
-      alerts: [{ type: 'PELIGRO IZAJE', level: 3, description: 'Se espera fuerte marejada (Tormenta Simulada Día 2)' }],
-      hourly_states: hourly
-    }
-  }
-  // ---------------------------------------
   return fetchJson(`/public/spati/${id}/puerto/pronostico`)
 }
 
