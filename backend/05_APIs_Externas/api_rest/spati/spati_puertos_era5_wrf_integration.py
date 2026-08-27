@@ -5,8 +5,15 @@
 
 import os
 import numpy as np
-import xarray as xr
 import pandas as pd
+try:
+    import xarray as xr
+    HAS_XARRAY = True
+except ImportError:
+    HAS_XARRAY = False
+    class DummyXR:
+        Dataset = None
+    xr = DummyXR()
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple, Optional, Literal
 from dataclasses import dataclass, asdict, field

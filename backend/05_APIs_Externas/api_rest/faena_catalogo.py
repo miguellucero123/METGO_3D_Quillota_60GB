@@ -49,6 +49,18 @@ FAENAS: dict[str, dict[str, Any]] = {
         "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
         "industrias": ["puerto", "izaje"],
     },
+    "iqq": {
+        "id": "iqq",
+        "sitio": "iqq",
+        "nombre": "Terminal Iquique (ITI)",
+        "estacion_ancla": "iqq",
+        "region": "Tarapacá · Puerto",
+        "modelo_ventilacion": "METGO-Ventilacion-IQQ-v1",
+        "satelite_sector": "ssa",
+        "bbox": {"west": -70.3, "south": -20.4, "east": -70.1, "north": -20.1},
+        "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
+        "industrias": ["puerto", "izaje"],
+    },
 }
 
 _ALIASES: dict[str, str] = {
