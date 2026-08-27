@@ -32,15 +32,24 @@ except ImportError:
 # Usuario de login -> rol JWT
 USER_TO_ROLE: dict[str, str] = {
     "admin": "admin",
+    "admin@metgo3d.com": "admin",
     "user": "operador",
+    "user@metgo3d.com": "operador",
     "metgo": "agronomo",
+    "metgo@metgo3d.com": "agronomo",
     "agronomo": "agronomo",
+    "agronomo@metgo3d.com": "agronomo",
     "operador": "operador",
+    "operador@metgo3d.com": "operador",
     "lector": "lectura",
+    "lector@metgo3d.com": "lectura",
     # E9 — demos por sitio de producto
     "copiapo": "lectura",
+    "copiapo@metgo3d.com": "lectura",
     "mantos": "operador",
+    "mantos@metgo3d.com": "operador",
     "paine": "lectura",
+    "paine@metgo3d.com": "lectura",
 }
 
 USUARIOS_VALIDOS = tuple(USER_TO_ROLE.keys())
@@ -49,14 +58,23 @@ ROLE_HIERARCHY = ("admin", "agronomo", "operador", "lectura")
 
 _DEV_FALLBACK = {
     "admin": "admin123",
+    "admin@metgo3d.com": "admin123",
     "user": "user123",
+    "user@metgo3d.com": "user123",
     "metgo": "metgo2025",
+    "metgo@metgo3d.com": "metgo2025",
     "agronomo": "agro123",
+    "agronomo@metgo3d.com": "agro123",
     "operador": "op123",
+    "operador@metgo3d.com": "op123",
     "lector": "lec123",
+    "lector@metgo3d.com": "lec123",
     "copiapo": "copiapo123",
+    "copiapo@metgo3d.com": "copiapo123",
     "mantos": "mantos123",
+    "mantos@metgo3d.com": "mantos123",
     "paine": "paine123",
+    "paine@metgo3d.com": "paine123",
 }
 
 _warned_dev = False
