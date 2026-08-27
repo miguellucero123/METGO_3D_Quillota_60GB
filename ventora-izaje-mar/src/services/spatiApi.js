@@ -217,7 +217,7 @@ function getRealId(sitioId) {
 }
 
 export function urlInformeFaena(faenaId, formato = 'pdf') {
-  const id = encodeURIComponent(getRealId(faenaId))
+  const id = encodeURIComponent(String(faenaId || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase())
   const fmt = ['csv', 'pdf', 'html'].includes(formato) ? formato : 'pdf'
   return `${resolveBaseURL()}/public/operaciones/faena/${id}/informe?formato=${fmt}`
 }
