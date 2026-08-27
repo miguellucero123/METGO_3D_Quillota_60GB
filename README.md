@@ -37,19 +37,17 @@ Plataforma de **monitoreo meteorológico**, **gestión agrícola (MIP)** y **sop
 
 ## Visión general
 
-METGO 3D unifica en un solo ecosistema:
+METGO 3D unifica en un solo ecosistema inteligente la meteorología y las operaciones críticas. 
 
-- **Ingesta y pronóstico meteorológico** (OpenMeteo, estaciones multi-zona).
-- **Recomendaciones agrícolas** (riego, heladas, plagas, alertas).
-- **Modelos predictivos** (scikit-learn, pipelines en `backend/06_Modelos_ML_IA`).
-- **Interfaces de operación**: SPA Vue 3 (uso diario) y dashboards Streamlit (análisis profundo bajo demanda).
-- **Capa pública** (`site-web/`) para exposición controlada.
-
-El diseño sigue una **separación por capas** (`backend` · `frontend` · `site-web`) con resolución centralizada de rutas vía [`metgo_paths.py`](metgo_paths.py), compatible con layouts legacy y despliegue en Streamlit Cloud (`streamlit_app.py` en raíz).
-
-### Estaciones soportadas
-
-Quillota · Los Nogales · Hijuelas · Limache · Olmué
+- **Plataformas Core (Hub):** 
+  - **Spati:** Portal de comando maestro unificado.
+  - **Ventora:** Inteligencia marítima, alertas de viento y ventanas operativas de izaje.
+  - **Quillota:** Análisis y recomendación agrícola (heladas, horas de frío, riego).
+- **Plataformas Satélites (Casos de uso dedicados):** 
+  - Copiapó (Estrés térmico), Mantos Blancos (Minería/Polvo), Paine (Agroindustria).
+- **Ingesta y Pronóstico:** OpenMeteo con sistema avanzado de prevención de Rate-Limiting (Caché inteligente de disco).
+- **Seguridad Corporativa:** API Rest con JWT y soporte nativo para correos corporativos (ej. `@metgo3d.com`).
+- **Arquitectura MVP:** Vue 3 (frontend de operación) + Flask (backend ultrarrápido).
 
 ---
 
@@ -125,11 +123,11 @@ sequenceDiagram
 | Servicio | Puerto | Ruta / comando |
 |----------|--------|----------------|
 | API REST | **8080** | `python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py` |
-| Vue (Vite) | **5173** | `cd frontend/vue && npm run dev` |
+| Vue (Vite) | **5173** | `cd ventora-izaje-mar && npm run dev` |
 | Streamlit principal | **8501** | `streamlit run streamlit_app.py` |
 | Streamlit adicionales | 8502–8513 | Centro de servicios en Vue → `/servicios` |
 
-> **Nota:** Use siempre la API en **8080** con JWT activo. Procesos antiguos en `:8000` sin rutas de auth producen `404` en login.
+> **Nota:** Use siempre la API en **8080** con JWT activo. Las peticiones deben usar cuentas válidas como `admin@metgo3d.com`.
 
 ### Diagrama de despliegue (simplificado)
 
@@ -249,17 +247,17 @@ Dashboards adicionales: en Vue → **Centro de servicios** (`/servicios`) → in
 
 | Variable | Descripción |
 |----------|-------------|
-| `METGO_PASSWORD_ADMIN` | Contraseña rol administrador |
-| `METGO_PASSWORD_USER` | Contraseña rol usuario |
-| `METGO_PASSWORD_METGO` | Contraseña rol metgo |
+| `METGO_PASSWORD_*` | Contraseña asignada a un rol o usuario en producción |
 | `METGO_JWT_SECRET` | Secreto de firma JWT (API + sesión Vue) |
 | `METGO_API_PORT` | Puerto API (default `8080`) |
 
-- **Nunca** commitear `.env` (está en `.gitignore`).
-- En **Streamlit Cloud**: Settings → Secrets → mismas variables `METGO_PASSWORD_*`.
-- Plantilla: [`.env.example`](.env.example).
+### Cuentas de Acceso (MVP Demos)
+El sistema utiliza correos corporativos como alias para facilitar el uso en los entornos de prueba (páginas generadas en Cloudflare/Render):
+* **Spati, Ventora, Quillota:** `admin@metgo3d.com`, `metgo@metgo3d.com`, `operador@metgo3d.com`.
+* **Proyectos Satélite:** `mantos@metgo3d.com`, `copiapo@metgo3d.com`, `paine@metgo3d.com`.
+*(Las contraseñas de prueba son administradas en `metgo_auth.py` y anuladas en producción empresarial si se definen variables de entorno).*
 
-Autenticación compartida: [`backend/07_Sistema_Monitoreo/scripts/metgo_auth.py`](backend/07_Sistema_Monitoreo/scripts/metgo_auth.py) (wrapper en raíz: `metgo_auth.py`).
+Autenticación compartida: [`backend/07_Sistema_Monitoreo/scripts/metgo_auth.py`](backend/07_Sistema_Monitoreo/scripts/metgo_auth.py)
 
 ---
 
