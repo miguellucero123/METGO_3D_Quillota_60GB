@@ -94,15 +94,22 @@
           </table>
         </div>
         <div>
-          <h2>Calidad del aire (CAMS)</h2>
+          <h2>Estado del Mar (Oleaje)</h2>
           <table class="data">
-            <tbody>
-              <tr><th>PM2.5</th><td>{{ n(pkg.actual?.pm2_5, 1) }} µg/m³</td></tr>
-              <tr><th>PM10</th><td>{{ n(pkg.actual?.pm10, 1) }} µg/m³</td></tr>
-              <tr><th>SO₂</th><td>{{ n(pkg.actual?.so2, 1) }} µg/m³</td></tr>
-              <tr><th>NO₂ / NOx proxy</th><td>{{ n(pkg.actual?.no2, 1) }} µg/m³</td></tr>
-              <tr><th>O₃</th><td>{{ n(pkg.actual?.o3, 1) }} µg/m³</td></tr>
-              <tr><th>Dust</th><td>{{ n(pkg.actual?.dust, 1) }} µg/m³</td></tr>
+            <tbody v-if="pkg.maritimo">
+              <tr><th>Altura (Wave Height)</th><td>{{ n(pkg.maritimo?.wave_height, 2) }} m</td></tr>
+              <tr><th>Período (Wave Period)</th><td>{{ n(pkg.maritimo?.wave_period, 1) }} s</td></tr>
+              <tr><th>Dirección Dominante</th><td>{{ n(pkg.maritimo?.wave_direction, 0) }}°</td></tr>
+              <tr><th>Nivel de Alerta Marítima</th>
+                <td>
+                  <strong v-if="pkg.maritimo.wave_height >= 2.0 || pkg.maritimo.wave_period >= 12" class="nv-rojo">PELIGRO - SUSPENSIÓN STS</strong>
+                  <strong v-else-if="pkg.maritimo.wave_height >= 1.5" class="nv-amarillo">PRECAUCIÓN - RESTRINGIDO</strong>
+                  <strong v-else class="nv-verde">OPERACIÓN NORMAL</strong>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr><td colspan="2" class="muted">No hay datos marítimos disponibles en este momento.</td></tr>
             </tbody>
           </table>
         </div>

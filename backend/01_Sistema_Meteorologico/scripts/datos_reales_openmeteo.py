@@ -319,6 +319,60 @@ class OpenMeteoData:
             print(f"ERROR - Error obteniendo pronóstico: {e}")
             return None
 
+    def obtener_datos_marinos(self, estacion='Quillota', dias=7):
+        """Obtiene datos de oleaje de la API marina de Open-Meteo"""
+        print(f" Obteniendo pronóstico marino para {estacion} ({dias} días)")
+        
+        if estacion not in self.estaciones:
+            print(f"ERROR - Estación {estacion} no encontrada")
+            return None
+            
+        coords = self.estaciones[estacion]
+        
+        try:
+            url = "https://marine-api.open-meteo.com/v1/marine"
+            params = {
+                'latitude': coords['lat'],
+                'longitude': coords['lon'],
+                'daily': [
+                    'wave_height_max',
+                    'wave_direction_dominant',
+                    'wave_period_max'
+                ],
+                'timezone': 'America/Santiago',
+                'forecast_days': min(dias, 16)
+            }
+            
+            status, data = self._get_json(url, params)
+            if status == 200 and data and 'daily' in data:
+                daily_data = data['daily']
+                times = daily_data.get('time', [])
+                
+                registros = []
+                for i, fecha_str in enumerate(times):
+                    fecha = pd.to_datetime(fecha_str)
+                    
+                    registro = {
+                        'fecha': fecha,
+                        'wave_height_max': daily_data.get('wave_height_max', [None]*len(times))[i],
+                        'wave_direction_dominant': daily_data.get('wave_direction_dominant', [None]*len(times))[i],
+                        'wave_period_max': daily_data.get('wave_period_max', [None]*len(times))[i],
+                        'fuente_datos': 'openmeteo_marine'
+                    }
+                    registros.append(registro)
+                    
+                if registros:
+                    df = pd.DataFrame(registros)
+                    df['estacion'] = estacion
+                    return df
+                    
+            print(f"ERROR - No se obtuvo pronóstico marino (status {status})")
+            return None
+            
+        except Exception as e:
+            print(f"ERROR - Error obteniendo pronóstico marino: {e}")
+            return None
+
     def obtener_viento_horario_pronostico(self, estacion='Quillota', dias=7):
         """Obtiene pronóstico horario de viento (dirección y velocidad).
 
@@ -909,7 +963,7 @@ def obtener_datos_meteorologicos_reales(estacion='Quillota', tipo='historicos', 
     
     Args:
         estacion (str): Nombre de la estación
-        tipo (str): 'historicos' o 'pronostico'
+        tipo (str): 'historicos', 'pronostico' o 'marinos'
         dias (int): Número de días a obtener
     
     Returns:
@@ -921,6 +975,8 @@ def obtener_datos_meteorologicos_reales(estacion='Quillota', tipo='historicos', 
         return openmeteo.obtener_datos_historicos(estacion, dias)
     elif tipo == 'pronostico':
         return openmeteo.obtener_datos_pronostico(estacion, dias)
+    elif tipo == 'marinos':
+        return openmeteo.obtener_datos_marinos(estacion, dias)
     else:
         print(f"ERROR - Tipo no válido: {tipo}")
         return None

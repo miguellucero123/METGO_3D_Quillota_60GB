@@ -358,6 +358,11 @@ def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
         return _resumen_desde_store(estacion_id)
     out = _fila_a_resumen(row, estacion_id)
     out["tipo_dato"] = tipo_dato
+    
+    mar = estado_maritimo(estacion_id)
+    if mar:
+        out["maritimo"] = mar
+        
     return out
 
 
@@ -650,6 +655,29 @@ def generar_alertas(estacion_id: str | None = None) -> list[dict[str, Any]]:
                 }
             )
             aid += 1
+            
+        mar = estado_maritimo(eid)
+        if mar:
+            if mar["wave_height"] >= 2.0 or mar["wave_period"] >= 12.0:
+                alertas.append(
+                    {
+                        "id": aid,
+                        "nivel": "danger",
+                        "estacion_id": eid,
+                        "mensaje": f"Alerta Roja Marítima en {nombre}. Oleaje esperado: {mar['wave_height']}m (Período: {mar['wave_period']}s).\nRecomendación: SUSPENSIÓN INMEDIATA de operaciones de atraque y grúas STS.",
+                    }
+                )
+                aid += 1
+            elif mar["wave_height"] >= 1.5:
+                alertas.append(
+                    {
+                        "id": aid,
+                        "nivel": "warning",
+                        "estacion_id": eid,
+                        "mensaje": f"Precaución Marítima en {nombre}. Oleaje: {mar['wave_height']}m.\nRecomendación: Restringir maniobras de practicaje y evaluar fondeo.",
+                    }
+                )
+                aid += 1
 
     if not alertas:
         alertas.append(
@@ -1106,3 +1134,34 @@ def health_check() -> dict[str, Any]:
         out["meteo_store_registros"] = 0
         out["meteo_store_error"] = str(exc)[:200]
     return out
+
+
+def estado_maritimo(estacion_id: str, dias: int = 3) -> dict[str, Any] | None:
+    """Consulta el estado del mar (oleaje) desde la API marina de Open-Meteo.
+    Útil para puertos y operaciones de Izaje Marítimo.
+    """
+    nombre = slug_a_nombre(estacion_id)
+    df = _df_sin_prints(nombre, "marinos", dias)
+    
+    if df is None or df.empty:
+        return None
+        
+    hoy = _hoy_chile()
+    df["_dia"] = df["fecha"].apply(_fecha_dia)
+    
+    mask_hoy = df["_dia"] == hoy
+    if mask_hoy.any():
+        row = df.loc[mask_hoy].sort_values("fecha").iloc[0]
+    else:
+        row = df.sort_values("fecha", ascending=False).iloc[0]
+        
+    return {
+        "estacion_id": estacion_id,
+        "estacion": nombre,
+        "fecha": _fecha_dia(row["fecha"]),
+        "wave_height": round(float(row.get("wave_height_max") or 0), 2),
+        "wave_direction": round(float(row.get("wave_direction_dominant") or 0), 1),
+        "wave_period": round(float(row.get("wave_period_max") or 0), 1),
+        "actualizado": datetime.now().isoformat(),
+        "fuente": "openmeteo_marine"
+    }

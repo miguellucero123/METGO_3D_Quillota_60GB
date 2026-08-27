@@ -271,6 +271,27 @@ def render_informe_ejecutivo_html(
 """
 
     nivel_g = flags.get("nivel_global") or "—"
+    
+    maritimo = pkg.get("maritimo")
+    maritimo_html = ""
+    if maritimo:
+        maritimo_html = f"""
+  <h2>Condición Marítima (Oleaje)</h2>
+  <table class="data">
+    <thead><tr>
+      <th>Nivel Alerta</th><th>Altura de Ola (máx)</th><th>Período (máx)</th><th>Dirección Dominante</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong><span class="pill-nivel {_nivel_cls(maritimo.get('estado', ''))}">{_esc(maritimo.get('estado', ''))}</span></strong></td>
+        <td class="val">{_num(maritimo.get('wave_height_max'), 2)} m</td>
+        <td class="val">{_num(maritimo.get('wave_period_max'), 1)} s</td>
+        <td class="val">{_num(maritimo.get('wave_direction_dominant'), 0)}°</td>
+      </tr>
+    </tbody>
+  </table>
+"""
+
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -556,6 +577,7 @@ def render_informe_ejecutivo_html(
     <tbody>{est_body}</tbody>
   </table>
 
+  {maritimo_html}
   {mvo_html}
 
   <div class="footer">

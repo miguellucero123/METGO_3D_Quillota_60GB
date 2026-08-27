@@ -84,10 +84,10 @@
     "legendRed": "Red ≥35",
     "mapAria": "Wind map {name}",
     "barsAria": "Wind speed by hour",
-    "recoOk": "Favorable conditions for lifting this hour.",
-    "recoCaution": "Caution — operate with reinforced protocol.",
-    "recoSuspend": "Suspension recommended — schedule a safer window.",
-    "recoStop": "Suspend lifting — gust in critical range."
+    "recoOk": "Favorable conditions for mooring and STS crane operations.",
+    "recoCaution": "Caution — moderate wind/wave risk. Reinforce moorings.",
+    "recoSuspend": "Suspension recommended — restrict maneuvers and evaluate anchoring.",
+    "recoStop": "Danger — IMMEDIATE SUSPENSION of operations and secure STS cranes."
   },
   "levels": {
     "verde": "GREEN",

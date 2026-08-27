@@ -84,10 +84,10 @@
     "legendRed": "Rojo ≥35",
     "mapAria": "Mapa viento {name}",
     "barsAria": "Velocidad de viento por hora",
-    "recoOk": "Condición favorable para izaje en esta hora.",
-    "recoCaution": "Precaución — operar con protocolo reforzado.",
-    "recoSuspend": "Suspensión recomendada — programar ventana más segura.",
-    "recoStop": "Suspender izaje — ráfaga en rango crítico."
+    "recoOk": "Condición favorable para maniobras de atraque y grúas STS.",
+    "recoCaution": "Precaución — riesgo moderado de oleaje/viento. Reforzar amarras.",
+    "recoSuspend": "Suspensión recomendada — restringir practicaje y evaluar fondeo.",
+    "recoStop": "Peligro — SUSPENSIÓN INMEDIATA de operaciones y asegurar grúas STS."
   },
   "levels": {
     "verde": "VERDE",

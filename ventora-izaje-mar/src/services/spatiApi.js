@@ -67,14 +67,14 @@ export async function fetchSpatiSitios({ altaMontana = true } = {}) {
 
 export async function fetchSpatiPronostico(sitioId) {
   let id = encodeURIComponent(sitioId || site.spatiDefaultSitio || 'escondida')
-  
+
   // --- MOCK DATA FOR LOCAL DEVELOPMENT ---
   const portIds = ['iqq', 'ventanas_muelle', 'anf', 'vlp', 'san', 'pmc'];
   const isPort = portIds.includes(id.toLowerCase());
   const fetchId = isPort ? 'escondida' : id;
-  
+
   const data = await fetchJson(`/public/spati/${fetchId}/pronostico`);
-  
+
   if (isPort) {
     // Adaptar metadatos para simular entorno marítimo
     if (data.config) {
@@ -93,7 +93,7 @@ export async function fetchSpatiPronostico(sitioId) {
     }
     data.nwp_aviso = null; // Ocultar aviso de rate limit
   }
-  
+
   return data;
 }
 
@@ -104,19 +104,19 @@ export async function fetchSpatiPuertoPronostico(sitioId) {
   if (portIds.includes(id.toLowerCase())) {
     id = 'ventanas_muelle';
   }
-  
+
   if (id === 'ventanas_muelle') {
     const hourly = []
     const now = new Date()
-    for(let i=0; i<72; i++) {
+    for (let i = 0; i < 72; i++) {
       const d = new Date(now.getTime() + i * 3600000)
       const isStorm = i > 24 && i < 36 // Simulate a storm tomorrow
       hourly.push({
         timestamp: d.toISOString(),
-        wind_surface_kmh: isStorm ? 25 + Math.random()*15 : 10 + Math.random()*10,
+        wind_surface_kmh: isStorm ? 25 + Math.random() * 15 : 10 + Math.random() * 10,
         wave_params: {
-          Hs: isStorm ? 2.5 + Math.random()*1 : 1.2 + Math.random()*0.5,
-          Tp: isStorm ? 12 + Math.random()*3 : 8 + Math.random()*2
+          Hs: isStorm ? 2.5 + Math.random() * 1 : 1.2 + Math.random() * 0.5,
+          Tp: isStorm ? 12 + Math.random() * 3 : 8 + Math.random() * 2
         }
       })
     }

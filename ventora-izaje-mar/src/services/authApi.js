@@ -60,7 +60,7 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
       signal: ctrl.signal,
     })
     let data = await res.json().catch(() => ({}))
-    
+
     // Rewrite escondida -> ventanas_muelle
     const dataStr = JSON.stringify(data).replace(/escondida/g, 'ventanas_muelle').replace(/Escondida/g, 'ventanas_muelle')
     data = JSON.parse(dataStr)

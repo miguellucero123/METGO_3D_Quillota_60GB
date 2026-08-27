@@ -237,20 +237,15 @@ async function onResend() {
   justify-content: center;
   padding: 1.5rem;
   background: #0f172a;
-  /* Modificamos los gradientes a tonos marítimos: Cyan y Ocean Blue */
-  background-image:
-    radial-gradient(ellipse 70% 50% at 15% 0%, rgba(6, 182, 212, 0.2), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 90% 20%, rgba(14, 165, 233, 0.12), transparent 50%);
 }
 .auth-panel {
   width: 100%;
-  max-width: 420px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(14px);
-  border: 1px solid #1e293b;
-  border-radius: 14px;
-  padding: 2.25rem 1.75rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  max-width: 400px;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.2);
 }
 .auth-lang {
   display: flex;
@@ -320,11 +315,16 @@ async function onResend() {
 }
 .field input {
   width: 100%;
-  padding: 0.65rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.75rem;
+  border-radius: 4px;
   border: 1px solid #334155;
   background: #0b1220;
   color: #e2e8f0;
+  transition: border-color 0.2s;
+}
+.field input:focus {
+  outline: none;
+  border-color: #0ea5e9;
 }
 .auth-msg {
   color: #f87171;
@@ -347,13 +347,17 @@ async function onResend() {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.7rem 1rem;
+  padding: 0.75rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 600;
   background: #0ea5e9;
-  color: #0f172a;
+  color: #ffffff;
+  transition: background 0.2s;
+}
+.auth-btn:hover:not(:disabled) {
+  background: #0284c7;
 }
 .auth-btn:disabled {
   opacity: 0.65;

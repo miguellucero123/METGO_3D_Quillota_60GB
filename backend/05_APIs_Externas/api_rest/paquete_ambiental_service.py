@@ -457,6 +457,12 @@ def construir_paquete_ambiental(
         umbrales=umb,
     )
     flags = flags_desde_serie_y_actual(serie_nival, actual, ops)
+    
+    try:
+        from api_rest.services import estado_maritimo
+        maritimo = estado_maritimo(fid, dias=3)
+    except Exception:
+        maritimo = None
 
     out = {
         "faena_id": faena["id"],
@@ -488,6 +494,7 @@ def construir_paquete_ambiental(
         "flags": flags,
         "serie_meteo": serie_meteo,
         "serie_aire": serie_aire,
+        "maritimo": maritimo,
     }
     _save_lastgood(fid, out)
     return out

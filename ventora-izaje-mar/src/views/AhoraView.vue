@@ -43,6 +43,20 @@
         <p class="reco">{{ recomendacion }}</p>
       </section>
 
+      <!-- Estado Marítimo -->
+      <section v-if="data.maritimo" class="badge-row maritimo">
+        <div class="badge-main">
+          <span class="dot" style="color: #0ea5e9" aria-hidden="true" />
+          <strong>Estado del Mar</strong>
+        </div>
+        <div class="badge-meta">
+          <span>Olas: {{ data.maritimo.wave_height }} m</span>
+          <span>Período: {{ data.maritimo.wave_period }} s</span>
+          <span>Dir: {{ data.maritimo.wave_direction }}°</span>
+        </div>
+        <p class="reco" style="color: #0ea5e9">Condición de oleaje costero</p>
+      </section>
+
       <!-- Mapa estilo Windy (simple) -->
       <section class="map-wrap">
         <div

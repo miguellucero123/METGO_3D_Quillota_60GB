@@ -97,8 +97,8 @@ async function loadHub() {
     at: Date.now(),
     catalogo_completo: Boolean(
       hub.catalogo_completo ||
-        me.catalogo_completo ||
-        ['admin', 'administrador', 'superadmin'].includes(String(me.role || '').toLowerCase()),
+      me.catalogo_completo ||
+      ['admin', 'administrador', 'superadmin'].includes(String(me.role || '').toLowerCase()),
     ),
     slugs,
   }
