@@ -145,6 +145,8 @@ COORDS: dict[str, dict[str, float]] = {
     "mb_ruta_acceso": {"lat": -23.5000, "lon": -70.2000},
     "demo_norte": {"lat": -33.30, "lon": -71.40},
     "demo_sur": {"lat": -33.34, "lon": -71.44},
+    "ventanas_muelle": {"lat": -32.7480, "lon": -71.4820},
+    "iqq": {"lat": -20.2058, "lon": -70.1608},
 }
 
 # Dashboard Quillota (default) — no incluir Paine en ETL nocturno por defecto

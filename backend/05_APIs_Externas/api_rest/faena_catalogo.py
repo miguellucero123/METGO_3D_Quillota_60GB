@@ -37,6 +37,18 @@ FAENAS: dict[str, dict[str, Any]] = {
         "capacidades": ["ventilacion", "aire", "paquete", "paquete_ambiental", "informe"],
         "industrias": ["mineria"],
     },
+    "ventanas_muelle": {
+        "id": "ventanas_muelle",
+        "sitio": "ventanas_muelle",
+        "nombre": "Puerto Ventanas (Muelle)",
+        "estacion_ancla": "ventanas_muelle",
+        "region": "Valparaíso · Puerto",
+        "modelo_ventilacion": "METGO-Ventilacion-Ventanas-v1",
+        "satelite_sector": "ssa",
+        "bbox": {"west": -71.6, "south": -32.9, "east": -71.4, "north": -32.6},
+        "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
+        "industrias": ["puerto", "izaje"],
+    },
 }
 
 _ALIASES: dict[str, str] = {

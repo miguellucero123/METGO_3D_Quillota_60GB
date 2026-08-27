@@ -105,21 +105,13 @@ def _tramos_3h(meteo: list[dict[str, Any]], aire: list[dict[str, Any]], n: int =
 def _cargar_paquete_y_mvo(faena_id: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     from api_rest.paquete_ambiental_service import construir_paquete_ambiental
 
-    # Interceptar marítimo
-    is_maritime = False
-    real_id = faena_id
-    if faena_id in ["ventanas_muelle", "iqq"]:
-        real_id = "escondida"
-        is_maritime = True
-
-    pkg = construir_paquete_ambiental(real_id, horas=72)
+    pkg = construir_paquete_ambiental(faena_id, horas=72)
     if not pkg or pkg.get("error"):
         return None, None
         
-    if is_maritime:
-        pkg["nombre"] = "Puerto Ventanas (Muelle)" if faena_id == "ventanas_muelle" else "Puerto de Iquique"
-        pkg["faena_id"] = faena_id.upper()
+    if faena_id in ["ventanas_muelle", "iqq"]:
         pkg["altitud_m"] = 10
+        pkg["faena_id"] = faena_id.upper()
         
     if not pkg.get("generado_en"):
         pkg = {**pkg, "generado_en": datetime.now(TZ_CHILE).isoformat(timespec="seconds")}
