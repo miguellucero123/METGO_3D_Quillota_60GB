@@ -515,7 +515,7 @@ def render_informe_ejecutivo_html(
     <table class="header-table">
       <tr>
         <td>
-          <div class="brand">VENTORA</div>
+          <div class="brand">VENTORA <span style="font-size:12pt; color:#0ea5e9; font-weight:700;">by METGO3D</span></div>
           <div class="subtitle">Informe Operacional de Terminal</div>
         </td>
         <td class="meta-right">
