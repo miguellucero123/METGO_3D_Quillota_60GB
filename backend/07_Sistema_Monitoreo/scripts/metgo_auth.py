@@ -91,8 +91,8 @@ def es_entorno_produccion() -> bool:
 
 
 def self_register_habilitado() -> bool:
-    """Default off. Activar solo con METGO_ALLOW_SELF_REGISTER=1 (local/demo)."""
-    return os.getenv("METGO_ALLOW_SELF_REGISTER", "0") == "1"
+    """Activado por defecto para la fase MVP comercial. Se puede apagar con METGO_ALLOW_SELF_REGISTER=0."""
+    return os.getenv("METGO_ALLOW_SELF_REGISTER", "1") == "1"
 
 
 def _registry_path() -> Path:

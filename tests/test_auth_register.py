@@ -37,7 +37,9 @@ def test_registrar_usuario_demo(tmp_path, monkeypatch):
 
 
 def test_self_register_off_por_defecto(monkeypatch):
-    monkeypatch.delenv("METGO_ALLOW_SELF_REGISTER", raising=False)
+    # Ahora el sistema viene activado por defecto para MVP.
+    # Comprobamos que si forzamos a '0', se desactiva.
+    monkeypatch.setenv("METGO_ALLOW_SELF_REGISTER", "0")
     ok, msg = metgo_auth.registrar_usuario("nuevo_user", "secreto1", None)
     assert not ok
     assert "deshabilitado" in msg.lower()
