@@ -21,14 +21,23 @@ from api_rest.estaciones_catalogo import ESTACIONES_POR_SITIO, SITIOS, SITIOS_ME
 # Membresía por defecto (demo). Override: METGO_USER_SITIO_JSON='{"metgo":"quillota"}'
 USER_SITIO: dict[str, str | None] = {
     "admin": None,  # admin global
+    "admin@metgo3d.com": None,
     "metgo": "quillota",
+    "metgo@metgo3d.com": "quillota",
     "agronomo": "quillota",
+    "agronomo@metgo3d.com": "quillota",
     "operador": "quillota",
+    "operador@metgo3d.com": "quillota",
     "user": "quillota",
+    "user@metgo3d.com": "quillota",
     "lector": "quillota",
+    "lector@metgo3d.com": "quillota",
     "copiapo": "copiapo",
+    "copiapo@metgo3d.com": "copiapo",
     "mantos": "mantos_blancos",
+    "mantos@metgo3d.com": "mantos_blancos",
     "paine": "paine",
+    "paine@metgo3d.com": "paine",
 }
 
 
