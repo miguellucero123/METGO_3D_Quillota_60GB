@@ -22,7 +22,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lhci": "npm run build && npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.json",
-    "pages:deploy": "npm run build && npx wrangler pages deploy dist --project-name=metgo-spati --branch=master --commit-dirty=true",
-    "pages:deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name=metgo-spati --branch=main --commit-dirty=true"
+    "pages:deploy": "npm run build && npx wrangler pages deploy dist --project-name=ventora-izaje-mar --branch=master --commit-dirty=true",
+    "pages:deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name=ventora-izaje-mar --branch=main --commit-dirty=true"
   }
 }

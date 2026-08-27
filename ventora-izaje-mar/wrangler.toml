@@ -1,6 +1,6 @@
-# Cloudflare Pages — METGO SPATI Izaje
-# Root directory: frontend/spati
+# Cloudflare Pages — METGO VENTORA Izaje Marítimo
+# Root directory: ventora-izaje-mar
 
-name = "metgo-spati"
+name = "ventora-izaje-mar"
 compatibility_date = "2026-07-01"
 pages_build_output_dir = "dist"
