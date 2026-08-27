@@ -7,13 +7,10 @@ const RENDER_API = site.api?.defaultPublicBase || 'https://metgo-api.onrender.co
 const TIMEOUT_MS = 120000
 
 function resolveBaseURL() {
-  const fromEnv = import.meta.env.VITE_METGO_API || import.meta.env.VITE_API_BASE
-  if (fromEnv) return String(fromEnv).replace(/\/$/, '')
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname
-    if (host.includes('netlify.app') || host.includes('pages.dev')) return RENDER_API
+  if (import.meta.env.DEV) {
+    return '/api'
   }
-  return site.api?.localBase || RENDER_API
+  return 'https://metgo-api.onrender.com/api'
 }
 
 async function fetchJson(path, { method = 'GET', body, timeout = TIMEOUT_MS } = {}) {
