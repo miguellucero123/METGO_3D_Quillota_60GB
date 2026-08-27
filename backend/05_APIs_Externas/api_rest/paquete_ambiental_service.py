@@ -330,6 +330,14 @@ def construir_paquete_ambiental(
     faena = get_faena(faena_id)
     if not faena:
         return None
+        
+    # Short-circuit: Si hay caché válido y cubre el horizonte, evitar llamada a API
+    # (Previene 429 Rate Limit de Open-Meteo).
+    cached = _load_lastgood(faena_id, as_fallback=False)
+    if cached and cached.get("horizonte_horas", 0) >= horas:
+        logger.info("paquete_ambiental %s → servido desde caché fresco", faena_id)
+        return cached
+
     lat = faena.get("lat")
     lon = faena.get("lon")
     if lat is None or lon is None:
