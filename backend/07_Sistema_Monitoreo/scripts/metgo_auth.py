@@ -50,6 +50,8 @@ USER_TO_ROLE: dict[str, str] = {
     "mantos@metgo3d.com": "operador",
     "paine": "lectura",
     "paine@metgo3d.com": "lectura",
+    "spati": "operador",
+    "spati@metgo3d.com": "operador",
 }
 
 USUARIOS_VALIDOS = tuple(USER_TO_ROLE.keys())
@@ -75,6 +77,8 @@ _DEV_FALLBACK = {
     "mantos@metgo3d.com": "mantos123",
     "paine": "paine123",
     "paine@metgo3d.com": "paine123",
+    "spati": "spati123",
+    "spati@metgo3d.com": "spati123",
 }
 
 _warned_dev = False

@@ -38,6 +38,8 @@ USER_SITIO: dict[str, str | None] = {
     "mantos@metgo3d.com": "mantos_blancos",
     "paine": "paine",
     "paine@metgo3d.com": "paine",
+    "spati": "spati",
+    "spati@metgo3d.com": "spati",
 }
 
 

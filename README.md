@@ -5,9 +5,9 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-Cloud-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/cloud)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Plataforma de **monitoreo meteorológico**, **gestión agrícola (MIP)** y **soporte a la decisión** orientada al Valle de Quillota y estaciones del Valle Central (Chile). Integra datos en tiempo casi real (OpenMeteo), modelos de ML, dashboards analíticos y una capa web moderna con autenticación JWT.
+Plataforma de **monitoreo meteorológico**, **gestión agrícola (MIP)** y **soporte a la decisión** orientada al Valle de Quillota y estaciones del Valle Central (Chile). Integra datos en tiempo casi real, modelos de ML, dashboards analíticos y una capa web moderna con autenticación segura.
 
-**Actualización (2026-05-23):** raíz organizada por capas (`backend` / `frontend` / `site-web`).
+**Actualización (2026-08-28):** Refactorización de arquitectura por capas y optimización de seguridad.
 
 | Entorno | URL / referencia |
 |---------|------------------|
@@ -41,12 +41,10 @@ METGO 3D unifica en un solo ecosistema inteligente la meteorología y las operac
 
 - **Plataformas Core (Hub):** 
   - **Spati:** Portal de comando maestro unificado.
-  - **Ventora:** Inteligencia marítima, alertas de viento y ventanas operativas de izaje.
-  - **Quillota:** Análisis y recomendación agrícola (heladas, horas de frío, riego).
-- **Plataformas Satélites (Casos de uso dedicados):** 
-  - Copiapó (Estrés térmico), Mantos Blancos (Minería/Polvo), Paine (Agroindustria).
-- **Ingesta y Pronóstico:** OpenMeteo con sistema avanzado de prevención de Rate-Limiting (Caché inteligente de disco).
-- **Seguridad Corporativa:** API Rest con JWT y soporte nativo para correos corporativos (ej. `@metgo3d.com`).
+  - **Ventora:** Inteligencia de condiciones operativas y alertas.
+  - **Quillota:** Análisis y recomendación agrícola.
+- **Ingesta y Pronóstico:** Integración de datos meteorológicos con caché optimizado.
+- **Seguridad Corporativa:** API REST con JWT y control de accesos.
 - **Arquitectura MVP:** Vue 3 (frontend de operación) + Flask (backend ultrarrápido).
 
 ---
@@ -123,11 +121,11 @@ sequenceDiagram
 | Servicio | Puerto | Ruta / comando |
 |----------|--------|----------------|
 | API REST | **8080** | `python backend/10_Deployment_Produccion/scripts/iniciar_api_rest.py` |
-| Vue (Vite) | **5173** | `cd ventora-izaje-mar && npm run dev` |
+| Vue (Vite) | **5173** | `cd frontend/vue && npm run dev` |
 | Streamlit principal | **8501** | `streamlit run streamlit_app.py` |
 | Streamlit adicionales | 8502–8513 | Centro de servicios en Vue → `/servicios` |
 
-> **Nota:** Use siempre la API en **8080** con JWT activo. Las peticiones deben usar cuentas válidas como `admin@metgo3d.com`.
+> **Nota:** Use siempre la API en **8080** con JWT activo. Las peticiones deben realizarse con credenciales válidas.
 
 ### Diagrama de despliegue (simplificado)
 
@@ -164,7 +162,7 @@ METGO_3D_Quillota_60GB/
 ├── streamlit_app.py            # Entrypoint Streamlit Cloud
 ├── metgo_paths.py              # Marcador de raíz + rutas
 ├── metgo_auth.py               # Wrapper JWT
-├── render.yaml · netlify.toml · requirements.txt
+├── render.yaml · requirements.txt
 └── README.md · LICENSE
 ```
 
@@ -219,7 +217,7 @@ backend\10_Deployment_Produccion\scripts\iniciar_metgo_desarrollo.bat
 ```
 
 Abrir en el navegador: **http://127.0.0.1:5173**  
-Credenciales de desarrollo (si no hay `.env`): ver implementación en `metgo_auth` (fallback local).
+Requiere la configuración previa de variables de entorno `.env` para la autenticación.
 
 ### 3. Arranque manual (dos terminales)
 
@@ -251,11 +249,8 @@ Dashboards adicionales: en Vue → **Centro de servicios** (`/servicios`) → in
 | `METGO_JWT_SECRET` | Secreto de firma JWT (API + sesión Vue) |
 | `METGO_API_PORT` | Puerto API (default `8080`) |
 
-### Cuentas de Acceso (MVP Demos)
-El sistema utiliza correos corporativos como alias para facilitar el uso en los entornos de prueba (páginas generadas en Cloudflare/Render):
-* **Spati, Ventora, Quillota:** `admin@metgo3d.com`, `metgo@metgo3d.com`, `operador@metgo3d.com`.
-* **Proyectos Satélite:** `mantos@metgo3d.com`, `copiapo@metgo3d.com`, `paine@metgo3d.com`.
-*(Las contraseñas de prueba son administradas en `metgo_auth.py` y anuladas en producción empresarial si se definen variables de entorno).*
+### Gestión de Accesos
+El sistema implementa un modelo de roles gestionado íntegramente a través de variables de entorno para entornos productivos. No se distribuyen credenciales de prueba.
 
 Autenticación compartida: [`backend/07_Sistema_Monitoreo/scripts/metgo_auth.py`](backend/07_Sistema_Monitoreo/scripts/metgo_auth.py)
 
@@ -307,16 +302,14 @@ Proxy de desarrollo: `frontend/vue` → API en `127.0.0.1:8080` (ver `vite.confi
 
 Tras cada push: **Reboot app** en Streamlit Cloud. Guía: [`docs/manuales/STREAMLIT_CLOUD.md`](docs/manuales/STREAMLIT_CLOUD.md).
 
-### Vue en Netlify + iframe en Streamlit
+### Vue en Cloudflare Pages + iframe en Streamlit
 
-1. **Netlify** → Import repo GitHub (usa [`netlify.toml`](netlify.toml) en la raíz).
+1. **Cloudflare Pages** → Importar repo de GitHub.
 2. Variable de entorno: `VITE_METGO_API` = URL HTTPS de la API Flask.
-3. Streamlit Cloud **Secrets**: `METGO_VUE_URL = "https://su-sitio.netlify.app"`.
+3. Streamlit Cloud **Secrets**: `METGO_VUE_URL = "https://metgo-quillota.pages.dev"`.
 4. Menú lateral → **3 Panel Vue embebido**.
 
-Guía detallada: [`docs/manuales/DESPLIEGUE_VUE_NETLIFY.md`](docs/manuales/DESPLIEGUE_VUE_NETLIFY.md). Resumen iframe: [`docs/manuales/DESPLIEGUE_VUE_IFRAME.md`](docs/manuales/DESPLIEGUE_VUE_IFRAME.md).
-
-**¿Puertos 8501–8513 en la nube?** Netlify/Render **no** los exponen como en local. Lea [`docs/manuales/QUE_VER_EN_NUBE.md`](docs/manuales/QUE_VER_EN_NUBE.md).
+**¿Puertos 8501–8513 en la nube?** Cloudflare Pages/Render **no** los exponen como en local. Lea [`docs/manuales/QUE_VER_EN_NUBE.md`](docs/manuales/QUE_VER_EN_NUBE.md).
 
 ### Publicación en GitHub
 
@@ -427,5 +420,5 @@ metgo_paths.setup_all_paths()
 ---
 
 <p align="center">
-  <sub>METGO 3D · Monitoreo inteligente para la agricultura del Valle de Quillota · Última actualización de estructura: mayo 2026</sub>
+  <sub>METGO 3D · Monitoreo inteligente para la agricultura del Valle de Quillota · Última actualización: agosto 2026</sub>
 </p>
