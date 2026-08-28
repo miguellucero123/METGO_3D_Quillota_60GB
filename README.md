@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="site-web/portal/Logo_METGO3DSpA.png" width="300" alt="METGO 3D Logo">
+</p>
+
 # METGO 3D — Sistema Integrado Quillota
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -420,5 +424,7 @@ metgo_paths.setup_all_paths()
 ---
 
 <p align="center">
+  <img src="site-web/portal/Logo_METGO3DSpA.png" width="100" alt="Firma METGO 3D">
+  <br>
   <sub>METGO 3D · Monitoreo inteligente para la agricultura del Valle de Quillota · Última actualización: agosto 2026</sub>
 </p>
