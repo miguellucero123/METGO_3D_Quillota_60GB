@@ -6,6 +6,8 @@ from app.models import User, Lead
 from app.services.auth_service import auth_service, get_current_user
 from app.services.email_service import email_service
 
+from app.config import settings
+
 router = APIRouter()
 
 @router.post("/register", response_model=TokenResponse)
@@ -44,7 +46,7 @@ def register_user(user_data: UserRegisterRequest, db: Session = Depends(get_db))
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "expires_in": 3600 * 24
+        "expires_in": 3600 * settings.JWT_EXPIRATION_HOURS
     }
 
 @router.post("/login", response_model=TokenResponse)
@@ -79,7 +81,7 @@ def login_user(user_data: UserLoginRequest, request: Request, db: Session = Depe
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "expires_in": 3600 * 24
+        "expires_in": 3600 * settings.JWT_EXPIRATION_HOURS
     }
 
 @router.post("/leads", status_code=status.HTTP_201_CREATED)

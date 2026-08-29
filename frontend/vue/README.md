@@ -9,7 +9,7 @@ Frontend moderno del sistema METGO (Quillota) con **Vue 3**, **Vite**, **Vue Rou
 python 10_Deployment_Produccion/scripts/iniciar_api_rest.py
 
 # 2) Vue
-cd 04_Dashboards_Unificados/frontend_vue
+cd frontend/vue
 npm install
 npm run dev
 ```
@@ -59,6 +59,24 @@ El proxy de Vite redirige `/api` → `http://localhost:8080`.
 | AgricolaView | `GET /api/agricola/{id}` |
 
 Documentación API: `docs/manuales/API_REST.md`
+
+## Manejo de Errores Estándar (useApiCall)
+
+Todas las llamadas de red y manejo de estados de carga en Vue deben usar el composable `useApiCall`. Esto previene el uso de múltiples bloques `try/catch` manuales y estandariza la UI.
+
+```javascript
+import { useApiCall } from '@/composables/useApiCall'
+import { apiService } from '@/api/client'
+
+const { loading, error, run } = useApiCall()
+
+const fetchData = async () => {
+  const result = await run(apiService.getResumen('escondida'))
+  if (result) {
+    // Process result
+  }
+}
+```
 
 ## Despliegue en Netlify
 

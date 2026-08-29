@@ -6,6 +6,7 @@ from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthCredentials
 import secrets
+import hashlib
 
 from app.config import settings
 from app.database import get_db
@@ -202,8 +203,11 @@ async def get_api_key_user(
     
     from app.models import APIKey
     
+    # Aplicar hash SHA-256 a la llave recibida para compararla con la base de datos
+    api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+    
     api_key_obj = db.query(APIKey).filter(
-        APIKey.key == api_key,
+        APIKey.key == api_key_hash,
         APIKey.is_active == True
     ).first()
     
@@ -221,9 +225,9 @@ async def get_api_key_user(
             detail="User not found or inactive"
         )
     
-    # Actualizar último uso
-    api_key_obj.last_used = datetime.utcnow()
-    db.commit()
+    # Nota: El rate limiting (calls_used_today) y actualización de last_used 
+    # se debe manejar asincrónicamente vía Redis para evitar cuellos de botella 
+    # (Updates SQL por request). Por ahora solo validamos.
     
     return user
 

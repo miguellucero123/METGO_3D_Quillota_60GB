@@ -908,6 +908,50 @@ def buscar_usuario_login(email: str, sitio: str, faena: str | None) -> dict[str,
             return r
     return rows[0]
 
+def delete_user_data(email: str) -> tuple[bool, str]:
+    """Derecho al olvido (Ley 21.719): Anonimiza PII y desactiva al usuario."""
+    email_norm = str(email or "").strip().lower()
+    if not email_norm:
+        return False, "Email no válido"
+
+    if use_memory():
+        with _lock:
+            for u in _MEM["usuarios_app"]:
+                if u["email_norm"] == email_norm:
+                    u["email_norm"] = f"deleted_{uuid.uuid4()}@metgo3d.com"
+                    u["nombres_enc"] = pii_crypto.encrypt_pii("Usuario")
+                    u["apellidos_enc"] = pii_crypto.encrypt_pii("Eliminado")
+                    u["telefono_enc"] = None
+                    u["status"] = "deleted"
+                    return True, "Cuenta eliminada y anonimizada"
+            return False, "Usuario no encontrado"
+
+    from api_rest.integracion import supabase_store as sb
+    
+    try:
+        rows = sb.rest_select("usuarios_app", params={"email_norm": f"eq.{email_norm}", "select": "id"}, limit=1)
+        if not rows:
+            return False, "Usuario no encontrado"
+        
+        uid = rows[0]["id"]
+        new_email = f"deleted_{uuid.uuid4()}@metgo3d.com"
+        
+        patch = {
+            "email_norm": new_email,
+            "nombres_enc": pii_crypto.encrypt_pii("Usuario"),
+            "apellidos_enc": pii_crypto.encrypt_pii("Eliminado"),
+            "telefono_enc": None,
+            "status": "deleted"
+        }
+        
+        res = sb.rest_patch("usuarios_app", {"id": f"eq.{uid}"}, patch)
+        if not res:
+            return False, "Error al anonimizar usuario en base de datos"
+            
+        return True, "Cuenta eliminada y anonimizada"
+    except Exception as e:
+        return False, f"Error interno: {str(e)}"
+
 def listar_membresias_email(email: str, sitio: str = "spati") -> list[dict[str, Any]]:
     """Membresías del mismo email en un producto (puede haber varias faenas)."""
     email = (email or "").strip().lower()

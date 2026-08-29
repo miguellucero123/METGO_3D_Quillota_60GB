@@ -60,6 +60,9 @@ respaldo_*/
 *.h5
 *.h5.backup
 
+# CORFO (documentación comercial confidencial)
+CORFO/
+
 # OS
 .DS_Store
 Thumbs.db

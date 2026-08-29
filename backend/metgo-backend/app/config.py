@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # JWT
     SECRET_KEY: str = "your-super-secret-key-for-jwt-metgo"
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRATION_HOURS: int = 24
+    JWT_EXPIRATION_HOURS: int = 2
     
     # SMTP Emails
     SMTP_SERVER: str = "smtp.mailgun.org"

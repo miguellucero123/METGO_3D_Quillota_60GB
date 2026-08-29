@@ -536,7 +536,7 @@ def main() -> None:
     debug = os.getenv("METGO_API_DEBUG", "0") == "1"
     auth_mode = "JWT activo" if os.getenv("METGO_API_AUTH_REQUIRED", "1") != "0" else "sin auth"
     print(f"METGO API REST -> http://{host}:{port}/api/health ({auth_mode})")
-    vue_dir = "frontend/vue" if metgo_paths.LAYOUT_CAPAS else "04_Dashboards_Unificados/frontend_vue"
+    vue_dir = "frontend/vue"
     print(f"Interfaz Vue    -> http://127.0.0.1:5173 (cd {vue_dir} && npm run dev)")
     print("NO abra :8080 en el navegador para la UI; ese puerto es solo la API.")
     # threaded=True: sin esto, una llamada lenta a OpenMeteo bloquea todas las

@@ -452,6 +452,22 @@ def register_auth_routes(app: Flask) -> None:
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+    @app.delete("/api/auth/me/delete")
+    @auth_required
+    def delete_account():
+        """Derecho al olvido (Ley 21.719): anonimiza los datos y bloquea la cuenta."""
+        from api_rest.identity import identity_store
+        
+        email = getattr(g, "current_user", None)
+        if not email or "@" not in email:
+            return jsonify({"error": "Usuario no identificado por email"}), 400
+            
+        ok, msg = identity_store.delete_user_data(email)
+        if not ok:
+            return jsonify({"error": msg}), 500
+            
+        return jsonify({"message": msg}), 200
+
     @app.get("/api/public/sitios-auth")
     def public_sitios_auth():
         """Catálogo de sitios disponibles para login (sin secretos)."""
