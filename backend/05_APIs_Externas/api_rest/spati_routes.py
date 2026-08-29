@@ -78,6 +78,7 @@ def register_spati_routes(app: Flask) -> None:
             
             # Helper recursivo para formatear dicts que tienen datetimes u objetos anidados de numpy
             def json_serialize(obj):
+                import numpy as np
                 if dataclasses.is_dataclass(obj):
                     return {k: json_serialize(v) for k, v in dataclasses.asdict(obj).items()}
                 elif isinstance(obj, dict):
@@ -87,9 +88,11 @@ def register_spati_routes(app: Flask) -> None:
                 elif hasattr(obj, 'isoformat'):
                     return obj.isoformat()
                 elif hasattr(obj, 'tolist'):
-                    return obj.tolist()
+                    return json_serialize(obj.tolist())
                 elif isinstance(obj, Enum):
                     return obj.value
+                elif isinstance(obj, (np.integer, np.floating)):
+                    return obj.item()
                 return obj
 
             out = json_serialize(forecast)
@@ -184,6 +187,7 @@ th{{color:#94a3b8;font-size:12px}}
 <tbody>
 <tr><td>Faena</td><td>{nombre}</td></tr>
 <tr><td>Sitio ID</td><td>{s.get("sitio_id") or sitio_id}</td></tr>
+<tr><td>Coordenadas</td><td>Lat: {s.get("latitud") or "—"} / Lon: {s.get("longitud") or "—"}</td></tr>
 <tr><td>Altitud</td><td>{s.get("altitud_msnm") or "—"} m s.n.m.</td></tr>
 <tr><td>Horizonte operativo</td><td>72 h · alertas 26 / 31 / 36 km/h</td></tr>
 <tr><td>Estado</td><td>Reporte v1 — complete KPIs de alertas en siguiente iteración</td></tr>
