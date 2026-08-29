@@ -56,7 +56,7 @@ def header_content() -> str:
       <span onclick="mgToggle(this.parentElement)" style="color:#cbd5e1;font-size:13px;font-weight:600;padding:8px 10px;display:flex;align-items:center;gap:4px;border-radius:6px;cursor:pointer;white-space:nowrap">Productos <span class="mg-chev">▾</span></span>
       <div class="mg-drop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#1e293b;border:1px solid #334155;border-radius:8px;min-width:260px;z-index:9999;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.35)">
         <a href="https://metgo3d.com/agricultura-de-precision/" style="display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #2d3c50">Agricultura · Quillota <span style="color:#8a9a8c;font-size:11px">desde USD 99</span></a>
-        <a href="https://metgo3d.com/izaje-ventora/" style="display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #2d3c50">VENTORA · Izaje <span style="color:#b0a48c;font-size:11px">desde USD 299</span></a>
+        <a href="https://ventora-izaje-mar.pages.dev/" target="_blank" rel="noopener" style="display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #2d3c50">VENTORA · Izaje <span style="color:#b0a48c;font-size:11px">desde USD 299</span></a>
         <a href="https://metgo3d.com/mineria-y-calidad-del-aire/" style="display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #2d3c50">Minería y aire <span style="color:#8494a7;font-size:11px">desde USD 199</span></a>
         <a href="{PAINE}" target="_blank" rel="noopener" style="display:block;padding:11px 14px;color:#e2e8f0;text-decoration:none;font-size:13px;font-weight:600">Paine / terreno <span style="color:#a49eb0;font-size:11px">desde USD 49</span></a>
       </div>
@@ -126,7 +126,7 @@ def footer_content() -> str:
   <div>
     <p style="color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px">Productos</p>
     <a href="https://metgo3d.com/agricultura-de-precision/" style="color:#94a3b8;text-decoration:none;display:block;font-size:13px;margin:0 0 8px">Agricultura</a>
-    <a href="https://metgo3d.com/izaje-ventora/" style="color:#94a3b8;text-decoration:none;display:block;font-size:13px;margin:0 0 8px">VENTORA Izaje</a>
+    <a href="https://ventora-izaje-mar.pages.dev/" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none;display:block;font-size:13px;margin:0 0 8px">VENTORA Izaje</a>
     <a href="https://metgo3d.com/mineria-y-calidad-del-aire/" style="color:#94a3b8;text-decoration:none;display:block;font-size:13px;margin:0 0 8px">Minería y aire</a>
     <a href="https://metgo3d.com/planes/" style="color:#94a3b8;text-decoration:none;display:block;font-size:13px;margin:0 0 8px">Planes</a>
     <a href="https://metgo3d.com/innovaciones/" style="color:#94a3b8;text-decoration:none;display:block;font-size:13px">Innovaciones</a>
@@ -219,7 +219,7 @@ def home_content() -> str:
 
 <div style="{CARD};border-left:4px solid #b0a48c">
 <p style="margin:0 0 4px;color:#b0a48c;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Izaje / minería</p>
-<a href="https://metgo3d.com/izaje-ventora/" style="color:#ffffff;font-weight:800;font-size:18px;text-decoration:none">VENTORA · SPATI Izajes</a>
+<a href="https://ventora-izaje-mar.pages.dev/" target="_blank" rel="noopener" style="color:#ffffff;font-weight:800;font-size:18px;text-decoration:none">VENTORA · SPATI Izajes</a>
 <p style="margin:8px 0;font-size:14px;color:#94a3b8">Viento en altura, umbrales 26/31/36 km/h, alertas y PDF por operación.</p>
 <p style="margin:0 0 10px;color:#e2e8f0;font-size:15px"><strong style="color:#b0a48c">Desde USD 299</strong>/mes</p>
 <a href="{SPATI}" style="color:#a8b4c0;font-weight:700;text-decoration:none;margin-right:14px" target="_blank" rel="noopener">Abrir panel →</a>
@@ -368,7 +368,7 @@ def nav_content() -> str:
     links = [
         ("Inicio", "https://metgo3d.com/"),
         ("Agricultura", "https://metgo3d.com/agricultura-de-precision/"),
-        ("VENTORA Izaje", "https://metgo3d.com/izaje-ventora/"),
+        ("VENTORA Izaje", "https://ventora-izaje-mar.pages.dev/"),
         ("Minería / Aire", "https://metgo3d.com/mineria-y-calidad-del-aire/"),
         ("Planes", "https://metgo3d.com/planes/"),
         ("Innovaciones", "https://metgo3d.com/innovaciones/"),
@@ -377,8 +377,9 @@ def nav_content() -> str:
     ]
     parts = []
     for label, url in links:
+        new_tab = ',"opensInNewTab":true' if url == "https://ventora-izaje-mar.pages.dev/" else ''
         parts.append(
-            f'<!-- wp:navigation-link {{"label":{json.dumps(label)},"type":"custom","url":{json.dumps(url)},"kind":"custom"}} /-->'
+            f'<!-- wp:navigation-link {{"label":{json.dumps(label)},"type":"custom","url":{json.dumps(url)},"kind":"custom"{new_tab}}} /-->'
         )
     return "\n".join(parts)
 
@@ -500,7 +501,7 @@ def main() -> None:
     )
     upsert_banner(
         213,
-        product_banner("#8494a7", "Minería y aire", "desde USD 199/mes", COPIAPO, "https://metgo3d.com/izaje-ventora/"),
+        product_banner("#8494a7", "Minería y aire", "desde USD 199/mes", COPIAPO, "https://ventora-izaje-mar.pages.dev/"),
     )
 
     print("5) Navigation block")

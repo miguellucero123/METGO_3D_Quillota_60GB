@@ -42,7 +42,7 @@ def nav_html(active: str = "") -> str:
     <ul class="mg-nav__links">
       {a("productos", "https://metgo3d.com/#productos", "Productos")}
       {a("mjo_chile", "https://metgo3d.com/mjo_chile/", "MJO Chile")}
-      {a("izaje", "https://metgo3d.com/izaje-ventora/", "VENTORA")}
+      {a("izaje", "https://ventora-izaje-mar.pages.dev/\" target=\"_blank\" rel=\"noopener", "VENTORA")}
       {a("planes", "https://metgo3d.com/planes/", "Planes")}
       {a("nosotros", "https://metgo3d.com/nosotros/", "Nosotros")}
       {a("contacto", "https://metgo3d.com/contacto/", "Contacto")}
@@ -308,7 +308,7 @@ def home_body() -> str:
         <p class="mg-card__price">Desde <strong>USD 299</strong>/mes</p>
         <div class="mg-card__links">
           <a href="{SPATI}" class="mg-card-link mg-card-link--izaje" target="_blank" rel="noopener">Panel en vivo →</a>
-          <a href="https://metgo3d.com/izaje-ventora/" class="mg-card-link mg-card-link--izaje">Más info</a>
+          <a href="https://ventora-izaje-mar.pages.dev/" class="mg-card-link mg-card-link--izaje" target="_blank" rel="noopener">Más info</a>
         </div>
       </div>
       <div class="mg-card mg-card--aire">
@@ -499,7 +499,7 @@ def mineria_body() -> str:
   <hr class="mg-divider">
   <section class="mg-section">
     <p class="mg-section__label">También para izaje</p>
-    <p class="mg-section__subtitle">El viento en faena se cubre con <a href="https://metgo3d.com/izaje-ventora/" style="color:var(--mg-izaje-text)">VENTORA</a> desde USD 299/mes.</p>
+    <p class="mg-section__subtitle">El viento en faena se cubre con <a href="https://ventora-izaje-mar.pages.dev/" style="color:var(--mg-izaje-text)" target="_blank" rel="noopener">VENTORA</a> desde USD 299/mes.</p>
   </section>
   <hr class="mg-divider">
 """

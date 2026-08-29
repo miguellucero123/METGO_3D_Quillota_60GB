@@ -106,15 +106,20 @@ export async function fetchSpatiPuertoPronostico(sitioId) {
 
 function generarMockPuertoPronostico(sitioId) {
   const hourly_states = [];
+  // Round to current hour to keep data consistent within the same hour
   const now = new Date();
+  now.setMinutes(0, 0, 0);
   
   for (let i = 0; i < 72; i++) {
     const t = new Date(now.getTime() + i * 3600000);
     const hour = t.getHours();
     
+    // Pseudo-random determinista basado en el timestamp para no cambiar al hacer F5
+    const pseudoRandom = Math.abs(Math.sin(t.getTime())) % 1;
+    
     // Simulación de viento (ciclo diurno)
     const baseWind = 15 + 10 * Math.sin(((hour - 6) * Math.PI) / 12);
-    const windKmh = Math.max(5, Math.min(baseWind + Math.random() * 5, 45));
+    const windKmh = Math.max(5, Math.min(baseWind + pseudoRandom * 5, 45));
     const windMs = windKmh / 3.6;
     
     // Simulación de marea
@@ -122,7 +127,7 @@ function generarMockPuertoPronostico(sitioId) {
     
     // Simulación oleaje
     const hs = 1.2 + 0.3 * Math.sin((i * Math.PI) / 12);
-    const tp = 12 + Math.random() * 2;
+    const tp = 12 + pseudoRandom * 2;
 
     hourly_states.push({
       timestamp: t.toISOString(),
