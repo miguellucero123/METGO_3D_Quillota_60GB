@@ -58,6 +58,7 @@ def _persistir_metrics(resultado: dict[str, Any], origen: str) -> None:
     entry = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "origen": origen,
+        "ciclo_utc": resultado.get("ciclo_utc"),
         "dias": resultado.get("param_dias"),
         "incluir_csv": resultado.get("param_incluir_csv"),
         "store": resultado.get("store"),
@@ -260,6 +261,13 @@ def sincronizar_estaciones(
     except Exception as e:
         errores.append(f"Auto-alertas fallidas: {e}")
 
+    ciclo_utc = None
+    try:
+        from api_rest.integracion.openmeteo_ciclo import ciclo_utc_vigente
+
+        ciclo_utc = ciclo_utc_vigente()
+    except Exception:
+        pass
     out = {
         "estaciones_sync": detalle,
         "pronostico_sync": detalle_pronostico,
@@ -269,6 +277,7 @@ def sincronizar_estaciones(
         "archive_sync": archive_res,
         "store": stats,
         "errores": errores,
+        "ciclo_utc": ciclo_utc,
         "param_dias": dias,
         "param_incluir_csv": incluir_csv,
         "param_incluir_archive": incluir_archive,
@@ -324,7 +333,7 @@ def _conteos_e7_e8() -> dict[str, Any]:
             "faena_estaciones_area",
         ):
             try:
-                res = client.table(tabla).select("*", count="exact").limit(1).execute()
+                res = client.table(tabla).select("*", count="estimated").limit(1).execute()
                 out[tabla] = res.count
             except Exception as exc:
                 out[tabla] = {"error": str(exc)[:80]}

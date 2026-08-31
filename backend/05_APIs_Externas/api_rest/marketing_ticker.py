@@ -8,7 +8,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _CACHE: dict[str, Any] = {"ts": 0.0, "payload": None}
-_TTL_S = 3600.0  # 1 h — alineado con refresco de cinta WP
+_TTL_S = float(os.getenv("METGO_OPENMETEO_CACHE_TTL", "3600"))  # 1 h — alineado con caché OM
 
 
 def _viento_altura(perfil: dict[str, Any] | None, altura_m: float = 80.0) -> float | None:

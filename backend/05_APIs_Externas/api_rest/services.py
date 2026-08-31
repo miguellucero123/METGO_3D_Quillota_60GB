@@ -1087,10 +1087,18 @@ def health_check() -> dict[str, Any]:
     except ImportError:
         pass
 
-    if cooldown_restante == 0 and ahora - _ULTIMA_VERIFICACION > 60:
+    # Solo ping OpenMeteo al ritmo del TTL global (no en cada health check).
+    try:
+        from cache_openmeteo import get_ttl_seconds
+
+        om_interval = float(get_ttl_seconds())
+    except ImportError:
+        om_interval = 3600.0
+
+    if cooldown_restante == 0 and ahora - _ULTIMA_VERIFICACION > om_interval:
         om = OpenMeteoData()
         with contextlib.redirect_stdout(io.StringIO()):
-            _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=5)
+            _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=2)
         _ULTIMA_LATENCIA = int((time.perf_counter() - t0) * 1000)
         _ULTIMA_VERIFICACION = ahora
 

@@ -24,8 +24,26 @@ _API_KEY = (os.getenv("METGO_OPENMETEO_API_KEY") or os.getenv("OPENMETEO_API_KEY
 # Cortos: el endpoint SPA no puede colgarse 90s+ (Render + Open-Meteo 429).
 _TIMEOUT = int(os.getenv("METGO_SPATI_NWP_TIMEOUT", "12"))
 _RETRIES = int(os.getenv("METGO_SPATI_NWP_RETRIES", "2"))
-_CACHE_TTL_S = int(os.getenv("METGO_SPATI_NWP_CACHE_TTL", str(45 * 60)))
 _ALLOW_SYNTHETIC = os.getenv("METGO_SPATI_ALLOW_SYNTHETIC", "1").strip() not in ("0", "false", "no")
+
+
+def _cache_ttl_s() -> int:
+    """TTL NWP: hasta próximo ciclo 00/12 UTC en modo ciclo."""
+    try:
+        from api_rest.integracion.openmeteo_ciclo import fetch_mode, segundos_hasta_proximo_ciclo
+
+        if fetch_mode() == "ciclo":
+            return max(300, segundos_hasta_proximo_ciclo())
+    except Exception:
+        pass
+    return int(
+        os.getenv("METGO_SPATI_NWP_CACHE_TTL")
+        or os.getenv("METGO_OPENMETEO_CACHE_TTL")
+        or str(3600)
+    )
+
+
+_CACHE_TTL_S = _cache_ttl_s()  # valor inicial; las lecturas usan _cache_ttl_s()
 
 _HOURLY_VARS = [
     "wind_speed_10m",
@@ -85,14 +103,15 @@ def _cache_key(lat: float, lon: float, days: int) -> str:
 def _load_lastgood(key: str) -> pd.DataFrame | None:
     now = time.time()
     mem = _LASTGOOD.get(key)
-    if mem and now - mem[0] <= _CACHE_TTL_S:
+    ttl = _cache_ttl_s()
+    if mem and now - mem[0] <= ttl:
         return mem[1].copy()
     path = _runtime_cache_dir() / f"{key}.pkl"
     if not path.exists():
         return None
     try:
         age = now - path.stat().st_mtime
-        if age > _CACHE_TTL_S * 2:
+        if age > ttl * 2:
             return None
         df = pd.read_pickle(path)
         if isinstance(df, pd.DataFrame) and len(df) > 0:

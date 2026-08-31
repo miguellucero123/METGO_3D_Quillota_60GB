@@ -17,6 +17,16 @@ tags:
   - name: datos
   - name: servicios
 paths:
+  /api/health/live:
+    get:
+      tags: [sistema]
+      summary: Liveness rápido (Render health check)
+      description: |
+        Sin OpenMeteo ni Supabase. Usar como `healthCheckPath` en Render.
+        El detalle operativo sigue en `/api/health`.
+      responses:
+        "200":
+          description: Proceso vivo
   /api/health:
     get:
       tags: [sistema]

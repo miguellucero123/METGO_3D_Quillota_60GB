@@ -180,7 +180,7 @@ with st.sidebar:
     )
 
 
-@st.cache_data(ttl=600, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def cargar_historico_global(periodo: str) -> pd.DataFrame:
     """Series meteorológicas reales agregadas por estación principal."""
     periodos_dias = {

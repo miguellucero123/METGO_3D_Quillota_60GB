@@ -1,9 +1,9 @@
-# ETL meteorológico + calidad del aire: OpenMeteo → Supabase vía GET /api/cron/sync
-# - 06:00 y 18:00 UTC: corridas ventilación Paipote (N/R/M) + sync
-# - 00:00 y 12:00 UTC: sync ligero adicional
+# ETL meteorológico + calidad del aire / mapas: OpenMeteo → Supabase vía GET /api/cron/sync
+# - 00:00 y 12:00 UTC: descarga completa (pronósticos + mapas + todas las variables OM)
+# - 06:00 y 18:00 UTC: solo ventilación Paipote (N/R/M); sync completo con ?full=1
 # - Domingos 03:00 UTC: sync + Archive ERA5 (7 años)
 # Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
-name: ETL Meteo (06/18 UTC Paipote)
+name: ETL Meteo (00/12 UTC ciclo)
 
 on:
   schedule:

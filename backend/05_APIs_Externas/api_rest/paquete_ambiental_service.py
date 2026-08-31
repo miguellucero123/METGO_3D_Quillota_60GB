@@ -62,7 +62,24 @@ _AIR_HOURLY = (
 
 # Caché del último paquete OK por faena (memoria + disco para Render)
 _LASTGOOD: dict[str, tuple[float, dict[str, Any]]] = {}
-_LASTGOOD_TTL = int(os.getenv("METGO_PAQUETE_CACHE_TTL", str(45 * 60)))
+
+
+def _lastgood_ttl() -> int:
+    try:
+        from api_rest.integracion.openmeteo_ciclo import fetch_mode, segundos_hasta_proximo_ciclo
+
+        if fetch_mode() == "ciclo":
+            return max(300, segundos_hasta_proximo_ciclo())
+    except Exception:
+        pass
+    return int(
+        os.getenv("METGO_PAQUETE_CACHE_TTL")
+        or os.getenv("METGO_OPENMETEO_CACHE_TTL")
+        or str(3600)
+    )
+
+
+_LASTGOOD_TTL = _lastgood_ttl()
 
 
 def _runtime_cache_dir():
@@ -182,14 +199,15 @@ def _load_lastgood(faena_id: str, *, as_fallback: bool = False) -> dict[str, Any
     now = time.time()
     hit = _LASTGOOD.get(faena_id)
     data = None
-    if hit and now - hit[0] <= _LASTGOOD_TTL:
+    ttl = _lastgood_ttl()
+    if hit and now - hit[0] <= ttl:
         data = hit[1]
     else:
         try:
             path = _disk_path(faena_id)
             if path.exists():
                 age = now - path.stat().st_mtime
-                if age <= _LASTGOOD_TTL * 2:
+                if age <= ttl * 2:
                     data = json.loads(path.read_text(encoding="utf-8"))
                     if isinstance(data, dict) and data.get("faena_id"):
                         _LASTGOOD[faena_id] = (now, data)

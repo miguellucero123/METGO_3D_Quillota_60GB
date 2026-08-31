@@ -368,7 +368,7 @@ def estadisticas_store() -> dict[str, Any]:
         try:
             res = (
                 client.table("meteo_registros")
-                .select("estacion_id", count="exact")
+                .select("estacion_id", count="estimated")
                 .limit(1)
                 .execute()
             )

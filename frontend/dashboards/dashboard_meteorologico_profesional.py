@@ -132,7 +132,7 @@ def _filas_a_dataframe(filas: list[dict], unidad_temp: str) -> pd.DataFrame:
     return pd.DataFrame(datos).sort_values("Fecha").reset_index(drop=True)
 
 
-@st.cache_data(ttl=600, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def cargar_datos_meteorologicos(estacion: str, periodo: str, tipo_datos: str) -> tuple[pd.DataFrame, str]:
     """Datos reales: API METGO (store + OpenMeteo) o fallback directo OpenMeteo."""
     slug = nombre_a_slug(estacion)

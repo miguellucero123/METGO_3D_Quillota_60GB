@@ -160,112 +160,143 @@ def register_fase4_routes(app: Flask) -> None:
         if not secret or secret != os.getenv("CRON_SECRET"):
             return jsonify({"error": "No autorizado"}), 401
 
-        # Sync ligero 00/12 UTC; Archive opcional vía query (p. ej. cron semanal).
+        # Ciclos 00/12 UTC: descarga completa pronósticos + mapas (todas las variables OM).
+        # 06/18 UTC: solo ventilación Paipote (salvo ?full=1). Archive vía query.
+        from datetime import datetime, timezone
+
+        from api_rest.integracion.openmeteo_ciclo import ciclo_sync_context, ciclo_utc_vigente
+
         raw_arch = (request.args.get("incluir_archive") or "false").strip().lower()
         incluir_archive = raw_arch in ("1", "true", "yes", "on")
         anios_archive = request.args.get("anios_archive", default=5, type=int) or 5
-        res = etl_sync.sincronizar_estaciones(
-            dias=3,
-            incluir_csv=False,
-            incluir_archive=incluir_archive,
-            anios_archive=int(anios_archive),
-            origen="cron",
+        force_full = (request.args.get("full") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
         )
-        # E7: ETL calidad del aire (CAMS → aire_registros) en el mismo cron.
-        try:
-            from api_rest import aire_service
+        hora_utc = datetime.now(timezone.utc).hour
+        solo_ventilacion = (hora_utc in (6, 18)) and not force_full and not incluir_archive
 
-            res["aire"] = aire_service.sincronizar_aire()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"aire: {exc}")
+        if solo_ventilacion:
+            res: dict = {
+                "ciclo_utc": ciclo_utc_vigente(),
+                "modo": "ventilacion_06_18",
+                "errores": [],
+            }
             try:
-                from api_rest.integracion import etl_retry_queue
+                from api_rest import ventilacion_service
 
-                etl_retry_queue.enqueue("aire", str(exc))
-            except Exception:
-                pass
-        # E7: ETL dispersión (inversión/viento/niebla → aire_dispersion).
-        try:
-            from api_rest import dispersion_service
+                res["ventilacion_paipote"] = ventilacion_service.sincronizar_corrida("paipote")
+            except Exception as exc:
+                res["errores"].append(f"ventilacion_paipote: {exc}")
+            return jsonify(res)
 
-            res["dispersion"] = dispersion_service.sincronizar_dispersion()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"dispersion: {exc}")
-            try:
-                from api_rest.integracion import etl_retry_queue
-
-                etl_retry_queue.enqueue("dispersion", str(exc))
-            except Exception:
-                pass
-        # E8: ETL ventanas operacionales (faena → operaciones_ventanas).
-        try:
-            from api_rest import operaciones_service
-
-            res["operaciones"] = operaciones_service.sincronizar_operaciones()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"operaciones: {exc}")
-            try:
-                from api_rest.integracion import etl_retry_queue
-
-                etl_retry_queue.enqueue("operaciones", str(exc))
-            except Exception:
-                pass
-        # M4: sync estaciones por área de faena → faena_estaciones_area.
-        try:
-            from api_rest.integracion import estaciones_area_store
-
-            res["estaciones_area"] = estaciones_area_store.sincronizar_desde_catalogo()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"estaciones_area: {exc}")
-        # M8: sync catálogo → public.estaciones (FK aire_registros).
-        try:
-            from api_rest.integracion import estaciones_catalog_store
-
-            res["estaciones_publicas"] = (
-                estaciones_catalog_store.sincronizar_estaciones_publicas()
+        with ciclo_sync_context() as ciclo:
+            res = etl_sync.sincronizar_estaciones(
+                dias=7,
+                incluir_csv=False,
+                incluir_archive=incluir_archive,
+                anios_archive=int(anios_archive),
+                origen="cron",
             )
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"estaciones_publicas: {exc}")
-        # E7 Paipote: corrida ventilación N/R/M (ideal 06/18 UTC).
-        try:
-            from api_rest import ventilacion_service
+            res["ciclo_utc"] = ciclo
+            res["modo"] = "ciclo_00_12"
+            # E7: ETL calidad del aire (CAMS → aire_registros) — mapas / aire.
+            try:
+                from api_rest import aire_service
 
-            res["ventilacion_paipote"] = ventilacion_service.sincronizar_corrida("paipote")
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"ventilacion_paipote: {exc}")
-        # E7/E12: SINCA observado (CSV/códigos).
-        try:
-            from api_rest import sinca_service
+                res["aire"] = aire_service.sincronizar_aire()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"aire: {exc}")
+                try:
+                    from api_rest.integracion import etl_retry_queue
 
-            res["sinca"] = sinca_service.sincronizar_sinca()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"sinca: {exc}")
+                    etl_retry_queue.enqueue("aire", str(exc))
+                except Exception:
+                    pass
+            # E7: ETL dispersión (inversión/viento/niebla → aire_dispersion) — mapas.
+            try:
+                from api_rest import dispersion_service
+
+                res["dispersion"] = dispersion_service.sincronizar_dispersion()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"dispersion: {exc}")
+                try:
+                    from api_rest.integracion import etl_retry_queue
+
+                    etl_retry_queue.enqueue("dispersion", str(exc))
+                except Exception:
+                    pass
+            # E8: ETL ventanas operacionales (faena → operaciones_ventanas).
+            try:
+                from api_rest import operaciones_service
+
+                res["operaciones"] = operaciones_service.sincronizar_operaciones()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"operaciones: {exc}")
+                try:
+                    from api_rest.integracion import etl_retry_queue
+
+                    etl_retry_queue.enqueue("operaciones", str(exc))
+                except Exception:
+                    pass
+            # M4: sync estaciones por área de faena → faena_estaciones_area.
+            try:
+                from api_rest.integracion import estaciones_area_store
+
+                res["estaciones_area"] = estaciones_area_store.sincronizar_desde_catalogo()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"estaciones_area: {exc}")
+            # M8: sync catálogo → public.estaciones (FK aire_registros).
+            try:
+                from api_rest.integracion import estaciones_catalog_store
+
+                res["estaciones_publicas"] = (
+                    estaciones_catalog_store.sincronizar_estaciones_publicas()
+                )
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"estaciones_publicas: {exc}")
+            # E7 Paipote: también en 00/12 por si el tick 06/18 falló.
+            try:
+                from api_rest import ventilacion_service
+
+                res["ventilacion_paipote"] = ventilacion_service.sincronizar_corrida("paipote")
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"ventilacion_paipote: {exc}")
+            # E7/E12: SINCA observado (CSV/códigos).
+            try:
+                from api_rest import sinca_service
+
+                res["sinca"] = sinca_service.sincronizar_sinca()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"sinca: {exc}")
+                try:
+                    from api_rest.integracion import etl_retry_queue
+
+                    etl_retry_queue.enqueue("sinca", str(exc))
+                except Exception:
+                    pass
+            # E12: Agromet/DMC observados (CSV / IDs env).
+            try:
+                from api_rest import oficiales_service
+
+                res["oficiales"] = oficiales_service.sincronizar_oficiales()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"oficiales: {exc}")
+                try:
+                    from api_rest.integracion import etl_retry_queue
+
+                    etl_retry_queue.enqueue("oficiales", str(exc))
+                except Exception:
+                    pass
+            # E10: drenar cola de reintentos (JSONL, sin Redis).
             try:
                 from api_rest.integracion import etl_retry_queue
 
-                etl_retry_queue.enqueue("sinca", str(exc))
-            except Exception:
-                pass
-        # E12: Agromet/DMC observados (CSV / IDs env).
-        try:
-            from api_rest import oficiales_service
-
-            res["oficiales"] = oficiales_service.sincronizar_oficiales()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"oficiales: {exc}")
-            try:
-                from api_rest.integracion import etl_retry_queue
-
-                etl_retry_queue.enqueue("oficiales", str(exc))
-            except Exception:
-                pass
-        # E10: drenar cola de reintentos (JSONL, sin Redis).
-        try:
-            from api_rest.integracion import etl_retry_queue
-
-            res["etl_retry"] = etl_retry_queue.drain()
-        except Exception as exc:
-            res.setdefault("errores", []).append(f"etl_retry: {exc}")
+                res["etl_retry"] = etl_retry_queue.drain()
+            except Exception as exc:
+                res.setdefault("errores", []).append(f"etl_retry: {exc}")
         return jsonify(res)
 
     @app.get("/api/datos/etl/status")
@@ -273,9 +304,17 @@ def register_fase4_routes(app: Flask) -> None:
         """Público: último ETL sin secretos (monitoreo / cron smoke)."""
         m = etl_sync.leer_etl_metrics()
         fuentes = etl_sync.fuentes_datos()
+        ciclo = {}
+        try:
+            from api_rest.integracion.openmeteo_ciclo import ciclo_info
+
+            ciclo = ciclo_info()
+        except Exception:
+            pass
         return jsonify({
             "ultimo": m.get("ultimo"),
             "runs_en_historial": len(m.get("historial") or []),
+            "ciclo": ciclo,
             "fuentes": {k: v for k, v in fuentes.items() if k != "sqlite_meteo"},
             "sqlite_meteo_presente": bool(fuentes.get("sqlite_meteo")),
         })

@@ -8,6 +8,7 @@ Diagnóstico de incursión nubosa / niebla fusiona frames disponibles + meteo Op
 
 from __future__ import annotations
 
+import os
 import re
 import time
 from datetime import datetime
@@ -44,14 +45,25 @@ _UA = {"User-Agent": "METGO-Copiapo/1.0 (airshed; +https://metgo-copiapo.pages.d
 
 _TIMEOUT = 20
 _CACHE: dict[str, tuple[float, Any]] = {}
-_CACHE_TTL = 900.0  # 15 min
+
+
+def _cache_ttl() -> float:
+    try:
+        from cache_openmeteo import get_ttl_seconds
+
+        return float(get_ttl_seconds())
+    except ImportError:
+        return float(os.getenv("METGO_OPENMETEO_CACHE_TTL", "3600"))
+
+
+_CACHE_TTL = _cache_ttl()  # alineado con OpenMeteo global (1 h default)
 
 
 def _listar_frames(banda_code: str, limite: int = 12) -> list[dict[str, Any]]:
     """Parsea el índice HTML del CDN NOAA y devuelve URLs de imágenes recientes."""
     cache_key = f"list|{banda_code}|{limite}"
     now = time.time()
-    if cache_key in _CACHE and now - _CACHE[cache_key][0] < _CACHE_TTL:
+    if cache_key in _CACHE and now - _CACHE[cache_key][0] < _cache_ttl():
         return _CACHE[cache_key][1]
 
     url = f"{_CDN}/{banda_code}/"

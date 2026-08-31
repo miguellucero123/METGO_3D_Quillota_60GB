@@ -1,9 +1,24 @@
 # Supabase CLI — migraciones METGO
 
-Proyecto linkeado: `ylivhjigvxqzpzchllte` (`supabase/.temp/project-ref`).
+Proyecto linkeado (producción API): `ylivhjigvxqzpzchllte` → https://ylivhjigvxqzpzchllte.supabase.co  
+(`supabase/.temp/project-ref`). No usar refs de otros proyectos Free a los que el CLI no tenga acceso.
 
 Fuente canónica del SQL: `backend/08_Gestion_Datos/supabase_db/meteo_pronostico.sql`
 Migración CLI: `supabase/migrations/20260722011000_meteo_tablas_y_helada_cultivo.sql`
+
+## Advisor Center (Security / Performance)
+
+Migración: [`migrations/20260831140000_supabase_advisor_hardening.sql`](migrations/20260831140000_supabase_advisor_hardening.sql)
+
+| Aviso | Qué hacer |
+|-------|-----------|
+| RLS Enabled No Policy (identity) | Políticas `*_deny_clients` (deny anon; API usa `service_role`) |
+| Multiple Permissive Policies (meteo_*) | Una sola `*_select_public` |
+| Function Search Path Mutable | `set_updated_at` con `SET search_path = public` |
+| Unindexed FK `usuarios_app` | Índice `usuarios_app_org_id_idx` |
+| Disk IO / Slow Queries | Evitar `count=exact` en health/ETL; ciclos 00/12 UTC |
+
+Tras `db push`: Advisors → **Rerun linter** y Query Performance → **Reset report**.
 
 ## Carretera Austral (módulo Paine `/carretera`)
 

@@ -221,6 +221,11 @@ def create_app() -> Flask:
             app.logger.warning("marketing_ticker error: %s", exc)
             return jsonify({"error": "ticker no disponible", "detalle": str(exc)[:200]}), 503
 
+    @app.get("/api/health/live")
+    def health_live():
+        """Liveness para Render (sin OpenMeteo/Supabase). Debe responder <1 s."""
+        return jsonify({"status": "ok", "live": True}), 200
+
     @app.get("/api/health")
     def health():
         return jsonify(build_health_payload(services.health_check))

@@ -14,7 +14,8 @@ services:
     # gunicorn con threads: sin esto una llamada lenta a OpenMeteo bloquea todo
     # el servidor y Render corta las demás peticiones sin cabeceras CORS.
     startCommand: gunicorn wsgi_api:app --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 120
-    healthCheckPath: /api/health
+    healthCheckPath: /api/health/live
+    # /api/health (completo) puede pegarle a OpenMeteo y superar el timeout ~5s de Render free.
     envVars:
       - key: METGO_API_HOST
         value: 0.0.0.0
@@ -29,6 +30,11 @@ services:
         value: "0"
       - key: METGO_ML_AUTO_TRAIN
         value: "1"
+      # Caché OpenMeteo: ciclo 00/12 UTC (pronósticos + mapas). Alternativa: ttl + CACHE_TTL
+      - key: METGO_OPENMETEO_FETCH_MODE
+        value: "ciclo"
+      - key: METGO_OPENMETEO_CACHE_TTL
+        value: "3600"
       # Fallar rápido hacia meteo_store; cooldown tras HTTP 429
       - key: METGO_OPENMETEO_TIMEOUT
         value: "8"

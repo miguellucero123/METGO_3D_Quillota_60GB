@@ -445,13 +445,13 @@ def estadisticas_store() -> dict[str, Any]:
     if not client:
         return {"registros": 0, "estaciones": 0, "db": "supabase (inactivo)"}
     try:
-        res = client.table("meteo_registros").select("estacion_id", count="exact").limit(1).execute()
+        res = client.table("meteo_registros").select("estacion_id", count="estimated").limit(1).execute()
         total = res.count if res.count is not None else 0
         out: dict[str, Any] = {"registros": total, "estaciones": 0, "db": SUPABASE_URL}
         try:
             hp = (
                 client.table("meteo_helada_pronostico")
-                .select("id", count="exact")
+                .select("id", count="estimated")
                 .limit(1)
                 .execute()
             )
@@ -461,7 +461,7 @@ def estadisticas_store() -> dict[str, Any]:
         try:
             pr = (
                 client.table("meteo_pronostico")
-                .select("id", count="exact")
+                .select("id", count="estimated")
                 .limit(1)
                 .execute()
             )
