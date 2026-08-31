@@ -511,12 +511,19 @@ class MonitoreoAvanzadoMETGO:
         try:
             if nombre == 'postgres':
                 import psycopg2
+                pg_password = (
+                    os.getenv("METGO_PG_PASSWORD")
+                    or os.getenv("POSTGRES_PASSWORD")
+                    or ""
+                ).strip()
+                if not pg_password:
+                    return EstadoServicio.UNKNOWN
                 conn = psycopg2.connect(
-                    host='localhost',
-                    port=5432,
-                    database='metgo3d',
-                    user='metgo3d',
-                    password='metgo3d_2024_secure',
+                    host=os.getenv("POSTGRES_HOST", "localhost"),
+                    port=int(os.getenv("POSTGRES_PORT", "5432")),
+                    database=os.getenv("POSTGRES_DB", "metgo3d"),
+                    user=os.getenv("POSTGRES_USER", "metgo3d"),
+                    password=pg_password,
                     connect_timeout=config['timeout']
                 )
                 conn.close()

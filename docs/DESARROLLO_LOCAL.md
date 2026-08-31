@@ -2,6 +2,14 @@
 
 Guía rápida para levantar el stack en PC (Windows/Linux). Producción: Vue en Netlify, API en Render, Streamlit Cloud.
 
+## Credenciales y secretos entre PCs
+
+No copies `.env` por chat/correo. Usa el vault cifrado:
+
+1. Plantillas: `local/METGO_VAULT.local.example.env` + `local/METGO_BOOTSTRAP.local.example.md`
+2. Guía: [`docs/ops/BOOTSTRAP_OTRO_PC.md`](ops/BOOTSTRAP_OTRO_PC.md)
+3. Empaquetar: `python scripts/ops/vault_crypto.py pack` → `local/METGO_VAULT.local.enc` (USB)
+
 ## Requisitos
 
 - Python **3.10+** (recomendado: Anaconda del proyecto)

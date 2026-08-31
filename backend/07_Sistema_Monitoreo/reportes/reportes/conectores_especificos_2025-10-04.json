@@ -138,7 +138,7 @@
         "port": 5432,
         "database": "metgo_agro_db",
         "username": "metgo_user",
-        "password": "metgo_secure_2025",
+        "password": "***REDACTED***",
         "docker_container": "metgo_postgres"
       },
       "redis_cache": {

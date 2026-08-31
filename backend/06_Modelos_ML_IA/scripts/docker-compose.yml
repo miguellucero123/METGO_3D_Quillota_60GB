@@ -59,7 +59,7 @@ services:
     environment:
       - POSTGRES_DB=metgo3d
       - POSTGRES_USER=metgo3d
-      - POSTGRES_PASSWORD=metgo3d_2024_secure
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql

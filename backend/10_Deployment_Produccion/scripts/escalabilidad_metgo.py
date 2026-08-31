@@ -404,7 +404,7 @@ class EscalabilidadMETGO:
                 'host': 'localhost',
                 'puerto': 5672,
                 'usuario': 'metgo3d',
-                'password': 'metgo3d_2024_secure',
+                'password': os.environ.get('METGO_RABBITMQ_PASSWORD') or os.environ.get('RABBITMQ_PASSWORD') or '',
                 'vhost': '/',
                 'configuracion': {
                     'exchanges': [

@@ -124,57 +124,50 @@ generate_config_files() {
     # Generar archivo .env si no existe
     if [ ! -f .env ]; then
         cat > .env << EOF
-# 🌾 METGO 3D - Variables de Entorno
-# Sistema Meteorológico Agrícola Quillota
+# METGO 3D — plantilla local/servidor (NO commitear).
+# Rellenar en el servidor o en Render / secret manager.
 
-# Entorno
 METGO_ENV=production
 METGO_DEBUG=False
 METGO_LOG_LEVEL=INFO
 
-# Base de datos
 POSTGRES_DB=metgo3d
 POSTGRES_USER=metgo3d
-POSTGRES_PASSWORD=metgo3d_2024_secure
+POSTGRES_PASSWORD=CHANGE_ME_STRONG_PASSWORD
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 
-# Redis
 REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_PASSWORD=
 
-# APIs
 API_HOST=0.0.0.0
 API_PORT=5000
 API_DEBUG=False
 
-# Dashboard
 DASHBOARD_HOST=0.0.0.0
 DASHBOARD_PORT=8050
 DASHBOARD_DEBUG=False
 
-# Seguridad
-SECRET_KEY=metgo3d_secret_key_2024_secure
-JWT_SECRET_KEY=metgo3d_jwt_secret_2024_secure
+# Generar: python -c "import secrets; print(secrets.token_urlsafe(48))"
+SECRET_KEY=CHANGE_ME_GENERATE_SECRET
+JWT_SECRET_KEY=CHANGE_ME_GENERATE_JWT_SECRET
+METGO_JWT_SECRET=CHANGE_ME_GENERATE_JWT_SECRET
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# Monitoreo
 MONITORING_ENABLED=True
 MONITORING_INTERVAL=60
 
-# Respaldos
 BACKUP_ENABLED=True
 BACKUP_SCHEDULE=0 3 * * *
 BACKUP_RETENTION_DAYS=30
 
-# Performance
 CACHE_ENABLED=True
 CACHE_TTL=3600
 PARALLEL_PROCESSING=True
 MAX_WORKERS=4
 EOF
-        print_message "Archivo .env creado"
+        print_message "Archivo .env creado (placeholders — rellenar antes de producción)"
     fi
     
     # Generar archivo de configuración de Nginx si no existe

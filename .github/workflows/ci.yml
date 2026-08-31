@@ -106,3 +106,13 @@ jobs:
         run: |
           python scripts/smoke_ops_p1.py --public-only
           python scripts/smoke_ops_p1.py --validate-registro --sitio paine --public-only
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Gitleaks detect
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.0 detect --source=/repo --verbose --no-git

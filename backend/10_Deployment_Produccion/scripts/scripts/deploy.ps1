@@ -148,10 +148,10 @@ METGO_ENV=production
 METGO_DEBUG=False
 METGO_LOG_LEVEL=INFO
 
-# Base de datos
+# Base de datos — rellenar en servidor / Render
 POSTGRES_DB=metgo3d
 POSTGRES_USER=metgo3d
-POSTGRES_PASSWORD=metgo3d_2024_secure
+POSTGRES_PASSWORD=CHANGE_ME_STRONG_PASSWORD
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 
@@ -170,9 +170,10 @@ DASHBOARD_HOST=0.0.0.0
 DASHBOARD_PORT=8050
 DASHBOARD_DEBUG=False
 
-# Seguridad
-SECRET_KEY=metgo3d_secret_key_2024_secure
-JWT_SECRET_KEY=metgo3d_jwt_secret_2024_secure
+# Seguridad — generar: python -c "import secrets; print(secrets.token_urlsafe(48))"
+SECRET_KEY=CHANGE_ME_GENERATE_SECRET
+JWT_SECRET_KEY=CHANGE_ME_GENERATE_JWT_SECRET
+METGO_JWT_SECRET=CHANGE_ME_GENERATE_JWT_SECRET
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 # Monitoreo
@@ -191,7 +192,7 @@ PARALLEL_PROCESSING=True
 MAX_WORKERS=4
 "@
         $envContent | Out-File -FilePath ".env" -Encoding UTF8
-        Write-Message "Archivo .env creado"
+        Write-Message "Archivo .env creado (placeholders — rellenar antes de producción)"
     }
     
     # Verificar archivos de configuración

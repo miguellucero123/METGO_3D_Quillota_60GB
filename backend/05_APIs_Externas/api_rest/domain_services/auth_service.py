@@ -9,7 +9,28 @@ from api_rest.integracion.supabase_store import rest_select, rest_insert, rest_p
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback_secret_key_metgo_3d_2024")
+def _resolve_jwt_secret() -> str:
+    """JWT secret desde env; sin fallback débil en producción."""
+    secret = (
+        os.getenv("JWT_SECRET_KEY")
+        or os.getenv("METGO_JWT_SECRET")
+        or ""
+    ).strip()
+    env = (os.getenv("METGO_ENV") or os.getenv("FLASK_ENV") or "").strip().lower()
+    is_prod = env in ("production", "prod") or (
+        os.getenv("RENDER") or os.getenv("METGO_REQUIRE_JWT_SECRET") or ""
+    ).strip() in ("1", "true", "True")
+    if not secret:
+        if is_prod:
+            raise RuntimeError(
+                "Falta JWT_SECRET_KEY o METGO_JWT_SECRET en el entorno de producción"
+            )
+        # Solo local/tests (CI define METGO_JWT_SECRET)
+        return "ci-dev-only-not-for-production-use!!!!!!"
+    return secret
+
+
+SECRET_KEY = _resolve_jwt_secret()
 ALGORITHM = "HS256"
 
 class AuthService:

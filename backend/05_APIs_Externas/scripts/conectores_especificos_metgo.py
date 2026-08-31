@@ -98,7 +98,7 @@ class ConectoresEspecificosMETGO:
                     'port': 5432,
                     'database': 'metgo_agro_db',
                     'username': 'metgo_user',
-                    'password': 'metgo_secure_2025',
+                    'password': os.environ.get('METGO_PG_PASSWORD') or os.environ.get('POSTGRES_PASSWORD') or '',
                     'docker_container': 'metgo_postgres'
                 },
                 'redis_cache': {

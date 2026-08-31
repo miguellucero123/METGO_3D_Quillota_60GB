@@ -1,5 +1,48 @@
-# Streamlit (secrets locales; config.toml puede versionarse si no tiene claves)
+# ============================================================
+# Secretos y credenciales — NUNCA versionar
+# ============================================================
+
+# Env files (cualquier carpeta)
+.env
+.env.local
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+!.env.example
+
+# SII y scripts
+scripts/sii/.env.sii
+
+# Streamlit / TOML de secretos
 .streamlit/secrets.toml
+**/secrets.toml
+**/*secrets*.toml
+!**/*secrets*.toml.example
+!**/*.secrets.toml.example
+
+# Credenciales y claves
+**/credentials.json
+**/*service-account*.json
+**/*.pem
+**/*_rsa
+**/*.p12
+**/api_keys*.json
+!**/api_keys*.json.example
+
+# Env obsoleto y hashes de usuarios en respaldos
+backend/12_Respaldos_Archivos/archivos_obsoletos/**
+12_Respaldos_Archivos/archivos_obsoletos/**
+
+# Vault local de accesos (solo PC; compartir vía .enc cifrado)
+local/**
+!local/*.example
+!local/*.example.*
+!local/**/*.example
+!local/**/*.example.*
 
 # Python
 __pycache__/
@@ -12,15 +55,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-.env
-!.env.example
-.env.local
-**/.env
-!**/.env.example
-scripts/sii/.env.sii
-**/.env.production
-!**/.env.production.example
-.streamlit/secrets.toml
 
 # Node / Vue
 node_modules/
@@ -56,7 +90,7 @@ backend/12_Respaldos_Archivos/backups/
 respaldo_*/
 respaldo_*/
 
-# Modelos ML pesados (opcional: quitar si quiere versionar .joblib pequeños)
+# Modelos ML pesados
 *.h5
 *.h5.backup
 
