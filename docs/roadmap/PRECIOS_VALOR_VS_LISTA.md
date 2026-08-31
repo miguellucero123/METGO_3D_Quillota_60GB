@@ -1,82 +1,54 @@
 # Precios METGO — valor del sistema vs lista (USD/mes)
 
-> Corte: 2026-08-11 · Moneda de lista: **USD** sin IVA · Piloto 15 días $0  
-> Código: `plans_catalog.py` · Landing hub: `PlanesView.vue`
+> Corte: **2026-08-31** · Moneda de lista: **USD** sin IVA · Piloto 15 días $0  
+> Código: `plans_catalog.py` · Landing: `wp_apply_mg_page.py` + `PlanesView.vue`
 
-## 1. Método
+## 1. Método (revisión early-adopter)
 
-1. **Valor techo** = lo que el cliente *evitaría pagar* o *dejaría de perder* si usa todo el stack (dashboard + alertas + pronóstico + PDF + identity + ETL + ML + soporte).  
-2. **Precio de lista** = **25–40 % del techo** (entrada accesible, margen para descuento anual / piloto).  
-3. **Enterprise** = cotización; el número “desde” es ancla, no techo.
+1. **Valor techo** = referencia interna (pérdida evitada / stack completo).  
+2. **Precio de lista** = fracción **muy** baja del techo (~5–12 %) para **cerrar primeras conversaciones** mientras se validan costos reales (hosting, datos, personas).  
+3. **Enterprise** = cotización; el “desde” es ancla, no techo.
 
-Regla: **no cobramos el valor completo** del sistema; cobramos una fracción para cerrar piloto y expandir seats/faenas.
-
----
-
-## 2. Valor techo por servicio (referencia interna)
-
-| Bloque de servicio | Valor techo aprox. USD/mes | Quién lo paga mentalmente |
-|--------------------|----------------------------|---------------------------|
-| Panel + API + identity multi-usuario | 150–300 | IT / ops |
-| Pronóstico 72 h calibrado al punto | 100–250 | ops / agrónomo |
-| Alertas email/WA/SMS + umbrales | 80–200 | HSEQ / turno |
-| PDF / informe / respaldo legal | 50–150 | mandante / fiscalización |
-| ETL + datos oficiales / aire | 100–200 | calidad / medioambiente |
-| ML (helada, PM10, etc.) | 80–200 | planificación |
-| Ops board multi-faena + SLA | 200–500 | gerencia |
-| Dron / calibración / perfil viento | 150–400 | izaje |
-
-**Suma “todo el stack” si se cobrara por piezas:** ~USD **900–2.200**/mes según vertical.
+Regla actual: **atraer piloto**, no maximizar margen en el paper. Subir lista solo tras 3–5 cuentas pagando.
 
 ---
 
-## 3. Por plataforma: techo → lista (más baja)
+## 2. Anclas landing (metgo3d.com/planes)
 
-| Plataforma | Qué vende el sistema | Valor techo (todo) | Lista piloto (entrada / medio / enterprise desde) | % del techo (entrada) |
-|------------|----------------------|--------------------|---------------------------------------------------|------------------------|
-| **SPATI / VENTORA** | Izaje + Ahora + PDF + alertas + umbrales + (Pro) dron/ROI + (Ent) /ops | **1.800–3.000** | **299 / 499 / 1.199** | ~15–17 % |
-| **Mantos Blancos** | Semáforo turno + ventanas + ambiente + aire | **1.200–2.200** | **249 / 449 / 999** | ~18–20 % |
-| **Copiapó (aire)** | ICAP + pronóstico + dispersión + ops Paipote | **900–1.800** | **199 / 399 / 799** | ~18–22 % |
-| **Quillota / agro** | Helada + riego + meteo + alertas + ML ligero | **400–800** | **99 / 179 / 399** | ~20–25 % |
-| **Paine** (outdoor) | Meteo terreno / Carretera Austral | **200–500** | **49 / 99 / 249** | ~20–25 % |
+| Ancla | Antes | **Ahora** | ≈ CLP/mes (@950) |
+|-------|-------|-----------|------------------|
+| Campo (agro) | 99 | **39** | ~$37.000 |
+| Faena (izaje) | 299 | **99** | ~$94.000 |
+| Municipio (aire) | 399 | **149** | ~$141.000 |
+| Ruta (outdoor) | 49 | **19** | ~$18.000 |
 
-### Lectura comercial
-
-- **SPATI 299/499** es realista: el techo es alto (riesgo grúa); la lista queda **muy por debajo** del valor.  
-- **Agro a 990** (landing antigua) estaba **por encima** del techo agro → se corrige a **99/179**.  
-- **Municipio / aire:** preferir “desde 399–799” o cotización; no anclar 600 fijo si el comprador es público.
+Anual: **−15 %** (prepago 12 meses).
 
 ---
 
-## 4. Landing hub Quillota (3 anclas)
+## 3. Por plataforma: lista API (`/api/public/planes`)
 
-Alinear marketing con techos:
+| Plataforma | Entrada / Pro / Enterprise desde |
+|------------|----------------------------------|
+| **SPATI / VENTORA** | **99 / 179 / 449** |
+| **Mantos Blancos** | **79 / 149 / 349** |
+| **Copiapó** | **69 / 129 / 299** |
+| **Quillota** | **39 / 69 / 149** |
+| **Paine** | **19 / 39 / 79** |
 
-| Ancla | Antes | Ahora (lista) | Mensaje |
-|-------|-------|---------------|---------|
-| Plan Campo (agro) | 990 | **desde 99** | Fundo / zona |
-| Plan Faena (minería) | 1.800 | **desde 299** | Entra a SPATI Básico |
-| Plan Municipio (aire) | 600 | **desde 399** | Cotización formal |
+Techos internos (no publicar): SPATI 1.800–3.000 · Mantos 1.200–2.200 · Copiapó 900–1.800 · Quillota 400–800 · Paine 200–500.
 
 ---
 
-## 5. Descuentos sugeridos (sobre lista)
+## 4. Descuentos sugeridos
 
 | Condición | Descuento |
 |-----------|-----------|
-| Contrato 12 meses prepago | 15 % |
+| Contrato 12 meses prepago | 15 % (ya en toggle landing) |
 | 2+ faenas mismo contrato | 10 % |
 | Piloto → conversión &lt;30 días | 1er mes 50 % |
-| Sector público / Mercado Público | Solo cotización (no self-serve) |
-
----
-
-## 6. Qué no hacer
-
-- No usar el mismo precio en agro y minería.  
-- No publicar el **techo** al cliente (es interno).  
-- No subir lista hasta demostrar ROI en 3–5 cuentas piloto.
+| Sector público | Solo cotización |
 
 ## Fase
 
-**Comercial 2.x** · lista = fracción del valor del stack · catálogo por `sitio` en API.
+**Comercial / tracción** · DT precios early-adopter

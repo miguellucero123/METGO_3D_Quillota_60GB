@@ -16,13 +16,13 @@ from typing import Any
 _CLP_PER_USD = 950
 
 # Lista USD/mes por sitio (entrada / medio / enterprise-desde). Trial siempre 0.
-# Ver PRECIOS_VALOR_VS_LISTA.md — techo vs lista.
+# Early-adopter 2026-08: lista baja para tracción (ver PRECIOS_VALOR_VS_LISTA.md).
 _SITE_LIST_USD: dict[str, dict[str, int]] = {
-    "spati": {"starter": 299, "pro": 499, "enterprise": 1_199},
-    "mantos_blancos": {"starter": 249, "pro": 449, "enterprise": 999},
-    "copiapo": {"starter": 199, "pro": 399, "enterprise": 799},
-    "quillota": {"starter": 99, "pro": 179, "enterprise": 399},
-    "paine": {"starter": 49, "pro": 99, "enterprise": 249},
+    "spati": {"starter": 99, "pro": 179, "enterprise": 449},
+    "mantos_blancos": {"starter": 79, "pro": 149, "enterprise": 349},
+    "copiapo": {"starter": 69, "pro": 129, "enterprise": 299},
+    "quillota": {"starter": 39, "pro": 69, "enterprise": 149},
+    "paine": {"starter": 19, "pro": 39, "enterprise": 79},
 }
 
 # Valor techo interno (referencia; no se usa para cobro)
@@ -54,7 +54,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "starter",
         "nombre": "Básico",
         "nombre_corto": "Básico",
-        "precio_mensual_usd": 299,
+        "precio_mensual_usd": 99,
         "seats": 3,
         "faenas_max": 1,
         "gruas_max": 2,
@@ -70,7 +70,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "pro",
         "nombre": "Pro",
         "nombre_corto": "Pro",
-        "precio_mensual_usd": 499,
+        "precio_mensual_usd": 179,
         "seats": 10,
         "faenas_max": 3,
         "gruas_max": 5,
@@ -102,7 +102,7 @@ _BASE_PLANS: dict[str, dict[str, Any]] = {
         "plan_code": "enterprise",
         "nombre": "Enterprise",
         "nombre_corto": "Enterprise",
-        "precio_mensual_usd": 1_199,
+        "precio_mensual_usd": 449,
         "precio_etiqueta": "desde",
         "seats": None,
         "faenas_max": None,

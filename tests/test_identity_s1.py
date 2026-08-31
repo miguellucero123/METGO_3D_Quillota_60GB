@@ -113,17 +113,17 @@ def test_planes_escalados_faena():
     p_base = next(p for p in base["planes"] if p["plan_code"] == "starter")
     p_esc = next(p for p in esc["planes"] if p["plan_code"] == "starter")
     assert base["moneda"] == "USD"
-    assert p_base["precio_mensual_usd"] == 299
+    assert p_base["precio_mensual_usd"] == 99
     assert p_esc["precio_mensual_usd"] > p_base["precio_mensual_usd"]
 
 
 def test_planes_por_sitio_lista_mas_baja_que_techo():
     q = listar_planes("quillota", None)
     starter = next(p for p in q["planes"] if p["plan_code"] == "starter")
-    assert starter["precio_mensual_usd"] == 99
+    assert starter["precio_mensual_usd"] == 39
     assert q["valor_techo_usd"]["min"] >= starter["precio_mensual_usd"] * 3
     c = listar_planes("copiapo", None)
-    assert next(p for p in c["planes"] if p["plan_code"] == "pro")["precio_mensual_usd"] == 399
+    assert next(p for p in c["planes"] if p["plan_code"] == "pro")["precio_mensual_usd"] == 129
 
 
 def test_login_requires_email_verify_and_trial_meta():

@@ -90,10 +90,10 @@ function getPrice(basePrice) {
           <p class="plan-target">Agricultura de precisión</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">${{ getPrice(99) }}</span>
+            <span class="price-value">${{ getPrice(39) }}</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por zona de cultivo</p>
+          <p class="plan-unit">por zona de cultivo · ≈ $37 mil CLP</p>
           
           <ul class="plan-features">
             <li><span class="check">✓</span> Panel operativo en tiempo real para tu zona</li>
@@ -116,10 +116,10 @@ function getPrice(basePrice) {
           <p class="plan-target">Minería, izaje y alta montaña</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">${{ getPrice(299) }}</span>
+            <span class="price-value">${{ getPrice(99) }}</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por faena (VENTORA / SPATI)</p>
+          <p class="plan-unit">por faena (VENTORA / SPATI) · ≈ $94 mil CLP</p>
           
           <ul class="plan-features">
             <li><span class="check">✓</span> Semáforo operacional hora a hora</li>
@@ -141,10 +141,10 @@ function getPrice(basePrice) {
           <p class="plan-target">Calidad del aire y sector público</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">$399</span>
+            <span class="price-value">${{ getPrice(149) }}</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por red de estaciones · cotización formal</p>
+          <p class="plan-unit">por red · cotización formal · ≈ $141 mil CLP</p>
           
           <ul class="plan-features">
             <li><span class="check">✓</span> Dashboard de calidad del aire con tu logo</li>
@@ -167,8 +167,8 @@ function getPrice(basePrice) {
           <div class="faq-item">
             <h4>¿Los precios son en USD o CLP?</h4>
             <p>
-              La lista pública es en <strong>USD</strong>. El precio de lista es una fracción
-              (~15-25 %) del valor del stack completo (panel, alertas, pronóstico, informes, API).
+              La lista pública es en <strong>USD</strong> (también referimos CLP).
+              Es una fracción baja del valor del stack completo, pensada para piloto y primeras faenas.
               En Chile podemos facturar en CLP al tipo de cambio del día.
             </p>
           </div>

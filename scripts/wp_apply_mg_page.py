@@ -295,7 +295,7 @@ def home_body() -> str:
         <span class="mg-badge mg-badge--agro">Agricultura</span>
         <p class="mg-card__title">Panel Quillota</p>
         <p class="mg-card__desc">Helada, riego y microclima del valle. Alerta anticipada 12–24 h antes por zona.</p>
-        <p class="mg-card__price">Desde <strong>USD 99</strong>/mes</p>
+        <p class="mg-card__price">Desde <strong>USD 39</strong>/mes</p>
         <div class="mg-card__links">
           <a href="{QUILLOTA}" class="mg-card-link mg-card-link--agro" target="_blank" rel="noopener">Panel en vivo →</a>
           <a href="https://metgo3d.com/agricultura-de-precision/" class="mg-card-link mg-card-link--agro">Más info</a>
@@ -305,7 +305,7 @@ def home_body() -> str:
         <span class="mg-badge mg-badge--izaje">Izaje · Minería</span>
         <p class="mg-card__title">VENTORA · SPATI Izajes</p>
         <p class="mg-card__desc">Viento en altura, umbrales 26/31/36 km/h, alertas y PDF por operación.</p>
-        <p class="mg-card__price">Desde <strong>USD 299</strong>/mes</p>
+        <p class="mg-card__price">Desde <strong>USD 99</strong>/mes</p>
         <div class="mg-card__links">
           <a href="{SPATI}" class="mg-card-link mg-card-link--izaje" target="_blank" rel="noopener">Panel en vivo →</a>
           <a href="https://ventora-izaje-mar.pages.dev/" class="mg-card-link mg-card-link--izaje" target="_blank" rel="noopener">Más info</a>
@@ -315,7 +315,7 @@ def home_body() -> str:
         <span class="mg-badge mg-badge--aire">Calidad del aire</span>
         <p class="mg-card__title">Copiapó · Mantos Blancos</p>
         <p class="mg-card__desc">ICAP, episodios y semáforo de turno para cumplimiento DS 59 / DS 138.</p>
-        <p class="mg-card__price">Desde <strong>USD 199</strong>/mes</p>
+        <p class="mg-card__price">Desde <strong>USD 69</strong>/mes</p>
         <div class="mg-card__links">
           <a href="{COPIAPO}" class="mg-card-link mg-card-link--aire" target="_blank" rel="noopener">Copiapó →</a>
           <a href="{MANTOS}" class="mg-card-link mg-card-link--aire" target="_blank" rel="noopener">Mantos →</a>
@@ -325,7 +325,7 @@ def home_body() -> str:
         <span class="mg-badge mg-badge--outdoor">Terreno · Outdoor</span>
         <p class="mg-card__title">Panel Paine</p>
         <p class="mg-card__desc">Clima usable en ruta y operaciones outdoor. Viento, temperatura y visibilidad.</p>
-        <p class="mg-card__price">Desde <strong>USD 49</strong>/mes</p>
+        <p class="mg-card__price">Desde <strong>USD 19</strong>/mes</p>
         <div class="mg-card__links">
           <a href="{PAINE}" class="mg-card-link mg-card-link--outdoor" target="_blank" rel="noopener">Panel en vivo →</a>
         </div>
@@ -367,19 +367,19 @@ def home_body() -> str:
     <div class="mg-plans-grid">
       <div class="mg-plan">
         <p class="mg-plan__name">Campo · Agro</p>
-        <p class="mg-plan__price">99</p>
+        <p class="mg-plan__price">39</p>
         <p class="mg-plan__period">USD / mes</p>
         <a href="{CONTACTO}" class="mg-plan__link mg-plan__link--agro" target="_blank" rel="noopener">Solicitar acceso →</a>
       </div>
       <div class="mg-plan">
         <p class="mg-plan__name">Faena · Izaje / Minería</p>
-        <p class="mg-plan__price">299</p>
+        <p class="mg-plan__price">99</p>
         <p class="mg-plan__period">USD / mes</p>
         <a href="{CONTACTO}" class="mg-plan__link mg-plan__link--izaje" target="_blank" rel="noopener">Demo faena →</a>
       </div>
       <div class="mg-plan">
         <p class="mg-plan__name">Municipio · Aire</p>
-        <p class="mg-plan__price">399</p>
+        <p class="mg-plan__price">149</p>
         <p class="mg-plan__period">USD / mes</p>
         <a href="{CONTACTO}" class="mg-plan__link mg-plan__link--aire" target="_blank" rel="noopener">Pedir cotización →</a>
       </div>
@@ -404,7 +404,7 @@ def agro_body() -> str:
         <a href="{QUILLOTA}" class="mg-btn--primary mg-btn--agro" target="_blank" rel="noopener">Acceder al panel Quillota</a>
         <a href="{CONTACTO}" class="mg-btn--ghost" target="_blank" rel="noopener">Demo 15 días →</a>
       </div>
-      <p class="mg-card__price" style="margin-top:1.25rem">Desde <strong>USD 99</strong>/mes · Piloto sin costo</p>
+      <p class="mg-card__price" style="margin-top:1.25rem">Desde <strong>USD 39</strong>/mes · Piloto sin costo</p>
     </div>
     <div class="mg-readout" style="border-left:3px solid var(--mg-agro)">
       <p class="mg-eyebrow" style="color:var(--mg-agro-text);margin-bottom:0.35rem">Quillota · Valle del Aconcagua · En línea</p>
@@ -427,7 +427,7 @@ def agro_body() -> str:
     <div class="mg-products-grid">
       <div class="mg-card mg-card--agro"><p class="mg-card__title">Alerta de helada</p><p class="mg-card__desc">Aviso 12–24 h antes para tu zona, no solo la estación DMC más cercana.</p></div>
       <div class="mg-card mg-card--agro"><p class="mg-card__title">Riego y microclima</p><p class="mg-card__desc">Señales de humedad, temperatura y viento para decidir riego y labores.</p></div>
-      <div class="mg-card mg-card--agro"><p class="mg-card__title">Panel + cuenta</p><p class="mg-card__desc">Acceso multi-usuario, piloto 15 días y planes Campo desde USD 99.</p></div>
+      <div class="mg-card mg-card--agro"><p class="mg-card__title">Panel + cuenta</p><p class="mg-card__desc">Acceso multi-usuario, piloto 15 días y planes Campo desde USD 39.</p></div>
     </div>
   </section>
   <hr class="mg-divider">
@@ -448,7 +448,7 @@ def izaje_body() -> str:
         <a href="{SPATI}" class="mg-btn--primary mg-btn--izaje" target="_blank" rel="noopener">Abrir panel en vivo</a>
         <a href="{CONTACTO}" class="mg-btn--ghost" target="_blank" rel="noopener">Pedir piloto 15 días →</a>
       </div>
-      <p class="mg-card__price" style="margin-top:1.25rem">Desde <strong>USD 299</strong>/mes · Básico 299 · Pro 499 · Enterprise desde 1.199</p>
+      <p class="mg-card__price" style="margin-top:1.25rem">Desde <strong>USD 99</strong>/mes · Básico 99 · Pro 179 · Enterprise desde 449</p>
     </div>
     <div class="mg-readout" style="border-left:3px solid var(--mg-izaje)">
       <p class="mg-eyebrow" style="color:var(--mg-izaje-text);margin-bottom:0.35rem">VENTORA · Perfil de viento · En línea</p>
@@ -483,7 +483,7 @@ def mineria_body() -> str:
         <a href="{COPIAPO}" class="mg-btn--primary mg-btn--aire" target="_blank" rel="noopener">Ver panel Copiapó</a>
         <a href="{MANTOS}" class="mg-btn--ghost" target="_blank" rel="noopener">Mantos Blancos →</a>
       </div>
-      <p class="mg-card__price" style="margin-top:1.25rem">Desde <strong>USD 199</strong>/mes · Municipio desde USD 399</p>
+      <p class="mg-card__price" style="margin-top:1.25rem">Desde <strong>USD 69</strong>/mes · Municipio desde USD 149</p>
     </div>
     <div class="mg-readout" style="border-left:3px solid var(--mg-aire)">
       <p class="mg-eyebrow" style="color:var(--mg-aire-text);margin-bottom:0.35rem">Copiapó · Cuenca Atacama · En línea</p>
@@ -499,7 +499,7 @@ def mineria_body() -> str:
   <hr class="mg-divider">
   <section class="mg-section">
     <p class="mg-section__label">También para izaje</p>
-    <p class="mg-section__subtitle">El viento en faena se cubre con <a href="https://ventora-izaje-mar.pages.dev/" style="color:var(--mg-izaje-text)" target="_blank" rel="noopener">VENTORA</a> desde USD 299/mes.</p>
+    <p class="mg-section__subtitle">El viento en faena se cubre con <a href="https://ventora-izaje-mar.pages.dev/" style="color:var(--mg-izaje-text)" target="_blank" rel="noopener">VENTORA</a> desde USD 99/mes.</p>
   </section>
   <hr class="mg-divider">
 """
@@ -541,10 +541,10 @@ def planes_body() -> str:
         <div class="plan-price-block">
           <div class="plan-price">
             <span class="plan-currency">USD</span>
-            <span class="plan-amount" id="p-agro">99</span>
+            <span class="plan-amount" id="p-agro">39</span>
             <span class="plan-period">/mes</span>
           </div>
-          <p class="plan-annual-note" id="note-agro">Facturado USD 1,010/año</p>
+          <p class="plan-annual-note" id="note-agro">Facturado USD 399/año</p>
         </div>
         <div class="feat-group">
           <p class="feat-group-label">Pronóstico</p>
@@ -580,10 +580,10 @@ def planes_body() -> str:
         <div class="plan-price-block">
           <div class="plan-price">
             <span class="plan-currency">USD</span>
-            <span class="plan-amount" id="p-izaje">299</span>
+            <span class="plan-amount" id="p-izaje">99</span>
             <span class="plan-period">/mes</span>
           </div>
-          <p class="plan-annual-note" id="note-izaje">Facturado USD 3,050/año</p>
+          <p class="plan-annual-note" id="note-izaje">Facturado USD 1,010/año</p>
         </div>
         <div class="feat-group">
           <p class="feat-group-label">Pronóstico</p>
@@ -619,10 +619,10 @@ def planes_body() -> str:
         <div class="plan-price-block">
           <div class="plan-price">
             <span class="plan-currency">USD</span>
-            <span class="plan-amount" id="p-aire">399</span>
+            <span class="plan-amount" id="p-aire">149</span>
             <span class="plan-period">/mes</span>
           </div>
-          <p class="plan-annual-note" id="note-aire">Facturado USD 4,070/año</p>
+          <p class="plan-annual-note" id="note-aire">Facturado USD 1,520/año</p>
         </div>
         <div class="feat-group">
           <p class="feat-group-label">Monitoreo</p>
@@ -658,10 +658,10 @@ def planes_body() -> str:
         <div class="plan-price-block">
           <div class="plan-price">
             <span class="plan-currency">USD</span>
-            <span class="plan-amount" id="p-out">49</span>
+            <span class="plan-amount" id="p-out">19</span>
             <span class="plan-period">/mes</span>
           </div>
-          <p class="plan-annual-note" id="note-out">Facturado USD 500/año</p>
+          <p class="plan-annual-note" id="note-out">Facturado USD 194/año</p>
         </div>
         <div class="feat-group">
           <p class="feat-group-label">Pronóstico</p>
@@ -707,7 +707,7 @@ def planes_body() -> str:
           </tr>
         </thead>
         <tbody>
-          <tr><td>Precio base (USD/mes)</td><td>99</td><td>299</td><td>399</td><td>49</td></tr>
+          <tr><td>Precio base (USD/mes)</td><td>39</td><td>99</td><td>149</td><td>19</td></tr>
           <tr><td>Horizonte de pronóstico</td><td>72 h</td><td>48 h</td><td>Tiempo real</td><td>48 h</td></tr>
           <tr><td>Actualización</td><td>Cada 3 h</td><td>Cada 1 h</td><td>Cada 15 min</td><td>Cada 6 h</td></tr>
           <tr><td>Resolución espacial</td><td>1 km²</td><td>Perfil vertical</td><td>Punto fijo</td><td>GPS</td></tr>
@@ -744,12 +744,12 @@ def planes_body() -> str:
 <script>
 (function () {{
   var anual = false;
-  var precios = {{agro:[99,1010], izaje:[299,3050], aire:[399,4070], out:[49,500]}};
+  var precios = {{agro:[39,399], izaje:[99,1010], aire:[149,1520], out:[19,194]}};
   var notas = {{
-    agro:'Facturado USD 1,010/año',
-    izaje:'Facturado USD 3,050/año',
-    aire:'Facturado USD 4,070/año',
-    out:'Facturado USD 500/año'
+    agro:'Facturado USD 399/año',
+    izaje:'Facturado USD 1,010/año',
+    aire:'Facturado USD 1,520/año',
+    out:'Facturado USD 194/año'
   }};
   window.mgFlipBilling = function () {{
     anual = !anual;
@@ -1019,7 +1019,7 @@ def nosotros_body() -> str:
         <span class="mg-pr-num">4</span>
         <div>
           <p class="mg-pr-title">Precio fijo, sin sorpresas</p>
-          <p class="mg-pr-desc">Los planes publicados son los precios reales. No hay cargos por zonas adicionales ocultos ni tarifas por alertas enviadas. El plan Campo es USD 99/mes.</p>
+          <p class="mg-pr-desc">Los planes publicados son los precios reales. No hay cargos por zonas adicionales ocultos ni tarifas por alertas enviadas. El plan Campo es USD 39/mes (~$37 mil CLP).</p>
         </div>
       </div>
       <div class="mg-principio">
