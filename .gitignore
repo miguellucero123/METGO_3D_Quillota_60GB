@@ -111,6 +111,7 @@ docs/manuales/cursor_revisar*.md
 # ============================================================
 # Ruido / internos — no mostrar en GitHub (sigue en disco)
 # ============================================================
+docs/
 loadtests/
 templates/
 site-web/
