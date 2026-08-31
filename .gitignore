@@ -108,6 +108,31 @@ docs/manuales/cursor_revisar*.md
 *.zip
 *.7z
 
+# Scratch / experimentos locales
+scratch/
+**/scratch/
+
+# Lighthouse CI reports (artefactos generados)
+**/.lighthouseci/
+
+# Logs y dumps de prueba en raíz
+*.log
+api_log.txt
+api_test_log.txt
+/test_api.json
+/crear_admin.py
+/update_streamlit_theme.ps1
+/enviar_cambios_graficos.bat
+/SUBIR_A_GITHUB.bat
+/SUBIR_GITHUB_MANUAL.bat
+/Presentacion_Comercial_METGO3D.html
+
+# Reportes de revisión / dumps fechados
+**/reportes_revision/
+docs/manuales/MIP_Executive_Report_*.txt
+docs/manuales/reporte_optimizacion_*.txt
+docs/manuales/cursor_revisar*.md
+
 # OS
 .DS_Store
 Thumbs.db
