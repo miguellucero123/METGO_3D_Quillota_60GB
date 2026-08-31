@@ -82,8 +82,8 @@ def main() -> None:
         "GITHUB_PAT",
     ]
     for k in secret_keys:
-        if vals.get(k):
-            filled[k] = vals[k]
+        # Siempre dejar la clave en el vault (vacía si aún no está en .env)
+        filled[k] = vals.get(k) or filled.get(k) or ""
 
     if vals.get("METGO_STREAMLIT_RENDER_URL"):
         filled["RENDER_STREAMLIT_URL"] = vals["METGO_STREAMLIT_RENDER_URL"]

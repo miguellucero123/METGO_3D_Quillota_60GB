@@ -108,6 +108,20 @@ docs/manuales/cursor_revisar*.md
 *.zip
 *.7z
 
+# ============================================================
+# Ruido / internos — no mostrar en GitHub (sigue en disco)
+# ============================================================
+loadtests/
+templates/
+site-web/
+.devcontainer/
+docker-compose.dev.yml
+
+# One-offs y residuos en raíz
+/test_supabase.py
+/package.json
+/package-lock.json
+
 # Scratch / experimentos locales
 scratch/
 **/scratch/

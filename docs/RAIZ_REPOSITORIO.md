@@ -6,36 +6,34 @@ La raíz debe verse **limpia** en GitHub. Solo quedan archivos exigidos por desp
 
 | Archivo / carpeta | Motivo |
 |-------------------|--------|
-| `README.md` | Presentación del proyecto |
-| `LICENSE` | Licencia |
-| `requirements.txt` | Dependencias Python (Render, Streamlit Cloud) |
-| `pytest.ini` | Tests |
-| `render.yaml` | Blueprint Render |
-| `netlify.toml` | Despliegue Vue en Netlify |
+| `README.md` · `LICENSE` · `AGENTS.md` | Presentación / licencia / agentes |
+| `requirements.txt` · `pytest.ini` | Python + tests |
+| `render.yaml` · `netlify.toml` · `wsgi_api.py` | Deploy API / Netlify |
 | `streamlit_app.py` | **Main file** Streamlit Cloud |
-| `sistema_auth_dashboard_principal_metgo.py` | Entrada legacy Streamlit Cloud |
-| `metgo_paths.py` | Marcador de raíz + rutas (`metgo/paths.py`) |
-| `metgo_auth.py` | Wrapper JWT (implementación en `backend/07_...`) |
-| `pages/` | Páginas multipágina Streamlit (convención del framework) |
-| `backend/` | Lógica, API, ML, despliegue |
-| `frontend/` | Vue, dashboards Streamlit |
-| `docs/` | Manuales |
-| `site-web/` | Sitio público |
-| `tests/` | Pruebas |
-| `metgo/` | Biblioteca compartida (tema, portal, visor, Vue embed) |
-| `scripts/` | Utilidades (`compat/`, `git/`) |
-| `.streamlit/` | Config tema Streamlit |
-| `.github/` | CI |
+| `sistema_auth_dashboard_principal_metgo.py` | Alias legacy → delega en `streamlit_app.py` |
+| `metgo_paths.py` · `metgo_auth.py` | Raíz + JWT wrapper |
+| `pages/` · `.streamlit/` | Multipágina Streamlit + tema |
+| `backend/` · `frontend/` · `ventora-izaje-mar/` | Producto |
+| `metgo/` · `docs/` · `scripts/` · `tests/` · `e2e/` · `supabase/` | Lib, docs, ops, CI e2e, SQL |
+| `.github/` · `.gitleaks.toml` · `.env.example` | CI / seguridad / plantilla env |
+| `local/*.example*` | Plantillas vault (sin secretos) |
 
-## Ya no en la raíz
+## Ocultos (`.gitignore` — siguen en tu PC)
 
-| Antes | Ahora |
-|-------|--------|
-| `metgo_streamlit_*.py`, `metgo_vue_embed.py`, `metgo_dashboard_loader.py` | `metgo/` |
-| `datos_reales_openmeteo.py`, `dashboard_*.py`, `mobile_config.py` | `scripts/compat/` |
-| `SUBIR_*.bat` (contenido) | `scripts/git/` (acceso con `SUBIR_GITHUB_MANUAL.bat` en raíz) |
+| Ruta | Motivo |
+|------|--------|
+| `loadtests/` | k6 interno |
+| `templates/` | plantilla de sitio, no producto live |
+| `site-web/` | estático legado (WP / Pages lo reemplazan) |
+| `.devcontainer/` | solo VS Code/Cursor opcional |
+| `docker-compose.dev.yml` | compose local opcional |
+| `/package.json` · `/package-lock.json` | residuo npm en raíz |
+| `/test_supabase.py` | script one-off |
+| `scratch/` · `*.rar` · `*.zip` · logs | basura local |
+| `local/METGO_VAULT.local.*` (no example) | secretos |
 
 ## Accesos rápidos
 
-- Subir a GitHub: `SUBIR_GITHUB_MANUAL.bat` o `docs/manuales/SUBIR_GITHUB_MANUAL.md`
 - Arranque local: `backend/10_Deployment_Produccion/scripts/iniciar_metgo_desarrollo.bat`
+- Otro PC / vault: `docs/ops/BOOTSTRAP_OTRO_PC.md`
+- Publicar: `docs/manuales/PUBLICAR_GITHUB.md`
