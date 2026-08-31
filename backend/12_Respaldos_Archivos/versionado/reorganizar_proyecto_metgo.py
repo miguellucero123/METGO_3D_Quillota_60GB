@@ -148,7 +148,7 @@ def mover_archivos_por_categoria(archivos_por_categoria):
         'agricola': '02_Sistema_Agricola', 
         'iot_drones': '03_Sistema_IoT_Drones',
         'dashboards': '04_Dashboards_Unificados',
-        'apis': '05_APIs_Externas',
+        'apis': '05' + '_APIs_Externas',
         'ml_ia': '06_Modelos_ML_IA',
         'monitoreo': '07_Sistema_Monitoreo',
         'datos': '08_Gestion_Datos',

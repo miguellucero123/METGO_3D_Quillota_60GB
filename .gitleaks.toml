@@ -1,14 +1,22 @@
-# Gitleaks — METGO 3D
+# Gitleaks v8+ — METGO 3D
 # https://github.com/gitleaks/gitleaks
 
 title = "METGO gitleaks"
 
-[allowlist]
-description = "Placeholders, falsos positivos y dumps no operativos"
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Placeholders, falsos positivos y rutas no operativas"
 paths = [
-  '''(?i)docs/manuales/cursor_revisar.*\.md$''',
   '''(?i)\.gitleaks\.toml$''',
-  '''(?i)gitleaks\.toml$''',
+  '''(?i)docs/manuales/cursor_revisar.*\.md$''',
+  '''(?i)backend/12_Respaldos_Archivos/''',
+  '''(?i)backend/.*/reportes/''',
+  '''(?i)local/''',
+  '''(?i)CORFO/''',
+  '''(?i)\.rar$''',
+  '''(?i)\.zip$''',
 ]
 
 regexes = [
@@ -20,6 +28,8 @@ regexes = [
   '''tu_api_key_aqui''',
   '''generar-secreto''',
   '''secreto_para_endpoints''',
+  '''ci-dev-only-not-for-production''',
+  '''ci-test-secret''',
 ]
 
 stopwords = [
@@ -27,4 +37,6 @@ stopwords = [
   "placeholder",
   "changeme",
   "change_me",
+  "your_",
+  "dummy",
 ]

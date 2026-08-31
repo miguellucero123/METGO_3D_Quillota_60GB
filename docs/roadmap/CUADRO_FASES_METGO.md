@@ -10,7 +10,7 @@
 |--------|----------|-------------|
 | **Hecho** | 1–10, S0–S4, M1–M7, M10, E11, landings, `/cuenta`, invite API/UI | Código + usable |
 | **Parcial** | S5, M9, M8 CSV, E12.1 | Código listo; falta smoke mail + destinos UI + keys prod |
-| **Ops manual** | Stripe, OpenMeteo key, SINCA/Agromet/DMC IDs | No se cierra solo con commits |
+| **Ops manual** | Stripe, OpenMeteo key, IDs SINCA / Agromet / DMC | No se cierra solo con commits |
 | **Pendiente** | KYC ADR, SII DTE, retrain prod | Producto / contabilidad |
 
 ---

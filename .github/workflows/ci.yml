@@ -115,5 +115,11 @@ jobs:
           fetch-depth: 0
       - name: Gitleaks detect
         run: |
-          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.0 detect \
-            --source=/repo --config=/repo/.gitleaks.toml --verbose --no-git
+          set -e
+          test -f .gitleaks.toml
+          # --no-git: solo el árbol del commit (no historial ni archivos locales ignorados)
+          docker run --rm -v "$PWD:/repo" -w /repo zricethezav/gitleaks:v8.24.0 detect \
+            --source=/repo \
+            --config=/repo/.gitleaks.toml \
+            --verbose \
+            --no-git
