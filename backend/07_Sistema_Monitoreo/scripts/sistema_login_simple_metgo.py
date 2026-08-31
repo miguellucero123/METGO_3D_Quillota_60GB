@@ -37,7 +37,7 @@ class SistemaLoginSimple:
             usuarios_por_defecto = [
                 ('admin', 'admin123', 'Administrador del Sistema', 'admin'),
                 ('ejecutivo', 'ejecutivo123', 'Ejecutivo METGO', 'ejecutivo'),
-                ('agricultor', 'agricultor123', 'Agricultor Principal', 'agricultor'),
+                ('agricultor', 'CHANGE_ME_DEMO_AGRICULTOR', 'Agricultor Principal', 'agricultor'),
                 ('tecnico', 'tecnico123', 'Tecnico Agricola', 'tecnico'),
                 ('usuario', 'usuario123', 'Usuario General', 'usuario')
             ]
@@ -189,7 +189,7 @@ def render_login_page():
         <h4>👥 Usuarios de Prueba</h4>
         <p><strong>Administrador:</strong> admin / admin123</p>
         <p><strong>Ejecutivo:</strong> ejecutivo / ejecutivo123</p>
-        <p><strong>Agricultor:</strong> agricultor / agricultor123</p>
+        <p><strong>Agricultor:</strong> agricultor / CHANGE_ME_DEMO_AGRICULTOR</p>
         <p><strong>Tecnico:</strong> tecnico / tecnico123</p>
         <p><strong>Usuario:</strong> usuario / usuario123</p>
     </div>

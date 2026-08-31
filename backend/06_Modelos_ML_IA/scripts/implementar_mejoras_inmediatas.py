@@ -233,7 +233,7 @@ aiofiles>=23.0.0
                 "log_level": "INFO"
             },
             "seguridad": {
-                "secret_key": "metgo_secret_key_2025",
+                "secret_key": os.environ.get("METGO_JWT_SECRET") or os.environ.get("SECRET_KEY") or "CHANGE_ME_GENERATE_SECRET",
                 "jwt_expire": 3600,
                 "cors_origins": ["http://localhost:8501", "http://localhost:3000"]
             }

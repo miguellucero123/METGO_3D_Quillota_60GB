@@ -73,7 +73,7 @@ def main():
             usuarios_validos = {
                 'admin': 'admin123',
                 'ejecutivo': 'ejecutivo123',
-                'agricultor': 'agricultor123',
+                'agricultor': 'CHANGE_ME_DEMO_AGRICULTOR',
                 'tecnico': 'tecnico123',
                 'usuario': 'usuario123'
             }
@@ -98,7 +98,7 @@ def main():
     |---------|------------|-----|
     | admin | admin123 | Administrador |
     | ejecutivo | ejecutivo123 | Ejecutivo |
-    | agricultor | agricultor123 | Agricultor |
+    | agricultor | CHANGE_ME_DEMO_AGRICULTOR | Agricultor |
     | tecnico | tecnico123 | Técnico |
     | usuario | usuario123 | Usuario |
     """)

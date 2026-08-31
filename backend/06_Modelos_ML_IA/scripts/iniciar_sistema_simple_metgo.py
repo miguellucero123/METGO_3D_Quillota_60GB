@@ -111,7 +111,7 @@ class IniciadorSistemaSimple:
         print("\n[USERS] USUARIOS DE PRUEBA:")
         print("   [ADMIN] Administrador: admin / admin123")
         print("   [EXEC] Ejecutivo: ejecutivo / ejecutivo123")
-        print("   [AGRI] Agricultor: agricultor / agricultor123")
+        print("   [AGRI] Agricultor: agricultor / CHANGE_ME_DEMO_AGRICULTOR")
         print("   [TECH] Tecnico: tecnico / tecnico123")
         print("   [USER] Usuario: usuario / usuario123")
         

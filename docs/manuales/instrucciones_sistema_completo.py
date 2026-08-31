@@ -16,7 +16,7 @@ def mostrar_instrucciones():
     print("\n👥 USUARIOS DE PRUEBA:")
     print("   👑 Admin: admin / admin123 (Acceso completo a todos los dashboards)")
     print("   💼 Ejecutivo: ejecutivo / ejecutivo123")
-    print("   🌾 Agricultor: agricultor / agricultor123")
+    print("   🌾 Agricultor: agricultor / CHANGE_ME_DEMO_AGRICULTOR")
     print("   🔧 Técnico: tecnico / tecnico123")
     print("   👤 Usuario: usuario / usuario123")
     

@@ -81,7 +81,11 @@ class AutenticacionAvanzadaMETGO:
         
         self.app = Flask(__name__) if FLASK_AVAILABLE else None
         if self.app:
-            self.app.secret_key = 'metgo_3d_secret_key_2025'
+            self.app.secret_key = (
+                os.environ.get("METGO_JWT_SECRET")
+                or os.environ.get("SECRET_KEY")
+                or "CHANGE_ME_GENERATE_SECRET"
+            )
             CORS(self.app)
             self._configurar_rutas()
         
@@ -105,7 +109,11 @@ class AutenticacionAvanzadaMETGO:
         
         # Configuración de autenticación
         self.configuracion_auth = {
-            'jwt_secret': 'metgo_3d_jwt_secret_2025',
+            'jwt_secret': (
+                os.environ.get("METGO_JWT_SECRET")
+                or os.environ.get("JWT_SECRET_KEY")
+                or "CHANGE_ME_GENERATE_JWT_SECRET"
+            ),
             'jwt_algorithm': 'HS256',
             'jwt_expiration': 3600,  # 1 hora
             'refresh_expiration': 86400,  # 24 horas
@@ -371,28 +379,28 @@ class AutenticacionAvanzadaMETGO:
                     'id': 'admin_1',
                     'username': 'admin',
                     'email': 'admin@metgo.cl',
-                    'password': 'admin123',
+                    'password': os.environ.get('METGO_PASSWORD_ADMIN', 'CHANGE_ME_DEMO_ADMIN'),
                     'rol': 'administrador'
                 },
                 {
                     'id': 'tecnico_1',
                     'username': 'tecnico',
                     'email': 'tecnico@metgo.cl',
-                    'password': 'tecnico123',
+                    'password': os.environ.get('METGO_DEMO_PASSWORD_TECNICO', 'CHANGE_ME_DEMO_TECNICO'),
                     'rol': 'tecnico'
                 },
                 {
                     'id': 'agricultor_1',
                     'username': 'agricultor',
                     'email': 'agricultor@metgo.cl',
-                    'password': 'agricultor123',
+                    'password': os.environ.get('METGO_DEMO_PASSWORD_AGRICULTOR', 'CHANGE_ME_DEMO_AGRICULTOR'),
                     'rol': 'agricultor'
                 },
                 {
                     'id': 'usuario_1',
                     'username': 'usuario',
                     'email': 'usuario@metgo.cl',
-                    'password': 'usuario123',
+                    'password': os.environ.get('METGO_DEMO_PASSWORD_USUARIO', 'CHANGE_ME_DEMO_USUARIO'),
                     'rol': 'usuario'
                 }
             ]

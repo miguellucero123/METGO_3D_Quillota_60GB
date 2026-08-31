@@ -131,35 +131,35 @@ class SistemaAutenticacionMetgo:
             {
                 'usuario': 'admin',
                 'email': 'admin@metgo3d.com',
-                'password': 'admin123',
+                'password': os.environ.get('METGO_PASSWORD_ADMIN', 'CHANGE_ME_DEMO_ADMIN'),
                 'nombre_completo': 'Administrador del Sistema',
                 'rol': 'admin'
             },
             {
                 'usuario': 'ejecutivo',
                 'email': 'ejecutivo@metgo3d.com',
-                'password': 'ejecutivo123',
+                'password': os.environ.get('METGO_DEMO_PASSWORD_EJECUTIVO', 'CHANGE_ME_DEMO_EJECUTIVO'),
                 'nombre_completo': 'Ejecutivo METGO',
                 'rol': 'ejecutivo'
             },
             {
                 'usuario': 'agricultor',
                 'email': 'agricultor@metgo3d.com',
-                'password': 'agricultor123',
+                'password': os.environ.get('METGO_DEMO_PASSWORD_AGRICULTOR', 'CHANGE_ME_DEMO_AGRICULTOR'),
                 'nombre_completo': 'Agricultor Principal',
                 'rol': 'agricultor'
             },
             {
                 'usuario': 'tecnico',
                 'email': 'tecnico@metgo3d.com',
-                'password': 'tecnico123',
+                'password': os.environ.get('METGO_DEMO_PASSWORD_TECNICO', 'CHANGE_ME_DEMO_TECNICO'),
                 'nombre_completo': 'Técnico Agrícola',
                 'rol': 'tecnico'
             },
             {
                 'usuario': 'usuario',
                 'email': 'usuario@metgo3d.com',
-                'password': 'usuario123',
+                'password': os.environ.get('METGO_PASSWORD_USER', 'CHANGE_ME_DEMO_USUARIO'),
                 'nombre_completo': 'Usuario General',
                 'rol': 'usuario'
             }
@@ -635,7 +635,7 @@ def render_login_page():
         <h4>👥 Usuarios de Prueba</h4>
         <p><strong>Administrador:</strong> admin / admin123</p>
         <p><strong>Ejecutivo:</strong> ejecutivo / ejecutivo123</p>
-        <p><strong>Agricultor:</strong> agricultor / agricultor123</p>
+        <p><strong>Agricultor:</strong> agricultor / CHANGE_ME_DEMO_AGRICULTOR</p>
         <p><strong>Técnico:</strong> tecnico / tecnico123</p>
         <p><strong>Usuario:</strong> usuario / usuario123</p>
     </div>

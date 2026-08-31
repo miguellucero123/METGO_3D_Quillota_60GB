@@ -113,7 +113,7 @@
 #### **Usuarios de Prueba:**
 - **Administrador:** admin / admin123
 - **Ejecutivo:** ejecutivo / ejecutivo123
-- **Agricultor:** agricultor / agricultor123
+- **Agricultor:** agricultor / CHANGE_ME_DEMO_AGRICULTOR
 - **Técnico:** tecnico / tecnico123
 - **Usuario:** usuario / usuario123
 

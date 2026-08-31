@@ -3,7 +3,7 @@
   "sistema": "METGO 3D - Sistema de Autenticación Avanzada",
   "version": "2.0",
   "configuracion_auth": {
-    "jwt_secret": "metgo_3d_jwt_secret_2025",
+    "jwt_secret": "***REDACTED***",
     "jwt_algorithm": "HS256",
     "jwt_expiration": 3600,
     "refresh_expiration": 86400,

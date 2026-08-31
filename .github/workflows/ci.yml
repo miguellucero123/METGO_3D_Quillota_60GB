@@ -115,4 +115,5 @@ jobs:
           fetch-depth: 0
       - name: Gitleaks detect
         run: |
-          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.0 detect --source=/repo --verbose --no-git
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.0 detect \
+            --source=/repo --config=/repo/.gitleaks.toml --verbose --no-git

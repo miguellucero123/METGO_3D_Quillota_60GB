@@ -1,0 +1,30 @@
+# Gitleaks — METGO 3D
+# https://github.com/gitleaks/gitleaks
+
+title = "METGO gitleaks"
+
+[allowlist]
+description = "Placeholders, falsos positivos y dumps no operativos"
+paths = [
+  '''(?i)docs/manuales/cursor_revisar.*\.md$''',
+  '''(?i)\.gitleaks\.toml$''',
+  '''(?i)gitleaks\.toml$''',
+]
+
+regexes = [
+  '''05_APIs_Externas''',
+  '''SINCA/Agromet/DMC''',
+  '''sk_test_CHANGE_ME''',
+  '''YOUR_JWT_TOKEN_HERE''',
+  '''CHANGE_ME_''',
+  '''tu_api_key_aqui''',
+  '''generar-secreto''',
+  '''secreto_para_endpoints''',
+]
+
+stopwords = [
+  "example",
+  "placeholder",
+  "changeme",
+  "change_me",
+]

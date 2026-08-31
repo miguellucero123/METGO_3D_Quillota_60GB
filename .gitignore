@@ -94,8 +94,14 @@ respaldo_*/
 *.h5
 *.h5.backup
 
-# CORFO (documentación comercial confidencial)
+# CORFO (documentación comercial confidencial — NUNCA versionar)
 CORFO/
+CORFO/**
+**/CORFO/
+**/CORFO/**
+
+# Dumps de chat Cursor (pueden contener secretos históricos; no versionar)
+docs/manuales/cursor_revisar*.md
 
 # OS
 .DS_Store

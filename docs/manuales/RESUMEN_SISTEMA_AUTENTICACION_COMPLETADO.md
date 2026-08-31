@@ -24,7 +24,7 @@
 ### **👥 Usuarios de Prueba Creados**
 - ✅ **Administrador:** admin / admin123 (Acceso completo)
 - ✅ **Ejecutivo:** ejecutivo / ejecutivo123 (Dashboards ejecutivos)
-- ✅ **Agricultor:** agricultor / agricultor123 (Módulos agrícolas)
+- ✅ **Agricultor:** agricultor / CHANGE_ME_DEMO_AGRICULTOR (Módulos agrícolas)
 - ✅ **Técnico:** tecnico / tecnico123 (Sistemas técnicos)
 - ✅ **Usuario:** usuario / usuario123 (Acceso básico)
 
@@ -258,7 +258,7 @@ python ejecutar_dashboards_metgo.py
 ### **👤 Usuarios de Prueba**
 - **admin / admin123** - Acceso completo
 - **ejecutivo / ejecutivo123** - Dashboards ejecutivos
-- **agricultor / agricultor123** - Módulos agrícolas
+- **agricultor / CHANGE_ME_DEMO_AGRICULTOR** - Módulos agrícolas
 - **tecnico / tecnico123** - Sistemas técnicos
 - **usuario / usuario123** - Acceso básico
 

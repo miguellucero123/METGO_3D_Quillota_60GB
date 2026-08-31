@@ -38,7 +38,7 @@ def ejecutar_sistema_autenticacion():
         print("[INFO] Usuarios de prueba disponibles:")
         print("  - Admin: admin / admin123")
         print("  - Ejecutivo: ejecutivo / ejecutivo123") 
-        print("  - Agricultor: agricultor / agricultor123")
+        print("  - Agricultor: agricultor / CHANGE_ME_DEMO_AGRICULTOR")
         print("  - Técnico: tecnico / tecnico123")
         print("  - Usuario: usuario / usuario123")
         print("="*60)

@@ -88,7 +88,7 @@ Content-Type: application/json
 {
   "success": true,
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token": "YOUR_JWT_TOKEN_HERE",
     "expires_in": 3600,
     "token_type": "Bearer"
   }
@@ -99,7 +99,7 @@ Content-Type: application/json
 
 ```http
 GET /api/v1/meteorologia/datos
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 ```
 
 #### Renovar Token

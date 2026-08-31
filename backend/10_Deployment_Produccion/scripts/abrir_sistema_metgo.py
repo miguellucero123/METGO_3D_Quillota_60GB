@@ -40,7 +40,7 @@ def abrir_sistema():
     print("\n[USERS] Usuarios de Prueba:")
     print("   [ADMIN] admin / admin123")
     print("   [EXEC] ejecutivo / ejecutivo123")
-    print("   [AGRI] agricultor / agricultor123")
+    print("   [AGRI] agricultor / CHANGE_ME_DEMO_AGRICULTOR")
     print("   [TECH] tecnico / tecnico123")
     print("   [USER] usuario / usuario123")
     

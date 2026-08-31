@@ -94,7 +94,7 @@ def main():
         
         print("\nUSUARIOS DE PRUEBA:")
         print("  - admin / admin123")
-        print("  - agricultor / agricultor123")
+        print("  - agricultor / CHANGE_ME_DEMO_AGRICULTOR")
         print("  - tecnico / tecnico123")
         
         print("\nINSTRUCCIONES:")
