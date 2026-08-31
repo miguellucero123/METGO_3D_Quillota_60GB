@@ -15,18 +15,21 @@ pip install -r requirements.txt
 
 Node 18+: `cd frontend\vue; npm install`
 
-## 2. Restaurar secretos
+## 2. Restaurar secretos + docs internos
 
 Opción A — archivo cifrado (USB / nube privada):
 
 ```powershell
-# Traer METGO_VAULT.local.enc + este bootstrap cifrado si aplica
+# Traer METGO_VAULT.local.enc → carpeta local\
 python scripts/ops/vault_crypto.py unpack
 # Introduce la misma passphrase que usaste en pack
+# Restaura: vault, .env, docs/, site-web/, templates/, loadtests/, …
 copy local\METGO_VAULT.local.env .env
 ```
 
-Opción B — a mano desde Render Dashboard + WP Application Password.
+Detalle del bundle: `local/METGO_BUNDLE.local.example.md`
+
+Opción B — a mano desde Render Dashboard + WP Application Password (sin docs).
 
 ## 3. Arranque local
 
