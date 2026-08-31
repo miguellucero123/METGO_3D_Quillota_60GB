@@ -103,6 +103,11 @@ CORFO/**
 # Dumps de chat Cursor (pueden contener secretos históricos; no versionar)
 docs/manuales/cursor_revisar*.md
 
+# Archivos comprimidos locales (no versionar)
+*.rar
+*.zip
+*.7z
+
 # OS
 .DS_Store
 Thumbs.db
