@@ -18,7 +18,7 @@ def test_layout_capas_detectado():
     assert metgo_paths.LAYOUT_CAPAS is True
     assert (metgo_paths.BACKEND / "05_APIs_Externas").is_dir()
     assert (metgo_paths.FRONTEND / "vue").is_dir()
-    assert (metgo_paths.SITE_WEB / "streamlit").is_dir()
+    assert metgo_paths.site_web_streamlit_dir().is_dir()
 
 
 def test_metgo_paths_helpers():

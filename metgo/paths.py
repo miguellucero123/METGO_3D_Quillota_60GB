@@ -94,9 +94,20 @@ def streamlit_dashboard_path(filename: str) -> Path:
     return _frontend_path("dashboards", filename)
 
 
+def site_web_streamlit_dir() -> Path:
+    """Directorio Streamlit público (site-web o stub CI en tests/fixtures/streamlit_public)."""
+    canonical = SITE_WEB / "streamlit"
+    if canonical.is_dir():
+        return canonical
+    fixtures = PROJECT_ROOT / "tests" / "fixtures" / "streamlit_public"
+    if fixtures.is_dir():
+        return fixtures
+    return canonical
+
+
 def site_web_streamlit_path(filename: str) -> Path:
     """Ruta a un script Streamlit en site-web/streamlit/."""
-    return SITE_WEB / "streamlit" / filename
+    return site_web_streamlit_dir() / filename
 
 
 def frontend_vue_dir() -> Path:

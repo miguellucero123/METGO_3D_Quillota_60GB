@@ -116,9 +116,13 @@ def resolve_csv_dir() -> tuple[Path | None, str]:
     )
     if not allow:
         return None, "disabled"
-    ejemplos = _repo_root() / "docs" / "ejemplos" / "sinca_csv"
-    if ejemplos.is_dir():
-        return ejemplos, "ejemplos"
+    root = _repo_root()
+    for ejemplos in (
+        root / "docs" / "ejemplos" / "sinca_csv",
+        root / "tests" / "fixtures" / "sinca",
+    ):
+        if ejemplos.is_dir() and any(ejemplos.glob("*.csv")):
+            return ejemplos, "ejemplos"
     return None, "none"
 
 
@@ -173,7 +177,7 @@ def estado_sinca() -> dict[str, Any]:
         "nota": (
             "SINCA sin API oficial. Definir METGO_SINCA_IDS y "
             "METGO_SINCA_CSV_DIR o METGO_SINCA_CSV_URL='…/{slug}.csv' (E12). "
-            "Sin env, se usan docs/ejemplos/sinca_csv (METGO_SINCA_USE_EJEMPLOS=0 para desactivar). "
+            "Sin env, docs/ejemplos/sinca_csv o tests/fixtures/sinca (METGO_SINCA_USE_EJEMPLOS=0 para desactivar). "
             "Ver docs/roadmap/fase-3/sinca_activacion.md"
         ),
     }
