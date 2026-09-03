@@ -299,6 +299,31 @@ def register_fase4_routes(app: Flask) -> None:
                 res.setdefault("errores", []).append(f"etl_retry: {exc}")
         return jsonify(res)
 
+    @app.get("/api/cron/compliance/purge-audit")
+    @app.post("/api/cron/compliance/purge-audit")
+    def cron_compliance_purge_audit():
+        """R6 Ley 21.719: purga audit_auth fuera de retención (CRON_SECRET)."""
+        secret = (
+            request.args.get("token")
+            or request.headers.get("X-Cron-Token")
+            or (request.get_json(silent=True) or {}).get("token")
+            or ""
+        ).strip()
+        expected = (os.getenv("CRON_SECRET") or "").strip()
+        if not expected or secret != expected:
+            return jsonify({"error": "No autorizado", "code": "cron_forbidden"}), 403
+        dry = str(request.args.get("dry_run") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        try:
+            from api_rest.identity.compliance_retention import purge_audit_auth
+
+            return jsonify(purge_audit_auth(dry_run=dry))
+        except Exception as exc:
+            return jsonify({"ok": False, "error": str(exc)}), 500
+
     @app.get("/api/datos/etl/status")
     def datos_etl_status():
         """Público: último ETL sin secretos (monitoreo / cron smoke)."""

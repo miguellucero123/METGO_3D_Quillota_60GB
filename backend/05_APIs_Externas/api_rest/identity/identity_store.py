@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+import secrets
 import threading
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -916,41 +917,203 @@ def delete_user_data(email: str) -> tuple[bool, str]:
 
     if use_memory():
         with _lock:
+            found = False
             for u in _MEM["usuarios_app"]:
                 if u["email_norm"] == email_norm:
+                    uid = u.get("id")
                     u["email_norm"] = f"deleted_{uuid.uuid4()}@metgo3d.com"
                     u["nombres_enc"] = pii_crypto.encrypt_pii("Usuario")
                     u["apellidos_enc"] = pii_crypto.encrypt_pii("Eliminado")
                     u["telefono_enc"] = None
+                    u["password_hash"] = pii_crypto.hash_password(secrets.token_urlsafe(24))
                     u["status"] = "deleted"
-                    return True, "Cuenta eliminada y anonimizada"
+                    found = True
+                    for a in _MEM.get("audit_auth") or []:
+                        if a.get("usuario_id") == uid:
+                            a["ip_hash"] = None
+                            a["evento"] = f"{a.get('evento') or 'auth'}:redacted"
+            if found:
+                return True, "Cuenta eliminada y anonimizada"
             return False, "Usuario no encontrado"
 
     from api_rest.integracion import supabase_store as sb
-    
+
     try:
-        rows = sb.rest_select("usuarios_app", params={"email_norm": f"eq.{email_norm}", "select": "id"}, limit=1)
+        rows = sb.rest_select(
+            "usuarios_app",
+            params={"email_norm": f"eq.{email_norm}", "select": "id"},
+            limit=20,
+        )
         if not rows:
             return False, "Usuario no encontrado"
-        
-        uid = rows[0]["id"]
-        new_email = f"deleted_{uuid.uuid4()}@metgo3d.com"
-        
-        patch = {
-            "email_norm": new_email,
-            "nombres_enc": pii_crypto.encrypt_pii("Usuario"),
-            "apellidos_enc": pii_crypto.encrypt_pii("Eliminado"),
-            "telefono_enc": None,
-            "status": "deleted"
-        }
-        
-        res = sb.rest_patch("usuarios_app", {"id": f"eq.{uid}"}, patch)
-        if not res:
-            return False, "Error al anonimizar usuario en base de datos"
-            
+
+        for row in rows:
+            uid = row["id"]
+            new_email = f"deleted_{uuid.uuid4()}@metgo3d.com"
+            patch = {
+                "email_norm": new_email,
+                "nombres_enc": pii_crypto.encrypt_pii("Usuario"),
+                "apellidos_enc": pii_crypto.encrypt_pii("Eliminado"),
+                "telefono_enc": None,
+                "password_hash": pii_crypto.hash_password(secrets.token_urlsafe(24)),
+                "status": "deleted",
+            }
+            res = sb.rest_patch("usuarios_app", {"id": f"eq.{uid}"}, patch)
+            if not res:
+                return False, "Error al anonimizar usuario en base de datos"
+            # Conservar consentimientos (evidencia) ligados al uuid; scrub IP en audit
+            sb.rest_patch(
+                "audit_auth",
+                {"usuario_id": f"eq.{uid}"},
+                {"ip_hash": None},
+            )
+
         return True, "Cuenta eliminada y anonimizada"
     except Exception as e:
         return False, f"Error interno: {str(e)}"
+
+
+def export_user_data(email: str) -> tuple[dict[str, Any] | None, str]:
+    """Portabilidad (Ley 21.719): JSON con PII descifrada del titular."""
+    email_norm = str(email or "").strip().lower()
+    if not email_norm:
+        return None, "Email no válido"
+
+    def _row_public(u: dict[str, Any]) -> dict[str, Any]:
+        nombres = apellidos = telefono = None
+        try:
+            if u.get("nombres_enc"):
+                nombres = pii_crypto.decrypt_pii(u["nombres_enc"])
+        except Exception:
+            nombres = None
+        try:
+            if u.get("apellidos_enc"):
+                apellidos = pii_crypto.decrypt_pii(u["apellidos_enc"])
+        except Exception:
+            apellidos = None
+        try:
+            if u.get("telefono_enc"):
+                telefono = pii_crypto.decrypt_pii(u["telefono_enc"])
+        except Exception:
+            telefono = None
+        return {
+            "id": u.get("id"),
+            "email": u.get("email_norm"),
+            "nombres": nombres,
+            "apellidos": apellidos,
+            "telefono": telefono,
+            "sitio": u.get("sitio"),
+            "faena": u.get("faena"),
+            "role": u.get("role"),
+            "status": u.get("status"),
+            "org_id": u.get("org_id"),
+            "created_at": u.get("created_at"),
+        }
+
+    if use_memory():
+        with _lock:
+            users = [
+                dict(u)
+                for u in _MEM["usuarios_app"]
+                if u.get("email_norm") == email_norm
+            ]
+            if not users:
+                return None, "Usuario no encontrado"
+            uids = {u.get("id") for u in users}
+            cons = [
+                dict(c)
+                for c in _MEM.get("consentimientos") or []
+                if c.get("usuario_id") in uids
+            ]
+            audits = [
+                {
+                    "evento": a.get("evento"),
+                    "sitio": a.get("sitio"),
+                    "faena": a.get("faena"),
+                    "created_at": a.get("created_at"),
+                }
+                for a in _MEM.get("audit_auth") or []
+                if a.get("usuario_id") in uids
+            ]
+            org_ids = {u.get("org_id") for u in users if u.get("org_id")}
+            subs = [
+                {
+                    "plan_code": s.get("plan_code"),
+                    "status": s.get("status"),
+                    "sitio": s.get("sitio"),
+                    "faena": s.get("faena"),
+                    "current_period_end": s.get("current_period_end"),
+                }
+                for s in _MEM.get("suscripciones") or []
+                if s.get("org_id") in org_ids
+            ]
+        return {
+            "ley": "21.719",
+            "derecho": "portabilidad",
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "usuarios": [_row_public(u) for u in users],
+            "consentimientos": cons,
+            "suscripciones": subs,
+            "audit_auth": audits,
+        }, "ok"
+
+    from api_rest.integracion import supabase_store as sb
+
+    try:
+        users = sb.rest_select(
+            "usuarios_app",
+            params={"email_norm": f"eq.{email_norm}", "select": "*"},
+            limit=50,
+        )
+        if not users:
+            return None, "Usuario no encontrado"
+        uids = [str(u["id"]) for u in users if u.get("id")]
+        cons: list[dict[str, Any]] = []
+        audits: list[dict[str, Any]] = []
+        subs: list[dict[str, Any]] = []
+        for uid in uids:
+            cons.extend(
+                sb.rest_select(
+                    "consentimientos",
+                    params={"usuario_id": f"eq.{uid}", "select": "tipo,version,accepted_at"},
+                    limit=50,
+                )
+            )
+            audits.extend(
+                sb.rest_select(
+                    "audit_auth",
+                    params={
+                        "usuario_id": f"eq.{uid}",
+                        "select": "evento,sitio,faena,created_at",
+                        "order": "created_at.desc",
+                    },
+                    limit=100,
+                )
+            )
+        org_ids = {u.get("org_id") for u in users if u.get("org_id")}
+        for oid in org_ids:
+            subs.extend(
+                sb.rest_select(
+                    "suscripciones",
+                    params={
+                        "org_id": f"eq.{oid}",
+                        "select": "plan_code,status,sitio,faena,current_period_end",
+                    },
+                    limit=10,
+                )
+            )
+        return {
+            "ley": "21.719",
+            "derecho": "portabilidad",
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "usuarios": [_row_public(u) for u in users],
+            "consentimientos": cons,
+            "suscripciones": subs,
+            "audit_auth": audits,
+        }, "ok"
+    except Exception as e:
+        return None, f"Error interno: {str(e)}"
+
 
 def listar_membresias_email(email: str, sitio: str = "spati") -> list[dict[str, Any]]:
     """Membresías del mismo email en un producto (puede haber varias faenas)."""

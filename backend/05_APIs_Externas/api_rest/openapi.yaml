@@ -458,6 +458,55 @@ paths:
           description: "{ username, role, sitio, faena, hub, multi_faena, faenas }"
         "401":
           description: "Sin token o sesión reemplazada (code=session_replaced)"
+  /api/auth/me/export:
+    get:
+      tags: [auth]
+      summary: Portabilidad Ley 21.719 — export JSON del titular
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: "{ ley, derecho, exported_at, usuarios, consentimientos, suscripciones, audit_auth }"
+        "401":
+          description: Sin token
+        "404":
+          description: Usuario no encontrado
+  /api/auth/me/delete:
+    delete:
+      tags: [auth]
+      summary: Derecho al olvido — anonimiza PII y desactiva cuenta
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: "{ message }"
+        "401":
+          description: Sin token
+        "500":
+          description: Error al anonimizar
+  /api/cron/compliance/purge-audit:
+    get:
+      tags: [ops]
+      summary: Purga audit_auth fuera de retención (CRON_SECRET)
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+        - name: dry_run
+          in: query
+          schema: { type: string, enum: ["0", "1", "true", "false"] }
+      responses:
+        "200":
+          description: "{ ok, deleted, retention_days, cutoff }"
+        "403":
+          description: cron_forbidden
+    post:
+      tags: [ops]
+      summary: Purga audit_auth (POST)
+      responses:
+        "200":
+          description: "{ ok, deleted }"
+        "403":
+          description: cron_forbidden
   /api/auth/refresh:
     post:
       tags: [auth]

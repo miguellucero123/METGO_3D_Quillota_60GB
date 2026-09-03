@@ -452,6 +452,20 @@ def register_auth_routes(app: Flask) -> None:
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+    @app.get("/api/auth/me/export")
+    @auth_required
+    def export_my_data():
+        """Portabilidad (Ley 21.719): exporta datos personales del titular."""
+        from api_rest.identity import identity_store
+
+        email = getattr(g, "current_user", None)
+        if not email or "@" not in str(email):
+            return jsonify({"error": "Usuario no identificado por email"}), 400
+        data, msg = identity_store.export_user_data(str(email))
+        if not data:
+            return jsonify({"error": msg}), 404 if "no encontrado" in msg.lower() else 500
+        return jsonify(data), 200
+
     @app.delete("/api/auth/me/delete")
     @auth_required
     def delete_account():

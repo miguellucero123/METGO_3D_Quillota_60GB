@@ -183,11 +183,22 @@ flowchart TD
 ## 8. Primer sprint (próximos 7 días)
 
 1. Completar plantilla RAT (T1–T8).  
-2. Implementar R1 (rechazo ANON en production).  
+2. ~~Implementar R1 (rechazo ANON en production).~~ **Hecho** (`6e5200c`+)  
 3. Cargar `CLOUDFLARE_*` en GitHub Secrets y correr workflow Pages security.  
 4. Publicar / actualizar política de privacidad y términos en metgo3d.com (borrador).  
 5. Nombrar DPD interino por escrito (email interno).  
 
+### Avance Sep 2026 (código)
+
+| Ítem | Estado |
+|------|--------|
+| R1 anon en prod | Hecho |
+| R5 Pages harden as-code | Hecho (requiere secrets CF) |
+| R6 retención audit_auth | Hecho — `compliance_retention` + cron mensual |
+| R8 portabilidad export | Hecho — `GET /api/auth/me/export` |
+| R9 olvido ampliado | Hecho — password reset + scrub IP audit |
+| Runbook brechas 72 h | Hecho — `config/compliance/RUNBOOK_BRECHAS_72H.md` |
+| Dependabot | Hecho |
 ---
 
 ## Referencias código
