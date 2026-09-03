@@ -7,15 +7,20 @@
 
 ## Automatización (recomendado)
 
-1. En Cloudflare → My Profile → **API Tokens** → Create Token  
-   - Plantilla o custom: **Account → Cloudflare Pages → Edit**  
-   - **Account Settings → Read** (opcional pero útil)
-2. Copia **Account ID** (Workers & Pages → Overview, barra derecha).
-3. En GitHub → Settings → Secrets and variables → Actions, crea:
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID`
-4. Actions → **Cloudflare Pages security** → Run workflow  
-   o haz push a `config/cloudflare/pages_security.json`.
+> **Sin secrets el workflow no falla el repo**: se omite con un aviso.  
+> Solo falla si lo lanzas a mano (`workflow_dispatch`) sin haber cargado los secrets.
+
+1. En Cloudflare → My Profile → **API Tokens** → [Create Token](https://dash.cloudflare.com/profile/api-tokens)  
+   - Custom token: **Account → Cloudflare Pages → Edit**  
+   - **Account → Account Settings → Read** (recomendado)  
+   - Account resources: incluir la cuenta METGO  
+2. Copia **Account ID**: [Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages) → Overview, barra derecha.  
+3. En GitHub → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `CLOUDFLARE_API_TOKEN` = el token creado  
+   - `CLOUDFLARE_ACCOUNT_ID` = el Account ID (hex)  
+4. Actions → **Cloudflare Pages security** → **Run workflow**  
+
+Pages con Git sigue desplegando **sin** estos secrets; solo se usan para apagar previews vía API.
 
 Comportamiento:
 

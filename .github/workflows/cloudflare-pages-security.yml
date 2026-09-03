@@ -3,6 +3,7 @@
 # Secrets (repo): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 #
 # Token mínimo: Account → Cloudflare Pages → Edit (+ Account Settings Read)
+# Sin secrets: el job se OMITA (no falla el repo). Solo falla en workflow_dispatch manual.
 
 name: Cloudflare Pages security
 
@@ -35,18 +36,28 @@ jobs:
           python-version: "3.11"
 
       - name: Check secrets present
+        id: secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "::error::Faltan secrets CLOUDFLARE_API_TOKEN y/o CLOUDFLARE_ACCOUNT_ID."
-            echo "Crea un API Token (Pages Edit) y pega Account ID en Settings → Secrets."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Secrets Cloudflare no configurados — job omitido."
+            echo "Para activar: GitHub → Settings → Secrets → Actions"
+            echo "  CLOUDFLARE_API_TOKEN  (API Token Pages:Edit)"
+            echo "  CLOUDFLARE_ACCOUNT_ID (Workers & Pages → Account ID)"
             echo "Guía: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md"
-            exit 1
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::Ejecutaste el workflow a mano pero faltan los secrets. Agrégalos y reintenta."
+              exit 1
+            fi
+            exit 0
           fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
 
       - name: Apply or check Pages security policy
+        if: steps.secrets.outputs.configured == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
