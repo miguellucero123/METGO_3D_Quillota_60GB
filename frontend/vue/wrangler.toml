@@ -1,6 +1,8 @@
 # Cloudflare Pages — METGO3D (SPA Vue)
 # Dashboard: crear proyecto "metgo-quillota" con root = frontend/vue
-# Docs: docs/manuales/DESPLIEGUE_VUE_CLOUDFLARE.md
+# Seguridad: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md
+#   → Settings → Builds & deployments → Preview deployments = None (o solo PRs)
+#   → Custom domain + WAF cuando DNS esté en Cloudflare
 #
 # CLI local (opcional):
 #   npm run build

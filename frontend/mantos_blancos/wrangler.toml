@@ -1,5 +1,6 @@
 # Cloudflare Pages — METGO Mantos Blancos
 # Root directory en el dashboard: frontend/mantos_blancos
+# Seguridad: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md
 
 name = "metgo-mantos"
 compatibility_date = "2026-07-01"

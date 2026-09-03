@@ -1,5 +1,6 @@
 # Cloudflare Pages — METGO SPATI Izaje
 # Root directory: frontend/spati
+# Seguridad: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md (previews None + Access opcional)
 
 name = "metgo-spati"
 compatibility_date = "2026-07-01"

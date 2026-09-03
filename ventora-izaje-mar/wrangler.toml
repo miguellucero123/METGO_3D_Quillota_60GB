@@ -1,5 +1,6 @@
 # Cloudflare Pages — METGO VENTORA Izaje Marítimo
 # Root directory: ventora-izaje-mar
+# Seguridad: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md
 
 name = "ventora-izaje-mar"
 compatibility_date = "2026-07-01"

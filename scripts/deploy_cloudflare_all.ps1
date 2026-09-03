@@ -48,4 +48,5 @@ if (Test-Path $paine_dir) {
 Set-Location $base_dir
 Write-Host ""
 Write-Host "=== Todos los despliegues han terminado ===" -ForegroundColor Green
+Write-Host "Seguridad Pages: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md (previews, dominios, Access)." -ForegroundColor Yellow
 Write-Host "No olvides actualizar METGO_CORS_ORIGINS en Render si cambian las URLs." -ForegroundColor Yellow

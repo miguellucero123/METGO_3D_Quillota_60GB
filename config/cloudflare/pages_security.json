@@ -1,0 +1,58 @@
+{
+  "$schema_comment": "Fuente de verdad en Git: GitHub Actions aplica esto a Cloudflare Pages vía API.",
+  "version": 1,
+  "defaults": {
+    "preview_deployment_setting": "none",
+    "production_branch": "master"
+  },
+  "projects": [
+    {
+      "name": "metgo-quillota",
+      "root_dir": "frontend/vue",
+      "public": true,
+      "notes": "SPA agro Quillota"
+    },
+    {
+      "name": "metgo-spati",
+      "root_dir": "frontend/spati",
+      "public": true,
+      "notes": "SPATI faenas"
+    },
+    {
+      "name": "ventora-izaje-mar",
+      "root_dir": "ventora-izaje-mar",
+      "public": true,
+      "notes": "VENTORA izaje"
+    },
+    {
+      "name": "metgo-copiapo",
+      "root_dir": "frontend/copiapo",
+      "public": true,
+      "notes": "Aire Copiapó"
+    },
+    {
+      "name": "metgo-mantos",
+      "root_dir": "frontend/mantos_blancos",
+      "public": true,
+      "notes": "Mantos Blancos"
+    },
+    {
+      "name": "metgo-paine",
+      "root_dir": null,
+      "public": true,
+      "optional": true,
+      "notes": "Repo/proyecto aparte; omitir si 404"
+    }
+  ],
+  "github": {
+    "require_ci_on_default_branch": true,
+    "secret_names": [
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_ACCOUNT_ID"
+    ],
+    "token_permissions": [
+      "Account.Cloudflare Pages:Edit",
+      "Account.Account Settings:Read"
+    ]
+  }
+}

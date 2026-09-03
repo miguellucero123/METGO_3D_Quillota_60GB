@@ -1,0 +1,9 @@
+tratamiento_id,proceso,datos_personales,finalidad,base_legal_borrador,almacenamiento,plazo_propuesto,quien_accede,responsable_metgo,notas
+T1,Registro y login SPA,"email, nombres/apellidos cifrados, telefono cifrado, RUT hash, password hash, sitio/faena",Cuenta y acceso al servicio,Contrato / precontractual + consentimientos UI,Supabase usuarios_app orgs,Vida de la cuenta + 90 dias post baja,API service_role,Responsable,Ver pii_crypto y delete_user_data
+T2,Consentimientos registro,"flags terminos privacidad veracidad + timestamp IP si aplica",Prueba de consentimiento,Consentimiento,consentimientos,5 anos o exigencia legal,service_role,Responsable,
+T3,Auditoria autenticacion,"eventos login registro email metadata",Seguridad y evidencia,Interes legitimo seguridad,audit_auth,12-24 meses,service_role,Responsable,Definir si se guarda IP
+T4,Suscripciones y planes,"org_id plan estado fechas",Cobro y limites producto,Contrato,suscripciones entitlements,Plazo contable 6-10 anos,service_role,Responsable,Stripe si se activa
+T5,Notificaciones alertas,"email destino contenido alerta",Aviso operativo,Contrato,outbox SMTP Zoho,90 dias outbox,ops,Responsable,
+T6,WordPress marketing,"leads comentarios IP WP",Marketing web,Consentimiento / legítimo interés,WordPress.com,Segun politica WP,admins WP,Responsable,Revisar plugins
+T7,Turnstile anti-bot,"IP señales bot",Prevencion abuso,Interes legitimo,Cloudflare,Politica CF,—,Responsable,Solo site key en frontend
+T8,Series meteo aire spati,"sin PII estaciones contaminantes NWP",Servicio tecnico producto,N/A PII,Supabase meteo aire spati,Segun producto,SELECT anon hoy + API,Responsable,Decidir si cerrar anon

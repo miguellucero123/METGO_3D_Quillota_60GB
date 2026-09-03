@@ -23,6 +23,36 @@ _supabase_init_error: str | None = None
 _rest_ok: bool | None = None
 
 
+def _env_is_production() -> bool:
+    env = (os.getenv("METGO_ENV") or "").strip().lower()
+    if env in ("production", "prod"):
+        return True
+    return (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
+
+
+def _looks_like_anon_key(key: str) -> bool:
+    k = (key or "").strip()
+    if not k:
+        return False
+    low = k.lower()
+    if low.startswith("sb_publishable_"):
+        return True
+    if k.startswith("eyJ"):
+        try:
+            import base64
+            import json
+
+            parts = k.split(".")
+            if len(parts) < 2:
+                return False
+            pad = "=" * (-len(parts[1]) % 4)
+            payload = json.loads(base64.urlsafe_b64decode(parts[1] + pad))
+            return str(payload.get("role") or "").lower() == "anon"
+        except Exception:
+            return False
+    return False
+
+
 def _resolve_supabase_creds() -> tuple[str | None, str | None]:
     url = (
         os.getenv("SUPABASE_URL")
@@ -30,18 +60,40 @@ def _resolve_supabase_creds() -> tuple[str | None, str | None]:
         or os.getenv("VITE_SUPABASE_URL")
         or ""
     ).strip().strip('"').strip("'") or None
-    key = (
-        os.getenv("SUPABASE_KEY")
-        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-        or os.getenv("METGO_SUPABASE_KEY")
-        or os.getenv("SUPABASE_ANON_KEY")
-        or ""
-    ).strip().strip('"').strip("'") or None
+    if _env_is_production():
+        key = (
+            os.getenv("SUPABASE_KEY")
+            or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+            or os.getenv("METGO_SUPABASE_KEY")
+            or ""
+        ).strip().strip('"').strip("'") or None
+    else:
+        key = (
+            os.getenv("SUPABASE_KEY")
+            or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+            or os.getenv("METGO_SUPABASE_KEY")
+            or os.getenv("SUPABASE_ANON_KEY")
+            or ""
+        ).strip().strip('"').strip("'") or None
+    if key and _env_is_production() and _looks_like_anon_key(key):
+        raise RuntimeError(
+            "METGO: SUPABASE_KEY parece anon/publishable en production. "
+            "Use service_role / sb_secret_ (nunca anon en Render)."
+        )
     return url, key
 
 
+def _creds_or_none() -> tuple[str | None, str | None]:
+    global _supabase_init_error
+    try:
+        return _resolve_supabase_creds()
+    except RuntimeError as exc:
+        _supabase_init_error = str(exc)
+        return None, None
+
+
 def supabase_configurado() -> bool:
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     return bool(url and key)
 
 
@@ -63,7 +115,7 @@ def rest_select(
 ) -> list[dict[str, Any]]:
     """GET /rest/v1/{table} sin SDK."""
     global _rest_ok, _supabase_init_error
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     if not url or not key:
         return []
     endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
@@ -86,7 +138,7 @@ def rest_select(
 
 def rest_insert(table: str, row: dict[str, Any]) -> list[dict[str, Any]]:
     """POST /rest/v1/{table} con Prefer return=representation."""
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     if not url or not key or not row:
         return []
     endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
@@ -113,7 +165,7 @@ def rest_insert(table: str, row: dict[str, Any]) -> list[dict[str, Any]]:
 
 def rest_patch(table: str, match: dict[str, str], patch: dict[str, Any]) -> list[dict[str, Any]]:
     """PATCH /rest/v1/{table}?col=eq.val"""
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     if not url or not key or not patch:
         return []
     endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
@@ -142,7 +194,7 @@ def rest_patch(table: str, match: dict[str, str], patch: dict[str, Any]) -> list
 
 def rest_delete(table: str, match: dict[str, str]) -> int:
     """DELETE /rest/v1/{table}?col=eq.val — retorna filas afectadas (si Prefer return=representation)."""
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     if not url or not key or not match:
         return 0
     endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
@@ -172,7 +224,7 @@ def rest_delete(table: str, match: dict[str, str]) -> int:
 
 
 def rest_upsert(table: str, rows: list[dict[str, Any]], on_conflict: str) -> int:
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     if not url or not key or not rows:
         return 0
     endpoint = f"{url.rstrip('/')}/rest/v1/{table}"
@@ -191,7 +243,7 @@ def rest_upsert(table: str, rows: list[dict[str, Any]], on_conflict: str) -> int
 
 
 def supabase_status() -> dict[str, Any]:
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     host = ""
     if url:
         try:
@@ -216,9 +268,9 @@ def get_supabase_client():
     if _supabase_client is not None:
         return _supabase_client
 
-    url, key = _resolve_supabase_creds()
+    url, key = _creds_or_none()
     if not url or not key:
-        _supabase_init_error = "Faltan SUPABASE_URL y/o SUPABASE_KEY"
+        _supabase_init_error = _supabase_init_error or "Faltan SUPABASE_URL y/o SUPABASE_KEY"
         return None
 
     try:
@@ -235,7 +287,14 @@ def get_supabase_client():
         return None
 
 
-SUPABASE_URL, SUPABASE_KEY = _resolve_supabase_creds()
+try:
+    SUPABASE_URL, SUPABASE_KEY = _resolve_supabase_creds()
+except RuntimeError:
+    SUPABASE_URL, SUPABASE_KEY = None, None
+    _supabase_init_error = (
+        "METGO: SUPABASE_KEY parece anon/publishable en production. "
+        "Use service_role / sb_secret_."
+    )
 
 
 def guardar_registros(estacion_id: str, filas: list[dict[str, Any]], fuente: str = "openmeteo") -> int:
@@ -331,7 +390,7 @@ def leer_registros(estacion_id: str, dias: int = 30) -> list[dict[str, Any]]:
 
 
 def estadisticas_store() -> dict[str, Any]:
-    url, _ = _resolve_supabase_creds()
+    url, _ = _creds_or_none()
     # Usar rest_select con timeout muy corto (3s) para evitar bloquear el /health
     # si el proyecto Supabase está pausado.
     sample = rest_select(

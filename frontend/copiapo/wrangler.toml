@@ -1,5 +1,6 @@
 # Cloudflare Pages — METGO Copiapó
 # Root directory en el dashboard: frontend/copiapo
+# Seguridad: scripts/ops/CLOUDFLARE_PAGES_HARDENING.md
 
 name = "metgo-copiapo"
 compatibility_date = "2026-07-01"
