@@ -30,7 +30,6 @@ regexes = [
   '''secreto_para_endpoints''',
   '''ci-dev-only-not-for-production''',
   '''ROTACION_CREDENCIALES_R2''',
-  '''generic-api-key false positive filenames''',
 ]
 
 stopwords = [
