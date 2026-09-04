@@ -166,14 +166,30 @@ function irLogin() {
             <input v-model="form.almacenamiento_datos" type="checkbox" />
             {{ t('registro.consentStore') }}
           </label>
-          <label class="check">
-            <input v-model="form.tos" type="checkbox" />
-            {{ t('registro.consentTos') }}
-          </label>
-          <label class="check">
-            <input v-model="form.privacy" type="checkbox" />
-            {{ t('registro.consentPrivacy') }}
-          </label>
+            <label class="check">
+              <input v-model="form.tos" type="checkbox" />
+              <span>
+                {{ t('registro.consentTosBefore') }}
+                <a
+                  href="https://metgo3d.com/terminos/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ t('registro.consentTosLink') }}</a
+                >.
+              </span>
+            </label>
+            <label class="check">
+              <input v-model="form.privacy" type="checkbox" />
+              <span>
+                {{ t('registro.consentPrivacyBefore') }}
+                <a
+                  href="https://metgo3d.com/privacidad/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ t('registro.consentPrivacyLink') }}</a
+                >.
+              </span>
+            </label>
           <label class="check">
             <input v-model="form.veracidad" type="checkbox" />
             {{ t('registro.consentTruth') }}

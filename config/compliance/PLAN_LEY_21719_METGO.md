@@ -36,7 +36,7 @@
 
 ### 1.2 Entregables RAT
 
-- [ ] Planilla RAT (CSV/Notion) con columnas: ID, datos, categoría (sensible/no), finalidad, base legal, cesiones, plazos, medidas, encargado  
+- [x] Planilla RAT (CSV/Notion) con columnas: ID, datos, categoría (sensible/no), finalidad, base legal, cesiones, plazos, medidas, encargado → `RAT_METGO_v0.csv`  
 - [ ] Diagrama flujo datos: SPA → API → Supabase / SMTP / Stripe  
 - [ ] Lista subencargados + enlaces a DPA  
 
@@ -100,8 +100,8 @@ Checklist: `config/compliance/CHECKLIST_PR_PRIVACIDAD.md`.
 
 | Rol | Persona (propuesta 2 fundadores) | Responsabilidad |
 |-----|----------------------------------|-----------------|
-| **DPD / encargado cumplimiento** (interino) | Fundador A | RAT, políticas, notificación 72 h, relación Agencia |
-| **Responsable técnico seguridad** | Fundador B | Secrets, RLS, backups, Access, CI |
+| **DPD / encargado cumplimiento** (interino) | Miguel Lucero (`DPD_INTERINO.md`) | RAT, políticas, notificación 72 h, relación Agencia |
+| **Responsable técnico seguridad** | Co-fundador (completar) | Secrets, RLS, backups, Access, CI |
 | Asesor legal externo | Contratar Q4 2026 | Revisión bases legales + textos |
 
 **Documentos mínimos:**
@@ -182,21 +182,23 @@ flowchart TD
 
 ## 8. Primer sprint (próximos 7 días)
 
-1. Completar plantilla RAT (T1–T8).  
+1. ~~Completar plantilla RAT (T1–T8).~~ **Hecho** → `RAT_METGO_v0.csv`  
 2. ~~Implementar R1 (rechazo ANON en production).~~ **Hecho** (`6e5200c`+)  
-3. Cargar `CLOUDFLARE_*` en GitHub Secrets y correr workflow Pages security.  
-4. Publicar / actualizar política de privacidad y términos en metgo3d.com (borrador).  
-5. Nombrar DPD interino por escrito (email interno).  
+3. ~~Cargar `CLOUDFLARE_*` en GitHub Secrets y correr workflow Pages security.~~ **Hecho**  
+4. ~~Publicar / actualizar política de privacidad y términos en metgo3d.com (borrador).~~ **Hecho** R10 — `/privacidad/` `/terminos/` + enlaces registro  
+5. ~~Nombrar DPD interino por escrito.~~ **Hecho** → `DPD_INTERINO.md`  
 
 ### Avance Sep 2026 (código)
 
 | Ítem | Estado |
 |------|--------|
 | R1 anon en prod | Hecho |
-| R5 Pages harden as-code | Hecho (requiere secrets CF) |
+| R5 Pages harden as-code | Hecho (secrets CF + workflow) |
 | R6 retención audit_auth | Hecho — `compliance_retention` + cron mensual |
 | R8 portabilidad export | Hecho — `GET /api/auth/me/export` |
 | R9 olvido ampliado | Hecho — password reset + scrub IP audit |
+| R10 textos legales WP + registro | Hecho — metgo3d.com + SPA RegistroView |
+| RAT v0 + DPD interino | Hecho — `RAT_METGO_v0.csv` · `DPD_INTERINO.md` |
 | Runbook brechas 72 h | Hecho — `config/compliance/RUNBOOK_BRECHAS_72H.md` |
 | Dependabot | Hecho |
 ---

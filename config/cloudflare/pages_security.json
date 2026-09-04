@@ -22,7 +22,7 @@
       "name": "ventora-izaje-mar",
       "root_dir": "ventora-izaje-mar",
       "public": true,
-      "notes": "VENTORA izaje"
+      "notes": "VENTORA izaje — monorepo; production_branch=master (default)"
     },
     {
       "name": "metgo-copiapo",
@@ -41,7 +41,8 @@
       "root_dir": null,
       "public": true,
       "optional": true,
-      "notes": "Repo/proyecto aparte; omitir si 404"
+      "production_branch": "main",
+      "notes": "Repo/proyecto aparte (default branch main); omitir si 404"
     }
   ],
   "github": {

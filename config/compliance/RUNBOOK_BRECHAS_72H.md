@@ -5,8 +5,8 @@ Ver plan: `PLAN_LEY_21719_METGO.md` §4.
 ## Contactos
 | Rol | Quién | Canal |
 |-----|-------|-------|
-| DPD interino | (completar) | email |
-| Técnico seguridad | (completar) | email / WhatsApp |
+| DPD interino | Miguel Lucero | miguel.lucero@metgo3d.com |
+| Técnico seguridad | Co-fundador (completar nombre) | email / WhatsApp |
 
 ## Minutos 0–60
 1. Confirmar incidente (no falso positivo).  
