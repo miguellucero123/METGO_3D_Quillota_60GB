@@ -1,6 +1,6 @@
 <script setup>
 import { computed, inject, onMounted, ref } from 'vue'
-import { fetchCuenta, checkoutPlan, wakeApi, invitarUsuario } from '@/services/authApi'
+import { fetchCuenta, checkoutPlan, wakeApi, invitarUsuario, exportMyData, deleteMyAccount } from '@/services/authApi'
 import { useAuth } from '@/stores/auth'
 
 const site = inject('site')
@@ -19,6 +19,57 @@ const inviteMsg = ref('')
 const inviteErr = ref('')
 const inviteVerifyUrl = ref('')
 const inviteCopied = ref(false)
+
+const privacyBusy = ref('')
+const privacyMsg = ref('')
+const privacyErr = ref('')
+const confirmDelete = ref('')
+
+async function descargarMisDatos() {
+  privacyMsg.value = ''
+  privacyErr.value = ''
+  privacyBusy.value = 'export'
+  try {
+    const payload = await exportMyData()
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'metgo-mis-datos-' + new Date().toISOString().slice(0, 10) + '.json'
+    a.click()
+    URL.revokeObjectURL(url)
+    privacyMsg.value = 'Exportacion descargada (JSON).'
+  } catch (e) {
+    privacyErr.value = e.message || 'No se pudo exportar'
+  } finally {
+    privacyBusy.value = ''
+  }
+}
+
+async function solicitarOlvido(logoutFn, loginPath) {
+  privacyMsg.value = ''
+  privacyErr.value = ''
+  if (confirmDelete.value.trim().toUpperCase() !== 'ELIMINAR') {
+    privacyErr.value = 'Escribe ELIMINAR para confirmar el derecho al olvido.'
+    return
+  }
+  privacyBusy.value = 'delete'
+  try {
+    const res = await deleteMyAccount()
+    privacyMsg.value = res.message || 'Cuenta anonimizada.'
+    if (logoutFn) logoutFn()
+    if (loginPath) window.location.assign(loginPath)
+  } catch (e) {
+    privacyErr.value = e.message || 'No se pudo eliminar'
+  } finally {
+    privacyBusy.value = ''
+  }
+}
+
+async function onOlvido() {
+  await solicitarOlvido(() => { try { auth.logout() } catch (_) {} }, '/login')
+}
+
 
 onMounted(async () => {
   wakeApi().catch(() => {})
@@ -164,6 +215,29 @@ const tabs = computed(() => data.value?.access?.tabs || {})
       </ul>
     </section>
 
+    
+    <section v-if="data" class="card privacy-card">
+      <h2>Privacidad y derechos (Ley 21.719)</h2>
+      <p class="hint">
+        Portabilidad y cancelacion.
+        <a href="https://metgo3d.com/privacidad/" target="_blank" rel="noopener noreferrer">Politica</a>.
+      </p>
+      <div class="privacy-actions">
+        <button type="button" class="btn" :disabled="!!privacyBusy" @click="descargarMisDatos">
+          {{ privacyBusy === 'export' ? '...' : 'Descargar mis datos (JSON)' }}
+        </button>
+        <label class="delete-confirm">
+          Confirmar olvido
+          <input v-model="confirmDelete" type="text" placeholder="Escribe ELIMINAR" autocomplete="off" />
+        </label>
+        <button type="button" class="btn btn-danger" :disabled="!!privacyBusy" @click="onOlvido">
+          {{ privacyBusy === 'delete' ? '...' : 'Solicitar eliminacion de cuenta' }}
+        </button>
+      </div>
+      <p v-if="privacyMsg" class="ok">{{ privacyMsg }}</p>
+      <p v-if="privacyErr" class="err">{{ privacyErr }}</p>
+    </section>
+
     <section v-if="data" class="card">
       <h2>Invitar usuario a esta org</h2>
       <p class="hint">Mismo RUT/org · otro email. El invitado verifica correo y entra con la clave indicada.</p>
@@ -278,4 +352,10 @@ dd { margin: 0; }
 @media (max-width: 640px) {
   .invite-form { grid-template-columns: 1fr; }
 }
+
+.privacy-actions { display:flex; flex-wrap:wrap; gap:0.75rem; align-items:end; margin-top:0.75rem; }
+.delete-confirm { display:flex; flex-direction:column; gap:0.25rem; font-size:0.8rem; }
+.delete-confirm input { padding:0.45rem 0.55rem; border-radius:8px; border:1px solid var(--color-border); background:transparent; color:var(--color-text); }
+.btn-danger { background:#b91c1c; color:#fff; }
+
 </style>

@@ -180,6 +180,14 @@ export async function invitarUsuario(body) {
   return request('/auth/invitar', { method: 'POST', body, auth: true })
 }
 
+export async function exportMyData() {
+  return request('/auth/me/export', { auth: true })
+}
+
+export async function deleteMyAccount() {
+  return request('/auth/me/delete', { method: 'DELETE', auth: true })
+}
+
 export async function verifyEmail(token) {
   return request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
 }

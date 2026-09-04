@@ -205,8 +205,12 @@ flowchart TD
 | R7 backup/restore | Runbook + acta plantilla — falta drill (hoy: documental) |
 | R12 inventario | Hecho (plantilla) — `INVENTARIO_ENDPOINTS_R12.csv` |
 | Encargado B2B | Hecho (borrador) — `CONTRATO_ENCARGADO_B2B.md` |
+| Derechos UI (export/olvido) | Hecho — sección en `CuentaView` (SPA) |
+| Procedimiento derechos | Hecho — `PROCEDIMIENTO_DERECHOS_TITULARES.md` |
+| Turnstile ops | Guía — `OPS_TURNSTILE.md` (keys pendientes en Render) |
 | Runbook brechas 72 h | Hecho — `config/compliance/RUNBOOK_BRECHAS_72H.md` |
 | Dependabot | Hecho |
+| Pendientes humanos | `REQUISITOS_PENDIENTES.md` |
 ---
 
 ## Referencias código

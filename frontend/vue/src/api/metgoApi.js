@@ -192,6 +192,18 @@ export async function invitarUsuario(body) {
   return data
 }
 
+/** Portabilidad Ley 21.719 — JSON del titular autenticado */
+export async function exportMyData() {
+  const { data } = await api.get('/auth/me/export')
+  return data
+}
+
+/** Derecho al olvido — anonimiza y desactiva cuenta */
+export async function deleteMyAccount() {
+  const { data } = await api.delete('/auth/me/delete')
+  return data
+}
+
 export async function fetchMe() {
   const { data } = await api.get('/auth/me')
   return data

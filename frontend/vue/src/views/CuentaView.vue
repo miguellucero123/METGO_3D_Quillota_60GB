@@ -1,10 +1,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { fetchCuenta, checkoutPlan, wakeApi, invitarUsuario } from '@/api/metgoApi'
+import { fetchCuenta, checkoutPlan, wakeApi, invitarUsuario, exportMyData, deleteMyAccount } from '@/api/metgoApi'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const SITIO = 'quillota'
 const auth = useAuthStore()
+const router = useRouter()
 
 const loading = ref(true)
 const error = ref('')
@@ -17,6 +19,51 @@ const inviteMsg = ref('')
 const inviteErr = ref('')
 const inviteVerifyUrl = ref('')
 const inviteCopied = ref(false)
+const privacyBusy = ref('')
+const privacyMsg = ref('')
+const privacyErr = ref('')
+const confirmDelete = ref('')
+
+async function descargarMisDatos() {
+  privacyMsg.value = ''
+  privacyErr.value = ''
+  privacyBusy.value = 'export'
+  try {
+    const payload = await exportMyData()
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `metgo-mis-datos-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    privacyMsg.value = 'Exportación descargada (JSON).'
+  } catch (e) {
+    privacyErr.value = e.message || 'No se pudo exportar'
+  } finally {
+    privacyBusy.value = ''
+  }
+}
+
+async function solicitarOlvido() {
+  privacyMsg.value = ''
+  privacyErr.value = ''
+  if (confirmDelete.value.trim().toUpperCase() !== 'ELIMINAR') {
+    privacyErr.value = 'Escribe ELIMINAR para confirmar el derecho al olvido.'
+    return
+  }
+  privacyBusy.value = 'delete'
+  try {
+    const res = await deleteMyAccount()
+    privacyMsg.value = res.message || 'Cuenta anonimizada.'
+    auth.logout()
+    router.push('/login')
+  } catch (e) {
+    privacyErr.value = e.message || 'No se pudo eliminar'
+  } finally {
+    privacyBusy.value = ''
+  }
+}
 
 onMounted(async () => {
   wakeApi().catch(() => {})
@@ -162,6 +209,33 @@ const tabs = computed(() => data.value?.access?.tabs || {})
     </section>
 
     <section v-if="data" class="card">
+      <h2>Privacidad y derechos (Ley 21.719)</h2>
+      <p class="hint">
+        Portabilidad y cancelación de tu cuenta. Política:
+        <a href="https://metgo3d.com/privacidad/" target="_blank" rel="noopener noreferrer">metgo3d.com/privacidad</a>.
+      </p>
+      <div class="privacy-actions">
+        <button type="button" class="btn" :disabled="!!privacyBusy" @click="descargarMisDatos">
+          {{ privacyBusy === 'export' ? '…' : 'Descargar mis datos (JSON)' }}
+        </button>
+        <label class="delete-confirm">
+          Confirmar olvido
+          <input v-model="confirmDelete" type="text" placeholder="Escribe ELIMINAR" autocomplete="off" />
+        </label>
+        <button
+          type="button"
+          class="btn btn-danger"
+          :disabled="!!privacyBusy"
+          @click="solicitarOlvido"
+        >
+          {{ privacyBusy === 'delete' ? '…' : 'Solicitar eliminación de cuenta' }}
+        </button>
+      </div>
+      <p v-if="privacyMsg" class="ok">{{ privacyMsg }}</p>
+      <p v-if="privacyErr" class="err">{{ privacyErr }}</p>
+    </section>
+
+    <section v-if="data" class="card">
       <h2>Invitar usuario a esta org</h2>
       <p class="hint">Mismo RUT/org · otro email. El invitado verifica correo y entra con la clave indicada.</p>
       <form class="invite-form" @submit.prevent="enviarInvitacion">
@@ -271,6 +345,31 @@ dd { margin: 0; }
   background: transparent;
   color: var(--color-primary);
   border: 1px solid var(--color-border);
+}
+.btn-danger {
+  background: #b91c1c;
+  color: #fff;
+}
+.privacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 0.75rem;
+}
+.delete-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--color-muted, var(--color-text-secondary));
+}
+.delete-confirm input {
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
 }
 @media (max-width: 640px) {
   .invite-form { grid-template-columns: 1fr; }
