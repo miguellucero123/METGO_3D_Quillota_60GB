@@ -24,7 +24,7 @@ Marca cada casilla cuando veas “two-factor / MFA enabled”.
 ### A3. Render (obligatorio)
 1. https://dashboard.render.com → Account Settings → **Security**  
 2. Enable two-factor.  
-- [ ] Render MFA ON
+- [x] Render MFA ON · 2026-09-04
 
 ### A4. Supabase (obligatorio)
 1. https://supabase.com/dashboard/account/security (o Account → MFA)  
