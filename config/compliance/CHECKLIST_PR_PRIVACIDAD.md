@@ -9,6 +9,6 @@ Antes de merge, el autor marca:
 - [ ] ¿El olvido (`delete_user_data`) y/o export siguen siendo posibles?
 - [ ] ¿Secrets solo en Render/GitHub Secrets (nada `VITE_` con secretos)?
 - [ ] ¿Si toca Supabase: migración RLS + grants service_role revisados?
-- [ ] ¿Actualizar fila en RAT (`config/compliance/RAT_METGO.template.csv`)?
+- [ ] ¿Actualizar fila en RAT (`config/compliance/RAT_METGO_v0.csv`)?
 
 Si todo “No aplica”, escribir en la descripción del PR: `Privacidad: N/A — sin PII`.

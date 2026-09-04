@@ -164,7 +164,7 @@ flowchart TD
 | Ventana | Entregables | Ligado a |
 |---------|-------------|----------|
 | **Sep 2026 (ahora)** | G0 roles; RAT v0; R1 client.py; R5 CF secrets+workflow; R10 textos legales draft; política Pages | Técnico + legal draft |
-| **Oct 2026** | R4 MFA; R6 retención logs; R7 drill backup; plantilla Encargado B2B; checklist PR | Controles + contratos |
+| **Oct 2026** | R4 MFA checklist; R6 retención logs; R7 runbook+drill; plantilla Encargado B2B; checklist PR | Controles + contratos |
 | **Nov 2026** | R8 export; R9 olvido ampliado; capacitar equipo; ensayo mesa de brecha 72 h | Derechos + respuesta |
 | **Dic 2026** | Revisión asesor; RAT v1 firmado; evidencias empaquetadas; go-live cumplimiento | Cierre |
 
@@ -199,6 +199,12 @@ flowchart TD
 | R9 olvido ampliado | Hecho — password reset + scrub IP audit |
 | R10 textos legales WP + registro | Hecho — metgo3d.com + SPA RegistroView |
 | RAT v0 + DPD interino | Hecho — `RAT_METGO_v0.csv` · `DPD_INTERINO.md` |
+| R2 rotación secrets | Hecho (runbook) — `ROTACION_SECRETS_R2.md` |
+| R3 SELECT anon | Hecho (decisión) — `DECISION_R3_ANON_SELECT.md` |
+| R4 MFA admin | Checklist listo — activar MFA en consolas (`CHECKLIST_MFA_R4.md`) |
+| R7 backup/restore | Runbook listo — falta 1 drill con acta (`RUNBOOK_BACKUP_RESTORE_R7.md`) |
+| R12 inventario | Hecho (plantilla) — `INVENTARIO_ENDPOINTS_R12.csv` |
+| Encargado B2B | Hecho (borrador) — `CONTRATO_ENCARGADO_B2B.md` |
 | Runbook brechas 72 h | Hecho — `config/compliance/RUNBOOK_BRECHAS_72H.md` |
 | Dependabot | Hecho |
 ---

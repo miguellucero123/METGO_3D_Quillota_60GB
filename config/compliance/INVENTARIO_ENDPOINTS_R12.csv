@@ -1,0 +1,16 @@
+activo,tipo,nombre_o_host,url_o_id,responsable,mfa,ultimo_review,notas
+si,cuenta_saas,GitHub METGO,github.com/miguellucero123/METGO_3D_Quillota_60GB,Miguel Lucero,pendiente,2026-09-04,MFA checklist R4
+si,cuenta_saas,Cloudflare account,dash.cloudflare.com,Miguel Lucero,pendiente,2026-09-04,Pages + DNS
+si,cuenta_saas,Render metgo-api,dashboard.render.com,Miguel Lucero,pendiente,2026-09-04,Env secrets
+si,cuenta_saas,Supabase ylivhjig…,supabase.com/dashboard,Miguel Lucero,pendiente,2026-09-04,PITR/backups R7
+si,cuenta_saas,WordPress metgo3d.com,metgo3d.com/wp-admin,Miguel Lucero,pendiente,2026-09-04,Legales R10
+si,cuenta_saas,Zoho Mail,mail.zoho.com,Miguel Lucero,pendiente,2026-09-04,SMTP prod
+si,laptop,PC desarrollo principal,[alias interno],Miguel Lucero,pantalla_bloqueo,2026-09-04,Bitwarden / no secrets en git
+si,url_prod,API Render,https://metgo-api.onrender.com/api,ops,n/a,2026-09-04,JWT obligatorio
+si,url_prod,SPA Quillota,https://metgo-quillota.pages.dev,ops,n/a,2026-09-04,Pages public
+si,url_prod,SPA SPATI,https://metgo-spati.pages.dev,ops,n/a,2026-09-04,
+si,url_prod,SPA Ventora,https://ventora-izaje-mar.pages.dev,ops,n/a,2026-09-04,
+si,url_prod,SPA Copiapo,https://metgo-copiapo.pages.dev,ops,n/a,2026-09-04,
+si,url_prod,SPA Mantos,https://metgo-mantos.pages.dev,ops,n/a,2026-09-04,
+si,url_prod,Marketing WP,https://metgo3d.com,ops,n/a,2026-09-04,
+no,cuenta_saas,Stripe,dashboard.stripe.com,—,n/a,2026-09-04,Activar con pagos
