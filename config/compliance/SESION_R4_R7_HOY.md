@@ -14,7 +14,7 @@ Marca cada casilla cuando veas “two-factor / MFA enabled”.
 1. Abre https://github.com/settings/security  
 2. **Enable** two-factor authentication (app TOTP o llave).  
 3. Guarda recovery codes en Bitwarden / lugar seguro (fuera del repo).  
-- [ ] GitHub MFA ON
+- [x] GitHub MFA ON · 2026-09-04 (recovery codes en gestor personal, no en Git)
 
 ### A2. Cloudflare (obligatorio)
 1. https://dash.cloudflare.com/profile/authentication  
