@@ -1,6 +1,6 @@
 activo,tipo,nombre_o_host,url_o_id,responsable,mfa,ultimo_review,notas
 si,cuenta_saas,GitHub METGO,github.com/miguellucero123/METGO_3D_Quillota_60GB,Miguel Lucero,totp,2026-09-04,MFA ON; recovery codes solo offline (no en Git)
-si,cuenta_saas,Cloudflare account,dash.cloudflare.com,Miguel Lucero,pendiente,2026-09-04,Pages + DNS
+si,cuenta_saas,Cloudflare account,dash.cloudflare.com,Miguel Lucero,totp,2026-09-04,MFA ON; recovery codes offline
 si,cuenta_saas,Render metgo-api,dashboard.render.com,Miguel Lucero,pendiente,2026-09-04,Env secrets
 si,cuenta_saas,Supabase ylivhjig…,supabase.com/dashboard,Miguel Lucero,pendiente,2026-09-04,PITR/backups R7
 si,cuenta_saas,WordPress metgo3d.com,metgo3d.com/wp-admin,Miguel Lucero,pendiente,2026-09-04,Legales R10

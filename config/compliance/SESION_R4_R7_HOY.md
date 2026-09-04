@@ -19,7 +19,7 @@ Marca cada casilla cuando veas “two-factor / MFA enabled”.
 ### A2. Cloudflare (obligatorio)
 1. https://dash.cloudflare.com/profile/authentication  
 2. Activa **Two-factor authentication**.  
-- [ ] Cloudflare MFA ON
+- [x] Cloudflare MFA ON · 2026-09-04 (TOTP app)
 
 ### A3. Render (obligatorio)
 1. https://dashboard.render.com → Account Settings → **Security**  
