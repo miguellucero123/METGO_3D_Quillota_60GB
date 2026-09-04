@@ -29,7 +29,7 @@ Marca cada casilla cuando veas “two-factor / MFA enabled”.
 ### A4. Supabase (obligatorio)
 1. https://supabase.com/dashboard/account/security (o Account → MFA)  
 2. Enable MFA para tu usuario owner.  
-- [ ] Supabase MFA ON
+- [x] Supabase MFA ON · 2026-09-04 (app `MFA2-METGO3D`)
 
 ### A5. Zoho Mail (recomendado — SMTP ya en prod)
 1. https://accounts.zoho.com → Security → MFA / App passwords.  
