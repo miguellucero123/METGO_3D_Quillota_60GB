@@ -29,7 +29,8 @@ regexes = [
   '''generar-secreto''',
   '''secreto_para_endpoints''',
   '''ci-dev-only-not-for-production''',
-  '''ci-test-secret''',
+  '''ROTACION_CREDENCIALES_R2''',
+  '''generic-api-key false positive filenames''',
 ]
 
 stopwords = [

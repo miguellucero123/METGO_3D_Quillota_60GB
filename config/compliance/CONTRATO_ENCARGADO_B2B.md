@@ -62,4 +62,4 @@ METGO: _________________ fecha ____
 - RAT: `RAT_METGO_v0.csv`  
 - Olvido / portabilidad API  
 - Backup: `RUNBOOK_BACKUP_RESTORE_R7.md`  
-- Rotación: `ROTACION_SECRETS_R2.md`
+- Rotación: `ROTACION_CREDENCIALES_R2.md`

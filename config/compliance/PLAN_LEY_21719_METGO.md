@@ -199,7 +199,7 @@ flowchart TD
 | R9 olvido ampliado | Hecho — password reset + scrub IP audit |
 | R10 textos legales WP + registro | Hecho — metgo3d.com + SPA RegistroView |
 | RAT v0 + DPD interino | Hecho — `RAT_METGO_v0.csv` · `DPD_INTERINO.md` |
-| R2 rotación secrets | Hecho (runbook) — `ROTACION_SECRETS_R2.md` |
+| R2 rotación secrets | Hecho (runbook) — `ROTACION_CREDENCIALES_R2.md` |
 | R3 SELECT anon | Hecho (decisión) — `DECISION_R3_ANON_SELECT.md` |
 | R4 MFA admin | **Sesión humana** — `SESION_R4_R7_HOY.md` + `CHECKLIST_MFA_R4.md` |
 | R7 backup/restore | Runbook + acta plantilla — falta drill (hoy: documental) |

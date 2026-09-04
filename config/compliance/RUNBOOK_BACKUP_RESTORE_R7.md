@@ -63,5 +63,5 @@ Firma DPD / técnico:
 ## Referencias
 
 - Dashboard: https://supabase.com/dashboard  
-- Rotación secrets: `ROTACION_SECRETS_R2.md`  
+- Rotación credenciales: `ROTACION_CREDENCIALES_R2.md`  
 - Brechas: `RUNBOOK_BRECHAS_72H.md`
