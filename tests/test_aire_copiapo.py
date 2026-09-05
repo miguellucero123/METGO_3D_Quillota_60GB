@@ -151,18 +151,23 @@ def test_api_public_aire_alertas():
 
 
 def test_sinca_stub_estado(monkeypatch):
-    """E12.1: con ejemplos → listo_csv; sin ejemplos ni env → pendiente_fuente."""
+    """E12: catálogo con IDs inventario + CSV ejemplos; sin ejemplos → parcial."""
     _setup_api()
     from api_rest import sinca_service
     from api_rest.app import create_app
 
     monkeypatch.delenv("METGO_SINCA_CSV_DIR", raising=False)
+    monkeypatch.delenv("METGO_SINCA_IDS", raising=False)
     monkeypatch.setenv("METGO_SINCA_USE_EJEMPLOS", "1")
     est = sinca_service.estado_sinca()
     assert est["fuente"] == "sinca_mma"
     assert est["estado"] == "listo_csv"
     assert est["csv_dir_origen"] == "ejemplos"
-    assert est["estaciones_con_codigo"] == 0
+    # Inventario 2026-09: Copiapó/Paipote/Tierra Amarilla con sinca_id en catálogo
+    assert est["estaciones_con_codigo"] >= 3
+    assert est["estaciones"]["copiapo_centro"]["sinca_id"] == "223"
+    assert est["estaciones"]["paipote"]["sinca_id"] == "196"
+    assert est["estaciones"]["tierra_amarilla"]["sinca_id"] == "224"
 
     r = create_app().test_client().get("/api/public/aire/sinca/estado")
     assert r.status_code == 200
@@ -170,7 +175,9 @@ def test_sinca_stub_estado(monkeypatch):
 
     monkeypatch.setenv("METGO_SINCA_USE_EJEMPLOS", "0")
     est2 = sinca_service.estado_sinca()
-    assert est2["estado"] == "pendiente_fuente"
+    # Con códigos en catálogo pero sin CSV → parcial (no pendiente_fuente)
+    assert est2["estado"] == "parcial"
+    assert est2["csv_dir_origen"] == "disabled"
     sync = sinca_service.sincronizar_sinca()
     assert sync.get("omitido") is True
 
