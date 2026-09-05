@@ -1,4 +1,4 @@
-# Ops — Open-Meteo + E12 observados (Quillota)
+# Ops — Open-Meteo + E12 observados
 
 ## Open-Meteo (no martillar)
 
@@ -11,33 +11,26 @@ METGO_OPENMETEO_COOLDOWN=120
 METGO_CACHE_LASTGOOD_MAX_AGE=172800
 ```
 
-Descargas productivas: cron ETL 00/12 UTC. Health no debe forzar ping en cada hit.
-
-Verificación:
-
 ```powershell
 python scripts/ops/check_prod_health_flags.py
 ```
 
-Esperado con store/caché sano: `status=ok` aunque `openmeteo_live` sea false momentáneamente.
+## E12 DMC / SINCA (Render) — inventario 2026-09-04
 
-## E12 DMC / Agromet (Render)
-
-1. Confirmar código DMC Quillota en meteochile (`330007` candidato).  
-2. En Render Environment:
+Quillota DMC confirmado **`320124`** (no usar 330007).
 
 ```text
 METGO_DMC_USAR_CANDIDATOS=1
-METGO_DMC_IDS={"quillota":"330007"}
-# Cuando tengas código INIA:
-# METGO_AGROMET_IDS={"quillota":"..."}
+METGO_DMC_IDS={"quillota":"320124","copiapo_centro":"270009","chuquicamata":"220901"}
+METGO_SINCA_IDS={"copiapo_centro":"223","paipote":"196","tierra_amarilla":"224"}
 # METGO_DMC_CSV_DIR=/opt/render/project/src/data/dmc
-# METGO_AGROMET_CSV_DIR=/opt/render/project/src/data/agromet
+# METGO_SINCA_CSV_DIR=/opt/render/project/src/data/sinca
 ```
 
-3. Colocar CSV `{slug}.csv` o conectar export.  
-4. Disparar sync (cron ETL ya llama `sincronizar_oficiales` o endpoint internos con `CRON_SECRET`).  
-5. `GET /api/public/datos/oficiales/estado`
+JSON completo: `config/meteo/env_ids_recomendados.json`  
+Inventario: `config/meteo/INVENTARIO_ESTACIONES_PARTE1.md`
 
-Detalle estaciones: `config/meteo/ESTACIONES_OFICIALES_QUILLOTA.md`  
-Política: `config/meteo/POLITICA_FUENTES.md`
+1. Pegar env en Render → redeploy  
+2. CSV `{slug}.csv` o export DMC/SINCA  
+3. Cron ETL `sincronizar_oficiales` + `sincronizar_sinca`  
+4. `GET /api/public/datos/oficiales/estado` y health `e12_ops`

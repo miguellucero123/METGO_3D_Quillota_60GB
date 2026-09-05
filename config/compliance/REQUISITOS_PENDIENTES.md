@@ -17,7 +17,7 @@ Actualizado: 2026-09-04 · CI verde tras gitleaks fix.
 | Turnstile | Crear widget CF (permiso Turnstile:Edit) → `METGO_TURNSTILE_SECRET` + `METGO_TURNSTILE_SITE_KEY` en Render; site key también vía `/api/.../security` config. FE ya cableado. |
 | Stripe | Solo al primer cobro |
 | Auto-registro público | Solo con Turnstile + `METGO_ALLOW_SELF_REGISTER=1` |
-| SINCA/Agromet/DMC | Inventario Quillota + ops listos (`config/meteo/`). Setear IDs/CSV en Render. |
+| SINCA/Agromet/DMC | Parte 1 inventario integrada (`config/meteo/`). Pegar IDs en Render; parte 2 pendiente. |
 
 ## Ya cerrado en repo / prod
 

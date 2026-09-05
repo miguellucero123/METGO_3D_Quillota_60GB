@@ -1,0 +1,57 @@
+{
+  "_meta": {
+    "fecha": "2026-09-04",
+    "fuente": "Inventario parte 1 (fetch portales oficiales)",
+    "nota": "Solo códigos confirmados. null = pendiente segunda pasada. Mapear a slugs METGO de producto."
+  },
+  "METGO_DMC_IDS": {
+    "quillota": "320124",
+    "quillota_fdf": "320100",
+    "copiapo_centro": "270009",
+    "chamonate": "270002",
+    "copiapo_aeropuerto": "270002",
+    "caldera": "270006",
+    "chuquicamata": "220901",
+    "calama_aeropuerto": "220002",
+    "calama_rural": "220023",
+    "rio_serrano": "510020",
+    "quintero": "320056"
+  },
+  "METGO_DMC_IDS_extra_documentados": {
+    "quillota_liceo_agricola": "320124",
+    "quillota_fdf_alt": "320096",
+    "copiapo_particular": "270003",
+    "copiapo_cerro_antenas": "270022",
+    "chincolco": "320049",
+    "lo_calvo_los_andes": "320909",
+    "sierra_gorda_baquedano": "230901",
+    "cerro_guido_tdp": "500001"
+  },
+  "METGO_SINCA_IDS": {
+    "copiapo": "223",
+    "copiapo_centro": "223",
+    "paipote": "196",
+    "tierra_amarilla": "224",
+    "antofagasta": "259",
+    "sierra_gorda": "255",
+    "hospital_cobre_calama": "124",
+    "estacion_centro_calama": "275"
+  },
+  "METGO_DGA_IDS": {
+    "rio_copiapo_en_la_puerta": "03431001-7",
+    "rio_loa_salida_embalse_conchi": "02104002-9",
+    "torres_del_paine_dga": "12286001-9"
+  },
+  "METGO_AGROMET_IDS": {
+    "la_cruz": null,
+    "limache": null,
+    "olmue": null,
+    "hijuelas": null,
+    "los_nogales": null
+  },
+  "render_minimo_p0": {
+    "METGO_DMC_IDS": "{\"quillota\":\"320124\",\"copiapo_centro\":\"270009\",\"chuquicamata\":\"220901\"}",
+    "METGO_DMC_USAR_CANDIDATOS": "1",
+    "METGO_SINCA_IDS": "{\"copiapo_centro\":\"223\",\"paipote\":\"196\",\"tierra_amarilla\":\"224\"}"
+  }
+}

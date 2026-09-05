@@ -24,37 +24,43 @@ from typing import Any
 # nombres_sinca alineados al portal https://sinca.mma.gob.cl (Atacama).
 ESTACIONES_SINCA_COPIAPO: dict[str, dict[str, Any]] = {
     "copiapo_centro": {
-        "sinca_id": None,
-        "nombre_sinca": "Copiapó",
-        "region": "Atacama",
-        "contaminantes": ["PM25", "PM10", "SO2", "NO2", "O3"],
-        "portal": "https://sinca.mma.gob.cl",
-        "nota": "Buscar estación 'Copiapó' en red SINCA Atacama; pegar key/ID en METGO_SINCA_IDS",
-    },
-    "paipote": {
-        "sinca_id": None,
-        "nombre_sinca": "Paipote",
+        "sinca_id": "223",
+        "nombre_sinca": "Copiapó (ENAMI Fundición H.V. Lira)",
         "region": "Atacama",
         "contaminantes": ["PM10", "SO2"],
-        "portal": "https://sinca.mma.gob.cl",
-        "nota": "Estación industrial Paipote (SO2/PM10)",
+        "portal": "https://sinca.mma.gob.cl/index.php/estacion/index/id/223",
+        "lat": -27.36007,
+        "lon": -70.32990,
+        "nota": "Inventario 2026-09 — ID 223 confirmado",
+    },
+    "paipote": {
+        "sinca_id": "196",
+        "nombre_sinca": "Paipote (ENAMI Fundición H.V. Lira)",
+        "region": "Atacama",
+        "contaminantes": ["PM10", "SO2"],
+        "portal": "https://sinca.mma.gob.cl/index.php/estacion/index/id/196",
+        "lat": -27.41064,
+        "lon": -70.26912,
+        "nota": "Inventario 2026-09 — ID 196 confirmado",
     },
     "tierra_amarilla": {
-        "sinca_id": None,
-        "nombre_sinca": "Tierra Amarilla",
+        "sinca_id": "224",
+        "nombre_sinca": "Tierra Amarilla (ENAMI)",
         "region": "Atacama",
-        "contaminantes": ["PM10"],
-        "portal": "https://sinca.mma.gob.cl",
-        "nota": "Estación Tierra Amarilla",
+        "contaminantes": ["PM10", "SO2"],
+        "portal": "https://sinca.mma.gob.cl/index.php/estacion/index/id/224",
+        "lat": -27.47274,
+        "lon": -70.26387,
+        "nota": "Inventario 2026-09 — ID 224 confirmado",
     },
-    # M5 Mantos — placeholder hasta código SINCA / AWS faena
+    # M5 Mantos — referencia pública cercana Antofagasta SINCA 259 (~39 km); no en rajo
     "mb_rajo": {
         "sinca_id": None,
         "nombre_sinca": "Mantos Blancos (rajo)",
         "region": "Antofagasta",
         "contaminantes": ["PM10", "PM25"],
         "portal": "https://sinca.mma.gob.cl",
-        "nota": "M5: pegar código SINCA o CSV AWS faena en METGO_SINCA_IDS / CSV_DIR",
+        "nota": "Sin estación faena pública. Ref. cercana: METGO_SINCA_IDS antofagasta=259",
     },
 }
 
@@ -129,6 +135,9 @@ def resolve_csv_dir() -> tuple[Path | None, str]:
 def catalogo_efectivo() -> dict[str, dict[str, Any]]:
     """Catálogo con sinca_id resuelto (env pisa placeholders) + rajos M8."""
     overrides = _ids_desde_env()
+    # Alias inventario JSON: "copiapo" → slug producto copiapo_centro
+    if overrides.get("copiapo") and not overrides.get("copiapo_centro"):
+        overrides["copiapo_centro"] = overrides["copiapo"]
     out: dict[str, dict[str, Any]] = {}
     base = dict(ESTACIONES_SINCA_COPIAPO)
     base.update(_slugs_rajo_faenas())

@@ -6,7 +6,7 @@ Sin inventar series: solo lee CSV locales o HTTP si hay URL/credenciales.
 Códigos se activan con:
 
 - ``METGO_AGROMET_IDS='{"quillota":"CODIGO"}'``
-- ``METGO_DMC_IDS='{"quillota":"330007"}'``  (ej. código DMC documentado)
+- ``METGO_DMC_IDS='{"quillota":"320124"}'``  (Quillota Liceo Agrícola, inventario 2026-09)
 - ``METGO_AGROMET_CSV_DIR`` / ``METGO_DMC_CSV_DIR`` con ``{slug}.csv``
 
 Columnas CSV esperadas: fecha, temperatura_max, temperatura_min, temperatura,
@@ -21,59 +21,106 @@ import os
 from pathlib import Path
 from typing import Any
 
-# Candidatos documentados (no activos hasta env o confirmación portal).
-# DMC: código histórico Quillota referido en literatura/red sinóptica — confirmar
-# en meteochile antes de producción.
+# Inventario 2026-09-04: códigos confirmados en ficha DMC / listados públicos.
+# Activar candidatos con METGO_DMC_USAR_CANDIDATOS=1 o pisar con METGO_DMC_IDS.
 AGROMET_ESTACIONES: dict[str, dict[str, Any]] = {
     "quillota": {
         "codigo": None,
         "codigo_candidato": None,
         "nombre": "Quillota",
-        "nombre_red": "Quillota / La Cruz (INIA Agromet — confirmar código portal)",
-        "estado": "pendiente_registro",
-        "url_portal": "https://agromet.inia.cl/",
+        "nombre_red": "Usar DMC 320124; Agromet La Cruz cercano (código INIA pendiente)",
+        "estado": "usar_dmc_320124",
+        "url_portal": "https://agrometeorologia.cl/",
+    },
+    "la_cruz": {
+        "codigo": None,
+        "nombre": "La Cruz",
+        "estado": "pendiente_codigo_inia",
+        "url_portal": "https://agrometeorologia.cl/",
+        "nota": "Confirmada activa en listado INIA; ID interno no publicado",
     },
     "los_nogales": {
         "codigo": None,
         "nombre": "Los Nogales",
-        "estado": "pendiente_registro",
-        "url_portal": "https://agromet.inia.cl/",
+        "estado": "sin_estacion_confirmada",
+        "url_portal": "https://agrometeorologia.cl/",
     },
     "hijuelas": {
         "codigo": None,
         "nombre": "Hijuelas",
-        "estado": "pendiente_registro",
-        "url_portal": "https://agromet.inia.cl/",
+        "estado": "sin_estacion_confirmada",
+        "url_portal": "https://agrometeorologia.cl/",
     },
     "limache": {
         "codigo": None,
         "nombre": "Limache",
-        "estado": "pendiente_registro",
-        "url_portal": "https://agromet.inia.cl/",
+        "estado": "gap_historico",
+        "url_portal": "https://agrometeorologia.cl/",
+        "nota": "Boletín DMC histórico; no en listado vivo 2026-09",
     },
     "olmue": {
         "codigo": None,
         "nombre": "Olmue",
-        "estado": "pendiente_registro",
-        "url_portal": "https://agromet.inia.cl/",
+        "estado": "gap_historico",
+        "url_portal": "https://agrometeorologia.cl/",
     },
 }
 
 DMC_ESTACIONES: dict[str, dict[str, Any]] = {
     "quillota": {
         "codigo": None,
-        # Código candidato documentado (estación Quillota en red DMC); activar vía env.
-        "codigo_candidato": "330007",
-        "nombre": "Quillota",
-        "estado": "candidato_documentado",
-        "url_portal": "https://www.meteochile.gob.cl/",
-        "nota": "Confirmar código vigente en portal DMC antes de ETL productivo",
+        "codigo_candidato": "320124",
+        "nombre": "Quillota, Liceo Agrícola",
+        "estado": "confirmado_ficha",
+        "url_portal": "https://climatologia.meteochile.gob.cl/application/informacion/fichaDeEstacion/320124",
+        "lat": -32.90722,
+        "lon": -71.27139,
+        "nota": "Inventario 2026-09 — reemplaza candidato antiguo 330007",
+    },
+    "quillota_fdf": {
+        "codigo": None,
+        "codigo_candidato": "320100",
+        "nombre": "Quillota (FDF)",
+        "estado": "confirmado_ficha",
+        "url_portal": "https://climatologia.meteochile.gob.cl/application/informacion/fichaDeEstacion/320096",
+        "nota": "Dato de terceros vía DMC; ficha también 320096",
     },
     "limache": {
         "codigo": None,
         "nombre": "Limache",
-        "estado": "pendiente_registro",
+        "estado": "gap_historico",
         "url_portal": "https://www.meteochile.gob.cl/",
+    },
+    "copiapo_centro": {
+        "codigo": None,
+        "codigo_candidato": "270009",
+        "nombre": "Copiapó, Universidad de Atacama",
+        "estado": "confirmado_ficha",
+        "url_portal": "https://climatologia.meteochile.gob.cl/application/informacion/fichaDeEstacion/270009",
+        "lat": -27.35889,
+        "lon": -70.35333,
+    },
+    "chamonate": {
+        "codigo": None,
+        "codigo_candidato": "270002",
+        "nombre": "Copiapó, Chamonate Ad.",
+        "estado": "confirmado_ficha",
+        "url_portal": "https://climatologia.meteochile.gob.cl/application/informacion/fichaDeEstacion/270002",
+    },
+    "chuquicamata": {
+        "codigo": None,
+        "codigo_candidato": "220901",
+        "nombre": "El Loa - Chuquicamata CODELCO",
+        "estado": "confirmado_ficha",
+        "url_portal": "https://climatologia.meteochile.gob.cl/application/informacion/fichaDeEstacion/220901",
+        "nota": "~1 km faena",
+    },
+    "rio_serrano": {
+        "codigo": None,
+        "codigo_candidato": "510020",
+        "nombre": "Río Serrano, Torres del Paine",
+        "estado": "confirmado_ficha",
+        "url_portal": "https://climatologia.meteochile.gob.cl/application/informacion/fichaDeEstacion/510020",
     },
 }
 
@@ -195,7 +242,8 @@ def estado_fuentes() -> dict[str, Any]:
         "nota_e12": (
             "Observado: DMC/Agromet vía METGO_*_IDS + CSV. "
             "Pronóstico: Open-Meteo ciclo 00/12 (ver POLITICA_FUENTES.md). "
-            "Quillota DMC candidato 330007: METGO_DMC_USAR_CANDIDATOS=1 tras confirmar portal."
+            "Quillota DMC confirmado 320124 (ficha); activar METGO_DMC_USAR_CANDIDATOS=1 "
+            "o METGO_DMC_IDS. Ver config/meteo/INVENTARIO_ESTACIONES_PARTE1.md."
         ),
     }
 
