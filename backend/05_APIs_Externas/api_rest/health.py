@@ -151,6 +151,7 @@ def build_health_payload(services_health_fn) -> dict[str, Any]:
             "sinca_codigos": st_s.get("estaciones_con_codigo"),
             "agromet_disponible": bool((st_o.get("agromet") or {}).get("disponible")),
             "dmc_disponible": bool((st_o.get("dmc") or {}).get("disponible")),
+            "fuente_observado": st_o.get("fuente_activa"),
             "pendiente": [
                 k
                 for k, ok in (

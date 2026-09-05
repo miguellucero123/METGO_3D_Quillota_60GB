@@ -94,7 +94,7 @@ def _repo_root() -> Path:
 
 
 def resolve_csv_dir(kind: str) -> tuple[Path | None, str]:
-    """kind: agromet | dmc. Env o docs/ejemplos/{kind}_csv."""
+    """kind: agromet | dmc. Env, docs/ejemplos, o tests/fixtures."""
     env_key = "METGO_AGROMET_CSV_DIR" if kind == "agromet" else "METGO_DMC_CSV_DIR"
     env = (os.getenv(env_key) or "").strip()
     if env:
@@ -105,9 +105,14 @@ def resolve_csv_dir(kind: str) -> tuple[Path | None, str]:
     )
     if (os.getenv(allow_key) or "1").strip().lower() in ("0", "false", "no"):
         return None, "disabled"
-    ejemplos = _repo_root() / "docs" / "ejemplos" / f"{kind}_csv"
-    if ejemplos.is_dir():
-        return ejemplos, "ejemplos"
+    root = _repo_root()
+    for rel, origen in (
+        (Path("docs") / "ejemplos" / f"{kind}_csv", "ejemplos"),
+        (Path("tests") / "fixtures" / kind, "fixtures"),
+    ):
+        candid = root / rel
+        if candid.is_dir():
+            return candid, origen
     return None, "none"
 
 
@@ -151,8 +156,14 @@ def estado_fuentes() -> dict[str, Any]:
     dmc_ok = sum(1 for e in dmc.values() if e.get("codigo"))
     agro_path, agro_origen = resolve_csv_dir("agromet")
     dmc_path, dmc_origen = resolve_csv_dir("dmc")
-    csv_agro = agro_origen in ("env", "ejemplos")
-    csv_dmc = dmc_origen in ("env", "ejemplos")
+    csv_agro = agro_origen in ("env", "ejemplos", "fixtures")
+    csv_dmc = dmc_origen in ("env", "ejemplos", "fixtures")
+    if dmc_ok or csv_dmc:
+        fuente_activa = "dmc"
+    elif agro_ok or csv_agro:
+        fuente_activa = "agromet"
+    else:
+        fuente_activa = "openmeteo_archive"
     return {
         "agromet": {
             "disponible": agro_ok > 0 or csv_agro,
@@ -180,11 +191,11 @@ def estado_fuentes() -> dict[str, Any]:
             ),
             "estaciones": dmc,
         },
-        "fuente_activa": "openmeteo_archive",
+        "fuente_activa": fuente_activa,
         "nota_e12": (
-            "Activar observación oficial con env IDs + CSV diario. "
-            "Sin env se usan docs/ejemplos/{agromet,dmc}_csv (E12.1). "
-            "DMC Quillota: candidato 330007 vía METGO_DMC_USAR_CANDIDATOS=1 tras confirmar portal."
+            "Observado: DMC/Agromet vía METGO_*_IDS + CSV. "
+            "Pronóstico: Open-Meteo ciclo 00/12 (ver POLITICA_FUENTES.md). "
+            "Quillota DMC candidato 330007: METGO_DMC_USAR_CANDIDATOS=1 tras confirmar portal."
         ),
     }
 

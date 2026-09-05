@@ -116,6 +116,32 @@ def cache_stats() -> dict[str, int | str]:
     }
 
 
+def lastgood_freshest_age_s(estacion: str = "Quillota", tipo: str = "diarios", dias: int = 7) -> int | None:
+    """Edad en segundos del last-good más reciente para una clave típica, o None."""
+    _ensure_cache()
+    key = _cache_key(estacion, tipo, dias) + "|lastgood"
+    entry = _leer_entry(key)
+    if not entry:
+        return None
+    try:
+        _df, stored_at = entry
+        age = int(max(0, time.time() - float(stored_at)))
+        if age > LAST_GOOD_MAX_AGE:
+            return None
+        return age
+    except Exception:
+        return None
+
+
+def has_usable_lastgood(max_age_s: int | None = None) -> bool:
+    """True si hay last-good fresco para Quillota (health / degradación)."""
+    age = lastgood_freshest_age_s()
+    if age is None:
+        return False
+    limit = LAST_GOOD_MAX_AGE if max_age_s is None else max_age_s
+    return age <= limit
+
+
 def _marcar_desde_cache(df: pd.DataFrame, stored_at: float) -> pd.DataFrame:
     out = df.copy()
     out["desde_cache"] = True

@@ -280,7 +280,7 @@ def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
     """Fallback: último registro REAL persistido en meteo_store (Supabase).
 
     Se usa solo cuando OpenMeteo (en vivo) y la caché local no devuelven datos.
-    No inventa datos: si no hay registros almacenados, devuelve None.
+    Prefiere filas con fuente dmc/agromet sobre openmeteo cuando existen.
     """
     try:
         from api_rest.integracion.meteo_store import leer_registros, leer_pronostico
@@ -297,7 +297,20 @@ def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
             registros = []
     if not registros:
         return None
-    reciente = sorted(registros, key=lambda r: str(r.get("fecha") or ""))[-1]
+
+    fecha_max = max(str(r.get("fecha") or "") for r in registros)[:10]
+    candidatas = [r for r in registros if str(r.get("fecha") or "")[:10] == fecha_max]
+
+    def _src_rank(r: dict[str, Any]) -> int:
+        f = str(r.get("fuente") or "").lower()
+        if "dmc" in f:
+            return 0
+        if "agromet" in f:
+            return 1
+        return 2
+
+    reciente = sorted(candidatas, key=_src_rank)[0]
+
     out = {
         "estacion_id": estacion_id,
         "estacion": slug_a_nombre(estacion_id),
@@ -332,9 +345,49 @@ def _resumen_desde_store(estacion_id: str) -> dict[str, Any] | None:
 
 
 def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
-    """Resumen del día: prioriza histórico observado OpenMeteo; si no hay, pronóstico;
-    y si OpenMeteo/caché fallan, el último dato REAL persistido en Supabase."""
-    # Si OpenMeteo está en cooldown (429), preferir store para no alargar el rate limit.
+    """Resumen del día: prioriza observado oficial (DMC/Agromet), luego OM, luego store."""
+    # 1) CSV / códigos E12 (observado oficial)
+    try:
+        from api_rest import oficiales_service
+
+        for kind, fetch in (
+            ("dmc", oficiales_service.fetch_dmc_historico),
+            ("agromet", oficiales_service.fetch_agromet_historico),
+        ):
+            filas = fetch(estacion_id, dias=14)
+            if not filas:
+                continue
+            reciente = sorted(filas, key=lambda r: str(r.get("fecha") or ""))[-1]
+            return {
+                "estacion_id": estacion_id,
+                "estacion": slug_a_nombre(estacion_id),
+                "fecha": str(reciente.get("fecha") or "")[:10],
+                "temperatura": _num(
+                    reciente.get("temperatura")
+                    or reciente.get("temperatura_promedio")
+                    or (
+                        (
+                            float(reciente.get("temperatura_max") or 0)
+                            + float(reciente.get("temperatura_min") or 0)
+                        )
+                        / 2
+                        if reciente.get("temperatura_max") is not None
+                        else 0
+                    )
+                ),
+                "temperatura_max": _num(reciente.get("temperatura_max")),
+                "temperatura_min": _num(reciente.get("temperatura_min")),
+                "humedad": _num(reciente.get("humedad")),
+                "viento": _num(reciente.get("viento")),
+                "precipitacion": _num(reciente.get("precipitacion")),
+                "presion": _num(reciente.get("presion")),
+                "fuente": kind,
+                "tipo_dato": "observado",
+                "actualizado": datetime.now().isoformat(),
+            }
+    except Exception:
+        pass
+
     try:
         from datos_reales_openmeteo import openmeteo_en_cooldown
 
@@ -354,15 +407,14 @@ def resumen_meteo(estacion_id: str) -> dict[str, Any] | None:
         row = _fila_hoy(df)
         tipo_dato = "pronostico"
     if row is None:
-        # Último recurso: base de datos persistida (datos reales, sin inventar).
         return _resumen_desde_store(estacion_id)
     out = _fila_a_resumen(row, estacion_id)
     out["tipo_dato"] = tipo_dato
-    
+
     mar = estado_maritimo(estacion_id)
     if mar:
         out["maritimo"] = mar
-        
+
     return out
 
 
@@ -1071,23 +1123,23 @@ _ULTIMA_VERIFICACION = 0.0
 _ULTIMO_ESTADO_OM = True
 _ULTIMA_LATENCIA = 0
 
+
 def health_check() -> dict[str, Any]:
+    """Health OM: live ping + last-good/store. ``degraded`` solo sin dato usable."""
     global _ULTIMA_VERIFICACION, _ULTIMO_ESTADO_OM, _ULTIMA_LATENCIA
     t0 = time.perf_counter()
     ahora = time.time()
     cooldown_restante = 0
     try:
         from datos_reales_openmeteo import openmeteo_en_cooldown, openmeteo_cooldown_restante
+
         if openmeteo_en_cooldown():
             cooldown_restante = openmeteo_cooldown_restante()
-            _ULTIMO_ESTADO_OM = False
-            _ULTIMA_LATENCIA = 0
-            # No llamar a OpenMeteo mientras dure el rate limit
+            # No marcar live=False como fallo total: puede haber last-good/store.
             _ULTIMA_VERIFICACION = ahora
     except ImportError:
         pass
 
-    # Solo ping OpenMeteo al ritmo del TTL global (no en cada health check).
     try:
         from cache_openmeteo import get_ttl_seconds
 
@@ -1095,47 +1147,79 @@ def health_check() -> dict[str, Any]:
     except ImportError:
         om_interval = 3600.0
 
+    live_ping = bool(_ULTIMO_ESTADO_OM)
     if cooldown_restante == 0 and ahora - _ULTIMA_VERIFICACION > om_interval:
         om = OpenMeteoData()
         with contextlib.redirect_stdout(io.StringIO()):
-            _ULTIMO_ESTADO_OM = om.verificar_conexion(timeout_sec=2)
+            live_ping = bool(om.verificar_conexion(timeout_sec=2))
+        _ULTIMO_ESTADO_OM = live_ping
         _ULTIMA_LATENCIA = int((time.perf_counter() - t0) * 1000)
         _ULTIMA_VERIFICACION = ahora
+    elif cooldown_restante > 0:
+        live_ping = False
 
-    stats = {"cache_hits": 0, "cache_misses": 0}
+    stats: dict[str, Any] = {"cache_hits": 0, "cache_misses": 0, "cache_lastgood_hits": 0}
+    lastgood_age_s: int | None = None
+    has_lastgood = False
+    ciclo_utc = ""
     try:
-        from cache_openmeteo import cache_stats
-        stats = cache_stats()
+        from cache_openmeteo import cache_stats, has_usable_lastgood, lastgood_freshest_age_s
+
+        stats = dict(cache_stats())
+        ciclo_utc = str(stats.get("ciclo_utc") or "")
+        has_lastgood = has_usable_lastgood()
+        lastgood_age_s = lastgood_freshest_age_s()
     except ImportError:
         pass
-    out = {
-        "status": "ok" if _ULTIMO_ESTADO_OM else "degraded",
-        "openmeteo": _ULTIMO_ESTADO_OM,
-        "latencia_openmeteo_ms": _ULTIMA_LATENCIA,
-        "timestamp": datetime.now().isoformat(),
-        **stats,
-    }
-    if cooldown_restante:
-        out["openmeteo_cooldown_s"] = cooldown_restante
-    # Diagnóstico E10: sin Supabase en Render el fallback meteo falla → 503 en SPA
+
+    store_regs = 0
     try:
         from api_rest.integracion.supabase_store import supabase_status
         from api_rest.integracion import meteo_store
 
         st_sb = supabase_status()
+        st = meteo_store.estadisticas_store()
+        store_regs = int(st.get("registros") or 0)
+    except Exception:
+        st_sb = {}
+        st = {}
+
+    has_store = store_regs > 0
+    # openmeteo=True si hay conectividad O dato usable (caché/store del ciclo).
+    om_usable = bool(live_ping) or has_lastgood or has_store
+    fuente_activa = "openmeteo_live" if live_ping else (
+        "lastgood" if has_lastgood else ("meteo_store" if has_store else "ninguna")
+    )
+
+    out: dict[str, Any] = {
+        "status": "ok" if om_usable else "degraded",
+        "openmeteo": om_usable,
+        "openmeteo_live": bool(live_ping),
+        "openmeteo_usable": om_usable,
+        "latencia_openmeteo_ms": _ULTIMA_LATENCIA,
+        "ciclo_utc": ciclo_utc,
+        "lastgood_age_s": lastgood_age_s,
+        "fuente_activa": fuente_activa,
+        "timestamp": datetime.now().isoformat(),
+        **stats,
+    }
+    if cooldown_restante:
+        out["openmeteo_cooldown_s"] = cooldown_restante
+        if not om_usable:
+            out["openmeteo_note"] = "cooldown_sin_lastgood"
+        else:
+            out["openmeteo_note"] = "cooldown_sirviendo_lastgood_o_store"
+
+    try:
         out["supabase_configurado"] = bool(st_sb.get("configurado"))
         out["supabase_client_ok"] = bool(st_sb.get("client_ok"))
         out["supabase_url_host"] = st_sb.get("url_host")
         if st_sb.get("error"):
             out["supabase_error"] = str(st_sb["error"])[:240]
-        st = meteo_store.estadisticas_store()
-        out["meteo_store_registros"] = st.get("registros", 0)
+        out["meteo_store_registros"] = store_regs
         out["meteo_store_db"] = str(st.get("db") or "")[:80]
         if st.get("error"):
             out["meteo_store_error"] = str(st["error"])[:200]
-        # Skip reading records in /health to prevent 60s timeout if Supabase is paused
-        # sample = meteo_store.leer_registros("quillota", 3)
-        # out["meteo_store_quillota"] = len(sample)
     except Exception as exc:
         out["supabase_configurado"] = False
         out["supabase_client_ok"] = False

@@ -23,6 +23,7 @@ import WeatherScene from '@/components/meteo/WeatherScene.vue'
 import FrostBadge from '@/components/meteo/FrostBadge.vue'
 import PronosticoHeladasPanel from '@/components/meteo/PronosticoHeladasPanel.vue'
 import TipoDatoBadge from '@/components/meteo/TipoDatoBadge.vue'
+import FuenteBadge from '@/components/meteo/FuenteBadge.vue'
 import { riesgoHelada } from '@/utils/agroInsights'
 import { fetchPronostico, fetchHistorico, fetchVientoHorario } from '@/api/metgoApi'
 import { condicionViento, acumuladoPrecipitacion } from '@/utils/agroInsights'
@@ -117,7 +118,7 @@ watch(() => store.estacionActiva, cargar)
       <p class="page-subtitle">
         Condiciones y pronóstico · {{ store.estacionNombre }}
         <TipoDatoBadge v-if="store.tipoDatoResumen" :tipo="store.tipoDatoResumen" />
-        <span v-if="d?.fuente" class="badge badge--neutral">{{ d.fuente }}</span>
+        <FuenteBadge v-if="d?.fuente" :fuente="d.fuente" />
         <button
           type="button"
           class="btn-fav"
