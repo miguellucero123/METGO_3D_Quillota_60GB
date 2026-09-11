@@ -430,6 +430,32 @@ def test_sesion_unica_invalida_token_anterior():
     assert ok.status_code == 200
 
 
+def test_registro_ventora_sin_faena_ni_rut():
+    """VENTORA: alta universal sin puerto ni RUT; verify_url apunta a Pages Ventora."""
+    from api_rest.app import create_app
+
+    app = create_app()
+    client = app.test_client()
+    body = {
+        "email": "piloto.ventora@example.com",
+        "password": "Segura1234",
+        "password_confirm": "Segura1234",
+        "nombres": "Ana",
+        "apellidos": "Perez",
+        "sitio": "spati",
+        "producto": "ventora",
+        "consentimientos": {"tos": True, "privacy": True},
+    }
+    reg = client.post("/api/auth/register-v2", json=body)
+    assert reg.status_code == 201, reg.get_json()
+    data = reg.get_json()
+    assert data.get("faena") in (None, "")
+    url = data.get("verify_url") or ""
+    assert "ventora-izaje-mar.pages.dev" in url
+    assert "/verificar?token=" in url
+    assert data.get("verify_token")
+
+
 def test_preview_hora_solo_ahora_y_panel_y_purge(monkeypatch):
     """Usuario preview: tabs limitados, expira y se elimina."""
     monkeypatch.setenv("METGO_ALLOW_PREVIEW", "1")

@@ -12,15 +12,38 @@ from api_rest.auth_routes import auth_required
 from api_rest.identity import identity_store, plans_catalog, validators
 
 
-def _public_spa_base(sitio: str) -> str:
+def _producto_spa(data: dict | None = None) -> str:
+    """Producto SPA para deep links (ventora | spati | …)."""
+    data = data or {}
+    raw = (
+        data.get("producto")
+        or data.get("spa")
+        or data.get("spa_product")
+        or request.headers.get("X-Metgo-Product")
+        or ""
+    )
+    return str(raw).strip().lower()
+
+
+def _public_spa_base(sitio: str, *, producto: str | None = None) -> str:
     """URL pública del SPA por producto (verify-email / deep links)."""
     s = (sitio or "").strip().lower() or "quillota"
+    p = (producto or "").strip().lower()
+    # VENTORA Izaje Mar usa sitio=spati en API pero SPA propio
+    if p in ("ventora", "izaje-mar", "ventora-izaje-mar") or s == "ventora":
+        raw = (
+            (os.getenv("METGO_VENTORA_PUBLIC_URL") or "").strip()
+            or (os.getenv("METGO_PUBLIC_APP_URL") or "").strip()
+            or "https://ventora-izaje-mar.pages.dev"
+        )
+        return raw.rstrip("/")
     defaults = {
         "spati": ("METGO_SPATI_PUBLIC_URL", "https://metgo-spati.pages.dev"),
         "quillota": ("METGO_QUILLOTA_PUBLIC_URL", "https://metgo-quillota.pages.dev"),
         "copiapo": ("METGO_COPIAPO_PUBLIC_URL", "https://metgo-copiapo.pages.dev"),
         "mantos_blancos": ("METGO_MANTOS_PUBLIC_URL", "https://metgo-mantos.pages.dev"),
         "paine": ("METGO_PAINE_PUBLIC_URL", "https://metgo-paine.pages.dev"),
+        "ventora": ("METGO_VENTORA_PUBLIC_URL", "https://ventora-izaje-mar.pages.dev"),
     }
     env_key, fallback = defaults.get(s, ("METGO_PUBLIC_APP_URL", ""))
     raw = (os.getenv(env_key) or "").strip()
@@ -31,10 +54,22 @@ def _public_spa_base(sitio: str) -> str:
     return (raw or fallback).rstrip("/")
 
 
-def _verify_email_url(sitio: str, faena: str | None, token: str) -> str:
-    base = _public_spa_base(sitio)
+def _verify_email_url(
+    sitio: str,
+    faena: str | None,
+    token: str,
+    *,
+    producto: str | None = None,
+) -> str:
+    base = _public_spa_base(sitio, producto=producto)
     if not base or not token:
         return ""
+    p = (producto or "").strip().lower()
+    ventora = p in ("ventora", "izaje-mar", "ventora-izaje-mar") or sitio == "ventora"
+    if ventora and faena:
+        return f"{base}/p/{faena}/verificar?token={token}"
+    if ventora:
+        return f"{base}/verificar?token={token}"
     if sitio == "spati" and faena:
         return f"{base}/f/{faena}/verificar?token={token}"
     return f"{base}/verificar?token={token}"
@@ -92,13 +127,14 @@ def register_identity_routes(app: Flask) -> None:
                 body.update(extra)
             return jsonify(body), 400
 
-        # Enlace de verificación (SPA por sitio)
+        # Enlace de verificación (SPA por sitio / producto Ventora)
         token = (extra or {}).get("verify_token")
         faena = (extra or {}).get("faena")
         sitio = (extra or {}).get("sitio") or data.get("sitio") or "quillota"
-        spa_base = _public_spa_base(str(sitio))
+        producto = _producto_spa(data)
+        spa_base = _public_spa_base(str(sitio), producto=producto)
         if token and spa_base:
-            verify_url = _verify_email_url(str(sitio), faena, token)
+            verify_url = _verify_email_url(str(sitio), faena, token, producto=producto)
             if verify_url:
                 extra["verify_url"] = verify_url
                 try:
@@ -159,7 +195,13 @@ def register_identity_routes(app: Flask) -> None:
             return jsonify({"message": "Email ya verificado", "already_verified": True}), 200
 
         token = identity_store._issue_email_token(str(user["id"]))
-        verify_url = _verify_email_url(str(user.get("sitio") or sitio), user.get("faena") or faena, token)
+        producto = _producto_spa(data)
+        verify_url = _verify_email_url(
+            str(user.get("sitio") or sitio),
+            user.get("faena") or faena,
+            token,
+            producto=producto,
+        )
         if not verify_url:
             return jsonify({"error": "URL pública SPA no configurada"}), 500
         mail = email_notify.enviar_verificacion(

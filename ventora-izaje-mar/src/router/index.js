@@ -57,6 +57,12 @@ const routes = [
     meta: { title: 'Registro', public: true },
   },
   {
+    path: '/verificar',
+    name: 'verificar',
+    component: () => import('@/views/VerificarEmailView.vue'),
+    meta: { title: 'Verificar email', public: true },
+  },
+  {
     path: '/app',
     name: 'puertos-hub',
     component: () => import('@/views/PuertosHubView.vue'),
