@@ -3,6 +3,31 @@
 // ============================================
 
 export const appConfig = {
+  // Identidad producto (API sigue usando sitio=spati)
+  sitio: 'spati',
+  producto: 'ventora',
+  productName: 'VENTORA',
+  brandName: 'VENTORA',
+  siteLabel: 'VENTORA · Izaje Mar',
+  storagePrefix: 'metgo_ventora',
+  spatiDefaultSitio: 'ventanas_muelle',
+  stations: [
+    {
+      slug: 'iqq',
+      nombre: 'Terminal Iquique (ITI)',
+      region: 'Tarapacá',
+      lat: -20.2058,
+      lon: -70.1608,
+    },
+    {
+      slug: 'ventanas_muelle',
+      nombre: 'Puerto Ventanas (Muelle)',
+      region: 'Valparaíso',
+      lat: -32.748,
+      lon: -71.482,
+    },
+  ],
+
   // BRANDING
   appName: 'VENTORA Izaje Portuario',
   tagline: 'Pronóstico y Alerta para Operaciones Costeras',
@@ -10,6 +35,15 @@ export const appConfig = {
 
   // API BASE
   apiBaseURL: 'https://api.metgo3d.cl/spati/v2',
+  api: {
+    defaultPublicBase: 'https://metgo-api.onrender.com/api',
+    localBase: 'http://127.0.0.1:8080/api',
+    spatiEndpoint: '/forecast/72h',
+    sensorsEndpoint: '/sensors/current',
+    tidesEndpoint: '/tides/iquique',
+    alertsEndpoint: '/alerts/active',
+    pollInterval: 300000,
+  },
 
   // ============================================
   // PUERTOS CHILENOS
@@ -324,9 +358,9 @@ export const appConfig = {
   },
 
   // ============================================
-  // INTEGRACIÓN API
+  // INTEGRACIÓN API (endpoints relativos; base en api.*)
   // ============================================
-  api: {
+  endpoints: {
     spatiEndpoint: '/forecast/72h',
     sensorsEndpoint: '/sensors/current',
     tidesEndpoint: '/tides/iquique',

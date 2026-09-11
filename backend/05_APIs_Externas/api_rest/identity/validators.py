@@ -81,6 +81,15 @@ def validate_registro_payload(data: dict[str, Any]) -> dict[str, Any]:
     rut = _norm(data.get("rut") or data.get("rut_empresa"))
     sitio = _norm(data.get("sitio") or data.get("site")).lower()
     faena = _norm(data.get("faena") or "").lower() or None
+    producto = _norm(
+        data.get("producto") or data.get("spa") or data.get("spa_product") or ""
+    ).lower()
+    ventora = producto in ("ventora", "izaje-mar", "ventora-izaje-mar") or sitio == "ventora"
+    registro_min = ventora or str(data.get("registro_modo") or "").lower() in (
+        "minimo",
+        "universal",
+        "min",
+    )
     cons = data.get("consentimientos") or data.get("consents") or {}
 
     if not email or not _EMAIL_RE.match(email):
@@ -108,21 +117,38 @@ def validate_registro_payload(data: dict[str, Any]) -> dict[str, Any]:
     if password != password2:
         add("password_confirm", "Las contraseñas no coinciden")
 
-    if len(razon) < 3:
-        add("razon_social", "Razón social requerida")
-    elif razon.lower() in _PLACEHOLDERS:
-        add("razon_social", "Indique la razón social real de la empresa")
+    if registro_min:
+        if razon and len(razon) < 3:
+            add("razon_social", "Razón social demasiado corta")
+        elif razon and razon.lower() in _PLACEHOLDERS:
+            add("razon_social", "Indique la razón social real de la empresa")
+        if rut and not validar_rut_chileno(rut):
+            add("rut", "RUT chileno inválido (dígito verificador)")
+        if not razon:
+            warnings.append("Puede completar razón social después en Mi cuenta")
+        if not rut:
+            warnings.append("Puede completar RUT empresa después en Mi cuenta")
+    else:
+        if len(razon) < 3:
+            add("razon_social", "Razón social requerida")
+        elif razon.lower() in _PLACEHOLDERS:
+            add("razon_social", "Indique la razón social real de la empresa")
 
-    if not validar_rut_chileno(rut):
-        add("rut", "RUT chileno inválido (dígito verificador)")
+        if not validar_rut_chileno(rut):
+            add("rut", "RUT chileno inválido (dígito verificador)")
 
     if not sitio:
         add("sitio", "Sitio/producto requerido")
 
-    if sitio == "spati" and not faena:
+    # SPATI minera: faena obligatoria. VENTORA / registro universal: opcional.
+    if sitio == "spati" and not faena and not registro_min:
         add("faena", "En SPATI debe indicar la faena (ej. escondida)")
+    elif sitio == "spati" and not faena and registro_min:
+        warnings.append("Sin puerto/faena: podrá elegir terminal después del login")
 
     required_cons = ("almacenamiento_datos", "tos", "privacy", "veracidad")
+    if registro_min:
+        required_cons = ("tos", "privacy")
     if not isinstance(cons, dict):
         add("consentimientos", "Debe enviar objeto consentimientos")
     else:
@@ -130,7 +156,7 @@ def validate_registro_payload(data: dict[str, Any]) -> dict[str, Any]:
             if cons.get(k) is not True:
                 add(
                     "consentimientos",
-                    f"Debe aceptar '{k}' (guardar datos / términos / privacidad / veracidad)",
+                    f"Debe aceptar '{k}'",
                 )
 
     if email and nombres and email.split("@")[0].lower() in {

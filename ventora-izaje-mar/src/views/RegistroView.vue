@@ -18,7 +18,7 @@ const faenaCodigo = ref('')
 const faena = computed(() => faenaParam.value || String(faenaCodigo.value || '').trim().toLowerCase().replace(/\s+/g, '_'))
 const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faena.value))
 const brandName = computed(() => faenaMeta.value?.nombre || faena.value || site.brandName || 'VENTORA')
-const loginPath = computed(() => (faena.value ? `/f/${faena.value}/login` : '/login'))
+const loginPath = computed(() => (faena.value ? `/p/${faena.value}/login` : '/login'))
 
 const form = reactive({
   email: '',
@@ -29,10 +29,10 @@ const form = reactive({
   telefono: '',
   razon_social: '',
   rut: '',
-  almacenamiento_datos: false,
+  almacenamiento_datos: true,
   tos: false,
   privacy: false,
-  veracidad: false,
+  veracidad: true,
 })
 
 const errors = ref({})
@@ -90,13 +90,15 @@ async function onSubmit() {
     razon_social: form.razon_social.trim(),
     rut: form.rut.trim(),
     sitio: 'spati',
-    faena: faena.value,
+    producto: 'ventora',
+    spa: 'ventora',
+    faena: faena.value || undefined,
     turnstile_token: turnstileToken.value || undefined,
     consentimientos: {
-      almacenamiento_datos: form.almacenamiento_datos,
+      almacenamiento_datos: form.almacenamiento_datos || (form.tos && form.privacy),
       tos: form.tos,
       privacy: form.privacy,
-      veracidad: form.veracidad,
+      veracidad: form.veracidad || (form.tos && form.privacy),
     },
   }
   try {
@@ -146,9 +148,9 @@ function irLogin() {
         <router-link :to="`/`">{{ t('app.home') }}</router-link>
       </div>
 
-      <div v-if="done" class="success-panel" role="status">
+      <div v-if="done" class="success-panel modal-like" role="dialog" aria-modal="true" aria-labelledby="reg-ok-title">
         <div class="logo ok-logo"><MailCheck aria-hidden="true" /></div>
-        <h1>{{ t('registro.okTitle') }}</h1>
+        <h1 id="reg-ok-title">{{ t('registro.okTitle') }}</h1>
         <p class="ok">{{ msg || t('registro.ok') }}</p>
         <p class="hint">{{ t('registro.okTrial', { days: trialDays }) }}</p>
         <p v-if="registeredEmail" class="hint">
@@ -176,7 +178,18 @@ function irLogin() {
         <form class="grid" @submit.prevent="onSubmit">
           <label v-if="!faenaParam" class="full">
             {{ t('registro.faenaCode') }}
-            <input v-model="faenaCodigo" required placeholder="quebrada_blanca" autocomplete="organization" />
+            <input
+              v-model="faenaCodigo"
+              list="puertos-list"
+              placeholder="iqq o ventanas_muelle (opcional)"
+              autocomplete="organization"
+            />
+            <datalist id="puertos-list">
+              <option v-for="s in site.stations || []" :key="s.slug" :value="s.slug">
+                {{ s.nombre }}
+              </option>
+            </datalist>
+            <small class="field-hint">{{ t('registro.faenaOptional') }}</small>
           </label>
           <label>
             <span>{{ t('registro.nombres') }}</span>
@@ -196,12 +209,13 @@ function irLogin() {
           </label>
           <label>
             <span>{{ t('registro.razon') }}</span>
-            <input v-model="form.razon_social" required autocomplete="organization" />
+            <input v-model="form.razon_social" autocomplete="organization" />
+            <small class="field-hint">{{ t('registro.razonOptional') }}</small>
           </label>
           <label>
             <span>{{ t('registro.rut') }}</span>
-            <input v-model="form.rut" required placeholder="76.123.456-0" autocomplete="off" />
-            <small class="field-hint">{{ t('registro.rutHint') }}</small>
+            <input v-model="form.rut" placeholder="76.123.456-0" autocomplete="off" />
+            <small class="field-hint">{{ t('registro.rutOptional') }}</small>
           </label>
           <label>
             <span>{{ t('registro.password') }}</span>
@@ -363,6 +377,13 @@ function irLogin() {
 .success-panel {
   text-align: center;
   padding: 1rem 0 0.5rem;
+}
+.success-panel.modal-like {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 1.75rem 1.25rem;
+  background: rgba(15, 23, 42, 0.55);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 .success-panel h1 { margin: 0 0 0.75rem; font-size: 1.35rem; }
 .success-panel .hint { color: #94a3b8; font-size: 0.9rem; margin: 0.5rem 0; }

@@ -1,19 +1,20 @@
 /**
- * Auth JWT metgo-api (E9) — sitio Mantos Blancos.
+ * Auth JWT metgo-api — VENTORA Izaje Mar (sitio API = spati).
  */
 import site from '@/site.config.js'
 
 const RENDER_API = site.api?.defaultPublicBase || 'https://metgo-api.onrender.com/api'
 const TOKEN_KEY = `${site.storagePrefix || 'metgo'}_access_token`
 const USER_KEY = `${site.storagePrefix || 'metgo'}_user`
-const SITIO = site.sitio
+const SITIO = site.sitio || 'spati'
+const PRODUCTO = site.producto || 'ventora'
 const TIMEOUT_MS = 60000
 
 function resolveBaseURL() {
   if (import.meta.env.DEV) {
     return '/api'
   }
-  return 'https://metgo-api.onrender.com/api'
+  return RENDER_API
 }
 
 export function getToken() {
@@ -41,7 +42,10 @@ export function clearSession() {
 async function request(path, { method = 'GET', body, auth = false, timeout = TIMEOUT_MS } = {}) {
   const ctrl = new AbortController()
   const t = setTimeout(() => ctrl.abort(), timeout)
-  const headers = { Accept: 'application/json' }
+  const headers = {
+    Accept: 'application/json',
+    'X-Metgo-Product': PRODUCTO,
+  }
   if (body != null) headers['Content-Type'] = 'application/json'
   if (auth) {
     const token = getToken()
@@ -56,16 +60,11 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
     })
     let data = await res.json().catch(() => ({}))
 
-    // Rewrite escondida -> ventanas_muelle
-    const dataStr = JSON.stringify(data).replace(/escondida/g, 'ventanas_muelle').replace(/Escondida/g, 'ventanas_muelle')
-    data = JSON.parse(dataStr)
-
     if (!res.ok) {
       const err = new Error(data.error || `HTTP ${res.status}`)
       err.status = res.status
       err.data = data
       err.code = data.code
-      // JWT inválido/expirado o sesión reemplazada
       if (res.status === 401 && auth) {
         clearSession()
         if (typeof window !== 'undefined' && data.code === 'session_replaced') {
@@ -88,22 +87,6 @@ async function request(path, { method = 'GET', body, auth = false, timeout = TIM
 }
 
 export async function login(username, password, { faena, sitio } = {}) {
-  // --- MOCK BYPASS FOR LOCAL DEVELOPMENT ---
-  if (username === 'miguel.lucero@metgo3d.com') {
-    return {
-      access_token: 'mock-jwt-token-12345',
-      user: {
-        id: 1,
-        email: username,
-        username: 'Miguel Lucero',
-        role: 'admin',
-        sitio: sitio || SITIO,
-        faenas: [{ slug: faena || 'ventanas_muelle' }]
-      }
-    }
-  }
-  // -----------------------------------------
-
   return request('/auth/login', {
     method: 'POST',
     body: {
@@ -116,17 +99,6 @@ export async function login(username, password, { faena, sitio } = {}) {
 }
 
 export async function fetchMe() {
-  const token = getToken()
-  if (token === 'mock-jwt-token-12345') {
-    return {
-      id: 1,
-      email: 'miguel.lucero@metgo3d.com',
-      username: 'Miguel Lucero',
-      role: 'admin',
-      sitio: SITIO,
-      faenas: [{ slug: 'ventanas_muelle' }]
-    }
-  }
   return request('/auth/me', { auth: true })
 }
 
@@ -149,18 +121,20 @@ export async function validateRegistro(body) {
 }
 
 export async function registerV2(body) {
-  return request('/auth/register-v2', { method: 'POST', body })
+  return request('/auth/register-v2', {
+    method: 'POST',
+    body: { producto: PRODUCTO, spa: PRODUCTO, ...body },
+  })
 }
 
 export async function reenviarVerificacion(body) {
-  return request('/auth/reenviar-verificacion', { method: 'POST', body })
+  return request('/auth/reenviar-verificacion', {
+    method: 'POST',
+    body: { producto: PRODUCTO, spa: PRODUCTO, ...body },
+  })
 }
 
 export async function fetchAccess({ sitio, faena, tab } = {}) {
-  const token = getToken()
-  if (token === 'mock-jwt-token-12345') {
-    return { tab_allowed: true }
-  }
   const q = new URLSearchParams()
   if (sitio) q.set('sitio', sitio)
   if (faena) q.set('faena', faena)
@@ -187,54 +161,17 @@ export async function fetchFaenaReglas(faena) {
 }
 
 export async function fetchCuenta(faena) {
-  const token = getToken()
-  if (token === 'mock-jwt-token-12345') {
-    return {
-      usuario: {
-        email: 'miguel.lucero@metgo3d.com',
-        status: 'active',
-        email_verified: true,
-        sitio: SITIO,
-        faena: faena || 'ventanas_muelle'
-      },
-      suscripcion: {
-        plan_code: 'pro',
-        status: 'active',
-        current_period_end: '2099-12-31'
-      },
-      access: {
-        tabs: {
-          resumen: true,
-          meteo: true,
-          mareas: true,
-          experto: true,
-          informes: true
-        }
-      },
-      planes: {
-        planes: [
-          { plan_code: 'pro', nombre: 'Pro', precio_mensual_usd: 100, descripcion: 'Acceso completo' },
-          { plan_code: 'enterprise', nombre: 'Enterprise', precio_mensual_usd: 500, descripcion: 'Multifaena' }
-        ]
-      }
-    }
-  }
   const q = faena ? `?faena=${encodeURIComponent(faena)}` : ''
   return request(`/auth/cuenta${q}`, { auth: true })
 }
 
 export async function fetchMisFaenas() {
-  const token = getToken()
-  if (token === 'mock-jwt-token-12345') {
-    return { faenas: [{ slug: 'ventanas_muelle' }] }
-  }
   return request('/auth/mis-faenas', { auth: true })
 }
 
 /** M10 — board ops multi-faena (admin / multi_faena / ≥2 faenas). */
 export async function fetchOpsBoard({ refresh = false } = {}) {
   const q = refresh ? '?refresh=1' : ''
-  // Board multi-faena puede regenerar Open-Meteo en paralelo (~1 min en frío)
   return request(`/auth/ops-board${q}`, { auth: true, timeout: 120000 })
 }
 
@@ -258,4 +195,4 @@ export async function verifyEmail(token) {
   return request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
 }
 
-export { TOKEN_KEY, USER_KEY, SITIO, resolveBaseURL }
+export { TOKEN_KEY, USER_KEY, SITIO, PRODUCTO, resolveBaseURL }

@@ -116,6 +116,9 @@ onMounted(() => {
       username.value = route.query.email
     }
   }
+  if (route.query.verified === '1' || route.query.verified === 'true') {
+    registeredBanner.value = t('login.verifiedOk')
+  }
   try {
     const msg = sessionStorage.getItem('metgo_session_msg')
     if (msg) {

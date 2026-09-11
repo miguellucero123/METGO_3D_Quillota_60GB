@@ -117,6 +117,21 @@ def registrar_v2(payload: dict[str, Any], *, ip: str | None = None) -> tuple[boo
     faena = (str(payload.get("faena") or "").strip().lower() or None)
     password = payload.get("password") or ""
     cons = payload.get("consentimientos") or {}
+    # Registro Ventora/universal: RUT vacío → hash único por email (evita colisión)
+    if not str(payload.get("rut") or "").strip():
+        payload = {
+            **payload,
+            "rut": f"pending:{email}",
+            "razon_social": str(payload.get("razon_social") or "").strip()
+            or f"Cuenta {email.split('@')[0]}",
+        }
+        # Consentimientos opcionales del modo mínimo: marcar store/veracidad si TOS+privacy
+        if cons.get("tos") is True and cons.get("privacy") is True:
+            cons = {
+                **cons,
+                "almacenamiento_datos": cons.get("almacenamiento_datos", True),
+                "veracidad": cons.get("veracidad", True),
+            }
 
     if use_memory():
         return _register_memory(payload, email, sitio, faena, password, cons, ip)
