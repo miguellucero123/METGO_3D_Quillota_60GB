@@ -33,6 +33,9 @@ Comportamiento:
 > `result.source.config.preview_deployment_setting` (`all` \| `none` \| `custom`).
 > Un PATCH en raíz con `{ "preview_deployment_setting": "none" }` es ignorado y el
 > cron semanal reporta `have: null` para siempre.
+>
+> Proyectos **sin** `source` (direct upload / Git desconectado) no tienen previews por
+> rama; el script los trata como `preview=none`.
 
 Local (opcional):
 
