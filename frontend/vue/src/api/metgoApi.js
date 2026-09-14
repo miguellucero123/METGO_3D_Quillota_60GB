@@ -448,6 +448,18 @@ export async function simularIot() {
   return data
 }
 
+export async function fetchEstacionesDiy() {
+  const { data } = await api.get('/iot/estaciones-diy')
+  return data
+}
+
+export async function simularEstacionesDiy(stationId) {
+  const { data } = await api.post('/iot/estaciones-diy/simular', {
+    station_id: stationId || undefined,
+  })
+  return data
+}
+
 export async function fetchMlModelos(soloServibles = false) {
   const { data } = await api.get('/ml/modelos', {
     params: soloServibles ? { solo_servibles: '1' } : {},

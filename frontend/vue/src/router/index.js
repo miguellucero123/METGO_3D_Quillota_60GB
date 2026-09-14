@@ -167,6 +167,12 @@ const routes = [
     meta: { title: 'Sensores IoT' },
   },
   {
+    path: '/iot/estaciones-diy',
+    name: 'iot-estaciones-diy',
+    component: () => import('@/views/EstacionesDiyView.vue'),
+    meta: { title: 'Estaciones LoRa DIY' },
+  },
+  {
     path: '/ml',
     name: 'ml',
     component: () => import('@/views/MlView.vue'),

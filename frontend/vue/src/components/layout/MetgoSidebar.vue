@@ -80,6 +80,7 @@ const gruposDef = [
       path.startsWith('/meteo/comparativo'),
     items: [
       { to: '/iot', label: 'Sensores IoT', icon: Radio },
+      { to: '/iot/estaciones-diy', label: 'Estaciones LoRa DIY', icon: Radio },
       { to: '/ml', label: 'Modelos ML', icon: Cpu },
       { to: '/meteo/comparativo', label: 'Visualizaciones', icon: GitCompare },
     ],

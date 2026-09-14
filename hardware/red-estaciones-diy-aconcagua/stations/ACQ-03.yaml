@@ -1,0 +1,22 @@
+# La Cruz — cobertura media
+station_id: ACQ-03
+name: La Cruz
+lat: -32.825
+lon: -71.227
+lora_sf: 9
+interval_s: 300
+sensors:
+  sht31: true
+  bmp388: true
+  veml6075: true
+  rain: true
+  wind: true
+  pms5003: false
+  as3935: false
+  ds18b20: false
+calibration:
+  temp_c: {a: 1.0, b: 0.0}
+  rh: {a: 1.0, b: 0.0}
+  pressure_hpa: {a: 1.0, b: 0.0}
+  wind_ms: {a: 1.0, b: 0.0}
+  uv: {a: 1.0, b: 0.0}

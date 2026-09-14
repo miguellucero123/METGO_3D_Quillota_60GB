@@ -1,0 +1,24 @@
+# Quillota — nodo piloto MVP (BME280)
+station_id: ACQ-01
+name: Quillota Fundo Demo
+lat: -32.883
+lon: -71.249
+lora_sf: 9
+interval_s: 300
+profile: mvp_bme280
+sensors:
+  bme280: true
+  sht31: false
+  bmp388: false
+  veml6075: false
+  rain: false
+  wind: false
+  pms5003: false
+  as3935: false
+  ds18b20: false
+calibration:
+  temp_c: {a: 1.0, b: 0.0}
+  rh: {a: 1.0, b: 0.0}
+  pressure_hpa: {a: 1.0, b: 0.0}
+  wind_ms: {a: 1.0, b: 0.0}
+  uv: {a: 1.0, b: 0.0}
