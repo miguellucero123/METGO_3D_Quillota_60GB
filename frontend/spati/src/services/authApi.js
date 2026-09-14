@@ -7,6 +7,7 @@ const RENDER_API = site.api?.defaultPublicBase || 'https://metgo-api.onrender.co
 const TOKEN_KEY = `${site.storagePrefix || 'metgo'}_access_token`
 const USER_KEY = `${site.storagePrefix || 'metgo'}_user`
 const SITIO = site.sitio
+const PRODUCTO = site.producto || 'ventora'
 const TIMEOUT_MS = 60000
 
 function resolveBaseURL() {
@@ -46,7 +47,10 @@ export function clearSession() {
 async function request(path, { method = 'GET', body, auth = false, timeout = TIMEOUT_MS } = {}) {
   const ctrl = new AbortController()
   const t = setTimeout(() => ctrl.abort(), timeout)
-  const headers = { Accept: 'application/json' }
+  const headers = {
+    Accept: 'application/json',
+    'X-Metgo-Product': PRODUCTO,
+  }
   if (body != null) headers['Content-Type'] = 'application/json'
   if (auth) {
     const token = getToken()
@@ -122,11 +126,17 @@ export async function validateRegistro(body) {
 }
 
 export async function registerV2(body) {
-  return request('/auth/register-v2', { method: 'POST', body })
+  return request('/auth/register-v2', {
+    method: 'POST',
+    body: { producto: PRODUCTO, spa: PRODUCTO, ...body },
+  })
 }
 
 export async function reenviarVerificacion(body) {
-  return request('/auth/reenviar-verificacion', { method: 'POST', body })
+  return request('/auth/reenviar-verificacion', {
+    method: 'POST',
+    body: { producto: PRODUCTO, spa: PRODUCTO, ...body },
+  })
 }
 
 export async function fetchAccess({ sitio, faena, tab } = {}) {

@@ -16,9 +16,21 @@ const router = useRouter()
 const faenaParam = computed(() => String(route.params.faena || '').toLowerCase())
 const faenaCodigo = ref('')
 const faena = computed(() => faenaParam.value || String(faenaCodigo.value || '').trim().toLowerCase().replace(/\s+/g, '_'))
+const puertoSlugs = computed(() => {
+  const fromStations = (site.stations || []).map((s) => String(s.slug || '').toLowerCase())
+  const fromPorts = Object.keys(site.ports || {}).map((k) => k.toLowerCase())
+  return new Set([...fromStations, ...fromPorts].filter(Boolean))
+})
 const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faena.value))
 const brandName = computed(() => faenaMeta.value?.nombre || faena.value || site.brandName || 'VENTORA')
 const loginPath = computed(() => (faena.value ? `/p/${faena.value}/login` : '/login'))
+const planesTitlePuerto = computed(() => faena.value || t('registro.plansAny'))
+
+function esPuertoVentora(slug) {
+  const s = String(slug || '').trim().toLowerCase()
+  if (!s) return true
+  return puertoSlugs.value.has(s)
+}
 
 const form = reactive({
   email: '',
@@ -75,6 +87,13 @@ onMounted(async () => {
 async function onSubmit() {
   msg.value = ''
   errors.value = {}
+  if (faena.value && !esPuertoVentora(faena.value)) {
+    errors.value = {
+      faena: [t('registro.faenaInvalid', { allowed: [...puertoSlugs.value].join(', ') })],
+    }
+    msg.value = t('registro.faenaInvalidShort')
+    return
+  }
   if (turnstileRequired.value && turnstileSiteKey.value && !turnstileToken.value) {
     msg.value = 'Complete la verificación anti-bot antes de continuar.'
     return
@@ -90,8 +109,8 @@ async function onSubmit() {
     razon_social: form.razon_social.trim(),
     rut: form.rut.trim(),
     sitio: 'spati',
-    producto: 'ventora',
-    spa: 'ventora',
+    producto: 'ventora_mar',
+    spa: 'ventora_mar',
     faena: faena.value || undefined,
     turnstile_token: turnstileToken.value || undefined,
     consentimientos: {
@@ -183,6 +202,7 @@ function irLogin() {
               list="puertos-list"
               placeholder="iqq o ventanas_muelle (opcional)"
               autocomplete="organization"
+              :aria-invalid="Boolean(errors.faena)"
             />
             <datalist id="puertos-list">
               <option v-for="s in site.stations || []" :key="s.slug" :value="s.slug">
@@ -294,7 +314,7 @@ function irLogin() {
         </form>
 
         <section v-if="planes.length" class="planes">
-          <h2>{{ t('registro.plansTitle', { faena }) }}</h2>
+          <h2>{{ t('registro.plansTitle', { puerto: planesTitlePuerto, faena: planesTitlePuerto }) }}</h2>
           <ul>
             <li v-for="p in planes" :key="p.plan_code">
               <strong>{{ p.nombre }}</strong>

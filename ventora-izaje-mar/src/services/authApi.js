@@ -7,7 +7,7 @@ const RENDER_API = site.api?.defaultPublicBase || 'https://metgo-api.onrender.co
 const TOKEN_KEY = `${site.storagePrefix || 'metgo'}_access_token`
 const USER_KEY = `${site.storagePrefix || 'metgo'}_user`
 const SITIO = site.sitio || 'spati'
-const PRODUCTO = site.producto || 'ventora'
+const PRODUCTO = site.producto || 'ventora_mar'
 const TIMEOUT_MS = 60000
 
 function resolveBaseURL() {

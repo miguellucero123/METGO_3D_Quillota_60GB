@@ -33,7 +33,7 @@
           <input
             v-model="faenaCodigo"
             type="text"
-            placeholder="ej. puerto_iquique"
+            :placeholder="t('login.faenaPlaceholder')"
             autocomplete="off"
             spellcheck="false"
           />

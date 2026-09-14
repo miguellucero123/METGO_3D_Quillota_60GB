@@ -13,7 +13,7 @@ from api_rest.identity import identity_store, plans_catalog, validators
 
 
 def _producto_spa(data: dict | None = None) -> str:
-    """Producto SPA para deep links (ventora | spati | …)."""
+    """Producto SPA para deep links (ventora | ventora_mar | spati | …)."""
     data = data or {}
     raw = (
         data.get("producto")
@@ -27,23 +27,37 @@ def _producto_spa(data: dict | None = None) -> str:
 
 def _public_spa_base(sitio: str, *, producto: str | None = None) -> str:
     """URL pública del SPA por producto (verify-email / deep links)."""
+    from api_rest.identity.product_codes import es_izaje_mar, es_ventora_alta
+
     s = (sitio or "").strip().lower() or "quillota"
     p = (producto or "").strip().lower()
-    # VENTORA Izaje Mar usa sitio=spati en API pero SPA propio
-    if p in ("ventora", "izaje-mar", "ventora-izaje-mar") or s == "ventora":
+
+    # Izaje Mar (puertos) — producto propio, no confundir con VENTORA minera
+    if es_izaje_mar(p, s):
         raw = (
-            (os.getenv("METGO_VENTORA_PUBLIC_URL") or "").strip()
+            (os.getenv("METGO_VENTORA_MAR_PUBLIC_URL") or "").strip()
+            or (os.getenv("METGO_VENTORA_PUBLIC_URL") or "").strip()
             or (os.getenv("METGO_PUBLIC_APP_URL") or "").strip()
             or "https://ventora-izaje-mar.pages.dev"
         )
         return raw.rstrip("/")
+
+    # VENTORA alta montaña (frontend/spati)
+    if es_ventora_alta(p, s):
+        raw = (
+            (os.getenv("METGO_SPATI_PUBLIC_URL") or "").strip()
+            or (os.getenv("METGO_VENTORA_ALTA_PUBLIC_URL") or "").strip()
+            or "https://metgo-spati.pages.dev"
+        )
+        return raw.rstrip("/")
+
     defaults = {
         "spati": ("METGO_SPATI_PUBLIC_URL", "https://metgo-spati.pages.dev"),
         "quillota": ("METGO_QUILLOTA_PUBLIC_URL", "https://metgo-quillota.pages.dev"),
         "copiapo": ("METGO_COPIAPO_PUBLIC_URL", "https://metgo-copiapo.pages.dev"),
         "mantos_blancos": ("METGO_MANTOS_PUBLIC_URL", "https://metgo-mantos.pages.dev"),
         "paine": ("METGO_PAINE_PUBLIC_URL", "https://metgo-paine.pages.dev"),
-        "ventora": ("METGO_VENTORA_PUBLIC_URL", "https://ventora-izaje-mar.pages.dev"),
+        "ventora_mar": ("METGO_VENTORA_MAR_PUBLIC_URL", "https://ventora-izaje-mar.pages.dev"),
     }
     env_key, fallback = defaults.get(s, ("METGO_PUBLIC_APP_URL", ""))
     raw = (os.getenv(env_key) or "").strip()
@@ -61,14 +75,19 @@ def _verify_email_url(
     *,
     producto: str | None = None,
 ) -> str:
+    from api_rest.identity.product_codes import es_izaje_mar, es_ventora_alta
+
     base = _public_spa_base(sitio, producto=producto)
     if not base or not token:
         return ""
     p = (producto or "").strip().lower()
-    ventora = p in ("ventora", "izaje-mar", "ventora-izaje-mar") or sitio == "ventora"
-    if ventora and faena:
-        return f"{base}/p/{faena}/verificar?token={token}"
-    if ventora:
+    if es_izaje_mar(p, sitio):
+        if faena:
+            return f"{base}/p/{faena}/verificar?token={token}"
+        return f"{base}/verificar?token={token}"
+    if es_ventora_alta(p, sitio) or (sitio == "spati" and faena):
+        if faena:
+            return f"{base}/f/{faena}/verificar?token={token}"
         return f"{base}/verificar?token={token}"
     if sitio == "spati" and faena:
         return f"{base}/f/{faena}/verificar?token={token}"

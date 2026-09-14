@@ -430,20 +430,20 @@ def test_sesion_unica_invalida_token_anterior():
     assert ok.status_code == 200
 
 
-def test_registro_ventora_sin_faena_ni_rut():
-    """VENTORA: alta universal sin puerto ni RUT; verify_url apunta a Pages Ventora."""
+def test_registro_izaje_mar_sin_faena_ni_rut():
+    """Izaje Mar (ventora_mar): alta universal; verify_url → Pages ventora-izaje-mar."""
     from api_rest.app import create_app
 
     app = create_app()
     client = app.test_client()
     body = {
-        "email": "piloto.ventora@example.com",
+        "email": "piloto.izaje.mar@example.com",
         "password": "Segura1234",
         "password_confirm": "Segura1234",
         "nombres": "Ana",
         "apellidos": "Perez",
         "sitio": "spati",
-        "producto": "ventora",
+        "producto": "ventora_mar",
         "consentimientos": {"tos": True, "privacy": True},
     }
     reg = client.post("/api/auth/register-v2", json=body)
@@ -455,6 +455,30 @@ def test_registro_ventora_sin_faena_ni_rut():
     assert "/verificar?token=" in url
     assert data.get("verify_token")
 
+
+def test_registro_ventora_alta_verify_url_spati():
+    """VENTORA minera (producto=ventora): verify_url → metgo-spati, path /f/."""
+    from api_rest.app import create_app
+
+    app = create_app()
+    client = app.test_client()
+    body = {
+        "email": "piloto.ventora.alta@example.com",
+        "password": "Segura1234",
+        "password_confirm": "Segura1234",
+        "nombres": "Luis",
+        "apellidos": "Soto",
+        "sitio": "spati",
+        "producto": "ventora",
+        "faena": "quebrada_blanca",
+        "consentimientos": {"tos": True, "privacy": True},
+    }
+    reg = client.post("/api/auth/register-v2", json=body)
+    assert reg.status_code == 201, reg.get_json()
+    data = reg.get_json()
+    url = data.get("verify_url") or ""
+    assert "metgo-spati.pages.dev" in url
+    assert "/f/quebrada_blanca/verificar?token=" in url
 
 def test_preview_hora_solo_ahora_y_panel_y_purge(monkeypatch):
     """Usuario preview: tabs limitados, expira y se elimina."""

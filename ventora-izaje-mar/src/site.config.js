@@ -3,13 +3,13 @@
 // ============================================
 
 export const appConfig = {
-  // Identidad producto (API sigue usando sitio=spati)
+  // Identidad producto: ventora_mar = Izaje Mar (NO confundir con VENTORA alta montaña)
   sitio: 'spati',
-  producto: 'ventora',
+  producto: 'ventora_mar',
   productName: 'VENTORA',
-  brandName: 'VENTORA',
+  brandName: 'Izaje Mar',
   siteLabel: 'VENTORA · Izaje Mar',
-  storagePrefix: 'metgo_ventora',
+  storagePrefix: 'metgo_ventora_mar',
   spatiDefaultSitio: 'ventanas_muelle',
   stations: [
     {

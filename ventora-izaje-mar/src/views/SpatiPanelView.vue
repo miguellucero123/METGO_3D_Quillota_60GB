@@ -173,7 +173,7 @@ const injectedMeta = inject('faenaMeta', null)
 const sitioId = computed(
   () =>
     (injectedFaena && injectedFaena.value) ||
-    String(route.params.faena || site.spatiDefaultSitio || 'escondida').toLowerCase(),
+    String(route.params.faena || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase(),
 )
 const faenaMeta = computed(
   () =>

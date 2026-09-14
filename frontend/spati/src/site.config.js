@@ -1,9 +1,11 @@
 /**
  * METGO VENTORA — Pronóstico de izaje en mineras de alta montaña (Chile).
- * Código interno / API: sitio=spati (sin cambiar contratos).
+ * Código interno / API: sitio=spati, producto=ventora (≠ ventora_mar / Izaje Mar).
  */
 export default {
   sitio: 'spati',
+  /** Producto API / deep links → metgo-spati.pages.dev */
+  producto: 'ventora',
   productName: 'METGO',
   /** Marca comercial visible (antes SPATI) */
   brandName: 'VENTORA',

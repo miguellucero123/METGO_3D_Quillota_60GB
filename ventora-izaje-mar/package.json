@@ -1,7 +1,7 @@
 {
   "name": "ventora-izaje-mar",
   "version": "1.0.0",
-  "description": "METGO VENTORA — Pronóstico y alerta temprana de izaje | Vue 3 + Vite",
+  "description": "METGO Izaje Mar (ventora_mar) — Pronóstico portuario | Vue 3 + Vite",
   "type": "module",
   "dependencies": {
     "echarts": "^6.1.0",

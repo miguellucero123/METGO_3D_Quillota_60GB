@@ -90,6 +90,8 @@ async function onSubmit() {
     razon_social: form.razon_social.trim(),
     rut: form.rut.trim(),
     sitio: 'spati',
+    producto: site.producto || 'ventora',
+    spa: site.producto || 'ventora',
     faena: faena.value,
     turnstile_token: turnstileToken.value || undefined,
     consentimientos: {

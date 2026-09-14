@@ -996,6 +996,37 @@ paths:
       responses:
         "200":
           description: Igual que GET + sesgo_dron_kmh
+  /api/public/spati/{sitio_id}/puerto/pronostico:
+    get:
+      tags: [spati]
+      summary: Pronóstico portuario 72 h (VENTORA)
+      description: |
+        Viento + oleaje para terminales marítimos. Fuente preferente Open-Meteo
+        (forecast + marine). Si NWP no responde, fallback `synthetic_local`
+        con coordenadas del puerto y campo `fuente` explícito.
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: ventanas_muelle
+            description: >
+              Puertos VENTORA: iqq, ventanas_muelle, anf, vlp, san, pmc
+              (aliases: iquique, ventanas, valparaiso, san_antonio, mejillones)
+        - name: horas
+          in: query
+          required: false
+          schema: { type: integer, minimum: 24, maximum: 72, default: 72 }
+      responses:
+        "200":
+          description: >
+            hourly_states[], alerts[], fuente (openmeteo | openmeteo_marine |
+            synthetic_local), config lat/lon
+        "404":
+          description: Puerto / sitio desconocido
+        "503":
+          description: NWP no disponible y synthetic deshabilitado
   /api/public/spati/physics/extrapolar:
     post:
       tags: [spati]

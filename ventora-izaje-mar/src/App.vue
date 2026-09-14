@@ -39,7 +39,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
-const site = inject('site', { spatiDefaultSitio: 'quebrada_blanca' })
+const site = inject('site', { spatiDefaultSitio: 'ventanas_muelle' })
 
 const navOpen = ref(false)
 provide('navOpen', navOpen)
@@ -64,7 +64,7 @@ function isPublicRoute(r) {
   if (!r) return true
   if (r.meta?.public) return true
   if (PUBLIC_NAMES.has(String(r.name || ''))) return true
-  // Landing siempre pública (evita carrera router.isReady → login Escondida)
+  // Landing siempre pública (evita carrera router.isReady → login)
   const p = String(r.path || '')
   if (p === '/' || p === '') return true
   if (p.endsWith('/login') || p.endsWith('/registro') || p.endsWith('/verificar')) return true
@@ -73,7 +73,7 @@ function isPublicRoute(r) {
 
 const isPublicShell = computed(() => isPublicRoute(route))
 
-const defaultFaena = computed(() => site.spatiDefaultSitio || 'quebrada_blanca')
+const defaultFaena = computed(() => site.spatiDefaultSitio || 'ventanas_muelle')
 const currentFaena = computed(() => String(route.params.faena || defaultFaena.value))
 
 watch(

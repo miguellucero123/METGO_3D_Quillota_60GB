@@ -28,7 +28,7 @@ const { t } = useI18n()
 const site = inject('site')
 const route = useRoute()
 const access = useAccess()
-const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'ventanas_muelle'))
 const showHubLink = ref(false)
 
 watch(

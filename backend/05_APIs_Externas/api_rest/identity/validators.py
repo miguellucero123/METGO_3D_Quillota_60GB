@@ -84,7 +84,9 @@ def validate_registro_payload(data: dict[str, Any]) -> dict[str, Any]:
     producto = _norm(
         data.get("producto") or data.get("spa") or data.get("spa_product") or ""
     ).lower()
-    ventora = producto in ("ventora", "izaje-mar", "ventora-izaje-mar") or sitio == "ventora"
+    from api_rest.identity.product_codes import es_familia_ventora
+
+    ventora = es_familia_ventora(producto, sitio) or sitio == "ventora"
     registro_min = ventora or str(data.get("registro_modo") or "").lower() in (
         "minimo",
         "universal",

@@ -64,43 +64,21 @@ def register_spati_routes(app: Flask) -> None:
 
     @app.get("/api/public/spati/<sitio_id>/puerto/pronostico")
     def public_spati_puerto_pronostico(sitio_id: str):
-        """Pronóstico 72h hiperlocal marítimo/portuario."""
-        import dataclasses
-        from datetime import datetime, timezone
-        from enum import Enum
-        from api_rest.spati.spati_puertos_era5_wrf_integration import HyperLocalForecastGenerator
-        
-        try:
-            # En un entorno real se obtendrían coords del sitio desde get_sitio()
-            forecast_gen = HyperLocalForecastGenerator(site_id=sitio_id)
-            start_time = datetime.now(timezone.utc)
-            forecast = forecast_gen.generate_forecast(start_date=start_time, hours_ahead=72)
-            
-            # Helper recursivo para formatear dicts que tienen datetimes u objetos anidados de numpy
-            def json_serialize(obj):
-                import numpy as np
-                if dataclasses.is_dataclass(obj):
-                    return {k: json_serialize(v) for k, v in dataclasses.asdict(obj).items()}
-                elif isinstance(obj, dict):
-                    return {k: json_serialize(v) for k, v in obj.items()}
-                elif isinstance(obj, list):
-                    return [json_serialize(i) for i in obj]
-                elif hasattr(obj, 'isoformat'):
-                    return obj.isoformat()
-                elif hasattr(obj, 'tolist'):
-                    return json_serialize(obj.tolist())
-                elif isinstance(obj, Enum):
-                    return obj.value
-                elif isinstance(obj, (np.integer, np.floating)):
-                    return obj.item()
-                return obj
+        """Pronóstico 72h marítimo/portuario (Open-Meteo + fallback local)."""
+        from api_rest.spati.puerto_pronostico_service import generar_pronostico_puerto
 
-            out = json_serialize(forecast)
-            return jsonify(out)
-            
-        except Exception as exc:
-            app.logger.warning("spati_puerto_pronostico %s: %s", sitio_id, exc)
-            return jsonify({**_ERROR_503, "detalle": str(exc)}), 503
+        try:
+            hours = int(request.args.get("horas") or 72)
+        except (TypeError, ValueError):
+            hours = 72
+        hours = max(24, min(hours, 72))
+
+        data = generar_pronostico_puerto(sitio_id, hours=hours)
+        if data.get("error") == "sitio_no_encontrado":
+            return jsonify(data), 404
+        if data.get("error"):
+            return jsonify({**_ERROR_503, **data}), 503
+        return jsonify(data)
 
     @app.post("/api/public/spati/physics/extrapolar")
     def public_spati_physics_extrapolar():

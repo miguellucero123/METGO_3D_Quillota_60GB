@@ -5,8 +5,8 @@
 
     <header class="premium-header">
       <div class="title-area">
-        <h1>Panel Portuario · WRF + ERA5</h1>
-        <p>Inteligencia Oceanográfica Hiperlocal (72 h)</p>
+        <h1>Panel Portuario · VENTORA</h1>
+        <p>Pronóstico oceanográfico 72 h · {{ fuenteLabel }}</p>
       </div>
       <div class="controls-area">
         <div class="faena-badge">
@@ -22,7 +22,7 @@
 
     <div v-if="loading" class="state-loader">
       <div class="wave-loader"></div>
-      <p>Sincronizando con modelo ERA5...</p>
+      <p>Consultando Open-Meteo (viento + oleaje)…</p>
     </div>
     
     <div v-else-if="error" class="state-error glass-card">
@@ -136,7 +136,7 @@ const injectedMeta = inject('faenaMeta', null)
 const sitioId = computed(
   () =>
     (injectedFaena && injectedFaena.value) ||
-    String(route.params.faena || site.spatiDefaultSitio || 'escondida').toLowerCase(),
+    String(route.params.faena || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase(),
 )
 const faenaMeta = computed(
   () =>
@@ -150,6 +150,14 @@ const faenaMeta = computed(
 const loading = ref(true)
 const error = ref(null)
 const data = ref(null)
+
+const fuenteLabel = computed(() => {
+  const f = data.value?.fuente
+  if (f === 'openmeteo_marine') return 'Open-Meteo (viento + oleaje)'
+  if (f === 'openmeteo') return 'Open-Meteo (viento)'
+  if (f === 'synthetic_local') return 'Estimación local (NWP offline)'
+  return f || '—'
+})
 
 const estados = computed(() => data.value?.hourly_states || [])
 const alertasActivas = computed(() => data.value?.alerts || [])

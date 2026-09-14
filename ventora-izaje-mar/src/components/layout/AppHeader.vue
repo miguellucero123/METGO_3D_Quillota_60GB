@@ -54,7 +54,7 @@ const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
 
-const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'escondida'))
+const faena = computed(() => String(route.params.faena || site.spatiDefaultSitio || 'ventanas_muelle'))
 
 function onLogout() {
   auth.logout()

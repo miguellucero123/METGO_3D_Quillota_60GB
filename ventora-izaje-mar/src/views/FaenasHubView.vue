@@ -147,7 +147,7 @@ function irA(slug) {
         <h2>Ingresar a su puerto</h2>
         <p class="panel-copy">
           Use el enlace que le envió su operador, o escriba el código (por ejemplo
-          <code>puerto_iquique</code>).
+          <code>iqq</code> o <code>ventanas_muelle</code>).
         </p>
         <form class="gate-form" @submit.prevent="irA(slugManual)">
           <label for="faena-slug">Código de puerto</label>
@@ -156,7 +156,7 @@ function irA(slug) {
               id="faena-slug"
               v-model="slugManual"
               type="text"
-              placeholder="quebrada_blanca"
+              placeholder="ventanas_muelle"
               autocomplete="off"
               spellcheck="false"
               required
