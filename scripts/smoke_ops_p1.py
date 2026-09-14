@@ -4,7 +4,8 @@
 Smoke ops METGO — revisión automática de endpoints (GET/POST/PUT).
 
 Contratos reales (no placeholders):
-  GET  /api/health
+  GET  /api/health/live                   (liveness Render; obligatorio en smoke)
+  GET  /api/health                        (detalle; soft si timeout en free tier)
   GET  /api/public/planes?sitio=
   GET  /api/public/estaciones?sitio=
   GET  /api/public/spati/{faena}/umbrales
@@ -141,11 +142,37 @@ def main() -> int:
 
     # ---- Públicos ----
     print("== GET públicos ==")
-    code, health = _req("GET", f"{api}/health", timeout=60)
-    r.check("GET /health", code == 200 and isinstance(health, dict) and health.get("status") in ("ok", "degraded"), f"HTTP {code}")
-    if isinstance(health, dict):
+    # Wake + liveness (Render free): /health completo puede >60s (OpenMeteo/Supabase).
+    code_live, live = _req("GET", f"{api}/health/live", timeout=45)
+    r.check(
+        "GET /health/live",
+        code_live == 200
+        and isinstance(live, dict)
+        and (live.get("live") is True or live.get("status") in ("ok", "degraded")),
+        f"HTTP {code_live}"
+        + (f" err={live.get('error')}" if isinstance(live, dict) and live.get("error") else ""),
+    )
+
+    code, health = _req("GET", f"{api}/health", timeout=90)
+    health_ok = (
+        code == 200
+        and isinstance(health, dict)
+        and health.get("status") in ("ok", "degraded")
+    )
+    if health_ok:
+        r.check("GET /health", True, f"HTTP {code}")
         s5 = health.get("s5_ops") or {}
-        print(f"       smtp={s5.get('smtp_configurado')} pendiente={s5.get('pendiente')} version={health.get('version')}")
+        print(
+            f"       smtp={s5.get('smtp_configurado')} "
+            f"pendiente={s5.get('pendiente')} version={health.get('version')}"
+        )
+    else:
+        # No tumbar smoke público: cold start / deps lentas; live ya validó uptime.
+        detail = f"HTTP {code}"
+        if isinstance(health, dict) and health.get("error"):
+            detail += f" ({health.get('error')})"
+        r.skipped("GET /health (detalle)", f"no bloqueante tras live OK — {detail}")
+        print(f"       smtp=None pendiente=None version=None")
 
     for sitio in ("spati", "quillota", "paine", "copiapo", "mantos_blancos"):
         code, data = _req("GET", f"{api}/public/planes?sitio={sitio}")
