@@ -25,17 +25,22 @@ os.environ["METGO_API_AUTH_REQUIRED"] = "1"
 os.environ["METGO_SCRYPT_N"] = "1024"
 os.environ["METGO_EMAIL_DEV"] = "1"
 os.environ["METGO_RATE_LIMIT_ENABLED"] = "0"
-os.environ["METGO_TURNSTILE_SECRET"] = "test-turnstile-secret"
-os.environ["METGO_TURNSTILE_SITE_KEY"] = "0x4AAAAAAE0mVDhC6afUBTSv"
-os.environ["METGO_TURNSTILE_REQUIRED"] = "1"
 os.environ["METGO_SPATI_ALLOW_SYNTHETIC"] = "1"
+# Turnstile: NO setear aquí a nivel módulo — otros tests (p.ej. security_hardening)
+# hacen pop() en import y pisan el entorno global en CI.
 
 from api_rest.identity import identity_store
 from api_rest.identity.session_store import reset_for_tests as reset_sessions
 
 
 @pytest.fixture(autouse=True)
-def _reset():
+def _env_turnstile_y_reset(monkeypatch):
+    monkeypatch.setenv("METGO_TURNSTILE_SECRET", "test-turnstile-secret")
+    monkeypatch.setenv("METGO_TURNSTILE_SITE_KEY", "0x4AAAAAAE0mVDhC6afUBTSv")
+    monkeypatch.setenv("METGO_TURNSTILE_REQUIRED", "1")
+    monkeypatch.setenv("METGO_IDENTITY_STORE", "memory")
+    monkeypatch.setenv("METGO_EMAIL_DEV", "1")
+    monkeypatch.setenv("METGO_RATE_LIMIT_ENABLED", "0")
     identity_store.reset_memory()
     reset_sessions()
     yield
