@@ -1,0 +1,94 @@
+# Gateway RPi — stack LoRaWAN + series temporales
+# Uso: cp .env.example .env && docker compose up -d
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: chirpstack
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chirpstack}
+      POSTGRES_DB: chirpstack
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_USER:-metgo}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_PASSWORD:-metgochangeme}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUX_ORG:-metgo}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUX_BUCKET:-estaciones}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:-change-me-after-first-boot}
+    volumes:
+      - influxdata:/var/lib/influxdb2
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+
+  # ChirpStack LNS — simplificado; en producción montar configs oficiales
+  chirpstack:
+    image: chirpstack/chirpstack:4
+    command: -c /etc/chirpstack
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      POSTGRESQL_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+      - mosquitto
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    profiles:
+      - full  # docker compose --profile full up -d
+
+  decoder:
+    build: ./decoder
+    env_file: .env
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      MQTT_TOPIC: application/+/device/+/event/up
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: ${INFLUX_TOKEN:-change-me-after-first-boot}
+      INFLUX_ORG: ${INFLUX_ORG:-metgo}
+      INFLUX_BUCKET: ${INFLUX_BUCKET:-estaciones}
+    depends_on:
+      - mosquitto
+      - influxdb
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  influxdata:
+  grafanadata:

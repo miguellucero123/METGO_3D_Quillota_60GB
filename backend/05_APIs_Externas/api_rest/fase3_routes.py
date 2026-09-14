@@ -56,6 +56,19 @@ def register_fase3_routes(app: Flask) -> None:
         n = iot_services.refrescar_simulacion()
         return jsonify({"ok": True, "lecturas_nuevas": n})
 
+    @app.get("/api/iot/estaciones-diy")
+    @auth_required
+    def iot_estaciones_diy():
+        return jsonify(iot_services.listar_estaciones_diy())
+
+    @app.post("/api/iot/estaciones-diy/simular")
+    @requiere_rol("admin", "agronomo", "operador")
+    def iot_estaciones_diy_simular():
+        data = request.get_json(silent=True) or {}
+        station = data.get("station_id") or request.args.get("station_id")
+        n = iot_services.simular_lora_diy(station)
+        return jsonify({"ok": True, "lecturas_nuevas": n, "fuente": "lora_diy"})
+
     @app.get("/api/ml/modelos")
     @auth_required
     def ml_modelos():

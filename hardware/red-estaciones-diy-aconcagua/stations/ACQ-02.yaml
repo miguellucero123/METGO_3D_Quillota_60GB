@@ -1,0 +1,24 @@
+# Hijuelas — agro (kit pro tras MVP)
+station_id: ACQ-02
+name: Hijuelas Sector Norte
+lat: -32.800
+lon: -71.150
+lora_sf: 10
+interval_s: 300
+profile: agro
+sensors:
+  bme280: false
+  sht31: true
+  bmp388: true
+  veml6075: true
+  rain: true
+  wind: true
+  pms5003: false
+  as3935: false
+  ds18b20: true
+calibration:
+  temp_c: {a: 1.0, b: 0.0}
+  rh: {a: 1.0, b: 0.0}
+  pressure_hpa: {a: 1.0, b: 0.0}
+  wind_ms: {a: 1.0, b: 0.0}
+  uv: {a: 1.0, b: 0.0}

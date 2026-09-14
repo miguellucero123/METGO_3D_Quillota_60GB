@@ -89,9 +89,12 @@ onMounted(async () => {
         Lecturas propias (simuladas / API) · {{ store.estacionNombre }}
         <span class="badge badge--neutral">Fase 3 / 7</span>
       </p>
-      <button type="button" class="btn btn-sm" :disabled="loading" @click="simular">
-        <RefreshCw /> Nueva ronda simulada
-      </button>
+      <div class="header-actions">
+        <router-link class="btn btn-sm" to="/iot/estaciones-diy">Red LoRa DIY Aconcagua</router-link>
+        <button type="button" class="btn btn-sm" :disabled="loading" @click="simular">
+          <RefreshCw /> Nueva ronda simulada
+        </button>
+      </div>
     </header>
 
     <SectionCard
@@ -162,6 +165,12 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: flex-end;
+  margin-top: 0.5rem;
+}
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: 0.5rem;
 }
 .input-sm {

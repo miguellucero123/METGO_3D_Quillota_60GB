@@ -1,0 +1,32 @@
+categoria,item,qty_por_estacion,estaciones,qty_total,unit_usd_ali_2025,subtotal_usd,notas
+MCU,ESP32 DevKit / WROOM-32,1,20,20,4.50,90.00,WiFi+BT; base recomendada
+LoRa,SX1276 / RFM95 915 MHz,1,20,20,7.50,150.00,Chile ISM ~915; confirmar
+RTC,DS3231 módulo,1,20,20,2.00,40.00,timestamp preciso
+SD,Módulo microSD SPI,1,20,20,1.20,24.00,FAT32 CSV offline
+Almacenamiento,microSD 8–16 GB,1,20,20,3.00,60.00,industrial preferible
+Sensor,SHT31 Temp+HR,1,20,20,4.00,80.00,±0.3°C / ±2% HR
+Sensor,BMP388 presión,1,20,20,5.00,100.00,±0.2 hPa
+Sensor,VEML6075 UV,1,16,16,3.00,48.00,opcional en 4 nodos mineros
+Sensor,Tipping bucket 0.2 mm,1,18,18,12.00,216.00,GPIO EXT0 wake
+Sensor,Anemómetro mecánico + reed,1,18,18,15.00,270.00,pulsos→m/s
+Sensor,Veleta resistiva 8/16 dir,1,18,18,10.00,180.00,ADC1 GPIO34
+Sensor,PMS5003 PM2.5/PM10,1,6,6,15.00,90.00,solo nodos urbanos/faena
+Sensor,AS3935 rayos,1,4,4,5.00,20.00,opcional
+Sensor,DS18B20 suelo,2,12,24,2.00,48.00,nodos agro
+Sensor,BPW34 radiación relativa,1,8,8,2.00,16.00,calibración relativa
+Energía,Panel solar 6W 6V,1,20,20,8.00,160.00,
+Energía,LiPo 3.7V 3000 mAh,1,20,20,6.00,120.00,
+Energía,TP4056 + protección,1,20,20,1.50,30.00,
+Mecánica,Stevenson screen 3D/kit,1,20,20,12.00,240.00,crítico vs radiación
+Mecánica,Mástil / brazo anemómetro,1,18,18,15.00,270.00,local Chile
+PCB,PCB nodo v1 + stencil,1,20,20,4.00,80.00,ver pcb/
+Cableado,Cables,conectores,prensaestopa,1,20,20,8.00,160.00,
+Carcasa,IP65 caja + prensa,1,20,20,10.00,200.00,
+Gateway,Raspberry Pi 4 4GB,1,2,2,55.00,110.00,1 prod + 1 spare
+Gateway,Concentrador LoRa SX1302 USB/HAT,1,2,2,75.00,150.00,ChirpStack
+Gateway,microSD 64GB + case + PSU,1,2,2,25.00,50.00,
+Repuestos,ESP32 + LoRa + sensores kit,1,1,1,80.00,80.00,banco repuestos
+Herramienta,Estación soldadura / crimp (amort.),0,1,1,120.00,120.00,una vez
+,,,,,,"TOTAL_ESTIMADO",3021.00,"~USD 3,021 red 20 nodos + 2 gateways"
+,,,,,,"COSTO_POR_NODO_FULL",~107,,"sensores básicos+viento+solar"
+,,,,,,"REF_DAVIS_VANTAGE_PRO2",~700,,"referencia comercial"

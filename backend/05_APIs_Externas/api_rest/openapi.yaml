@@ -62,6 +62,29 @@ paths:
       responses:
         "200":
           description: text/plain Prometheus o JSON
+  /api/iot/estaciones-diy:
+    get:
+      tags: [iot]
+      summary: Catálogo red LoRa DIY Aconcagua
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Nodos ACQ-* con estado y lecturas recientes
+  /api/iot/estaciones-diy/simular:
+    post:
+      tags: [iot]
+      summary: Genera lecturas demo fuente=lora_diy
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                station_id: { type: string, example: ACQ-01 }
+      responses:
+        "200":
+          description: lecturas_nuevas generadas
   /api/auth/login:
     post:
       tags: [auth]

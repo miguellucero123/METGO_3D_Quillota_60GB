@@ -90,13 +90,14 @@ def _seed() -> list[dict[str, Any]]:
 
 
 def listar_sensores() -> list[dict[str, Any]]:
-    return [
+    base = [
         {
             "id": "iot-q-temp",
             "tipo": "temperatura",
             "estacion_id": "quillota",
             "ubicacion": "Fundo demo Quillota",
             "activo": True,
+            "red": "simulado",
         },
         {
             "id": "iot-q-hum",
@@ -104,6 +105,7 @@ def listar_sensores() -> list[dict[str, Any]]:
             "estacion_id": "quillota",
             "ubicacion": "Invernadero Quillota",
             "activo": True,
+            "red": "simulado",
         },
         {
             "id": "iot-hij-viento",
@@ -111,6 +113,7 @@ def listar_sensores() -> list[dict[str, Any]]:
             "estacion_id": "hijuelas",
             "ubicacion": "Parcela Hijuelas",
             "activo": True,
+            "red": "simulado",
         },
         {
             "id": "iot-cas-temp",
@@ -118,8 +121,126 @@ def listar_sensores() -> list[dict[str, Any]]:
             "estacion_id": "casablanca",
             "ubicacion": "Casablanca costa",
             "activo": True,
+            "red": "simulado",
         },
     ]
+    return base + _sensores_lora_diy()
+
+
+def _estaciones_diy_catalogo() -> list[dict[str, Any]]:
+    """Catálogo red LoRa DIY Aconcagua (hardware/red-estaciones-diy-aconcagua)."""
+    return [
+        {
+            "id": "acq-01",
+            "station_id": "ACQ-01",
+            "nombre": "Quillota Fundo Demo",
+            "lat": -32.883,
+            "lon": -71.249,
+            "profile": "mvp_bme280",
+            "lora_sf": 9,
+            "activo": True,
+            "estado": "prototipo",
+        },
+        {
+            "id": "acq-02",
+            "station_id": "ACQ-02",
+            "nombre": "Hijuelas Sector Norte",
+            "lat": -32.800,
+            "lon": -71.150,
+            "profile": "agro",
+            "lora_sf": 10,
+            "activo": True,
+            "estado": "planificado",
+        },
+        {
+            "id": "acq-03",
+            "station_id": "ACQ-03",
+            "nombre": "La Cruz",
+            "lat": -32.825,
+            "lon": -71.227,
+            "profile": "cobertura",
+            "lora_sf": 9,
+            "activo": True,
+            "estado": "planificado",
+        },
+    ]
+
+
+def _sensores_lora_diy() -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for est in _estaciones_diy_catalogo():
+        sid = est["station_id"]
+        eid = est["id"]
+        for tipo, suf in (
+            ("temperatura", "temp_c"),
+            ("humedad", "rh"),
+            ("presion", "pressure_hpa"),
+        ):
+            out.append(
+                {
+                    "id": f"lora-{sid}-{suf}",
+                    "tipo": tipo,
+                    "estacion_id": eid,
+                    "ubicacion": est["nombre"],
+                    "activo": est["activo"],
+                    "red": "lora_diy",
+                    "station_id": sid,
+                }
+            )
+    return out
+
+
+def listar_estaciones_diy() -> dict[str, Any]:
+    estaciones = _estaciones_diy_catalogo()
+    lecturas = [x for x in _load() if x.get("fuente") == "lora_diy"]
+    por_est: dict[str, int] = {}
+    for L in lecturas:
+        eid = L.get("estacion_id") or ""
+        por_est[eid] = por_est.get(eid, 0) + 1
+    for e in estaciones:
+        e["lecturas_recientes"] = por_est.get(e["id"], 0)
+    return {
+        "red": "lora_diy_aconcagua",
+        "nodos": len(estaciones),
+        "estaciones": estaciones,
+        "docs": "hardware/red-estaciones-diy-aconcagua/README.md",
+    }
+
+
+def simular_lora_diy(station_id: str | None = None) -> int:
+    """Genera una ronda de lecturas fuente=lora_diy para el panel Vue."""
+    catalogo = _estaciones_diy_catalogo()
+    if station_id:
+        catalogo = [e for e in catalogo if e["station_id"] == station_id or e["id"] == station_id]
+    items: list[dict[str, Any]] = []
+    for est in catalogo:
+        eid = est["id"]
+        sid = est["station_id"]
+        specs = [
+            ("temperatura", "temp_c", 14 + random.uniform(-2, 6)),
+            ("humedad", "rh", 60 + random.uniform(-15, 20)),
+            ("presion", "pressure_hpa", 1012 + random.uniform(-4, 4)),
+        ]
+        ts = datetime.now(timezone.utc).isoformat()
+        for tipo, suf, valor in specs:
+            if tipo == "humedad":
+                valor = max(0.0, min(100.0, valor))
+            items.append(
+                {
+                    "id": str(uuid.uuid4()),
+                    "sensor_id": f"lora-{sid}-{suf}",
+                    "tipo": tipo,
+                    "estacion_id": eid,
+                    "valor": round(float(valor), 2),
+                    "unidad": _unidad(tipo),
+                    "fuente": "lora_diy",
+                    "timestamp": ts,
+                    "station_id": sid,
+                }
+            )
+    if items:
+        _save(items)
+    return len(items)
 
 
 def _generar_lectura(sensor_id: str, tipo: str, estacion_id: str) -> dict[str, Any]:
