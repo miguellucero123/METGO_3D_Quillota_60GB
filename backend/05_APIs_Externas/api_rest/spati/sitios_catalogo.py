@@ -485,9 +485,15 @@ def get_sitio(sitio_id: str | None) -> dict[str, Any] | None:
 
 
 def listar_sitios(*, solo_alta_montana: bool = False) -> list[dict[str, Any]]:
+    """Catálogo SPATI. Con solo_alta_montana=True excluye demos y puertos Izaje Mar."""
     out = []
     for s in SITIOS_GRUA.values():
-        if solo_alta_montana and s.get("operador") == "METGO demo":
-            continue
+        if solo_alta_montana:
+            op = (s.get("operador") or "").strip()
+            # Demos locales y puertos VENTORA Izaje Mar (≠ alta montaña)
+            if op in ("METGO demo", "VENTORA"):
+                continue
+            if (s.get("tipo_terreno") or "") == "borde_costero":
+                continue
         out.append(_enrich(s))
     return sorted(out, key=lambda x: (x.get("region") or "", x.get("nombre") or ""))
