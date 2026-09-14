@@ -108,11 +108,23 @@ def _source_config(result: dict[str, Any]) -> dict[str, Any]:
     return dict(cfg) if isinstance(cfg, dict) else {}
 
 
+def _has_git_source(result: dict[str, Any]) -> bool:
+    source = result.get("source") or {}
+    return bool(source.get("type"))
+
+
 def _current_state(result: dict[str, Any]) -> dict[str, Any]:
-    """Lee estado efectivo desde la respuesta GET/PATCH del proyecto."""
+    """Lee estado efectivo desde la respuesta GET/PATCH del proyecto.
+
+    Sin source (direct upload / desconectado): no hay previews por rama Git,
+    así que preview_deployment_setting se trata como 'none'.
+    """
     cfg = _source_config(result)
+    preview = cfg.get("preview_deployment_setting")
+    if preview is None and not _has_git_source(result):
+        preview = "none"
     return {
-        "preview_deployment_setting": cfg.get("preview_deployment_setting"),
+        "preview_deployment_setting": preview,
         "production_branch": result.get("production_branch")
         or cfg.get("production_branch"),
         "preview_branch_includes": cfg.get("preview_branch_includes"),
@@ -128,11 +140,26 @@ def _patch_body(desired: dict[str, Any], result: dict[str, Any]) -> dict[str, An
 
     source = result.get("source") or {}
     src_type = source.get("type")
+    wants_preview_keys = any(
+        k.startswith("preview_") for k in desired if k != "production_branch"
+    ) or "preview_deployment_setting" in desired
+
     if not src_type:
-        raise ValueError(
-            "proyecto sin source (¿direct upload?). "
-            "No se puede fijar preview_deployment_setting vía API."
-        )
+        # Direct upload: solo se puede tocar production_branch (si aplica).
+        if wants_preview_keys and desired.get("preview_deployment_setting") not in (
+            None,
+            "none",
+        ):
+            raise ValueError(
+                "proyecto sin source (direct upload); no admite "
+                f"preview_deployment_setting={desired.get('preview_deployment_setting')!r}"
+            )
+        if not body:
+            raise ValueError(
+                "proyecto sin source y nada que aplicar en la raíz "
+                "(¿ya cumple preview=none?)."
+            )
+        return body
 
     config = _source_config(result)
     config["preview_deployment_setting"] = desired["preview_deployment_setting"]
