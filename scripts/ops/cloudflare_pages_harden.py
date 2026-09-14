@@ -5,6 +5,9 @@
 Fuente: config/cloudflare/pages_security.json
 Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 
+Nota API: preview_deployment_setting vive en source.config (no en la raíz del proyecto).
+Ver: PATCH /accounts/{account_id}/pages/projects/{project_name}
+
 Uso:
   python scripts/ops/cloudflare_pages_harden.py            # aplicar
   python scripts/ops/cloudflare_pages_harden.py --check    # solo verificar (exit 1 si drift)
@@ -99,6 +102,60 @@ def _desired(policy: dict[str, Any], project: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _source_config(result: dict[str, Any]) -> dict[str, Any]:
+    source = result.get("source") or {}
+    cfg = source.get("config")
+    return dict(cfg) if isinstance(cfg, dict) else {}
+
+
+def _current_state(result: dict[str, Any]) -> dict[str, Any]:
+    """Lee estado efectivo desde la respuesta GET/PATCH del proyecto."""
+    cfg = _source_config(result)
+    return {
+        "preview_deployment_setting": cfg.get("preview_deployment_setting"),
+        "production_branch": result.get("production_branch")
+        or cfg.get("production_branch"),
+        "preview_branch_includes": cfg.get("preview_branch_includes"),
+        "preview_branch_excludes": cfg.get("preview_branch_excludes"),
+    }
+
+
+def _patch_body(desired: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    """Construye PATCH: production_branch en raíz; preview_* en source.config."""
+    body: dict[str, Any] = {}
+    if "production_branch" in desired:
+        body["production_branch"] = desired["production_branch"]
+
+    source = result.get("source") or {}
+    src_type = source.get("type")
+    if not src_type:
+        raise ValueError(
+            "proyecto sin source (¿direct upload?). "
+            "No se puede fijar preview_deployment_setting vía API."
+        )
+
+    config = _source_config(result)
+    config["preview_deployment_setting"] = desired["preview_deployment_setting"]
+    if "production_branch" in desired:
+        config["production_branch"] = desired["production_branch"]
+    if "preview_branch_includes" in desired:
+        config["preview_branch_includes"] = desired["preview_branch_includes"]
+    if "preview_branch_excludes" in desired:
+        config["preview_branch_excludes"] = desired["preview_branch_excludes"]
+
+    body["source"] = {"type": src_type, "config": config}
+    return body
+
+
+def _comparable(desired: dict[str, Any], current: dict[str, Any]) -> dict[str, Any]:
+    """Solo compara claves presentes en desired."""
+    return {
+        k: {"have": current.get(k), "want": v}
+        for k, v in desired.items()
+        if current.get(k) != v
+    }
+
+
 def _get_project(token: str, account: str, name: str) -> dict[str, Any]:
     url = f"{API}/accounts/{account}/pages/projects/{name}"
     return _request("GET", url, token)
@@ -158,15 +215,8 @@ def main() -> int:
             continue
 
         result = got.get("result") or {}
-        current = {
-            "preview_deployment_setting": result.get("preview_deployment_setting"),
-            "production_branch": result.get("production_branch"),
-        }
-        mismatch = {
-            k: {"have": current.get(k), "want": v}
-            for k, v in desired.items()
-            if current.get(k) != v
-        }
+        current = _current_state(result)
+        mismatch = _comparable(desired, current)
 
         if not mismatch:
             print(f"[ok] {name}: cumple política {desired}")
@@ -178,11 +228,18 @@ def main() -> int:
         if args.check:
             continue
 
-        if args.dry_run:
-            print(f"[dry-run] PATCH {name} ← {json.dumps(desired)}")
+        try:
+            body = _patch_body(desired, result)
+        except ValueError as exc:
+            print(f"[error] {name}: {exc}", file=sys.stderr)
+            errors += 1
             continue
 
-        patched = _patch_project(token, account, name, desired)
+        if args.dry_run:
+            print(f"[dry-run] PATCH {name} ← {json.dumps(body)}")
+            continue
+
+        patched = _patch_project(token, account, name, body)
         if not patched.get("success"):
             msgs = patched.get("errors") or []
             msg = msgs[0].get("message") if msgs else "error"
@@ -190,7 +247,17 @@ def main() -> int:
             errors += 1
             continue
 
-        after = patched.get("result") or {}
+        after = _current_state(patched.get("result") or {})
+        still = _comparable(desired, after)
+        if still:
+            print(
+                f"[error] {name}: PATCH OK pero sigue drift "
+                f"{json.dumps(still, ensure_ascii=False)}",
+                file=sys.stderr,
+            )
+            errors += 1
+            continue
+
         print(
             f"[applied] {name}: "
             f"preview={after.get('preview_deployment_setting')} "

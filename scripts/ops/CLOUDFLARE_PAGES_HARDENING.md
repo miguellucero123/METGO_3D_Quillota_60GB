@@ -26,8 +26,13 @@ Comportamiento:
 
 | Evento | Acción |
 |--------|--------|
-| `workflow_dispatch` / push a la policy | **Aplica** `preview_deployment_setting=none` + `production_branch` |
+| `workflow_dispatch` / push a la policy | **Aplica** `source.config.preview_deployment_setting=none` + `production_branch` |
 | Cron semanal | Solo **`--check`** (falla si hay drift) |
+
+> **API Cloudflare:** el campo no va en la raíz del proyecto. El script lee/escribe
+> `result.source.config.preview_deployment_setting` (`all` \| `none` \| `custom`).
+> Un PATCH en raíz con `{ "preview_deployment_setting": "none" }` es ignorado y el
+> cron semanal reporta `have: null` para siempre.
 
 Local (opcional):
 
