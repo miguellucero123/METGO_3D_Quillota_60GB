@@ -98,6 +98,11 @@
         </div>
       </section>
 
+      <!-- EXTENDED FORECAST (MJO) -->
+      <section class="extended-forecast-section">
+        <MjoOutlookWidget :sitio-id="sitioId" />
+      </section>
+
       <!-- GRAFICOS -->
       <section class="charts-section">
         <div class="chart-container glass-card chart-large">
@@ -125,6 +130,7 @@ import VChart from 'vue-echarts'
 import { fetchSpatiPuertoPronostico, getApiBase } from '@/services/spatiApi'
 import { wakeApi } from '@/services/authApi'
 import { calculateWindProfile, calculateSpudStressIndex, generateSyntheticTide } from '@/utils/oceanPhysics'
+import MjoOutlookWidget from '@/components/MjoOutlookWidget.vue'
 
 use([CanvasRenderer, LineChart, BarChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, MarkAreaComponent, DataZoomComponent, VisualMapComponent])
 

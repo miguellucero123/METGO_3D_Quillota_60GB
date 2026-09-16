@@ -12,6 +12,18 @@ from typing import Any
 
 import requests
 
+from api_rest.integracion.openmeteo_multimodelo import (
+    MODELOS_DETERMINISTAS,
+    MultiModeloNoDisponibleError,
+    ensamble_variable,
+    fetch_multimodelo,
+    primer_modelo_disponible,
+)
+from api_rest.spati.mjo_index_service import (
+    ajustar_precipitacion_mjo,
+    obtener_indice_mjo_real,
+)
+
 logger = logging.getLogger(__name__)
 
 FORECAST_URL = (
@@ -214,31 +226,90 @@ def _build_alerts(hourly: list[dict[str, Any]], threshold_kmh: float = 32.0) -> 
     return alerts
 
 
+def _calcular_ventana(hourly: list[dict[str, Any]], threshold_kmh: float = 32.0) -> dict[str, Any]:
+    """Calcula la ventana operativa actual (verde) o restricción (roja/amarilla)."""
+    if not hourly:
+        return {}
+    
+    # Buscar inicio de restricción (o fin si estamos en una)
+    estado_actual_restringido = float(hourly[0].get("wind_surface_kmh") or 0) >= threshold_kmh
+    
+    cambio_ts = None
+    horas_hasta_cambio = 0
+    
+    for st in hourly:
+        w = float(st.get("wind_surface_kmh") or 0)
+        restringido = w >= threshold_kmh
+        if restringido != estado_actual_restringido:
+            cambio_ts = st.get("timestamp")
+            break
+        horas_hasta_cambio += 1
+        
+    nivel_actual = "ROJO" if estado_actual_restringido else "VERDE"
+    
+    return {
+        "inicio_restriccion": cambio_ts if not estado_actual_restringido else hourly[0].get("timestamp"),
+        "fin_restriccion": cambio_ts if estado_actual_restringido else None,
+        "duracion_ventana_actual_horas": horas_hasta_cambio,
+        "nivel_actual": nivel_actual,
+    }
+
+
+_HOURLY_VARS_MULTIMODELO = [
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "wind_gusts_10m",
+    "visibility",
+    "temperature_2m",
+    "precipitation",
+]
+
+
+def _fetch_forecast_multimodelo(lat: float, lon: float, days: int) -> tuple[dict[str, Any], list[str]]:
+    """Pronóstico atmosférico real: ensamble de varios modelos NWP reales
+    (política de datos: sin estación propia → Open-Meteo multi-modelo, nunca
+    un solo modelo opaco ni datos sintéticos). Si el multi-modelo falla,
+    degrada a un único modelo real (``best_match``) antes de rendirse."""
+    try:
+        data = fetch_multimodelo(lat, lon, hourly_vars=_HOURLY_VARS_MULTIMODELO, forecast_days=days)
+        return data, list(MODELOS_DETERMINISTAS)
+    except MultiModeloNoDisponibleError as exc:
+        logger.warning("multi-modelo puerto falló (%s); degradando a best_match", exc)
+        data = _get_json(
+            FORECAST_URL,
+            {
+                "latitude": lat,
+                "longitude": lon,
+                "forecast_days": days,
+                "timezone": "UTC",
+                "wind_speed_unit": "ms",
+                "hourly": ",".join(_HOURLY_VARS_MULTIMODELO),
+            },
+        )
+        # Homologar al formato sufijado por modelo para reusar ensamble_variable().
+        hourly = data.get("hourly") or {}
+        homologado = {"time": hourly.get("time")}
+        for var in _HOURLY_VARS_MULTIMODELO:
+            homologado[f"{var}_best_match"] = hourly.get(var)
+        return {**data, "hourly": homologado}, ["best_match"]
+
+
 def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
     lat = float(puerto["lat"])
     lon = float(puerto["lon"])
     z0 = float(puerto.get("z0_terreno") or 0.002)
     days = max(3, min(int(math.ceil(hours / 24)), 7))
 
-    forecast = _get_json(
-        FORECAST_URL,
-        {
-            "latitude": lat,
-            "longitude": lon,
-            "forecast_days": days,
-            "timezone": "UTC",
-            "wind_speed_unit": "ms",
-            "hourly": ",".join(
-                [
-                    "wind_speed_10m",
-                    "wind_direction_10m",
-                    "wind_gusts_10m",
-                    "visibility",
-                    "temperature_2m",
-                ]
-            ),
-        },
-    )
+    forecast, modelos_usados = _fetch_forecast_multimodelo(lat, lon, days)
+    fh_raw = forecast.get("hourly") or {}
+
+    ens_wind = ensamble_variable(fh_raw, "wind_speed_10m", modelos_usados)
+    ens_gust = ensamble_variable(fh_raw, "wind_gusts_10m", modelos_usados)
+    ens_temp = ensamble_variable(fh_raw, "temperature_2m", modelos_usados)
+    ens_vis = ensamble_variable(fh_raw, "visibility", modelos_usados)
+    ens_precip = ensamble_variable(fh_raw, "precipitation", modelos_usados)
+    wdir_serie = primer_modelo_disponible(fh_raw, "wind_direction_10m", modelos_usados) or []
+
     marine: dict[str, Any] = {}
     try:
         marine = _get_json(
@@ -260,29 +331,46 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
     except Exception as exc:
         logger.warning("marine Open-Meteo falló (%s); solo viento", exc)
 
-    fh = forecast.get("hourly") or {}
-    times = fh.get("time") or []
-    wind = fh.get("wind_speed_10m") or []
-    wdir = fh.get("wind_direction_10m") or []
-    gust = fh.get("wind_gusts_10m") or []
-    vis = fh.get("visibility") or []
+    times = fh_raw.get("time") or []
+    wind = ens_wind["media"]
+    gust = ens_gust["media"]
+    vis = ens_vis["media"]
+    precip = ens_precip["media"]
+    wdir = wdir_serie
 
     mh = marine.get("hourly") or {}
     m_times = mh.get("time") or []
     wave_h = {t: v for t, v in zip(m_times, mh.get("wave_height") or [])}
     wave_p = {t: v for t, v in zip(m_times, mh.get("wave_period") or [])}
 
+    # MJO_Chile: índice real (una consulta por corrida, no por hora) para
+    # ajustar el pronóstico de precipitación. Si no está disponible, se
+    # expone el pronóstico base sin ajuste (nunca se inventa una fase MJO).
+    mjo_indice = obtener_indice_mjo_real()
+
     hourly_states: list[dict[str, Any]] = []
     n = min(len(times), hours)
     heights = [0, 10, 40, 50, 100, 150, 200]
     for i in range(n):
         ts = times[i]
-        v_ms = float(wind[i] or 0)
+        v_ms = float(wind[i] or 0) if i < len(wind) and wind[i] is not None else 0.0
         v_kmh = v_ms * 3.6
-        g_ms = float(gust[i] or v_ms * 1.3) if i < len(gust) else v_ms * 1.3
+        if i < len(gust) and gust[i] is not None:
+            g_ms = float(gust[i])
+        else:
+            g_ms = v_ms * 1.3
         hs = float(wave_h.get(ts) or (0.8 + 0.2 * math.sin(i / 8.0)))
         tp = float(wave_p.get(ts) or (10 + 2 * math.sin(i / 12.0)))
         vis_m = float(vis[i]) if i < len(vis) and vis[i] is not None else 8000.0
+        precip_mm = float(precip[i]) if i < len(precip) and precip[i] is not None else 0.0
+        wind_spread = ens_wind["spread"][i] if i < len(ens_wind["spread"]) else None
+
+        precip_info: dict[str, Any] = {"precipitacion_base_mm": round(precip_mm, 2)}
+        if mjo_indice.get("disponible"):
+            precip_info = ajustar_precipitacion_mjo(
+                precip_mm, int(mjo_indice["fase"]), float(mjo_indice["amplitud"])
+            )
+
         hourly_states.append(
             {
                 "timestamp": ts if "T" in str(ts) else f"{ts}T00:00:00Z",
@@ -294,11 +382,13 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
                 "wind_surface_kmh": round(v_kmh, 2),
                 "wind_surface_ms": round(v_ms, 3),
                 "wind_surface_kn": round(v_ms * 1.94384, 2),
-                "wind_direction_surface": float(wdir[i] or 0) if i < len(wdir) else 0,
+                "wind_surface_dispersion_modelos_ms": round(wind_spread, 3) if wind_spread is not None else None,
+                "wind_direction_surface": float(wdir[i] or 0) if i < len(wdir) and wdir[i] is not None else 0,
                 "wind_900mb_ms": round(v_ms * 1.45, 3),
-                "wind_900mb_direction": float(wdir[i] or 0) if i < len(wdir) else 0,
+                "wind_900mb_direction": float(wdir[i] or 0) if i < len(wdir) and wdir[i] is not None else 0,
                 "wind_gust_10m_kmh": round(g_ms * 3.6, 2),
                 "wave_params": {"Hs": round(hs, 2), "Tp": round(tp, 1)},
+                "precipitacion": precip_info,
                 "tidal_state": {
                     "level_m": round(0.9 + 0.55 * math.sin(i * math.pi / 6), 2),
                     "rate_change_cmh": 8,
@@ -307,6 +397,7 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
                 "current_profile": {
                     "speed_surface_kn": round(0.4 + 0.2 * math.sin(i / 10.0), 2),
                     "direction_surface_deg": 300,
+                    "fuente": "aproximacion_ekman_sintetica",
                 },
                 "visibility_m": vis_m,
                 "ship_heave_m": round(hs * 0.35, 2),
@@ -321,12 +412,19 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
         "region": puerto.get("region"),
         "forecast_issued_utc": issued,
         "forecast_period_hours": n,
+        "modelos_utilizados": modelos_usados,
+        "mjo_chile": {
+            k: v for k, v in mjo_indice.items() if k not in ("pc1", "pc2")
+        },
         "hourly_states": hourly_states,
         "alerts": _build_alerts(hourly_states),
-        "fuente": "openmeteo_marine" if wave_h else "openmeteo",
+        "ventana_operacional": _calcular_ventana(hourly_states),
+        "fuente": "openmeteo_multimodelo_marine" if wave_h else "openmeteo_multimodelo",
         "fuente_detalle": {
             "forecast": FORECAST_URL,
+            "modelos": modelos_usados,
             "marine": MARINE_URL if wave_h else None,
+            "marea_y_corriente": "sintéticas (astronómica/Ekman aproximado) — sin fuente real integrada aún",
             "lat": lat,
             "lon": lon,
         },
@@ -393,6 +491,8 @@ def _from_hyperlocal(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
     if isinstance(alerts, list) and len(alerts) > 24:
         out["alerts"] = alerts[:24]
         out["alerts_truncated"] = True
+    
+    out["ventana_operacional"] = _calcular_ventana(out.get("hourly_states") or [])
     return out
 
 

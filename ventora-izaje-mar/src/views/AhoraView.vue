@@ -28,6 +28,25 @@
     <template v-else-if="data">
       <p v-if="data.nwp_aviso" class="aviso" role="status">{{ data.nwp_aviso }}</p>
 
+      <div v-if="data.ventana_operacional" class="ventana-info">
+        <h3>Ventana Operacional</h3>
+        <p v-if="data.ventana_operacional.nivel_actual === 'VERDE'">
+          ✅ <strong>Ventana segura</strong> por las próximas {{ data.ventana_operacional.duracion_ventana_actual_horas }} horas.
+          <span v-if="data.ventana_operacional.inicio_restriccion">
+            Próxima restricción: {{ fmtHora(data.ventana_operacional.inicio_restriccion) }}
+          </span>
+        </p>
+        <p v-else>
+          ⚠️ <strong>Restricción activa</strong>.
+          <span v-if="data.ventana_operacional.fin_restriccion">
+            Ventana estimada: {{ fmtHora(data.ventana_operacional.fin_restriccion) }}
+          </span>
+          <span v-else>
+            Condiciones desfavorables por las próximas 72 horas.
+          </span>
+        </p>
+      </div>
+
       <!-- Estado operativo actual -->
       <section class="badge-row" :class="'nivel-' + nivelActual" :aria-label="nivelNombre">
         <div class="badge-main">
@@ -39,6 +58,7 @@
           <span>{{ t('ahora.gust') }} {{ rafagaActual }} km/h</span>
           <span>{{ t('ahora.peak72') }} {{ pico72 }} km/h</span>
           <span v-if="dirLabel">{{ t('ahora.dir') }} {{ dirLabel }}</span>
+          <span v-if="site.altura_pluma_default" class="pluma-hint">Altura grúa: {{ site.altura_pluma_default }}m</span>
         </div>
         <p class="reco">{{ recomendacion }}</p>
       </section>
@@ -218,7 +238,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { fetchSpatiPronostico } from '@/services/spatiApi'
+import { fetchSpatiPuertoPronostico } from '@/services/spatiApi'
 import { wakeApi } from '@/services/authApi'
 
 const { t } = useI18n()
@@ -303,18 +323,29 @@ function fmtDiaCorto(iso) {
 
 /** Agrega serie 15 min → 1 h (máx ráfaga / v en la hora). */
 const horas = computed(() => {
-  const serie = data.value?.serie || []
+  const serie = data.value?.hourly_states || []
   if (!serie.length) return []
   const buckets = new Map()
   for (const row of serie) {
-    const t = new Date(row.valid_time)
+    const t = new Date(row.timestamp)
     if (Number.isNaN(t.getTime())) continue
     t.setMinutes(0, 0, 0)
     const key = t.toISOString()
-    const v = Number(row.v_final_kmh ?? row.v_mos_kmh ?? row.v_fisica_grua ?? 0)
-    const raf = Number(row.rafaga_modelo ?? row.variables_zona_izaje?.rafaga_10m_kmh ?? v)
-    const dir = Number(row.dir_viento_deg ?? row.dir_100m_deg ?? 0)
-    const nivelApi = row.nivel_alerta
+    
+    // Obtener viento extrapolado si está disponible
+    let v_pluma = row.wind_surface_kmh;
+    if (row.wind_profile && site.altura_pluma_default) {
+      // Buscar altura más cercana o usar interpolación básica en el futuro
+      const h_str = String(site.altura_pluma_default);
+      if (row.wind_profile[h_str]) {
+         v_pluma = row.wind_profile[h_str] * 3.6;
+      }
+    }
+    
+    const v = Number(v_pluma ?? 0)
+    const raf = Number(row.wind_gust_10m_kmh ?? v)
+    const dir = Number(row.wind_direction_surface ?? 0)
+    
     const prev = buckets.get(key)
     if (!prev) {
       buckets.set(key, {
@@ -322,15 +353,14 @@ const horas = computed(() => {
         v: Math.round(v),
         rafaga: Math.round(raf),
         dir,
-        nivel: typeof nivelApi === 'number' ? nivelApi : nivelDeVel(Math.max(v, raf)),
-        nivel_nombre: row.nivel_nombre || '',
+        nivel: nivelDeVel(Math.max(v, raf)),
+        nivel_nombre: '',
       })
     } else {
       prev.v = Math.max(prev.v, Math.round(v))
       prev.rafaga = Math.max(prev.rafaga, Math.round(raf))
       prev.dir = dir
-      const n = typeof nivelApi === 'number' ? nivelApi : nivelDeVel(Math.max(prev.v, prev.rafaga))
-      prev.nivel = Math.max(prev.nivel, n)
+      prev.nivel = Math.max(prev.nivel, nivelDeVel(Math.max(prev.v, prev.rafaga)))
     }
   }
   const list = [...buckets.values()].slice(0, 72)
@@ -489,7 +519,10 @@ async function cargar() {
   destroyMap()
   try {
     await wakeApi().catch(() => {})
-    data.value = await fetchSpatiPronostico(sitioId.value)
+    data.value = await fetchSpatiPuertoPronostico(sitioId.value)
+    if (data.value && data.value.fuente && data.value.fuente !== 'openmeteo_marine' && data.value.fuente !== 'openmeteo') {
+      data.value.nwp_aviso = '⚠️ Fuente: ' + data.value.fuente + ' (Fallo del modelo primario)'
+    }
     horaIdx.value = 0
   } catch (e) {
     error.value = e?.message || 'No se pudo cargar el pronóstico'
@@ -573,6 +606,38 @@ onBeforeUnmount(() => {
   border-radius: 0 8px 8px 0;
   font-size: 0.85rem;
   margin-bottom: 0.75rem;
+}
+
+.ventana-info {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.ventana-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ventana-info p {
+  margin: 0;
+  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.ventana-info span {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+.pluma-hint {
+  display: inline-block;
+  background: rgba(255,255,255,0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
 }
 
 .badge-row {

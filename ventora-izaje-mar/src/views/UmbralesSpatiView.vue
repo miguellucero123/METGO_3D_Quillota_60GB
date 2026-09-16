@@ -24,26 +24,26 @@
         <tbody>
           <tr class="n0">
             <td>0 VERDE</td>
-            <td>&lt; {{ umb.verde_max_kmh ?? 26 }} km/h</td>
+            <td>&lt; <input type="number" v-model.number="formUmb.verde_max_kmh" class="inline-input" /> km/h</td>
             <td>&lt; 40%</td>
             <td>Operación permitida</td>
           </tr>
           <tr class="n1">
             <td>1 AMARILLO</td>
-            <td>{{ rango(umb.amarillo) }} km/h</td>
-            <td>40 – {{ umb.fuerza_naranja_pct ?? 55 }}%</td>
+            <td>{{ rangoAm() }} km/h</td>
+            <td>40 – {{ formUmb.fuerza_naranja_pct ?? 55 }}%</td>
             <td>Pre-alerta · verificar anemómetro</td>
           </tr>
           <tr class="n2">
             <td>2 NARANJA</td>
-            <td>{{ rango(umb.naranja) }} km/h</td>
-            <td>{{ umb.fuerza_naranja_pct ?? 55 }} – {{ umb.fuerza_rojo_pct ?? 80 }}%</td>
+            <td>{{ rangoNa() }} km/h</td>
+            <td>{{ formUmb.fuerza_naranja_pct ?? 55 }} – {{ formUmb.fuerza_rojo_pct ?? 80 }}%</td>
             <td>Restricción de cargas A·Cd elevado</td>
           </tr>
           <tr class="n3">
             <td>3 ROJO</td>
-            <td>≥ {{ umb.rojo_min_kmh ?? 35 }} km/h</td>
-            <td>&gt; {{ umb.fuerza_rojo_pct ?? 80 }}%</td>
+            <td>≥ <input type="number" v-model.number="formUmb.rojo_min_kmh" class="inline-input" /> km/h</td>
+            <td>&gt; {{ formUmb.fuerza_rojo_pct ?? 80 }}%</td>
             <td>Parada obligatoria · asegurar pluma</td>
           </tr>
         </tbody>
@@ -56,12 +56,11 @@
       </p>
 
       <section class="alertas-card">
-        <h2>Destinos de alerta (M9)</h2>
+        <h2>Configuración Operativa (M9)</h2>
         <p class="muted small">
-          Por faena. El cron notifica email(s) y webhook de esta faena si el nivel sube
-          y es ≥ nivel mínimo. Requiere sesión (Bearer) para guardar en producción.
+          Ajusta los límites del perfil de grúa actual y los destinos de alerta.
         </p>
-        <form class="form" @submit.prevent="guardarAlertas">
+        <form class="form" @submit.prevent="guardarCambios">
           <label>
             Emails (separados por coma)
             <input v-model="form.emails" type="text" placeholder="ops@faena.cl, hse@faena.cl" />
@@ -80,7 +79,7 @@
           </label>
           <div class="form-actions">
             <button type="submit" class="btn" :disabled="saving">
-              {{ saving ? 'Guardando…' : 'Guardar destinos' }}
+              {{ saving ? 'Guardando…' : 'Guardar Configuración' }}
             </button>
             <span v-if="saveMsg" class="ok">{{ saveMsg }}</span>
             <span v-if="saveErr" class="err">{{ saveErr }}</span>
@@ -128,15 +127,32 @@ const form = reactive({
   nivel: 2,
 })
 
-function rango(arr) {
-  if (!Array.isArray(arr) || arr.length < 2) return '—'
-  return `${arr[0]} – ${arr[1]}`
+const formUmb = reactive({
+  verde_max_kmh: 26,
+  rojo_min_kmh: 35,
+  fuerza_naranja_pct: 55,
+  fuerza_rojo_pct: 80
+})
+
+function rangoAm() {
+  return `${formUmb.verde_max_kmh} – ${Math.round((formUmb.verde_max_kmh + formUmb.rojo_min_kmh) / 2)}`
+}
+
+function rangoNa() {
+  return `${Math.round((formUmb.verde_max_kmh + formUmb.rojo_min_kmh) / 2)} – ${formUmb.rojo_min_kmh}`
 }
 
 function aplicarAlertas(a) {
   form.emails = Array.isArray(a?.emails) ? a.emails.join(', ') : ''
   form.webhook = a?.webhook_url || ''
   form.nivel = a?.nivel_minimo ?? 2
+}
+
+function aplicarUmbrales(u) {
+  formUmb.verde_max_kmh = u?.verde_max_kmh ?? 26
+  formUmb.rojo_min_kmh = u?.rojo_min_kmh ?? 35
+  formUmb.fuerza_naranja_pct = u?.fuerza_naranja_pct ?? 55
+  formUmb.fuerza_rojo_pct = u?.fuerza_rojo_pct ?? 80
 }
 
 async function cargar() {
@@ -147,6 +163,7 @@ async function cargar() {
     umb.value = data.umbrales || {}
     fuente.value = umb.value.fuente || ''
     aplicarAlertas(data.alertas || {})
+    aplicarUmbrales(data.umbrales || {})
   } catch (e) {
     error.value = e?.message || 'No se pudieron cargar umbrales'
     umb.value = {}
@@ -155,12 +172,20 @@ async function cargar() {
   }
 }
 
-async function guardarAlertas() {
+async function guardarCambios() {
   saving.value = true
   saveMsg.value = ''
   saveErr.value = ''
   try {
     const data = await putSpatiUmbrales(sitioId.value, {
+      umbrales: {
+        verde_max_kmh: formUmb.verde_max_kmh,
+        rojo_min_kmh: formUmb.rojo_min_kmh,
+        amarillo: [formUmb.verde_max_kmh, Math.round((formUmb.verde_max_kmh + formUmb.rojo_min_kmh) / 2)],
+        naranja: [Math.round((formUmb.verde_max_kmh + formUmb.rojo_min_kmh) / 2), formUmb.rojo_min_kmh],
+        fuerza_naranja_pct: formUmb.fuerza_naranja_pct,
+        fuerza_rojo_pct: formUmb.fuerza_rojo_pct
+      },
       alertas: {
         emails: form.emails,
         webhook_url: form.webhook || null,
@@ -168,7 +193,8 @@ async function guardarAlertas() {
       },
     })
     aplicarAlertas(data.alertas || {})
-    saveMsg.value = 'Destinos guardados'
+    aplicarUmbrales(data.umbrales || {})
+    saveMsg.value = 'Configuración guardada'
   } catch (e) {
     saveErr.value = e?.message || 'No se pudo guardar'
   } finally {
@@ -272,13 +298,20 @@ onMounted(() => cargar())
   color: var(--color-text-secondary);
 }
 .form input,
-.form select {
+.form select,
+.inline-input {
   padding: 0.5rem 0.65rem;
   border-radius: 6px;
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text);
   font-size: 0.92rem;
+}
+.inline-input {
+  width: 70px;
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  background: var(--color-surface);
 }
 .form-actions {
   display: flex;

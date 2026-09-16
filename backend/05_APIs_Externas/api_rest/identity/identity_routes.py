@@ -243,6 +243,73 @@ def register_identity_routes(app: Flask) -> None:
             body["verify_url"] = verify_url
         return jsonify(body), 200
 
+    @app.post("/api/auth/solicitar-reset")
+    def solicitar_reset_password():
+        """Envía enlace de reseteo si el email existe. Respuesta genérica
+        siempre (no revela si el email está o no registrado)."""
+        from api_rest import security_hardening as sec
+
+        ok_rl, meta = sec.check_rate_limit("auth_reset_solicitar", limit=5, window_s=300)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
+
+        data = request.get_json(silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
+        sitio = (data.get("sitio") or data.get("site") or "spati").strip().lower()
+        faena = (data.get("faena") or "").strip().lower() or None
+        generic = {
+            "message": "Si el correo está registrado, recibirá un enlace para restablecer su contraseña"
+        }
+        if not email:
+            return jsonify({"error": "email requerido"}), 400
+
+        ok_em, meta_em = sec.check_rate_limit(
+            "auth_reset_solicitar_email", limit=3, window_s=3600, key=email
+        )
+        if not ok_em:
+            return sec.rate_limit_response(meta_em)
+
+        result = identity_store.solicitar_reset_password(email, sitio, faena)
+        if result:
+            producto = _producto_spa(data)
+            base = _public_spa_base(sitio, producto=producto)
+            reset_url = f"{base}/reset-password?token={result['token']}" if base else ""
+            if reset_url:
+                from api_rest.identity import email_notify
+
+                email_notify.enviar_texto(
+                    to_email=result["email"],
+                    subject="METGO · Restablecer contraseña",
+                    body=(
+                        "Recibimos una solicitud para restablecer su contraseña.\n\n"
+                        f"Si fue usted, abra este enlace (válido 1 hora):\n\n{reset_url}\n\n"
+                        "Si no fue usted, ignore este mensaje; su contraseña no cambiará."
+                    ),
+                )
+            email_dev = os.getenv("METGO_EMAIL_DEV")
+            if email_dev is None:
+                email_dev = "1" if identity_store.use_memory() else "0"
+            if email_dev == "1":
+                generic["reset_token"] = result["token"]
+                generic["reset_url"] = reset_url
+        return jsonify(generic), 200
+
+    @app.post("/api/auth/resetear-password")
+    def resetear_password_route():
+        from api_rest import security_hardening as sec
+
+        ok_rl, meta = sec.check_rate_limit("auth_reset_confirmar", limit=10, window_s=300)
+        if not ok_rl:
+            return sec.rate_limit_response(meta)
+
+        data = request.get_json(silent=True) or {}
+        token = (data.get("token") or "").strip()
+        nueva = data.get("password") or data.get("nueva_password") or ""
+        ok, msg, extra = identity_store.resetear_password(token, nueva)
+        if not ok:
+            return jsonify({"error": msg}), 400
+        return jsonify({"message": msg, **(extra or {})}), 200
+
     @app.get("/api/auth/verify-email")
     def verify_email():
         token = request.args.get("token") or ""

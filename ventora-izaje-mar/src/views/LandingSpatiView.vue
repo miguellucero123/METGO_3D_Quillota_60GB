@@ -9,6 +9,8 @@
       <nav class="nav" :aria-label="t('landing.navHow')">
         <a href="#como">{{ t('landing.navHow') }}</a>
         <a href="#alertas">{{ t('landing.navAlerts') }}</a>
+        <a href="#solucion">{{ t('landing.navSolution') }}</a>
+        <a href="#impacto">{{ t('landing.navImpact') }}</a>
         <a href="#precios">{{ t('landing.navPlans') }}</a>
         <a href="#faq">{{ t('landing.navFaq') }}</a>
       </nav>
@@ -78,6 +80,78 @@
         <article class="umbral verde"><h3>≥26 km/h</h3><p>{{ t('landing.caution') }}</p></article>
         <article class="umbral amarillo"><h3>≥31 km/h</h3><p>{{ t('landing.suspendRec') }}</p></article>
         <article class="umbral rojo"><h3>≥36 km/h</h3><p>{{ t('landing.suspendReq') }}</p></article>
+      </div>
+    </section>
+
+    <section id="solucion" class="section">
+      <h2>{{ t('landing.solutionTitle') }}</h2>
+      <p class="section-sub">{{ t('landing.solutionSub') }}</p>
+      <div class="pillars">
+        <article class="pillar">
+          <div class="pillar-icon software-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>{{ t('landing.pillarSoftware') }}</h3>
+          <p>{{ t('landing.pillarSoftwareDesc') }}</p>
+          <ul>
+            <li>{{ t('landing.pillarSw1') }}</li>
+            <li>{{ t('landing.pillarSw2') }}</li>
+            <li>{{ t('landing.pillarSw3') }}</li>
+          </ul>
+        </article>
+        <article class="pillar">
+          <div class="pillar-icon hardware-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 18v4M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M18 12h4M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/></svg>
+          </div>
+          <h3>{{ t('landing.pillarHardware') }}</h3>
+          <p>{{ t('landing.pillarHardwareDesc') }}</p>
+          <ul>
+            <li>{{ t('landing.pillarHw1') }}</li>
+            <li>{{ t('landing.pillarHw2') }}</li>
+            <li>{{ t('landing.pillarHw3') }}</li>
+          </ul>
+        </article>
+        <article class="pillar">
+          <div class="pillar-icon services-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <h3>{{ t('landing.pillarServices') }}</h3>
+          <p>{{ t('landing.pillarServicesDesc') }}</p>
+          <ul>
+            <li>{{ t('landing.pillarSv1') }}</li>
+            <li>{{ t('landing.pillarSv2') }}</li>
+            <li>{{ t('landing.pillarSv3') }}</li>
+          </ul>
+        </article>
+      </div>
+      <div class="compliance-row">
+        <span class="badge">DS 59</span>
+        <span class="badge">DS 138</span>
+        <span class="badge">WMO</span>
+        <span class="badge">SHOA</span>
+        <span class="badge">ISGOTT</span>
+      </div>
+    </section>
+
+    <section id="impacto" class="section alt">
+      <h2>{{ t('landing.impactTitle') }}</h2>
+      <p class="section-sub">{{ t('landing.impactSub') }}</p>
+      <div class="impact-grid">
+        <article class="impact-card">
+          <strong class="impact-number">480x</strong>
+          <span class="impact-label">{{ t('landing.impactRoiAgro') }}</span>
+          <p class="impact-detail">{{ t('landing.impactRoiAgroDetail') }}</p>
+        </article>
+        <article class="impact-card">
+          <strong class="impact-number">135h</strong>
+          <span class="impact-label">{{ t('landing.impactHoursMining') }}</span>
+          <p class="impact-detail">{{ t('landing.impactHoursMiningDetail') }}</p>
+        </article>
+        <article class="impact-card">
+          <strong class="impact-number">0</strong>
+          <span class="impact-label">{{ t('landing.impactAccidents') }}</span>
+          <p class="impact-detail">{{ t('landing.impactAccidentsDetail') }}</p>
+        </article>
       </div>
     </section>
 
@@ -204,7 +278,7 @@ const faq = [
   },
   {
     q: '¿Incluye predicción de oleaje y mareas?',
-    a: 'Sí. El panel cruza los datos de viento superficial con el estado del mar y tablas de mareas locales para la toma de decisiones en el muelle.',
+    a: 'El oleaje (altura y período) usa datos reales de modelos meteorológicos (Open-Meteo Marine, ensamble ECMWF/ICON/GFS para viento). El estado de marea se calcula con una aproximación astronómica de referencia mientras se integra una fuente en tiempo real; se muestra siempre etiquetado en la API para que el operador sepa qué dato es cuál.',
   },
   {
     q: '¿El PDF sirve como respaldo?',
@@ -655,6 +729,130 @@ onMounted(async () => {
 .foot a {
   color: var(--emer);
   text-decoration: none;
+}
+
+/* ===== PILARES (Solución Integral) ===== */
+.pillars {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: 0.5rem;
+}
+.pillar {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.35rem;
+  background: rgba(30, 41, 59, 0.45);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.pillar:hover {
+  border-color: var(--emer);
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+}
+.pillar-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+.software-icon {
+  background: rgba(14, 165, 233, 0.15);
+  color: var(--emer);
+}
+.hardware-icon {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--amber);
+}
+.services-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+.pillar h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  color: #fff;
+}
+.pillar > p {
+  margin: 0 0 0.65rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.pillar ul {
+  margin: 0;
+  padding: 0 0 0 1rem;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+.pillar ul li {
+  margin-bottom: 0.25rem;
+}
+
+/* ===== COMPLIANCE BADGES ===== */
+.compliance-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--emer);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+/* ===== IMPACT GRID ===== */
+.impact-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.impact-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.35rem;
+  text-align: center;
+  background: rgba(30, 41, 59, 0.45);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.impact-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+.impact-number {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--emer), var(--blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.impact-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0.3rem 0 0.5rem;
+}
+.impact-detail {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 @media (min-width: 880px) {

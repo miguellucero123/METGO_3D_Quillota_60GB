@@ -1001,9 +1001,13 @@ paths:
       tags: [spati]
       summary: Pronóstico portuario 72 h (VENTORA)
       description: |
-        Viento + oleaje para terminales marítimos. Fuente preferente Open-Meteo
-        (forecast + marine). Si NWP no responde, fallback `synthetic_local`
-        con coordenadas del puerto y campo `fuente` explícito.
+        Viento (ensamble real ECMWF + ICON + GFS) + oleaje (Open-Meteo marine)
+        para terminales marítimos, con ajuste heurístico de precipitación por
+        MJO_Chile (índice real ROMI). Si el multi-modelo falla, degrada a un
+        único modelo real (`best_match`); si Open-Meteo no responde del todo,
+        fallback `synthetic_local` con coordenadas del puerto y `fuente` explícito.
+        Marea y corriente siguen siendo aproximaciones sintéticas (astronómica /
+        Ekman) — ver `fuente_detalle.marea_y_corriente` en la respuesta.
       parameters:
         - name: sitio_id
           in: path
@@ -1021,8 +1025,11 @@ paths:
       responses:
         "200":
           description: >
-            hourly_states[], alerts[], fuente (openmeteo | openmeteo_marine |
-            synthetic_local), config lat/lon
+            hourly_states[] (incluye `precipitacion` con ajuste MJO y
+            `wind_surface_dispersion_modelos_ms` como proxy real de
+            incertidumbre entre modelos), alerts[], modelos_utilizados[],
+            mjo_chile{}, fuente (openmeteo_multimodelo | openmeteo_multimodelo_marine
+            | synthetic_local), config lat/lon
         "404":
           description: Puerto / sitio desconocido
         "503":
@@ -2292,7 +2299,95 @@ paths:
       responses:
         "200":
           description: URLs embed local/nube
+  /api/public/spati/{sitio_id}/extendido_mjo:
+    get:
+      tags: [meteo]
+      summary: Pronóstico subestacional extendido 20-90 días basado en MJO y ENSO
+      parameters:
+        - name: sitio_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Datos de la tendencia subestacional
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PronosticoMjo'
+        "404":
+          description: Sitio no encontrado
 components:
+  schemas:
+    VentanaOperacional:
+      type: object
+      properties:
+        inicio_restriccion:
+          type: string
+          format: date-time
+          nullable: true
+          description: Cuándo empieza la próxima restricción (roja/amarilla)
+        fin_restriccion:
+          type: string
+          format: date-time
+          nullable: true
+          description: Cuándo termina la restricción (si estamos en una)
+        duracion_ventana_actual_horas:
+          type: integer
+          description: Cuántas horas restan en la ventana actual (verde)
+        nivel_actual:
+          type: string
+          enum: [VERDE, AMARILLO, NARANJA, ROJO]
+          description: Nivel de severidad actual
+    PronosticoMjo:
+      type: object
+      description: >
+        Fase/amplitud reales del índice MJO (ROMI, NOAA/PSL), no simulados.
+        Si la fuente no está disponible, `disponible=false` y no se incluyen
+        fase/amplitud (nunca se sustituyen por un valor inventado).
+      properties:
+        sitio_id:
+          type: string
+        disponible:
+          type: boolean
+          description: false si el índice MJO real no pudo obtenerse (sin caché previa)
+        fase_mjo:
+          type: integer
+          nullable: true
+          description: Fase actual de la Oscilación Madden-Julian (1-8), solo si disponible=true
+        amplitud_mjo:
+          type: number
+          format: float
+          nullable: true
+          description: Amplitud real del índice ROMI (activo si >= 1.0)
+        fecha_indice:
+          type: string
+          format: date
+          description: Fecha del último dato real disponible (ROMI se actualiza con ~3-4 días de rezago)
+        fuente:
+          type: string
+          enum: [noaa_psl_romi, noaa_psl_romi_lastgood, no_disponible]
+        fuente_url:
+          type: string
+        desde_cache:
+          type: boolean
+        degradado:
+          type: boolean
+          description: true si se sirvió desde caché local por falla de la fuente en vivo
+        probabilidad_bloqueo_anticiclonico:
+          type: number
+          format: float
+          description: Heurística (0 a 1) por fase, no un modelo dinámico validado
+        impacto_viento:
+          type: string
+          description: Tendencia del viento (ej. "Anomalía positiva", "Normal")
+        impacto_oleaje:
+          type: string
+          description: Tendencia del oleaje a 20-90 días
+        recomendacion_estrategica:
+          type: string
+        nota_metodologica:
+          type: string
   securitySchemes:
     bearerAuth:
       type: http

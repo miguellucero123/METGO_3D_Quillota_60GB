@@ -62,6 +62,8 @@
           {{ reenviando ? '…' : t('login.resend') }}
         </button>
         ·
+        <router-link :to="forgotLink">¿Olvidó su contraseña?</router-link>
+        ·
         <router-link to="/">{{ t('app.home') }}</router-link>
         ·
         <router-link :to="registroLink">{{ t('app.register') }}</router-link>
@@ -94,6 +96,9 @@ const faenaFija = computed(() => {
 const faenaMeta = computed(() => (site.stations || []).find((s) => s.slug === faenaFija.value))
 const registroLink = computed(() =>
   faenaFija.value ? `/p/${faenaFija.value}/registro` : '/registro',
+)
+const forgotLink = computed(() =>
+  faenaFija.value ? `/p/${faenaFija.value}/olvide-password` : '/olvide-password',
 )
 
 const username = ref('')

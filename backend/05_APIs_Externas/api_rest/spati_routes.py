@@ -80,6 +80,18 @@ def register_spati_routes(app: Flask) -> None:
             return jsonify({**_ERROR_503, **data}), 503
         return jsonify(data)
 
+    @app.get("/api/public/spati/<sitio_id>/extendido_mjo")
+    def public_spati_extendido_mjo(sitio_id: str):
+        """Pronóstico subestacional 20-90 días (MJO) simulado para UI."""
+        from api_rest.spati.mjo_service import obtener_pronostico_extendido_mjo
+        
+        try:
+            data = obtener_pronostico_extendido_mjo(sitio_id)
+            return jsonify(data)
+        except Exception as exc:
+            app.logger.warning("spati_extendido_mjo %s: %s", sitio_id, exc)
+            return jsonify({**_ERROR_503, "detalle": str(exc)}), 503
+
     @app.post("/api/public/spati/physics/extrapolar")
     def public_spati_physics_extrapolar():
         """Utilidad: extrapolar un valor de viento a altura de pluma."""

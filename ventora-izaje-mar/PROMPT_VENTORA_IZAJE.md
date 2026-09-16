@@ -26,6 +26,7 @@ Respondes en **español** salvo que el código o commits requieran inglés técn
 3.  **UI/UX Limpia y Rápida:** VENTORA es una herramienta crítica para tomar decisiones en faena. Usa `lucide-vue-next` para iconos claros. La información crítica (alertas rojas/ITE crítico) debe ser visible de inmediato sin clics adicionales.
 4.  **Integración con API (Metgo/Spati):** Los llamados al backend se realizan a través de `src/services/spatiApi.js` (o authApi). Mantenemos las URLs configuradas en `site.config.js`.
 5.  **Despliegue:** El despliegue de este frontend se realiza en Cloudflare Pages (`npm run pages:deploy`). NO alterar el script de construcción de Vite ni el `wrangler.toml` sin necesidad explícita.
+6.  **Utilidad del pronóstico:** Para ampliar semáforos, ventanas operacionales, evidencia y calibración, seguir el prompt maestro `docs/PROMPT_IZAJE_PRONOSTICO_UTILIDAD.md` (producto `ventora_mar` ≠ VENTORA minera).
 
 ## FORMATO DE RESPUESTA REQUERIDO
 

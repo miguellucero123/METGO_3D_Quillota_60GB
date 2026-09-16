@@ -35,6 +35,18 @@ const puertoChildren = [
     component: () => import('@/views/VerificarEmailView.vue'),
     meta: { title: 'Verificar email', public: true },
   },
+  {
+    path: 'olvide-password',
+    name: 'puerto-olvide-password',
+    component: () => import('@/views/OlvidePasswordView.vue'),
+    meta: { title: 'Recuperar contraseña', public: true },
+  },
+  {
+    path: 'reset-password',
+    name: 'puerto-reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+    meta: { title: 'Nueva contraseña', public: true },
+  },
 ]
 
 const routes = [
@@ -61,6 +73,18 @@ const routes = [
     name: 'verificar',
     component: () => import('@/views/VerificarEmailView.vue'),
     meta: { title: 'Verificar email', public: true },
+  },
+  {
+    path: '/olvide-password',
+    name: 'olvide-password',
+    component: () => import('@/views/OlvidePasswordView.vue'),
+    meta: { title: 'Recuperar contraseña', public: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+    meta: { title: 'Nueva contraseña', public: true },
   },
   {
     path: '/app',

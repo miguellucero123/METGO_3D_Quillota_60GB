@@ -3,14 +3,17 @@
 // ============================================
 
 export const appConfig = {
-  // Identidad producto: ventora_mar = Izaje Mar (NO confundir con VENTORA alta montaña)
+  // Identidad producto (API sigue usando sitio=spati)
   sitio: 'spati',
-  producto: 'ventora_mar',
+  producto: 'ventora',
   productName: 'VENTORA',
-  brandName: 'Izaje Mar',
+  brandName: 'VENTORA',
   siteLabel: 'VENTORA · Izaje Mar',
-  storagePrefix: 'metgo_ventora_mar',
+  storagePrefix: 'metgo_ventora',
   spatiDefaultSitio: 'ventanas_muelle',
+  // Coordenadas alineadas 1:1 con PUERTOS en
+  // backend/05_APIs_Externas/api_rest/spati/puerto_pronostico_service.py
+  // (deben coincidir siempre con el punto real que consulta el pronóstico).
   stations: [
     {
       slug: 'iqq',
@@ -25,6 +28,34 @@ export const appConfig = {
       region: 'Valparaíso',
       lat: -32.748,
       lon: -71.482,
+    },
+    {
+      slug: 'anf',
+      nombre: 'Puerto Antofagasta',
+      region: 'Antofagasta',
+      lat: -23.6509,
+      lon: -70.4001,
+    },
+    {
+      slug: 'vlp',
+      nombre: 'Puerto Valparaíso',
+      region: 'Valparaíso',
+      lat: -33.037,
+      lon: -71.627,
+    },
+    {
+      slug: 'san',
+      nombre: 'Puerto San Antonio',
+      region: 'Valparaíso',
+      lat: -33.580,
+      lon: -71.615,
+    },
+    {
+      slug: 'pmc',
+      nombre: 'Puerto Mejillones',
+      region: 'Antofagasta',
+      lat: -23.100,
+      lon: -70.450,
     },
   ],
 
@@ -47,10 +78,12 @@ export const appConfig = {
 
   // ============================================
   // PUERTOS CHILENOS
+  // Claves en minúscula: deben calzar con `route.params.puerto` (slug de
+  // `stations`), usado por PortalDashboard.vue vía `appConfig.ports[slug]`.
   // ============================================
   ports: {
     // ========== PUERTO DE IQUIQUE ==========
-    IQQ: {
+    iqq: {
       name: 'Puerto de Iquique',
       region: 'Tarapacá',
       coordinates: [-20.2058, -70.1608],
@@ -102,10 +135,10 @@ export const appConfig = {
     },
 
     // ========== PUERTO DE ANTOFAGASTA ==========
-    ANF: {
+    anf: {
       name: 'Puerto de Antofagasta',
-      region: 'Antofacasta',
-      coordinates: [-23.6500, -70.4000],
+      region: 'Antofagasta',
+      coordinates: [-23.6509, -70.4001],
       type: 'mining-export',
       cranes: [
         {
@@ -123,10 +156,10 @@ export const appConfig = {
     },
 
     // ========== PUERTO DE VALPARAÍSO ==========
-    VLP: {
+    vlp: {
       name: 'Puerto de Valparaíso',
       region: 'Valparaíso',
-      coordinates: [-33.0473, -71.6127],
+      coordinates: [-33.037, -71.627],
       type: 'container-general',
       cranes: [
         {
@@ -150,10 +183,10 @@ export const appConfig = {
     },
 
     // ========== PUERTO DE SAN ANTONIO ==========
-    SAN: {
+    san: {
       name: 'Puerto de San Antonio',
-      region: 'O\'Higgins',
-      coordinates: [-33.5936, -71.6127],
+      region: 'Valparaíso',
+      coordinates: [-33.580, -71.615],
       type: 'container-breakbulk',
       cranes: [
         {
@@ -170,12 +203,16 @@ export const appConfig = {
       },
     },
 
-    // ========== PUERTO MONTT ==========
-    PMC: {
-      name: 'Puerto Montt',
-      region: 'Los Lagos',
-      coordinates: [-41.3196, -72.1533],
-      type: 'general-breakbulk',
+    // ========== PUERTO MEJILLONES ==========
+    // Corregido 2026-09-15: este bloque decía "Puerto Montt" (Los Lagos,
+    // coords -41,-72) pero el código de sitio "pmc" en el backend
+    // (puerto_pronostico_service.py) es Puerto Mejillones (Antofagasta).
+    // El pronóstico siempre fue de Mejillones; solo esta ficha estaba mal.
+    pmc: {
+      name: 'Puerto Mejillones',
+      region: 'Antofagasta',
+      coordinates: [-23.100, -70.450],
+      type: 'mining-export',
       cranes: [
         {
           id: 'RTG-07',

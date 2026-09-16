@@ -25,8 +25,16 @@ def test_normalizar_y_get_puerto():
 
 
 def test_pronostico_openmeteo_mock(monkeypatch):
-    def fake_get(url, params=None, timeout=None):
+    from api_rest.spati import mjo_index_service
+
+    modelos = ["ecmwf_ifs025", "icon_seamless", "gfs_seamless"]
+    # 5.0/6.0/7.0 m/s en los 3 modelos -> media = 6.0 m/s = 21.6 km/h
+    vientos = {"ecmwf_ifs025": [5.0, 6.0], "icon_seamless": [6.0, 6.0], "gfs_seamless": [7.0, 6.0]}
+
+    def fake_get_multimodelo(url, params=None, timeout=None):
         class R:
+            status_code = 200
+
             def raise_for_status(self):
                 return None
 
@@ -40,27 +48,34 @@ def test_pronostico_openmeteo_mock(monkeypatch):
                             "wave_direction": [220, 225],
                         }
                     }
-                return {
-                    "hourly": {
-                        "time": ["2026-09-14T00:00", "2026-09-14T01:00"],
-                        "wind_speed_10m": [5.0, 6.0],
-                        "wind_direction_10m": [210, 215],
-                        "wind_gusts_10m": [7.0, 8.0],
-                        "visibility": [10000, 9000],
-                        "temperature_2m": [16.0, 15.5],
-                    }
-                }
+                hourly = {"time": ["2026-09-14T00:00", "2026-09-14T01:00"]}
+                for m in modelos:
+                    hourly[f"wind_speed_10m_{m}"] = vientos[m]
+                    hourly[f"wind_direction_10m_{m}"] = [210, 215]
+                    hourly[f"wind_gusts_10m_{m}"] = [7.0, 8.0]
+                    hourly[f"visibility_{m}"] = [10000, 9000]
+                    hourly[f"temperature_2m_{m}"] = [16.0, 15.5]
+                    hourly[f"precipitation_{m}"] = [0.0, 0.5]
+                return {"hourly": hourly}
 
         return R()
 
-    monkeypatch.setattr(pps.requests, "get", fake_get)
+    monkeypatch.setattr(pps.requests, "get", fake_get_multimodelo)
+    monkeypatch.setattr(
+        mjo_index_service, "obtener_indice_mjo_real", lambda **kw: {"disponible": False}
+    )
+    monkeypatch.setattr(pps, "obtener_indice_mjo_real", lambda **kw: {"disponible": False})
+
     out = pps.generar_pronostico_puerto("iqq", hours=24)
     assert "error" not in out
-    assert out["fuente"] == "openmeteo_marine"
+    assert out["fuente"] == "openmeteo_multimodelo_marine"
     assert out["site_id"] == "iqq"
+    assert out["modelos_utilizados"] == modelos
     assert len(out["hourly_states"]) == 2
-    assert out["hourly_states"][0]["wind_surface_kmh"] == pytest.approx(18.0, abs=0.1)
+    # media de 5,6,7 m/s = 6 m/s = 21.6 km/h
+    assert out["hourly_states"][0]["wind_surface_kmh"] == pytest.approx(21.6, abs=0.1)
     assert out["hourly_states"][0]["wave_params"]["Hs"] == 1.2
+    assert out["hourly_states"][0]["precipitacion"]["precipitacion_base_mm"] == 0.0
     assert out["config"]["lat"] == pytest.approx(-20.2058, abs=1e-3)
 
 

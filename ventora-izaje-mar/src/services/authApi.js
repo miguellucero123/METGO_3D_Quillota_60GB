@@ -195,4 +195,15 @@ export async function verifyEmail(token) {
   return request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
 }
 
+export async function solicitarResetPassword({ email, sitio, faena } = {}) {
+  return request('/auth/solicitar-reset', {
+    method: 'POST',
+    body: { email, producto: PRODUCTO, sitio: sitio || SITIO, ...(faena ? { faena } : {}) },
+  })
+}
+
+export async function resetearPassword({ token, password } = {}) {
+  return request('/auth/resetear-password', { method: 'POST', body: { token, password } })
+}
+
 export { TOKEN_KEY, USER_KEY, SITIO, PRODUCTO, resolveBaseURL }

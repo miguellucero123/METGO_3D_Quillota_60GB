@@ -14,6 +14,14 @@ from typing import Any
 import pandas as pd
 import requests
 
+from api_rest.integracion.openmeteo_multimodelo import (
+    MODELOS_DETERMINISTAS,
+    MultiModeloNoDisponibleError,
+    ensamble_variable,
+    fetch_multimodelo,
+    primer_modelo_disponible,
+)
+
 logger = logging.getLogger(__name__)
 
 FORECAST_URL = (
@@ -213,9 +221,88 @@ def _mark_cooldown(seconds: int = 120) -> None:
         pass
 
 
+_MULTIMODELO_VARS = [
+    "wind_speed_10m",
+    "wind_speed_100m",
+    "wind_direction_10m",
+    "wind_gusts_10m",
+    "temperature_2m",
+    "surface_pressure",
+    "relative_humidity_2m",
+    "precipitation",
+    "visibility",
+]
+
+
 class NWPIngestor:
     def __init__(self, modelo: str = "best_match"):
         self.modelo = modelo
+
+    def _fetch_multimodelo_df(self, lat: float, lon: float, days: int) -> pd.DataFrame:
+        """Ensamble real de varios modelos NWP (ECMWF/ICON/GFS) en una sola
+        llamada — política de datos del sistema: sin estación propia, usar
+        multi-modelo real en vez de un único modelo opaco o datos sintéticos."""
+        data = fetch_multimodelo(lat, lon, hourly_vars=_MULTIMODELO_VARS, forecast_days=days)
+        hourly = data.get("hourly") or {}
+        modelos = list(MODELOS_DETERMINISTAS)
+
+        ens_v10 = ensamble_variable(hourly, "wind_speed_10m", modelos)
+        ens_v100 = ensamble_variable(hourly, "wind_speed_100m", modelos)
+        ens_gust = ensamble_variable(hourly, "wind_gusts_10m", modelos)
+        ens_temp = ensamble_variable(hourly, "temperature_2m", modelos)
+        ens_pres = ensamble_variable(hourly, "surface_pressure", modelos)
+        ens_rh = ensamble_variable(hourly, "relative_humidity_2m", modelos)
+        ens_precip = ensamble_variable(hourly, "precipitation", modelos)
+        ens_vis = ensamble_variable(hourly, "visibility", modelos)
+        dir10 = primer_modelo_disponible(hourly, "wind_direction_10m", modelos) or []
+
+        times = hourly.get("time") or []
+        rows = []
+        for i, ts in enumerate(times):
+            def _at(serie: list, _i=i):
+                return float(serie[_i]) if _i < len(serie) and serie[_i] is not None else None
+
+            v10 = _at(ens_v10["media"])
+            v100 = _at(ens_v100["media"])
+            gust = _at(ens_gust["media"])
+            p_raw = _at(ens_pres["media"])
+            p_pa = p_raw * 100.0 if p_raw is not None and p_raw < 2000 else p_raw
+            rows.append(
+                {
+                    "valid_time": pd.Timestamp(ts, tz="UTC"),
+                    "viento_modelo_10m": v10 * 3.6 if v10 is not None else None,
+                    "viento_modelo_80m": (v10 * 1.12 * 3.6) if v10 is not None else None,
+                    "viento_modelo_100m": v100 * 3.6 if v100 is not None else None,
+                    "rafaga_modelo_10m": gust * 3.6 if gust is not None else None,
+                    "dir_modelo": _at(dir10),
+                    "dir_100m": _at(dir10),
+                    "temp_celsius": _at(ens_temp["media"]),
+                    "presion_pa": p_pa,
+                    "pressure_msl_pa": None,
+                    "rh_pct": _at(ens_rh["media"]),
+                    "precip_mmh": _at(ens_precip["media"]),
+                    "snowfall_mm": None,
+                    "cloud_pct": None,
+                    "visibilidad_m": _at(ens_vis["media"]),
+                    "viento_500hpa_kt": None,
+                    "dir_500hpa": None,
+                    "temp_850hpa": None,
+                    "prob_rayos_pct": None,
+                    "dispersion_viento_10m_ms": _at(ens_v10["spread"]),
+                }
+            )
+
+        df = pd.DataFrame(rows).set_index("valid_time").sort_index()
+        for col in list(df.columns):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+        df = df.resample("15min").interpolate(method="time", limit_direction="both")
+        t0 = df.index.min()
+        t1 = t0 + pd.Timedelta(hours=72)
+        df = df.loc[t0:t1].iloc[:288]
+        df["run_timestamp"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        df.attrs["nwp_fuente"] = "openmeteo_multimodelo"
+        df.attrs["nwp_modelos"] = modelos
+        return df
 
     def fetch_forecast(
         self,
@@ -253,6 +340,16 @@ class NWPIngestor:
                 return _fallback(NWPDataUnavailableError(f"cooldown {rest}s"))
             # Espera corta y un intento mínimo
             time.sleep(min(rest + 0.5, 8))
+
+        try:
+            df = self._fetch_multimodelo_df(lat, lon, days)
+            if len(df) >= 1:
+                _save_lastgood(key, df)
+                return df
+        except MultiModeloNoDisponibleError as exc:
+            logger.warning("SPATI NWP multi-modelo falló (%s); degradando a single-model", exc)
+        except Exception as exc:
+            logger.warning("SPATI NWP multi-modelo error inesperado (%s); degradando", exc)
 
         base: dict[str, Any] = {
             "latitude": lat,

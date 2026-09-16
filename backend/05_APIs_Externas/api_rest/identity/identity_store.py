@@ -25,6 +25,7 @@ _MEM: dict[str, list[dict[str, Any]]] = {
     "faena_reglas": [],
     "audit_auth": [],
     "email_tokens": [],
+    "password_reset_tokens": [],
 }
 
 # Seed reglas en memoria — 17 faenas SPATI (izaje/ambiente trial; dron pro; ops/pro)
@@ -484,6 +485,102 @@ def verificar_email(token: str) -> tuple[bool, str, dict[str, Any] | None]:
         "status": "active",
         "email": rows[0].get("email_norm"),
     }
+
+
+_RESET_TOKEN_TTL_HOURS = 1  # ventana corta a propósito (más corta que verify-email)
+
+
+def _issue_password_reset_token(user_id: str) -> str:
+    """Token de reseteo de contraseña. Mismo esquema que `_issue_email_token`
+    pero con propósito ``reset`` embebido en el HMAC (prod) o lista propia
+    en memoria (dev/tests), para que un token de reset nunca sirva como
+    token de verificación de email o viceversa."""
+    import secrets
+
+    token = secrets.token_urlsafe(24)
+    exp = (_utcnow() + timedelta(hours=_RESET_TOKEN_TTL_HOURS)).isoformat()
+    if use_memory():
+        with _lock:
+            _MEM["password_reset_tokens"].append(
+                {"token": token, "usuario_id": user_id, "expires_at": exp, "used": False}
+            )
+        return token
+    import hashlib
+    import hmac
+
+    mac = hmac.new(
+        pii_crypto._kek(),
+        f"{user_id}:{exp}:reset".encode(),
+        hashlib.sha256,
+    ).hexdigest()[:24]
+    return f"{user_id}.{exp}.{mac}"
+
+
+def solicitar_reset_password(
+    email: str, sitio: str, faena: str | None = None
+) -> dict[str, Any] | None:
+    """Busca el usuario y emite un token de reset. Retorna None si no existe
+    (el caller debe responder siempre el mismo mensaje genérico al cliente,
+    exista o no el email, para no filtrar qué correos están registrados)."""
+    user = buscar_usuario_login(email, sitio, faena)
+    if not user:
+        return None
+    token = _issue_password_reset_token(str(user["id"]))
+    return {"usuario_id": user["id"], "email": user.get("email_norm") or email, "token": token}
+
+
+def resetear_password(token: str, nueva_password: str) -> tuple[bool, str, dict[str, Any] | None]:
+    token = (token or "").strip()
+    if not token:
+        return False, "Token requerido", None
+    if len(nueva_password or "") < 8:
+        return False, "La contraseña debe tener al menos 8 caracteres", None
+
+    if use_memory():
+        with _lock:
+            for t in _MEM["password_reset_tokens"]:
+                if t["token"] != token:
+                    continue
+                if t.get("used"):
+                    return False, "Token ya usado", None
+                if t["expires_at"] < _utcnow().isoformat():
+                    return False, "Token expirado", None
+                uid = t["usuario_id"]
+                t["used"] = True
+                for u in _MEM["usuarios_app"]:
+                    if u["id"] == uid:
+                        u["password_hash"] = pii_crypto.hash_password(nueva_password)
+                        return True, "Contraseña actualizada", {"usuario_id": uid}
+                return False, "Usuario no encontrado", None
+        return False, "Token invalido", None
+
+    parts = token.split(".")
+    if len(parts) != 3:
+        return False, "Token invalido", None
+    user_id, exp, mac = parts
+    import hashlib
+    import hmac
+
+    expect = hmac.new(
+        pii_crypto._kek(),
+        f"{user_id}:{exp}:reset".encode(),
+        hashlib.sha256,
+    ).hexdigest()[:24]
+    if not hmac.compare_digest(mac, expect):
+        return False, "Token invalido", None
+    if exp < _utcnow().isoformat():
+        return False, "Token expirado", None
+
+    from api_rest.integracion import supabase_store as sb
+
+    rows = sb.rest_patch(
+        "usuarios_app",
+        {"id": f"eq.{user_id}"},
+        {"password_hash": pii_crypto.hash_password(nueva_password)},
+    )
+    if not rows:
+        return False, "No se pudo actualizar la contraseña (Supabase)", None
+    return True, "Contraseña actualizada", {"usuario_id": user_id}
 
 
 def invitar_usuario(
