@@ -57,6 +57,144 @@ def evaluar_resonancia_pendular(
         "en_resonancia": delta < banda_alerta_s,
     }
 
+
+# ================================
+# ESTABILIDAD ATMOSFÉRICA (Pasquill-Gifford-Turner simplificado)
+# ================================
+# El perfil logarítmico estándar (ver `velocidad_a_altura`) asume estabilidad
+# neutra siempre. Sin mediciones directas de flujo de calor sensible/u* (que
+# Open-Meteo no expone), se usa la clasificación operacional estándar por
+# viento de superficie + nubosidad + insolación (Pasquill 1961; tabla de
+# Turner 1964), y el exponente de perfil de potencia asociado por clase
+# (valores típicos de ingeniería eólica, ej. IEC 61400-1 Anexo B / ASCE):
+# A/B (muy inestable) ~0.07-0.10, C (inestable) ~0.10, D (neutra) ~0.15,
+# E (estable) ~0.35, F (muy estable) ~0.55. Es una aproximación operacional
+# estándar, no una medición directa de L (longitud de Obukhov) — se declara
+# así explícitamente en cada resultado.
+EXPONENTE_POWER_LAW_POR_CLASE: dict[str, float] = {
+    "A": 0.07,
+    "B": 0.07,
+    "C": 0.10,
+    "D": 0.15,
+    "E": 0.35,
+    "F": 0.55,
+}
+
+
+def clasificar_estabilidad_pasquill(
+    wind_speed_10m_ms: float,
+    cloud_cover_pct: float | None,
+    is_day: bool,
+) -> str:
+    """Clasificación simplificada Pasquill-Gifford-Turner (A–F) a partir de
+    datos reales de Open-Meteo (`wind_speed_10m`, `cloud_cover`, `is_day`).
+    De día: más inestable (letras A-C) con viento débil y cielo despejado.
+    De noche: más estable (E-F) con viento débil y cielo despejado (mayor
+    enfriamiento radiativo); cielo cubierto de noche tiende a neutra (D)
+    porque las nubes inhiben el enfriamiento radiativo."""
+    v = float(wind_speed_10m_ms or 0.0)
+    nubes = float(cloud_cover_pct) if cloud_cover_pct is not None else 50.0
+
+    if is_day:
+        if v < 2.0:
+            return "A" if nubes < 40 else "B"
+        if v < 3.0:
+            return "B" if nubes < 40 else "C"
+        if v < 5.0:
+            return "C" if nubes < 60 else "D"
+        return "D"
+    # noche
+    if v < 2.0:
+        return "F" if nubes < 40 else "E"
+    if v < 3.0:
+        return "E" if nubes < 60 else "D"
+    return "D"
+
+
+def exponente_estabilidad(clase: str) -> float:
+    return EXPONENTE_POWER_LAW_POR_CLASE.get(str(clase).upper(), 0.15)
+
+
+def extrapolar_power_law_estabilidad(
+    v_ref_ms: float,
+    h_objetivo_m: float,
+    *,
+    h_ref_m: float = 10.0,
+    wind_speed_10m_ms: float | None = None,
+    cloud_cover_pct: float | None = None,
+    is_day: bool = True,
+) -> dict[str, Any]:
+    """Extrapola viento con perfil de potencia v(z)=v_ref*(z/h_ref)^alpha,
+    con alpha real según clase de estabilidad Pasquill (no siempre 1/7
+    neutro). Complementa — no reemplaza — el perfil logarítmico neutro ya
+    existente; expone ambos para comparar."""
+    v_base = wind_speed_10m_ms if wind_speed_10m_ms is not None else v_ref_ms
+    clase = clasificar_estabilidad_pasquill(v_base, cloud_cover_pct, is_day)
+    alpha = exponente_estabilidad(clase)
+    if h_objetivo_m <= 0 or h_ref_m <= 0:
+        raise ValueError("alturas deben ser > 0")
+    v_z = float(v_ref_ms) * (float(h_objetivo_m) / float(h_ref_m)) ** alpha
+    return {
+        "v_ms": round(v_z, 3),
+        "clase_estabilidad": clase,
+        "exponente_alpha": alpha,
+        "metodo": "power_law_pasquill",
+        "nota": "Clasificación operacional por viento/nubes/insolación; no es una medición directa de flujo de calor/Obukhov.",
+    }
+
+
+# ================================
+# CORRIENTE SUPERFICIAL INDUCIDA POR VIENTO
+# ================================
+_OMEGA_TIERRA = 7.2921e-5  # rad/s, velocidad angular de rotación terrestre
+
+
+def profundidad_ekman_m(wind_speed_10m_ms: float, latitud_deg: float) -> float:
+    """Profundidad de Ekman por la fórmula empírica de Thorade (1914):
+    D_E = 7.6·W/√(sin|φ|) [m], W = viento a 10 m (m/s), φ = latitud.
+    Reemplaza el decaimiento fijo a 30 m (sin relación con el sitio real):
+    aquí la profundidad depende de la latitud real de cada puerto (el
+    parámetro de Coriolis f=2Ω·sin(φ) cambia fuerte entre -20° y -33°) y del
+    viento real del pronóstico, no de una constante arbitraria."""
+    lat_rad = math.radians(abs(float(latitud_deg)))
+    sin_lat = math.sin(lat_rad)
+    if sin_lat < 1e-6:
+        # Cerca del ecuador, f→0 y la teoría de Ekman no converge; usar un
+        # piso conservador en vez de dividir por ~0.
+        sin_lat = math.sin(math.radians(5.0))
+    return 7.6 * max(0.0, float(wind_speed_10m_ms)) / math.sqrt(sin_lat)
+
+
+def corriente_superficial_por_viento(
+    wind_speed_10m_ms: float,
+    wind_direction_from_deg: float,
+    latitud_deg: float,
+    *,
+    factor_arrastre: float = 0.02,
+) -> dict[str, Any]:
+    """Corriente superficial inducida por viento: magnitud = 2% del viento
+    (regla empírica náutica estándar), dirección desviada ~20° a la
+    izquierda/derecha del viento según el hemisferio (transporte de Ekman:
+    ~90° a la derecha del viento en el hemisferio sur en teoría idealizada de
+    aguas profundas; en la práctica costera/somera la desviación observada
+    es bastante menor, ~15-25°, por eso se usa ese rango en vez de 90°
+    literal). Profundidad de decaimiento: Ekman real (Thorade), no fija.
+
+    Sigue siendo una parametrización, no una medición — no hay fuente de
+    corrientes en tiempo real integrada (ver `fuente_detalle` en el llamador).
+    """
+    v_corriente_kn = factor_arrastre * float(wind_speed_10m_ms) * 1.94384
+    # Hemisferio sur: desviación hacia la izquierda del viento (~20°).
+    desviacion = 20.0 if float(latitud_deg) < 0 else -20.0
+    direccion = (float(wind_direction_from_deg) + 180.0 + desviacion) % 360.0
+    d_ekman = profundidad_ekman_m(wind_speed_10m_ms, latitud_deg)
+    return {
+        "speed_surface_kn": round(v_corriente_kn, 2),
+        "direction_surface_deg": round(direccion, 1),
+        "profundidad_ekman_m": round(d_ekman, 1),
+        "fuente": "parametrizacion_viento_ekman_thorade",
+    }
+
 R_D = 287.05  # J/(kg·K)
 
 # Niveles AGL estándar para zona de izaje / calibración dron

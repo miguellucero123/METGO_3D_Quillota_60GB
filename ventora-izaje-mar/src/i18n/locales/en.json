@@ -25,7 +25,8 @@
     "resend": "Resend verification",
     "resendOk": "Verification email resent. Check inbox and spam.",
     "resendNeedPass": "Enter email and password to resend verification.",
-    "emailNotVerified": "You must verify your email before signing in. Check mail or use Resend."
+    "emailNotVerified": "You must verify your email before signing in. Check mail or use Resend.",
+    "verifiedOk": "Account activated. You can sign in now."
   },
   "lang": {
     "es": "ES",
@@ -131,7 +132,8 @@
     "dron": "Drone calibration",
     "umbrales": "Thresholds",
     "ops": "Multi-site ops",
-    "hub": "My sites"
+    "hub": "My sites",
+    "cuenta": "My Account"
   },
   "registro": {
     "title": "Sign up · {name}",
@@ -147,13 +149,19 @@
     "email": "Email",
     "telefono": "Phone (+56)",
     "razon": "Company name",
+    "razonOptional": "You can complete it later in My Account.",
     "rut": "Company tax ID",
+    "rutOptional": "Chilean format if provided now; can also be added later.",
     "password": "Password",
     "confirm": "Confirm",
     "consentsLegend": "Consents (required)",
     "consentStore": "I authorize storing my personal and company information encrypted.",
     "consentTos": "I accept the terms of use.",
+    "consentTosBefore": "I accept the ",
+    "consentTosLink": "terms of use",
     "consentPrivacy": "I accept the privacy policy.",
+    "consentPrivacyBefore": "I accept the ",
+    "consentPrivacyLink": "privacy policy",
     "consentTruth": "I declare the data provided is true and correct.",
     "submit": "Create account",
     "loading": "Validating…",

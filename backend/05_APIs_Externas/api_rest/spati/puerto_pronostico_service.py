@@ -25,7 +25,9 @@ from api_rest.spati.mjo_index_service import (
 )
 from api_rest.spati.physics_engine import (
     LONGITUD_CABLE_DEFAULT_M,
+    corriente_superficial_por_viento,
     evaluar_resonancia_pendular,
+    extrapolar_power_law_estabilidad,
 )
 
 logger = logging.getLogger(__name__)
@@ -310,6 +312,12 @@ _HOURLY_VARS_MULTIMODELO = [
     "visibility",
     "temperature_2m",
     "precipitation",
+    # Real (no fabricado): viento a 900 hPa del propio NWP, y variables
+    # para clasificación de estabilidad atmosférica (Pasquill).
+    "wind_speed_900hPa",
+    "wind_direction_900hPa",
+    "cloud_cover",
+    "is_day",
 ]
 
 
@@ -358,7 +366,11 @@ def _from_openmeteo(
     ens_temp = ensamble_variable(fh_raw, "temperature_2m", modelos_usados)
     ens_vis = ensamble_variable(fh_raw, "visibility", modelos_usados)
     ens_precip = ensamble_variable(fh_raw, "precipitation", modelos_usados)
+    ens_900hpa = ensamble_variable(fh_raw, "wind_speed_900hPa", modelos_usados)
+    ens_cloud = ensamble_variable(fh_raw, "cloud_cover", modelos_usados)
     wdir_serie = primer_modelo_disponible(fh_raw, "wind_direction_10m", modelos_usados) or []
+    wdir900_serie = primer_modelo_disponible(fh_raw, "wind_direction_900hPa", modelos_usados) or []
+    is_day_serie = primer_modelo_disponible(fh_raw, "is_day", modelos_usados) or []
 
     marine: dict[str, Any] = {}
     try:
@@ -423,6 +435,17 @@ def _from_openmeteo(
 
         resonancia = evaluar_resonancia_pendular(longitud_cable_m, tp)
 
+        dir_10m = float(wdir[i]) if i < len(wdir) and wdir[i] is not None else 0.0
+        v_900_ms = float(ens_900hpa["media"][i]) if i < len(ens_900hpa["media"]) and ens_900hpa["media"][i] is not None else None
+        dir_900 = float(wdir900_serie[i]) if i < len(wdir900_serie) and wdir900_serie[i] is not None else dir_10m
+        cloud_pct = float(ens_cloud["media"][i]) if i < len(ens_cloud["media"]) and ens_cloud["media"][i] is not None else None
+        es_de_dia = bool(is_day_serie[i]) if i < len(is_day_serie) and is_day_serie[i] is not None else True
+
+        current = corriente_superficial_por_viento(v_ms, dir_10m, lat)
+        perfil_estabilidad = extrapolar_power_law_estabilidad(
+            v_ms, 100.0, wind_speed_10m_ms=v_ms, cloud_cover_pct=cloud_pct, is_day=es_de_dia
+        )
+
         hourly_states.append(
             {
                 "timestamp": ts if "T" in str(ts) else f"{ts}T00:00:00Z",
@@ -435,13 +458,11 @@ def _from_openmeteo(
                 "wind_surface_ms": round(v_ms, 3),
                 "wind_surface_kn": round(v_ms * 1.94384, 2),
                 "wind_surface_dispersion_modelos_ms": round(wind_spread, 3) if wind_spread is not None else None,
-                "wind_direction_surface": float(wdir[i] or 0) if i < len(wdir) and wdir[i] is not None else 0,
-                # NOTA: wind_900mb_* es un factor empírico (v10m*1.45), no una
-                # extrapolación física real ni un dato del modelo a ese nivel;
-                # no usar para decisión operacional. Pendiente: pedir el nivel
-                # de presión real al NWP en vez de escalar el viento de superficie.
-                "wind_900mb_ms": round(v_ms * 1.45, 3),
-                "wind_900mb_direction": float(wdir[i] or 0) if i < len(wdir) and wdir[i] is not None else 0,
+                "wind_direction_surface": dir_10m,
+                # Real: viento a 900 hPa del propio NWP (ensamble), ya no un
+                # factor v10m*1.45 fabricado.
+                "wind_900mb_ms": round(v_900_ms, 3) if v_900_ms is not None else None,
+                "wind_900mb_direction": dir_900,
                 "wind_gust_10m_kmh": round(g_ms * 3.6, 2),
                 "wave_params": {"Hs": round(hs, 2), "Tp": round(tp, 1)},
                 "resonancia_pendular": resonancia,
@@ -451,14 +472,13 @@ def _from_openmeteo(
                     "rate_change_cmh": 8,
                     "fuente": "astronomica_sintetica",
                 },
-                "current_profile": {
-                    "speed_surface_kn": round(0.4 + 0.2 * math.sin(i / 10.0), 2),
-                    "direction_surface_deg": 300,
-                    "fuente": "aproximacion_ekman_sintetica",
-                },
+                "current_profile": current,
                 "visibility_m": vis_m,
                 "ship_heave_m": round(hs * 0.35, 2),
                 "wind_profile": _log_profile(v_ms, z0, heights),
+                # Perfil alternativo a 100m considerando estabilidad real
+                # (Pasquill); comparar con wind_profile (log-law neutro).
+                "wind_profile_100m_estabilidad": perfil_estabilidad,
             }
         )
 
@@ -482,7 +502,12 @@ def _from_openmeteo(
             "forecast": FORECAST_URL,
             "modelos": modelos_usados,
             "marine": MARINE_URL if wave_h else None,
-            "marea_y_corriente": "sintéticas (astronómica/Ekman aproximado) — sin fuente real integrada aún",
+            "marea_y_corriente": (
+                "marea: aproximación astronómica sintética (sin fuente real integrada). "
+                "corriente: parametrización física por viento real + profundidad de Ekman "
+                "real (fórmula de Thorade, según latitud del sitio) — no es una medición "
+                "de corriente, sigue siendo una parametrización."
+            ),
             "lat": lat,
             "lon": lon,
         },

@@ -1,7 +1,11 @@
 {
   "ci": {
     "collect": {
-      "url": ["http://127.0.0.1:4177/login"],
+      "url": [
+        "http://127.0.0.1:4177/",
+        "http://127.0.0.1:4177/login",
+        "http://127.0.0.1:4177/registro"
+      ],
       "startServerCommand": "npm run preview -- --host 127.0.0.1 --port 4177",
       "startServerReadyPattern": "Local:",
       "numberOfRuns": 1,
