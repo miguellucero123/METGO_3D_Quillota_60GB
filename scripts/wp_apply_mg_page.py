@@ -333,7 +333,7 @@ def home_body() -> str:
       <div class="mg-card mg-card--agro">
         <span class="mg-badge mg-badge--agro">I+D · 7–90 días</span>
         <p class="mg-card__title">MJO Chile · ΨPSA-CL</p>
-        <p class="mg-card__desc">Tendencia subestacional A″ + conformal. Régimen / terciles, no mm del día. Skill OOS CONFIRMADO h7/w1.</p>
+        <p class="mg-card__desc">Tendencia subestacional A″ + bandas conformal. Régimen / terciles, no mm del día. Skill OOS CONFIRMADO h7/w1/w7/w13; h14/h21/w4 inconclusos. ERA5 1979–2024 cerrado; benchmark S2S (M4) en curso. El ticker muestra emisión (data_through), no el skill.</p>
         <p class="mg-card__price">Línea científica · <strong>A″ GO</strong></p>
         <div class="mg-card__links">
           <a href="https://metgo3d.com/mjo_chile/" class="mg-card-link mg-card-link--agro">Abrir MJO Chile →</a>
@@ -978,7 +978,7 @@ def nosotros_body() -> str:
         <i class="ti ti-wave-sine mg-pilar-icon mg-id" aria-hidden="true"></i>
         <p class="mg-pilar-sector mg-id">I+D · ΨPSA-CL</p>
         <h3>MJO con skill medido</h3>
-        <p>Tendencia 7–90 días validada fuera de muestra. Horizonte H90 en régimen y terciles, no mm del día. Transparencia científica publicada en <a href="https://metgo3d.com/mjo-chile/">/mjo-chile/</a>.</p>
+        <p>Skill fuera de muestra confirmado en h7, w1, w7 y w13 (h14/h21/w4 aún inconclusos). Horizonte H90 en régimen y terciles, no mm del día. Transparencia científica publicada en <a href="https://metgo3d.com/mjo-chile/">/mjo-chile/</a>.</p>
       </div>
       <div class="mg-pilar mg-pr">
         <i class="ti ti-certificate mg-pilar-icon mg-pr" aria-hidden="true"></i>
