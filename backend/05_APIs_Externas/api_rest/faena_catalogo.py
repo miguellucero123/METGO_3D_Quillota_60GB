@@ -61,6 +61,58 @@ FAENAS: dict[str, dict[str, Any]] = {
         "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
         "industrias": ["puerto", "izaje"],
     },
+    # Corregido 2026-09-15: faltaban 4 de los 6 puertos VENTORA Izaje Mar
+    # (coords 1:1 con PUERTOS en spati/puerto_pronostico_service.py) — sus
+    # informes/CSV se desviaban silenciosamente a "escondida" (faena minera
+    # sin relación) porque no existían aquí.
+    "anf": {
+        "id": "anf",
+        "sitio": "anf",
+        "nombre": "Puerto Antofagasta",
+        "estacion_ancla": "anf",
+        "region": "Antofagasta · Puerto",
+        "modelo_ventilacion": "METGO-Ventilacion-ANF-v1",
+        "satelite_sector": "ssa",
+        "bbox": {"west": -70.5, "south": -23.75, "east": -70.3, "north": -23.55},
+        "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
+        "industrias": ["puerto", "izaje"],
+    },
+    "vlp": {
+        "id": "vlp",
+        "sitio": "vlp",
+        "nombre": "Puerto Valparaíso",
+        "estacion_ancla": "vlp",
+        "region": "Valparaíso · Puerto",
+        "modelo_ventilacion": "METGO-Ventilacion-VLP-v1",
+        "satelite_sector": "ssa",
+        "bbox": {"west": -71.73, "south": -33.14, "east": -71.53, "north": -32.94},
+        "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
+        "industrias": ["puerto", "izaje"],
+    },
+    "san": {
+        "id": "san",
+        "sitio": "san",
+        "nombre": "Puerto San Antonio",
+        "estacion_ancla": "san",
+        "region": "Valparaíso · Puerto",
+        "modelo_ventilacion": "METGO-Ventilacion-SAN-v1",
+        "satelite_sector": "ssa",
+        "bbox": {"west": -71.72, "south": -33.68, "east": -71.52, "north": -33.48},
+        "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
+        "industrias": ["puerto", "izaje"],
+    },
+    "pmc": {
+        "id": "pmc",
+        "sitio": "pmc",
+        "nombre": "Puerto Mejillones",
+        "estacion_ancla": "pmc",
+        "region": "Antofagasta · Puerto",
+        "modelo_ventilacion": "METGO-Ventilacion-PMC-v1",
+        "satelite_sector": "ssa",
+        "bbox": {"west": -70.55, "south": -23.2, "east": -70.35, "north": -23.0},
+        "capacidades": ["izaje", "paquete_ambiental", "informe", "meteo_nwp"],
+        "industrias": ["puerto", "izaje"],
+    },
 }
 
 _ALIASES: dict[str, str] = {
@@ -70,6 +122,16 @@ _ALIASES: dict[str, str] = {
     "mantos": "mantos_blancos",
     "mantos_blancos": "mantos_blancos",
     "mb": "mantos_blancos",
+    "iquique": "iqq",
+    "iti": "iqq",
+    "puerto_iquique": "iqq",
+    "ventanas": "ventanas_muelle",
+    "puerto_ventanas": "ventanas_muelle",
+    "antofagasta": "anf",
+    "valparaiso": "vlp",
+    "valparaíso": "vlp",
+    "san_antonio": "san",
+    "mejillones": "pmc",
 }
 
 

@@ -147,6 +147,12 @@ COORDS: dict[str, dict[str, float]] = {
     "demo_sur": {"lat": -33.34, "lon": -71.44},
     "ventanas_muelle": {"lat": -32.7480, "lon": -71.4820},
     "iqq": {"lat": -20.2058, "lon": -70.1608},
+    # Corregido 2026-09-15: faltaban 4 de los 6 puertos VENTORA Izaje Mar
+    # (coords 1:1 con PUERTOS en spati/puerto_pronostico_service.py).
+    "anf": {"lat": -23.6509, "lon": -70.4001},
+    "vlp": {"lat": -33.037, "lon": -71.627},
+    "san": {"lat": -33.580, "lon": -71.615},
+    "pmc": {"lat": -23.100, "lon": -70.450},
 }
 
 # Dashboard Quillota (default) — no incluir Paine en ETL nocturno por defecto

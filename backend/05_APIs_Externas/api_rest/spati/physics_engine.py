@@ -14,6 +14,49 @@ from typing import Any
 
 import pandas as pd
 
+GRAVEDAD_MS2 = 9.81
+
+# Longitud de cable/aparejo por defecto cuando la operación no la especifica
+# (m). Valor de referencia para grúas STS en operación de contenedores; debe
+# sobrescribirse con la longitud real de cada maniobra vía API cuando se
+# conozca — la resonancia depende fuertemente de este valor.
+LONGITUD_CABLE_DEFAULT_M = 30.0
+
+
+def periodo_pendulo_simple(longitud_efectiva_m: float) -> float:
+    """Período natural T=2π√(L/g) de un péndulo simple (carga colgando de
+    cable/aparejo). Aproximación de ángulo pequeño, estándar para análisis
+    de balanceo de carga en izaje. `longitud_efectiva_m` es la distancia
+    real desde el punto de suspensión (pluma/gancho) al centro de masa de
+    la carga (cable + eslingas + medio alto de la carga si es rígida)."""
+    if longitud_efectiva_m is None or longitud_efectiva_m <= 0:
+        raise ValueError("longitud_efectiva_m debe ser > 0")
+    return 2.0 * math.pi * math.sqrt(float(longitud_efectiva_m) / GRAVEDAD_MS2)
+
+
+def evaluar_resonancia_pendular(
+    longitud_cable_m: float,
+    periodo_ola_s: float,
+    *,
+    banda_alerta_s: float = 1.5,
+) -> dict[str, Any]:
+    """Compara el período natural del péndulo (carga+cable, real por
+    operación) con el período de oleaje real (Tp de Open-Meteo Marine).
+    Si ambos períodos caen dentro de `banda_alerta_s`, hay riesgo real de
+    resonancia: el balanceo de la carga se amplifica en vez de amortiguarse.
+    No usa un umbral fijo de oleaje desconectado de la física real de la
+    operación — antes no existía ningún cálculo real de esto."""
+    t_pendulo = periodo_pendulo_simple(longitud_cable_m)
+    delta = abs(t_pendulo - float(periodo_ola_s))
+    return {
+        "longitud_cable_m": round(float(longitud_cable_m), 2),
+        "periodo_pendulo_s": round(t_pendulo, 2),
+        "periodo_ola_s": round(float(periodo_ola_s), 2),
+        "delta_s": round(delta, 2),
+        "banda_alerta_s": banda_alerta_s,
+        "en_resonancia": delta < banda_alerta_s,
+    }
+
 R_D = 287.05  # J/(kg·K)
 
 # Niveles AGL estándar para zona de izaje / calibración dron

@@ -73,7 +73,17 @@ def register_spati_routes(app: Flask) -> None:
             hours = 72
         hours = max(24, min(hours, 72))
 
-        data = generar_pronostico_puerto(sitio_id, hours=hours)
+        longitud_cable_m = None
+        raw_cable = request.args.get("longitud_cable_m")
+        if raw_cable:
+            try:
+                longitud_cable_m = max(1.0, min(float(raw_cable), 200.0))
+            except (TypeError, ValueError):
+                longitud_cable_m = None
+
+        data = generar_pronostico_puerto(
+            sitio_id, hours=hours, longitud_cable_m=longitud_cable_m
+        )
         if data.get("error") == "sitio_no_encontrado":
             return jsonify(data), 404
         if data.get("error"):

@@ -108,7 +108,7 @@ def test_http_route_404(monkeypatch):
 def test_http_route_ok_mocked(monkeypatch):
     from api_rest.app import create_app
 
-    def fake_gen(sitio_id, hours=72):
+    def fake_gen(sitio_id, hours=72, longitud_cable_m=None):
         return {
             "site_id": sitio_id,
             "fuente": "openmeteo",

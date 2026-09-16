@@ -104,7 +104,7 @@ def test_pasos_3_a_8_flujo_completo(client, monkeypatch):
     monkeypatch.setattr(
         pps,
         "generar_pronostico_puerto",
-        lambda sitio_id, hours=72: {
+        lambda sitio_id, hours=72, longitud_cable_m=None: {
             "site_id": sitio_id,
             "fuente": "openmeteo_marine",
             "hourly_states": [

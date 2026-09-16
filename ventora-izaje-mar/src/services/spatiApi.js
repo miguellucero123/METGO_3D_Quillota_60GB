@@ -270,9 +270,10 @@ export async function putSpatiUmbrales(sitioId, body) {
 }
 
 function getRealId(sitioId) {
-  const id = String(sitioId || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase()
-  const portIds = ['iqq', 'ventanas_muelle', 'anf', 'vlp', 'san', 'pmc']
-  return portIds.includes(id) ? 'escondida' : id
+  // Corregido 2026-09-15: los 6 puertos VENTORA Izaje Mar ya existen en
+  // faena_catalogo.py (antes se desviaban a 'escondida', una faena minera
+  // sin relación, y sus informes/CSV quedaban mal enrutados).
+  return String(sitioId || site.spatiDefaultSitio || 'ventanas_muelle').toLowerCase()
 }
 
 export function urlInformeFaena(faenaId, formato = 'pdf') {

@@ -119,9 +119,9 @@ def _cargar_paquete_y_mvo(faena_id: str) -> tuple[dict[str, Any] | None, dict[st
     try:
         from api_rest.modelo_vs_observado_service import reporte_modelo_vs_observado
 
-        mvo = reporte_modelo_vs_observado(real_id, dias=14) or None
+        mvo = reporte_modelo_vs_observado(faena_id, dias=14) or None
     except Exception as exc:
-        logger.debug("informe mvo omitido: %s", exc)
+        logger.warning("informe mvo omitido (%s): %s", faena_id, exc)
     return pkg, mvo
 
 

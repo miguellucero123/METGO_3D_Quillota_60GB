@@ -23,6 +23,10 @@ from api_rest.spati.mjo_index_service import (
     ajustar_precipitacion_mjo,
     obtener_indice_mjo_real,
 )
+from api_rest.spati.physics_engine import (
+    LONGITUD_CABLE_DEFAULT_M,
+    evaluar_resonancia_pendular,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +230,50 @@ def _build_alerts(hourly: list[dict[str, Any]], threshold_kmh: float = 32.0) -> 
     return alerts
 
 
+def _build_alertas_resonancia(hourly: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Ventanas horarias donde el período del péndulo (carga real) cae dentro
+    de la banda de alerta del período de oleaje real — riesgo de resonancia,
+    no un umbral fijo desconectado de la física de la operación."""
+    alerts: list[dict[str, Any]] = []
+    run = 0
+    start_ts = None
+    peor_delta = None
+    for st in hourly:
+        res = st.get("resonancia_pendular") or {}
+        if res.get("en_resonancia"):
+            if run == 0:
+                start_ts = st.get("timestamp")
+                peor_delta = res.get("delta_s")
+            run += 1
+            if peor_delta is None or (res.get("delta_s") or 99) < peor_delta:
+                peor_delta = res.get("delta_s")
+        else:
+            if run >= 2 and start_ts:
+                alerts.append(
+                    {
+                        "timestamp": start_ts,
+                        "type": "pendulum_resonance",
+                        "level": "RED",
+                        "delta_s": peor_delta,
+                        "duration_hours": run,
+                    }
+                )
+            run = 0
+            start_ts = None
+            peor_delta = None
+    if run >= 2 and start_ts:
+        alerts.append(
+            {
+                "timestamp": start_ts,
+                "type": "pendulum_resonance",
+                "level": "RED",
+                "delta_s": peor_delta,
+                "duration_hours": run,
+            }
+        )
+    return alerts
+
+
 def _calcular_ventana(hourly: list[dict[str, Any]], threshold_kmh: float = 32.0) -> dict[str, Any]:
     """Calcula la ventana operativa actual (verde) o restricción (roja/amarilla)."""
     if not hourly:
@@ -294,7 +342,9 @@ def _fetch_forecast_multimodelo(lat: float, lon: float, days: int) -> tuple[dict
         return {**data, "hourly": homologado}, ["best_match"]
 
 
-def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
+def _from_openmeteo(
+    puerto: dict[str, Any], hours: int = 72, *, longitud_cable_m: float = LONGITUD_CABLE_DEFAULT_M
+) -> dict[str, Any]:
     lat = float(puerto["lat"])
     lon = float(puerto["lon"])
     z0 = float(puerto.get("z0_terreno") or 0.002)
@@ -371,6 +421,8 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
                 precip_mm, int(mjo_indice["fase"]), float(mjo_indice["amplitud"])
             )
 
+        resonancia = evaluar_resonancia_pendular(longitud_cable_m, tp)
+
         hourly_states.append(
             {
                 "timestamp": ts if "T" in str(ts) else f"{ts}T00:00:00Z",
@@ -384,10 +436,15 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
                 "wind_surface_kn": round(v_ms * 1.94384, 2),
                 "wind_surface_dispersion_modelos_ms": round(wind_spread, 3) if wind_spread is not None else None,
                 "wind_direction_surface": float(wdir[i] or 0) if i < len(wdir) and wdir[i] is not None else 0,
+                # NOTA: wind_900mb_* es un factor empírico (v10m*1.45), no una
+                # extrapolación física real ni un dato del modelo a ese nivel;
+                # no usar para decisión operacional. Pendiente: pedir el nivel
+                # de presión real al NWP en vez de escalar el viento de superficie.
                 "wind_900mb_ms": round(v_ms * 1.45, 3),
                 "wind_900mb_direction": float(wdir[i] or 0) if i < len(wdir) and wdir[i] is not None else 0,
                 "wind_gust_10m_kmh": round(g_ms * 3.6, 2),
                 "wave_params": {"Hs": round(hs, 2), "Tp": round(tp, 1)},
+                "resonancia_pendular": resonancia,
                 "precipitacion": precip_info,
                 "tidal_state": {
                     "level_m": round(0.9 + 0.55 * math.sin(i * math.pi / 6), 2),
@@ -417,8 +474,9 @@ def _from_openmeteo(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
             k: v for k, v in mjo_indice.items() if k not in ("pc1", "pc2")
         },
         "hourly_states": hourly_states,
-        "alerts": _build_alerts(hourly_states),
+        "alerts": _build_alerts(hourly_states) + _build_alertas_resonancia(hourly_states),
         "ventana_operacional": _calcular_ventana(hourly_states),
+        "longitud_cable_m": longitud_cable_m,
         "fuente": "openmeteo_multimodelo_marine" if wave_h else "openmeteo_multimodelo",
         "fuente_detalle": {
             "forecast": FORECAST_URL,
@@ -496,8 +554,16 @@ def _from_hyperlocal(puerto: dict[str, Any], hours: int = 72) -> dict[str, Any]:
     return out
 
 
-def generar_pronostico_puerto(sitio_id: str, *, hours: int = 72) -> dict[str, Any]:
-    """Pipeline: Open-Meteo → hyperlocal sintético (coords del puerto)."""
+def generar_pronostico_puerto(
+    sitio_id: str, *, hours: int = 72, longitud_cable_m: float | None = None
+) -> dict[str, Any]:
+    """Pipeline: Open-Meteo → hyperlocal sintético (coords del puerto).
+
+    `longitud_cable_m`: distancia real punto de suspensión → centro de masa
+    de la carga para esta maniobra (cable + eslingas). Si no se especifica,
+    se usa `LONGITUD_CABLE_DEFAULT_M` y la respuesta lo marca explícitamente
+    como un valor por defecto, no la operación real.
+    """
     puerto = get_puerto(sitio_id)
     if not puerto:
         return {
@@ -506,8 +572,13 @@ def generar_pronostico_puerto(sitio_id: str, *, hours: int = 72) -> dict[str, An
             "sugerencia": "Use iqq, ventanas_muelle, anf, vlp, san o pmc",
         }
 
+    cable_m = float(longitud_cable_m) if longitud_cable_m else LONGITUD_CABLE_DEFAULT_M
+    cable_es_default = longitud_cable_m is None
+
     try:
-        return _from_openmeteo(puerto, hours=hours)
+        out = _from_openmeteo(puerto, hours=hours, longitud_cable_m=cable_m)
+        out["longitud_cable_m_es_default"] = cable_es_default
+        return out
     except Exception as exc:
         logger.warning("puerto Open-Meteo %s: %s", puerto["sitio_id"], exc)
         if not _ALLOW_SYNTHETIC:
