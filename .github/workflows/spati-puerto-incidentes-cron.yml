@@ -1,0 +1,61 @@
+# VENTORA Izaje Mar — detecta y registra incidentes reales (ráfaga sostenida
+# / resonancia pendular) para los 6 puertos, alimentando el informe de
+# incidentes real (/api/public/spati/<sitio_id>/reporte-mensual).
+# Antes de este workflow no existía ningún disparador automático para esto
+# (el endpoint /api/cron/spati/puerto-incidentes solo servía si algo externo
+# lo invocaba manualmente).
+# Requiere secret CRON_SECRET (= env CRON_SECRET en Render).
+name: SPATI Puerto Incidentes (cada 20 min)
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+    inputs:
+      sitio:
+        description: "Un puerto (vacío = los 6: iqq, ventanas_muelle, anf, vlp, san, pmc)"
+        required: false
+        default: ""
+
+jobs:
+  incidentes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Verificar CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Falta el secret CRON_SECRET en GitHub (Settings → Secrets). Debe coincidir con CRON_SECRET en Render."
+            exit 1
+          fi
+
+      - name: Evaluar incidentes por puerto (iteración individual, evita timeout Render free)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          SITIO_IN="${{ github.event.inputs.sitio }}"
+          if [ -n "$SITIO_IN" ]; then
+            PUERTOS="$SITIO_IN"
+          else
+            PUERTOS="iqq ventanas_muelle anf vlp san pmc"
+          fi
+          fail=0
+          for p in $PUERTOS; do
+            echo "::group::puerto=$p"
+            resp=$(curl -s -w "\n%{http_code}" --max-time 90 -X POST \
+              "https://metgo-api.onrender.com/api/cron/spati/puerto-incidentes?sitio=${p}&token=${CRON_SECRET}" || true)
+            body=$(echo "$resp" | head -n -1)
+            code=$(echo "$resp" | tail -n 1)
+            echo "HTTP $code"
+            echo "$body"
+            if [ "$code" != "200" ]; then
+              fail=$((fail + 1))
+            fi
+            echo "::endgroup::"
+          done
+          if [ "$fail" -eq 6 ]; then
+            echo "::error::Los 6 puertos fallaron."
+            exit 1
+          fi

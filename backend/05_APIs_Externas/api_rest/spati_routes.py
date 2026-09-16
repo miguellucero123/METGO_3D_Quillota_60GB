@@ -158,11 +158,50 @@ def register_spati_routes(app: Flask) -> None:
 
     @app.get("/api/public/spati/<sitio_id>/reporte-mensual")
     def public_spati_reporte_mensual(sitio_id: str):
-        """HTML ejecutivo mensual (v1: plantilla con datos de faena)."""
+        """Informe: puertos VENTORA Izaje Mar -> incidentes reales
+        (ráfaga/resonancia + umbral + hora UTC); faenas mineras -> plantilla
+        HTML anterior (pendiente del mismo tratamiento)."""
         from datetime import datetime, timezone
 
         from api_rest.spati import get_sitio
+        from api_rest.spati.puerto_pronostico_service import get_puerto
         from flask import Response
+
+        puerto = get_puerto(sitio_id)
+        if puerto:
+            from api_rest import reporte_incidentes_service as ris
+
+            formato = (request.args.get("formato") or "html").strip().lower()
+            try:
+                dias = max(1, min(int(request.args.get("dias") or 30), 90))
+            except (TypeError, ValueError):
+                dias = 30
+            if formato == "csv":
+                doc = ris.construir_incidentes_csv(sitio_id, dias=dias)
+                if not doc:
+                    return jsonify(_ERROR_503), 503
+                return Response(
+                    doc.encode("utf-8"),
+                    mimetype="text/csv; charset=utf-8",
+                    headers={
+                        "Content-Disposition": f"attachment; filename=incidentes_{sitio_id}.csv"
+                    },
+                )
+            if formato == "pdf":
+                raw = ris.construir_incidentes_pdf_bytes(sitio_id, dias=dias)
+                if not raw:
+                    return jsonify(_ERROR_503), 503
+                return Response(
+                    raw,
+                    mimetype="application/pdf",
+                    headers={
+                        "Content-Disposition": f"attachment; filename=incidentes_{sitio_id}.pdf"
+                    },
+                )
+            html_doc = ris.construir_incidentes_html(sitio_id, dias=dias)
+            if not html_doc:
+                return jsonify(_ERROR_503), 503
+            return Response(html_doc, mimetype="text/html; charset=utf-8")
 
         s = get_sitio(sitio_id)
         if not s:
@@ -296,4 +335,27 @@ th{{color:#94a3b8;font-size:12px}}
             return jsonify(evaluar_sitios(forzar=forzar))
         except Exception as exc:
             app.logger.warning("cron spati alertas: %s", exc)
+            return jsonify(_ERROR_503), 503
+
+    @app.post("/api/cron/spati/puerto-incidentes")
+    def cron_spati_puerto_incidentes():
+        """Evalúa el pronóstico real de los 6 puertos VENTORA Izaje Mar y
+        registra incidentes estructurados (ráfaga/resonancia + umbral + hora
+        UTC) para el informe de incidentes (CRON_SECRET)."""
+        import os
+
+        secret = request.args.get("token") or request.headers.get("X-Cron-Token")
+        if not secret or secret != os.getenv("CRON_SECRET"):
+            if os.getenv("CRON_SECRET"):
+                return jsonify({"error": "No autorizado"}), 401
+        solo = (request.args.get("sitio") or "").strip() or None
+        forzar = (request.args.get("forzar") or "").strip().lower() in ("1", "true", "yes")
+        try:
+            from api_rest.puerto_alert_job import evaluar_puerto_y_registrar_incidentes, evaluar_puertos
+
+            if solo:
+                return jsonify(evaluar_puerto_y_registrar_incidentes(solo, forzar=forzar))
+            return jsonify(evaluar_puertos(forzar=forzar))
+        except Exception as exc:
+            app.logger.warning("cron puerto incidentes: %s", exc)
             return jsonify(_ERROR_503), 503

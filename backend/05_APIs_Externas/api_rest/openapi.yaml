@@ -939,19 +939,65 @@ paths:
   /api/public/spati/{sitio_id}/reporte-mensual:
     get:
       tags: [spati]
-      summary: Reporte mensual ejecutivo (HTML v1)
+      summary: Informe de incidentes (puertos VENTORA) / reporte ejecutivo (faenas mineras)
       description: |
-        Plantilla HTML con datos de faena. En la SPA se muestra a planes Pro/Enterprise.
+        Para los 6 puertos VENTORA Izaje Mar (iqq, ventanas_muelle, anf, vlp,
+        san, pmc): informe real de incidentes — ráfaga sostenida y resonancia
+        pendular detectadas, con umbral vigente y hora UTC de cada evento
+        (`formato=csv|pdf|html`, `dias` 1-90, default 30). Poblado por
+        `POST /api/cron/spati/puerto-incidentes` (cron cada 20 min). Para
+        faenas mineras (no puertos): plantilla HTML anterior sin datos de
+        incidentes aún.
       parameters:
         - name: sitio_id
           in: path
           required: true
-          schema: { type: string, example: escondida }
+          schema: { type: string, example: iqq }
+        - name: formato
+          in: query
+          required: false
+          schema: { type: string, enum: [html, csv, pdf], default: html }
+        - name: dias
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
       responses:
         "200":
-          description: text/html
+          description: text/html, text/csv o application/pdf según `formato`
         "404":
           description: Sitio desconocido
+        "503":
+          description: No se pudo generar el documento
+  /api/cron/spati/puerto-incidentes:
+    post:
+      tags: [spati]
+      summary: Detecta y registra incidentes reales de los 6 puertos (CRON_SECRET)
+      description: |
+        Corre el pronóstico real de cada puerto, extrae alertas cuya ventana
+        ya empezó o empieza en las próximas 6h, y las persiste en el
+        historial (`alertas_store`) con ráfaga/delta real, umbral y hora UTC
+        — la evidencia que alimenta `reporte-mensual`. Idempotente dentro de
+        una ventana de 6h (no duplica el mismo evento en corridas repetidas).
+      parameters:
+        - name: token
+          in: query
+          required: false
+          schema: { type: string }
+          description: CRON_SECRET (o header X-Cron-Token)
+        - name: sitio
+          in: query
+          required: false
+          schema: { type: string, example: iqq }
+          description: Un solo puerto; si se omite, evalúa los 6.
+        - name: forzar
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Resumen de candidatos/registrados por sitio
+        "401":
+          description: CRON_SECRET inválido
   /api/public/spati/{sitio_id}/pronostico:
     get:
       tags: [spati]
