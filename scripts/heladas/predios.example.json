@@ -1,0 +1,32 @@
+[
+  {
+    "id": "demo-cerezos-san-felipe",
+    "nombre": "Cerezos Don Juan (cuartel norte)",
+    "cliente": "Juan Pérez",
+    "plan": "basico",
+    "cultivo": "cerezo",
+    "lat": -32.7500,
+    "lon": -70.7250,
+    "altitud_m": 650,
+    "telefono": "+56900000000",
+    "email": "",
+    "ajuste_tmin_c": 0.0,
+    "umbral_accion_c": null,
+    "activo": true
+  },
+  {
+    "id": "demo-paltos-quillota",
+    "nombre": "Paltos La Palma (fondo de valle)",
+    "cliente": "Cooperativa Ejemplo",
+    "plan": "pro",
+    "cultivo": "palto",
+    "lat": -32.8833,
+    "lon": -71.2500,
+    "altitud_m": 127,
+    "telefono": "",
+    "email": "",
+    "ajuste_tmin_c": 0.0,
+    "umbral_accion_c": 1.0,
+    "activo": true
+  }
+]

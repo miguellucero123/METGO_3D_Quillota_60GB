@@ -53,6 +53,7 @@ const accessPath = '/registro'
         </router-link>
 
         <div class="nav-links desktop-only">
+          <router-link to="/heladas">Heladas</router-link>
           <router-link to="/planes">Planes</router-link>
           <router-link to="/blog">Blog</router-link>
           <router-link to="/nosotros">Nosotros</router-link>
@@ -93,6 +94,7 @@ const accessPath = '/registro'
         </button>
       </div>
       <div class="drawer-content">
+        <router-link to="/heladas" @click="closeMobileMenu">Heladas</router-link>
         <router-link to="/planes" @click="closeMobileMenu">Planes</router-link>
         <router-link to="/blog" @click="closeMobileMenu">Blog</router-link>
         <router-link to="/nosotros" @click="closeMobileMenu">Nosotros</router-link>
@@ -136,6 +138,7 @@ const accessPath = '/registro'
           {{ t('landing.footerBrand', '© METGO3D SpA.') }}
         </div>
         <div class="foot-links">
+          <router-link to="/heladas">Heladas</router-link>
           <router-link to="/planes">Planes</router-link>
           <router-link to="/blog">Blog</router-link>
           <router-link to="/nosotros">Nosotros</router-link>

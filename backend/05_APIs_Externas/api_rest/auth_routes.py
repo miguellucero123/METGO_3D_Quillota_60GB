@@ -285,7 +285,7 @@ def register_auth_routes(app: Flask) -> None:
         # Pydantic validation
         from api_rest.schemas import LeadCaptureRequest
         try:
-            lead_validated = LeadCaptureRequest(**data)
+            lead_validated = LeadCaptureRequest.desde_payload(data)
         except Exception as e:
             return jsonify({"error": "Datos inválidos", "detail": str(e)}), 400
 

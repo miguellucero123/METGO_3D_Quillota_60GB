@@ -54,6 +54,16 @@ UMBRALES_HELADA_CULTIVO: dict[str, dict[str, Any]] = {
         "moderado": 3.0,
         "descripcion": "Yemas latentes más resistentes; tejido verde dañado cerca o bajo 0 °C.",
     },
+    "cerezo": {
+        "nombre": "Cerezo",
+        "sensibilidad": "alta",
+        # Floración / cuaja: ~10 % de daño floral cerca de -2 °C (tablas de
+        # temperaturas críticas WSU, Ballard et al.); vigilancia desde +1 °C.
+        "critico": -2.0,
+        "alto": -1.0,
+        "moderado": 1.0,
+        "descripcion": "En floración y cuaja, daño floral desde ~-2 °C; botón y flor abierta muy sensibles.",
+    },
 }
 
 # Helada meteorológica (definición climática, independiente del cultivo)

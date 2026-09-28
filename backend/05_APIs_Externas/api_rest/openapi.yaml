@@ -222,6 +222,42 @@ paths:
           description: "{ actualizado, ttl_s, items[{dot,label,val,detail,href}], n }"
         "503":
           description: Agregación fallida
+  /api/public/leads:
+    post:
+      tags: [public]
+      summary: Prospecto comercial (formulario de contacto, landing de heladas, lead magnets)
+      description: >
+        Acepta los campos en inglés (first_name, company_name, phone, message) o
+        los del formulario de la SPA en español (nombre, empresa, telefono, mensaje).
+        Solo email es obligatorio. Rate limit 10/h por IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+                nombre: { type: string, description: "Nombre completo (se separa en first/last)" }
+                empresa: { type: string }
+                sector: { type: string, example: heladas }
+                telefono: { type: string }
+                mensaje: { type: string }
+                first_name: { type: string }
+                last_name: { type: string }
+                company_name: { type: string }
+                phone: { type: string }
+                whatsapp: { type: string }
+                message: { type: string }
+                source: { type: string, default: website }
+      responses:
+        "201":
+          description: "{ status: ok, message }"
+        "400":
+          description: Email faltante o datos inválidos
+        "429":
+          description: Rate limit
   /api/public/security-config:
     get:
       tags: [public]

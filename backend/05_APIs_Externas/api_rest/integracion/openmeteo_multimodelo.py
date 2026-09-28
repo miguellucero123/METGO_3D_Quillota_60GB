@@ -25,10 +25,17 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-FORECAST_URL = (
-    os.getenv("METGO_OPENMETEO_FORECAST_URL") or "https://api.open-meteo.com/v1/forecast"
-).rstrip("/")
 _API_KEY = (os.getenv("METGO_OPENMETEO_API_KEY") or os.getenv("OPENMETEO_API_KEY") or "").strip()
+# Uso comercial (servicio pagado a clientes): la API key de Open-Meteo solo es
+# válida en los hosts ``customer-*``; el host público es solo no comercial.
+FORECAST_URL = (
+    os.getenv("METGO_OPENMETEO_FORECAST_URL")
+    or (
+        "https://customer-api.open-meteo.com/v1/forecast"
+        if _API_KEY
+        else "https://api.open-meteo.com/v1/forecast"
+    )
+).rstrip("/")
 _TIMEOUT = int(os.getenv("METGO_OPENMETEO_MULTIMODEL_TIMEOUT", "15"))
 _RETRIES = int(os.getenv("METGO_OPENMETEO_MULTIMODEL_RETRIES", "2"))
 
@@ -58,6 +65,7 @@ def fetch_multimodelo(
     hourly_vars: list[str],
     forecast_days: int = 3,
     modelos: list[str] | None = None,
+    past_days: int = 0,
 ) -> dict[str, Any]:
     """Una sola llamada real a Open-Meteo con varios modelos NWP (``models=a,b,c``).
 
@@ -74,6 +82,8 @@ def fetch_multimodelo(
         "hourly": ",".join(hourly_vars),
         "models": ",".join(modelos),
     }
+    if past_days:
+        params["past_days"] = max(0, min(int(past_days), 7))
     if _API_KEY:
         params["apikey"] = _API_KEY
 

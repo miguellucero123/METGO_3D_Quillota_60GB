@@ -1,13 +1,31 @@
 <script setup>
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { submitLeadData } from '@/api/metgoApi'
 import { Leaf } from 'lucide-vue-next'
 import CommercialLayout from '@/components/layout/CommercialLayout.vue'
 import { trackEvent } from '@/utils/analytics'
 import { onMounted } from 'vue'
 
+const route = useRoute()
+
+const PLANES_HELADAS = {
+  piloto: 'Quiero el piloto gratis de 14 días de alertas de heladas.',
+  basico: 'Me interesa el Plan Básico de heladas (1 predio).',
+  pro: 'Me interesa el Plan Pro de heladas (varios cuarteles).',
+  asesor: 'Soy asesor/cooperativa y quiero alertas de heladas para varios productores.',
+}
+
 onMounted(() => {
   trackEvent('lead_form_view')
+  const sector = String(route.query.sector || '')
+  if (sector) form.value.sector = sector
+  const plan = String(route.query.plan || '')
+  if (sector === 'heladas' && PLANES_HELADAS[plan]) {
+    form.value.mensaje = `${PLANES_HELADAS[plan]}
+Cultivo: 
+Ubicación (pin de Google Maps): `
+  }
 })
 
 const form = ref({
@@ -79,14 +97,15 @@ const submitLead = async () => {
             </div>
             
             <div class="form-group">
-              <label for="empresa">Empresa</label>
-              <input type="text" id="empresa" v-model="form.empresa" required placeholder="Tu empresa o faena">
+              <label for="empresa">Empresa o predio</label>
+              <input type="text" id="empresa" v-model="form.empresa" required placeholder="Tu empresa, fundo o faena">
             </div>
 
             <div class="form-group">
               <label for="sector">Sector</label>
               <select id="sector" v-model="form.sector" required>
                 <option value="" disabled>Selecciona tu sector...</option>
+                <option value="heladas">Alertas de heladas (predio agrícola)</option>
                 <option value="agricultura">Agricultura</option>
                 <option value="mineria">Minería y Alta Montaña</option>
                 <option value="izaje">Izaje y Construcción</option>
@@ -96,8 +115,8 @@ const submitLead = async () => {
             </div>
 
             <div class="form-group">
-              <label for="email">Correo corporativo</label>
-              <input type="email" id="email" v-model="form.email" required placeholder="correo@empresa.cl">
+              <label for="email">Correo</label>
+              <input type="email" id="email" v-model="form.email" required placeholder="tucorreo@ejemplo.cl">
             </div>
 
             <div class="form-group">

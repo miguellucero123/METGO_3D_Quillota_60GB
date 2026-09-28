@@ -84,34 +84,33 @@ function getPrice(basePrice) {
       </div>
 
       <div class="commercial-grid-3">
-        <!-- Plan Campo -->
-        <div class="commercial-card pricing-card">
-          <h3 class="plan-name">Plan Campo</h3>
-          <p class="plan-target">Agricultura de precisión</p>
+        <!-- Plan Heladas (foco comercial temporada 2026) -->
+        <div class="commercial-card pricing-card featured">
+          <div class="featured-badge">Temporada de heladas</div>
+          <h3 class="plan-name">Heladas por predio</h3>
+          <p class="plan-target">Fruticultura y viñas</p>
           <div class="plan-price">
             <span class="price-from">desde</span>
-            <span class="price-value">${{ getPrice(39) }}</span>
+            <span class="price-value">${{ getPrice(50) }}</span>
             <span class="price-period">USD/mes</span>
           </div>
-          <p class="plan-unit">por zona de cultivo · ≈ $37 mil CLP</p>
-          
+          <p class="plan-unit">Básico 1 predio · Pro ${{ getPrice(150) }} hasta 5 cuarteles</p>
+
           <ul class="plan-features">
-            <li><span class="check">✓</span> Panel operativo en tiempo real para tu zona</li>
-            <li><span class="check">✓</span> Alertas de helada, lluvia y viento por WhatsApp</li>
-            <li><span class="check">✓</span> Pronóstico 72h con resolución de 1-3 km</li>
-            <li><span class="check">✓</span> Informe semanal descargable</li>
-            <li><span class="check">✓</span> 14 días de prueba sin costo</li>
+            <li><span class="check">✓</span> Boletín diario: mínima, probabilidad y hora más fría en tu predio</li>
+            <li><span class="check">✓</span> Recomendación simple: prende control o tranquilo</li>
+            <li><span class="check">✓</span> Alerta nocturna extra si el riesgo sube</li>
+            <li><span class="check">✓</span> Por WhatsApp o correo, calibrado con tu termómetro</li>
+            <li><span class="check">✓</span> Pro: llamada con el meteorólogo en noches críticas</li>
           </ul>
-          
-          <button type="button" @click="iniciarCheckout('pro')" :disabled="cargando" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; cursor: pointer;">
-            <Lock :size="16" v-if="!cargando" />
-            {{ cargando ? 'Redirigiendo a PayPal...' : 'Comenzar Prueba Gratis (14 Días)' }}
-          </button>
+
+          <router-link to="/heladas" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" @click="trackEvent('plan_heladas_click')">
+            Ver detalle y pedir piloto gratis
+          </router-link>
         </div>
 
         <!-- Plan Faena -->
-        <div class="commercial-card pricing-card featured">
-          <div class="featured-badge">Más popular</div>
+        <div class="commercial-card pricing-card">
           <h3 class="plan-name">Plan Faena</h3>
           <p class="plan-target">Minería, izaje y alta montaña</p>
           <div class="plan-price">
@@ -181,8 +180,8 @@ function getPrice(basePrice) {
             <p>Desplegamos nuestro modelo en nuevas zonas constantemente. Solicita una evaluación gratuita de tu faena y te confirmaremos si podemos activarla (usualmente toma &lt;72h).</p>
           </div>
           <div class="faq-item">
-            <h4>Garantía: Primer mes sin costo</h4>
-            <p>Entendemos que necesitas validar que la herramienta es útil para tu operación. El primer mes de piloto es sin costo. Si no te ahorramos dinero o tiempo, no pagas.</p>
+            <h4>Piloto sin costo</h4>
+            <p>Entendemos que necesitas validar que la herramienta es útil para tu operación. Los primeros 14 días de piloto son sin costo. Si no te sirve, no pagas.</p>
           </div>
         </div>
       </div>

@@ -51,6 +51,12 @@ const routes = [
     meta: { public: true, title: 'Contacto comercial' },
   },
   {
+    path: '/heladas',
+    name: 'heladas',
+    component: () => import('@/views/HeladasView.vue'),
+    meta: { public: true, title: 'Alertas de heladas por predio' },
+  },
+  {
     path: '/planes',
     name: 'planes',
     component: () => import('@/views/PlanesView.vue'),

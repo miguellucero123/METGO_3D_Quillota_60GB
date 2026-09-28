@@ -24,15 +24,38 @@ class UserLoginRequest(BaseModel):
     password: str
 
 class LeadCaptureRequest(BaseModel):
-    first_name: str
-    last_name: str
+    first_name: str = ""
+    last_name: str = ""
     email: EmailStr
     phone: Optional[str] = None
     whatsapp: Optional[str] = None
-    company_name: str
-    sector: str
+    company_name: str = ""
+    sector: str = "sin_especificar"
     message: Optional[str] = None
     source: str = "website"
+
+    @classmethod
+    def desde_payload(cls, data: dict) -> "LeadCaptureRequest":
+        """Acepta también los campos en español que envían los formularios de la SPA."""
+        d = dict(data)
+        nombre = str(d.pop("nombre", "") or "").strip()
+        if nombre and not d.get("first_name"):
+            first, _, last = nombre.partition(" ")
+            d["first_name"] = first
+            d["last_name"] = d.get("last_name") or last.strip()
+        empresa = d.pop("empresa", None)
+        if empresa and not d.get("company_name"):
+            d["company_name"] = empresa
+        telefono = d.pop("telefono", None)
+        if telefono and not d.get("phone"):
+            d["phone"] = telefono
+            d.setdefault("whatsapp", telefono)
+        mensaje = d.pop("mensaje", None)
+        if mensaje and not d.get("message"):
+            d["message"] = mensaje
+        if not d.get("sector"):
+            d["sector"] = "sin_especificar"
+        return cls(**d)
 
 class AlertConfigSchema(BaseModel):
     alert_type: str
